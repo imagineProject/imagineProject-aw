@@ -1,0 +1,144 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "hideReplyBox": true,
+        "ckeInstance": {},
+        "replyPlaceHolder": {
+            "displayName": "{{i18n.reply}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "isEditable": "true",
+            "dbValue": "",
+            "dispValue": ""
+       }
+    },
+    "ports": {
+    },
+    "actions": {
+        "commentReplyBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "showHideContents"
+                },
+                {
+                    "action": "invokeShowRichTextEditor"
+                }
+            ]
+        },
+
+        "showHideContents": {
+            "actionType": "JSFunction",
+            "method": "showHideReplyBoxContents",
+            "inputData": {
+                "data": "{{data}}",
+                "discussionIsExpanded": "{{props.showReplyDiscussion}}"
+            },
+            "outputData": {
+                "hideReplyBox": ""
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+
+        "invokeShowRichTextEditor": {
+            "actionType": "JSFunctionAsync",
+            "method": "invokeShowRichTextEditor",
+            "inputData": {
+                "data": "{{data}}",
+                "ckeIdRef": "{{props.discussionObj.discussionItem.ckEditorIdRef}}",
+                "discussionItem": "{{props.discussionObj.discussionItem}}"
+            },
+            "outputData": {
+                "ckeInstance": ""
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+        "isInputTextValidAction":
+        {
+            "actionType": "JSFunction",
+            "method": "isInputTextValid",
+            "inputData": {
+                "data": "{{data}}",
+                "isInputTextValidVal": "{{data.eventData.isTextValid}}",
+                "replyEditor": "{{data.eventData.ckeditorTypeEvent}}",
+                "sharedData": "{{props.sharedDataObj.sharedData}}",
+                "discussionItem": "{{props.discussionObj.discussionItem}}",
+                "ckEditorRef": "{{data.eventData.ckEditorRef}}"
+            },
+            "outputData": {
+                "isInputTextValid": ""
+            },
+            "deps": "js/Ac0CreateCollabObjectService"
+        },
+        "reply": {
+            "actionType": "JSFunctionAsync",
+            "method": "replyBoxAction",
+            "inputData": {
+                "discussionItem": "{{props.discussionObj.discussionItem}}",
+                "cke": "{{data.ckeInstance.cke}}",
+                "discussionData": "{{props.updateReplyData.sharedReplyObj}}",
+                "searchState": "{{props.searchState.searchStateData}}",
+                "i18n": "{{i18n}}"
+            },
+            "deps": "js/Ac0ConversationService"
+        },
+        "doIncludeInReplyAction": {
+            "actionType": "JSFunctionAsync",
+            "method": "doIncludeInReplyFunc",
+            "inputData": {
+                "commentItemObj": "{{eventData.commentItemObj}}",
+                "ckeInstance":"{{data.ckeInstance}}",
+                "commandContext": "{{eventData.scope.commandContext}}",
+                "discussionObject":"{{props.discussionObj}}"
+            },
+            "deps": "js/Ac0ConversationService"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "isInputTextValidEvent.CommentReply",
+            "cacheEventData": true,
+            "action": "isInputTextValidAction"
+        },
+        {
+            "eventId": "Ac0CommentReply.doIncludeInReplyAction",
+            "cacheEventData": true,
+            "action": "doIncludeInReplyAction"
+        }
+    ],
+    "conditions": {
+        "isDiscussionLocation":
+        {
+            "expression":"ctx.sublocation.historyNameToken==='feed' || ctx.sublocation.historyNameToken==='actionableFeed'"
+        },
+        "validInputReply":
+        {
+            "expression":"( !conditions.isDiscussionLocation && data.isInputTextValid && ctx.Ac0ConvCtx.ckEditorRef === 'replyEditor' ) || ( conditions.isDiscussionLocation && ctx.Ac0ConvCtx.isInputTextValid && ctx.Ac0ConvCtx.ckEditorRef === 'replyEditor')"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "commentReplyBatch"
+    },
+    "props": {
+        "show-reply-discussion": {
+            "type": "object"
+        },
+        "discussion-obj": {
+            "type": "object"
+        },
+        "update-reply-data": {
+            "type": "object"
+        },
+        "search-state": {
+            "type": "object"
+        },
+        "shared-data-obj": {
+            "type": "object"
+        }
+    },
+    "i18n": {
+        "follow": [ "ActiveCollabDeclarativeMessages" ],
+        "unfollow": ["ActiveCollabDeclarativeMessages"],
+        "reply": ["ActiveCollabDeclarativeMessages"],
+        "replies": ["ActiveCollabDeclarativeMessages"]
+    }
+}

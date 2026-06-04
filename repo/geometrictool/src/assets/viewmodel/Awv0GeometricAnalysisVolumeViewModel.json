@@ -1,0 +1,512 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "openVolumePanel": {
+            "actionType": "JSFunction",
+            "method": "volumePanelRevealed",
+            "inputData": {
+                "volumeState": "{{fields.volumeProp}}",
+                "viewerContextData": "{{props.viewerContextData}}",
+                "occmgmtContext": "{{props.subPanelContext.context.occContext}}",
+                "volumeUnitTextMinimum":"{{data.volumeUnitTextMinimum}}",
+                "volumeUnitTextMaximum":"{{data.volumeUnitTextMaximum}}",
+                "localeTextBundle": "{{data.i18n}}",
+                "viewId": "{{props.subPanelContext.popupOptions.popupId}}"
+            },
+            "outputData":
+            {
+                "volumeUnitTextMinimum":"volumeUnitTextMinimum",
+                "volumeUnitTextMaximum":"volumeUnitTextMaximum"
+            },
+            "deps": "js/Awv0GeometricAnalysisVolumeSearchService"
+        },
+        "getAllTargetsAction": {
+            "actionType": "dataProvider",
+            "method": "volumeSearchPanelDataProvider"
+        },
+        "getAllTargets": {
+            "actionType": "JSFunction",
+            "method": "getAllTargets",
+            "inputData": {
+                "volumeState": "{{fields.volumeProp}}"
+            },
+            "outputData": {
+                "allTargets": "allTargets",
+                "totalFound": "totalFound"
+            },
+            "deps": "js/Awv0GeometricAnalysisVolumeSearchService"
+        },
+        "setNewVoulmeCorners": {
+            "actionType": "JSFunction",
+            "method": "updateVolumeCorners",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "volumeState": "{{fields.volumeProp}}"
+            },
+            "outputData": {
+                "targetRangeVolumeX1": "targetRangeVolumeX1",
+                "targetRangeVolumeY1": "targetRangeVolumeY1",
+                "targetRangeVolumeZ1": "targetRangeVolumeZ1",
+                "targetRangeVolumeX2": "targetRangeVolumeX2",
+                "targetRangeVolumeY2": "targetRangeVolumeY2",
+                "targetRangeVolumeZ2": "targetRangeVolumeZ2"
+            },
+            "deps": "js/Awv0GeometricAnalysisVolumeSearchService"
+        },
+        "executeVolumeSearch": {
+            "actionType": "JSFunction",
+            "method": "executeVolumeSearch",
+            "inputData": {
+                "cornerValues": [
+                    "{{data.targetRangeVolumeX1.dbValue}}",
+                    "{{data.targetRangeVolumeY1.dbValue}}",
+                    "{{data.targetRangeVolumeZ1.dbValue}}",
+                    "{{data.targetRangeVolumeX2.dbValue}}",
+                    "{{data.targetRangeVolumeY2.dbValue}}",
+                    "{{data.targetRangeVolumeZ2.dbValue}}"
+                ],
+                "viewerContextData": "{{props.viewerContextData}}",
+                "volumeBoundary": "{{data.volumeBoundary.dbValue}}",
+                "volumeAction": "{{data.volumeAction.dbValue}}"
+            },
+            "deps": "js/Awv0GeometricAnalysisVolumeSearchService"
+        },
+        "updateTargetVolume": {
+            "actionType": "JSFunction",
+            "method": "updateTargetVolume",
+            "inputData": {
+                "data": "{{data}}",
+                "volumeState": "{{fields.volumeProp}}",
+                "viewerContextData": "{{props.viewerContextData}}"
+            },
+            "deps": "js/Awv0GeometricAnalysisVolumeSearchService"
+        },
+        "cornerValueInitiate": {
+            "actionType": "JSFunction",
+            "method": "updateVolumeCornersOccList",
+            "inputData": {
+                "volumeState": "{{fields.volumeProp}}",
+                "viewerContextData": "{{props.viewerContextData}}"
+            },
+            "deps": "js/Awv0GeometricAnalysisVolumeSearchService"
+        },
+        "initializeVolumeTarget": {
+            "actionType": "JSFunction",
+            "method": "initializeVolumeTarget",
+            "inputData": {
+                "viewerContextData": "{{props.viewerContextData}}",
+                "occmgmtContext":"{{props.subPanelContext.context.occContext}}",
+                "volumeState": "{{fields.volumeProp}}"
+            },
+            "deps": "js/Awv0GeometricAnalysisVolumeSearchService"
+        },
+        "closeVolumePanel": {
+            "actionType": "JSFunction",
+            "method": "notifyVolumePanelClosed",
+            "inputData": {
+                "occmgmtContext": "{{props.subPanelContext.context.occContext}}",
+                "volumeState": "{{fields.volumeProp}}",
+                "viewerContextData": "{{props.viewerContextData}}"
+            },
+            "deps": "js/Awv0GeometricAnalysisVolumeSearchService"
+        },
+        "volumePanelBatchAction": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "openVolumePanel"
+                },
+                {
+                    "action": "getAllTargetsAction"
+                }
+            ]
+        },
+        "volumeTargetList": {
+            "actionType": "batchJob",
+            "steps": [ {
+
+                    "action": "getAllTargetsAction"
+                },
+                {
+
+                    "action": "initializeVolumeTarget"
+                }
+            ]
+        },
+        "volumeTargetListCornerValues": {
+            "actionType": "batchJob",
+            "steps": [ {
+
+                    "action": "getAllTargetsAction"
+                },
+                {
+
+                    "action": "initializeVolumeTarget"
+                },
+                {
+                    "action": "cornerValueInitiate"
+                }
+            ]
+        },
+        "onUpdateX1BatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "onUpdateX1",
+                    "condition": "fields.targetRangeVolumeX2.value !== '' || ( fields.targetRangeVolumeX1.value === '' && fields.targetRangeVolumeX2.value === '' ) "
+                }
+            ]
+        },
+        "onUpdateX2BatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "onUpdateX2",
+                    "condition": "fields.targetRangeVolumeX1.value !== '' || ( fields.targetRangeVolumeX1.value === '' && fields.targetRangeVolumeX2.value === '' ) "
+                }
+            ]
+        },
+        "onUpdateY1BatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "onUpdateY1",
+                    "condition": "fields.targetRangeVolumeY2.value !== '' || ( fields.targetRangeVolumeY1.value === '' && fields.targetRangeVolumeY2.value === '' ) "
+                }
+            ]
+        },
+        "onUpdateY2BatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "onUpdateY2",
+                    "condition": "fields.targetRangeVolumeY1.value !== '' || ( fields.targetRangeVolumeY1.value === '' && fields.targetRangeVolumeY2.value === '' ) "
+                }
+            ]
+        },
+        "onUpdateZ2BatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "onUpdateZ2",
+                    "condition": "fields.targetRangeVolumeZ1.value !== '' || ( fields.targetRangeVolumeZ1.value === '' && fields.targetRangeVolumeZ2.value === '' )"
+                }
+            ]
+        },
+        "onUpdateZ1BatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "onUpdateZ1",
+                    "condition": "fields.targetRangeVolumeZ2.value !== '' || ( fields.targetRangeVolumeZ1.value === '' && fields.targetRangeVolumeZ2.value === '' )"
+                }
+            ]
+        },
+        "onUpdateX2": {
+            "actionType": "JSFunction",
+            "method": "updateField",
+            "inputData": {
+                "fields": "{{fields}}",
+                "fieldNameToValidate": "targetRangeVolumeX1"
+            },
+            "deps": "js/Awv0GeometricAnalysisVolumeSearchService"
+        },
+        "onUpdateX1": {
+            "actionType": "JSFunction",
+            "method": "updateField",
+            "inputData": {
+                "fields": "{{fields}}",
+                "fieldNameToValidate": "targetRangeVolumeX2"
+            },
+            "deps": "js/Awv0GeometricAnalysisVolumeSearchService"
+        },
+        "onUpdateY1": {
+            "actionType": "JSFunction",
+            "method": "updateField",
+            "inputData": {
+                "fields": "{{fields}}",
+                "fieldNameToValidate": "targetRangeVolumeY2"
+            },
+            "deps": "js/Awv0GeometricAnalysisVolumeSearchService"
+        },
+        "onUpdateY2": {
+            "actionType": "JSFunction",
+            "method": "updateField",
+            "inputData": {
+                "fields": "{{fields}}",
+                "fieldNameToValidate": "targetRangeVolumeY1"
+            },
+            "deps": "js/Awv0GeometricAnalysisVolumeSearchService"
+        },
+        "onUpdateZ2": {
+            "actionType": "JSFunction",
+            "method": "updateField",
+            "inputData": {
+                "fields": "{{fields}}",
+                "fieldNameToValidate": "targetRangeVolumeZ1"
+            },
+            "deps": "js/Awv0GeometricAnalysisVolumeSearchService"
+        },
+        "onUpdateZ1": {
+            "actionType": "JSFunction",
+            "method": "updateField",
+            "inputData": {
+                "fields": "{{fields}}",
+                "fieldNameToValidate": "targetRangeVolumeZ2"
+            },
+            "deps": "js/Awv0GeometricAnalysisVolumeSearchService"
+        }
+
+    },
+    "lifecycleHooks": {
+        "onMount": "volumePanelBatchAction",
+        "onUpdate": [ {
+                "action": "updateTargetVolume",
+                "observers": [ "viewModel.data.targetRangeVolumeX1.dbValue", "viewModel.data.targetRangeVolumeX2.dbValue", "viewModel.data.targetRangeVolumeY1.dbValue",
+                    "viewModel.data.targetRangeVolumeY2.dbValue", "viewModel.data.targetRangeVolumeZ1.dbValue", "viewModel.data.targetRangeVolumeZ2.dbValue"
+                ]
+            },
+            {
+                "action": "volumeTargetList",
+                "observers": [ "viewModel.atomicData.volumeProp.updateTargetList" ]
+            },
+            {
+                "action": "volumeTargetListCornerValues",
+                "observers": [ "viewModel.atomicData.volumeProp.targetList" ]
+            },
+            {
+                "action": "setNewVoulmeCorners",
+                "observers": [ "viewModel.atomicData.volumeProp.toggleCornerVal"]
+            },
+            {
+                "action": "onUpdateX1BatchJob",
+                "observers": [
+                    "fields.targetRangeVolumeX1.value"
+                ]
+            },
+            {
+                "action": "onUpdateX2BatchJob",
+                "observers": [
+                    "fields.targetRangeVolumeX2.value"
+                ]
+            },
+            {
+                "action": "onUpdateY1BatchJob",
+                "observers": [
+                    "fields.targetRangeVolumeY1.value"
+                ]
+            },
+            {
+                "action": "onUpdateY2BatchJob",
+                "observers": [
+                    "fields.targetRangeVolumeY2.value"
+                ]
+            },
+            {
+                "action": "onUpdateZ2BatchJob",
+                "observers": [
+                    "fields.targetRangeVolumeZ2.value"
+                ]
+            },
+            {
+                "action": "onUpdateZ1BatchJob",
+                "observers": [
+                    "fields.targetRangeVolumeZ1.value"
+                ]
+            }
+
+        ],
+        "onUnmount": "closeVolumePanel"
+    },
+    "data": {
+        "targetVolumeCoordinatesHelp": {
+            "extendedTooltipContent": "{{i18n.targetVolumeCoordinatesHelp}}"
+        },
+        "volumeBoundaryHelp": {
+            "extendedTooltipContent": "{{i18n.volumeBoundaryHelp}}"
+        },
+        "volumeActionHelp": {
+            "extendedTooltipContent": "{{i18n.volumeActionHelp}}"
+        },
+        "volumeProp": {
+            "initialValues": {
+                "toggleCornerVal": false,
+                "dragAndDropVolumeGadgetEvent":false,
+                "targetList":[],
+                "targetListLength":"",
+                "updateTargetList":false
+            },
+            "meta": {}
+        },
+        "analysisVolumnAddRemoveCommands": "awv0_volumnAddRemovecommands",
+        "targetRangeVolumeX1": {
+            "type": "DOUBLE",
+            "isEditable": "true",
+            "dbValue": "",
+            "isEnabled": "true",
+            "labelPosition": "NO_PROPERTY_LABEL",
+            "validationCriteria": [ {
+                "condition": "conditions.invalidCornerValueX",
+                "value": "{{i18n.invalidCornerValues}}"
+            } ]
+        },
+        "volumeUnitTextMinimum":
+        {
+            "type": "STRING",
+            "uiValue": "",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "volumeUnitTextMaximum":
+        {
+            "type": "STRING",
+            "uiValue": "",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "targetRangeVolumeX2": {
+            "type": "DOUBLE",
+            "isEditable": "true",
+            "dbValue": "",
+            "isEnabled": "true",
+            "labelPosition": "NO_PROPERTY_LABEL",
+            "validationCriteria": [ {
+                "condition": "conditions.invalidCornerValueX",
+                "value": "{{i18n.invalidCornerValues}}"
+            } ]
+        },
+        "targetRangeVolumeY1": {
+            "type": "DOUBLE",
+            "isEditable": "true",
+            "dbValue": "",
+            "isEnabled": "true",
+            "labelPosition": "NO_PROPERTY_LABEL",
+            "validationCriteria": [ {
+                "condition": "conditions.invalidCornerValueY",
+                "value": "{{i18n.invalidCornerValues}}"
+            } ]
+        },
+        "targetRangeVolumeY2": {
+            "type": "DOUBLE",
+            "isEditable": "true",
+            "dbValue": "",
+            "isEnabled": "true",
+            "labelPosition": "NO_PROPERTY_LABEL",
+            "validationCriteria": [ {
+                "condition": "conditions.invalidCornerValueY",
+                "value": "{{i18n.invalidCornerValues}}"
+            } ]
+        },
+        "targetRangeVolumeZ1": {
+            "type": "DOUBLE",
+            "isEditable": "true",
+            "dbValue": "",
+            "isEnabled": "true",
+            "labelPosition": "NO_PROPERTY_LABEL",
+            "validationCriteria": [ {
+                "condition": "conditions.invalidCornerValueZ",
+                "value": "{{i18n.invalidCornerValues}}"
+            } ]
+        },
+        "targetRangeVolumeZ2": {
+            "type": "DOUBLE",
+            "isEditable": "true",
+            "dbValue": "",
+            "isEnabled": "true",
+            "labelPosition": "NO_PROPERTY_LABEL",
+            "validationCriteria": [ {
+                "condition": "conditions.invalidCornerValueZ",
+                "value": "{{i18n.invalidCornerValues}}"
+            } ]
+        },
+        "volumeBoundary": {
+            "displayName": "",
+            "type": "BOOLEAN",
+            "isEditable": "true",
+            "dbValue": false,
+            "vertical": false,
+            "propertyRadioTrueText": "{{i18n.containsOnly}}",
+            "propertyRadioFalseText": "{{i18n.intersecting}}",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP"
+        },
+        "volumeAction": {
+            "displayName": "",
+            "type": "BOOLEAN",
+            "isEditable": "true",
+            "dbValue": false,
+            "vertical": false,
+            "propertyRadioTrueText": "{{i18n.selectPartsVolume}}",
+            "propertyRadioFalseText": "{{i18n.showOnlyVolume}}",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP"
+        }
+    },
+    "dataProviders": {
+        "volumeSearchPanelDataProvider": {
+            "action": "getAllTargets",
+            "response": "{{data.allTargets}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "single",
+            "commandsAnchor": "viewer_volume_cell_commands"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "conditions": {
+        "hasTargets": {
+            "expression": "data.totalFound !== undefined && data.totalFound > 0"
+        },
+        "invalidCornerValueX": {
+            "expression": "!(data.targetRangeVolumeX1.dbValue=='' && data.targetRangeVolumeX2.dbValue=='') && data.targetRangeVolumeX1.dbValue > data.targetRangeVolumeX2.dbValue"
+        },
+        "invalidCornerValueY": {
+            "expression": "!(data.targetRangeVolumeY1.dbValue=='' && data.targetRangeVolumeY2.dbValue=='') && data.targetRangeVolumeY1.dbValue > data.targetRangeVolumeY2.dbValue"
+        },
+        "invalidCornerValueZ": {
+            "expression": "!(data.targetRangeVolumeZ1.dbValue=='' && data.targetRangeVolumeZ2.dbValue=='') && data.targetRangeVolumeZ1.dbValue > data.targetRangeVolumeZ2.dbValue"
+        },
+        "anyEmptyCornerValue": {
+            "expression": "data.targetRangeVolumeX1.dbValue === '' || data.targetRangeVolumeX2.dbValue === '' || data.targetRangeVolumeY1.dbValue === '' || data.targetRangeVolumeY2.dbValue === '' || data.targetRangeVolumeZ1.dbValue === '' || data.targetRangeVolumeZ2.dbValue === '' "
+        },
+        "hasBoundaryAndActionOptionsNotSelected": {
+            "expression": "data.volumeBoundary.dbValue === '' || data.volumeAction.dbValue === '' "
+        }
+    },
+    "ctx": {
+        "panelContext": {
+            "type": "Object"
+        }
+    },
+    "i18n": {
+        "volumeTabText": [ "GeometricAnalysisMessages" ],
+        "emptyTargetList": [ "GeometricAnalysisMessages" ],
+        "corner1Text": [ "GeometricAnalysisMessages" ],
+        "corner2Text": [ "GeometricAnalysisMessages" ],
+        "coordinateX": [ "GeometricAnalysisMessages" ],
+        "coordinateY": [ "GeometricAnalysisMessages" ],
+        "coordinateZ": [ "GeometricAnalysisMessages" ],
+        "filterButtonText": [ "GeometricAnalysisMessages" ],
+        "seedPartsText": [ "GeometricAnalysisMessages" ],
+        "invalidCornerValues": [ "GeometricAnalysisMessages" ],
+        "mm":["GeometricAnalysisMessages"],
+        "cm":["GeometricAnalysisMessages"],
+        "m":["GeometricAnalysisMessages"],
+        "in":["GeometricAnalysisMessages"],
+        "ft":["GeometricAnalysisMessages"],
+        "yd":["GeometricAnalysisMessages"],
+        "um":["GeometricAnalysisMessages"],
+        "dm":["GeometricAnalysisMessages"],
+        "km":["GeometricAnalysisMessages"],
+        "mils":["GeometricAnalysisMessages"],
+        "targetVolumeCoordinates":["GeometricAnalysisMessages"],
+        "containsOnly": ["GeometricAnalysisMessages"],
+        "intersecting": ["GeometricAnalysisMessages"],
+        "selectPartsVolume": ["GeometricAnalysisMessages"],
+        "showOnlyVolume": ["GeometricAnalysisMessages"],
+        "volumeBoundary": ["GeometricAnalysisMessages"],
+        "actionOnApply": ["GeometricAnalysisMessages"],
+        "volumeBoundaryHelp": ["GeometricAnalysisMessages"],
+        "volumeActionHelp": ["GeometricAnalysisMessages"],
+        "targetVolumeCoordinatesHelp": ["GeometricAnalysisMessages"],
+        "applyFilter": ["GeometricAnalysisMessages"]
+    }
+}

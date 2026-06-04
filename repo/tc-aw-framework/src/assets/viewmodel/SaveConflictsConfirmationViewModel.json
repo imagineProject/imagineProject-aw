@@ -1,0 +1,166 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "multiUserCheckboxMessage": {
+            "displayName": "{{i18n.multiUserCheckboxMessage}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "",
+            "dispValue": "{{i18n.multiUserCheckboxMessage}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "prefValue": false
+    },
+    "actions": {
+        "determineMultiUserEditWarning": {
+            "actionType": "JSFunction",
+            "method": "determineMultiUserEditWarning",
+            "inputData": {
+                "error": "{{subPanelContext.error}}",
+                "inputVMOs": "{{subPanelContext.inputObjects}}",
+                "i18n": "{{i18n}}"
+            },
+            "outputData": {
+                "errorMessage": "errorMessage"
+            },
+            "deps": "js/saveEditUtils"
+        },
+        "saveSelectedFlag": {
+            "actionType": "JSFunctionAsync",
+            "method": "saveSelectedFlag",
+            "deps": "js/saveEditUtils",
+            "inputData": {
+                "popupOptions": "{{subPanelContext.popupOptions}}"
+            }
+        },
+        "closePopupWindow": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "inputData": {
+                "popupId": "{{data.popupId}}"
+            },
+            "deps": "js/popupService"
+        },
+        "saveEdits": {
+            "actionType": "JSFunctionAsync",
+            "method": "saveEdits",
+            "deps": "js/saveEditUtils",
+            "inputData": {
+                "inputs": "{{subPanelContext.inputs}}",
+                "editHandler": "{{subPanelContext.editHandler}}"
+            },
+            "outputData": {
+                "overrideError": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "updateURLParam"
+                    }
+                ]
+            }
+        },
+        "cancelEdits": {
+            "actionType": "JSFunction",
+            "method": "cancelEdits",
+            "deps": "js/editHandlerService",
+            "events": {
+                "success": [
+                    {
+                        "name": "updateURLParam"
+                    },
+                    {
+                        "name":"cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": [
+                                "{{ctx.selected}}"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "updatePreferenceFlag": {
+            "actionType": "JSFunctionAsync",
+            "method": "updatePreferenceFlag",
+            "inputData": {
+                "prefValue": "{{data.prefValue}}"
+            },
+            "outputData": {
+                "prefValue": ""
+            },
+            "deps": "js/saveEditUtils"
+        },
+        "updateAutoMergePreference": {
+            "actionType": "JSFunctionAsync",
+            "method": "updateAutoMergePreference",
+            "deps": "js/saveEditUtils"
+        },
+        "cancelEditsAndClosePopup": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cancelEdits"
+                },
+                {
+                    "action": "closePopupWindow"
+                }
+            ]
+        },
+        "saveEditsAndClosePopup": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "saveSelectedFlag"
+                },
+                {
+                    "action": "updateAutoMergePreference",
+                    "condition": "data.prefValue === true"
+                },
+                {
+                    "action": "saveEdits"
+                },
+                {
+                    "action": "closePopupWindow"
+                }
+            ]
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "aw.closePopup",
+            "action": "closePopupWindow"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "determineMultiUserEditWarning"
+    },
+    "i18n": {
+        "closeText": [
+            "ZeroCompileCommandMessages"
+        ],
+        "multiUserEditWarning": [
+            "ZeroCompileCommandMessages"
+        ],
+        "multiUserEditWarningMultiple": [
+            "ZeroCompileCommandMessages"
+        ],
+        "multiUserSaveOrDiscard": [
+            "ZeroCompileCommandMessages"
+        ],
+        "multiUserSaveWarning": [
+            "ZeroCompileCommandMessages"
+        ],
+        "multiUserDiscardEdits": [
+            "ZeroCompileCommandMessages"
+        ],
+        "multiUserSaveEdits": [
+            "ZeroCompileCommandMessages"
+        ],
+        "multiUserCheckboxMessage": [
+            "ZeroCompileCommandMessages"
+        ]
+    }
+}

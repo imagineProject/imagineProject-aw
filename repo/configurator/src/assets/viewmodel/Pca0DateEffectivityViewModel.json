@@ -1,0 +1,117 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "initializeDateEffectivityConfigurationData": {
+            "actionType": "JSFunction",
+            "method": "initializeDateEffectivityConfigurationData",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "outputData": {
+                "contextKey": "contextKey",
+                "isEffectivityReadOnly": "isEffectivityReadOnly",
+                "currentEffectivity": "currentEffectivity"
+            },
+            "deps": "js/Pca0DateEffectivityConfigurationService"
+        },
+        "openEffectivityDateRangeSubView": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0FilterCriteria.navigateToSubView",
+                    "eventData": {
+                        "subView": "Pca0DateRangeEffectivityCommandSub"
+                    }
+                } ]
+            }
+        },
+        "openEffectivityDateRangeDialog": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view": "Pca0DateRangeEffectivityPanel",
+                    "parent": ".sw-secondary-workarea",
+                    "placement": "right",
+                    "width": "SMALL",
+                    "height": "FULL",
+                    "isCloseVisible": false,
+                    "isPinUnpinEnabled": true,
+                    "subPanelContext": {
+                        "contextKey": "{{data.contextKey}}"
+                    }
+                }
+            },
+            "outputData": {
+                "popupId": "id"
+            }
+        },
+        "toggleEffectivityLinkState": {
+            "actionType": "JSFunction",
+            "method": "toggleEffectivityLinkState",
+            "inputData": {
+                "isDisableEffectivityLink": "{{data.eventMap['Pca0DateEffectivity.toggleEffectivityLinkState'].isDisableEffectivityLink}}"
+            },
+            "outputData": {
+                "isEffectivityReadOnly": "isEffectivityReadOnly"
+            },
+            "deps": "js/Pca0DateEffectivityConfigurationService"
+        },
+        "closeEffectivityDateRangePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{data.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "Pca0FilterCriteriaSettings.refreshContent",
+            "action": "initializeDateEffectivityConfigurationData"
+        },
+        {
+            "eventId": "Pca0DateEffectivity.toggleEffectivityLinkState",
+            "action": "toggleEffectivityLinkState",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0EffectivityDateRange.closeDialog",
+            "action": "closeEffectivityDateRangePanel"
+        },
+        {
+            "eventId": "complete",
+            "action": "closeEffectivityDateRangePanel",
+            "condition": "ctx.activeToolsAndInfoCommand_dialog.commandId === 'Pca0DateRangeEffectivityPanel'"
+        }
+    ],
+    "data": {
+        "contextKey": "",
+        "currentEffectivity": {
+            "uiValue": "",
+            "type": "STRING"
+        },
+        "isEffectivityReadOnly": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        }
+    },
+    "i18n": {},
+    "lifecycleHooks": {
+        "onMount": "initializeDateEffectivityConfigurationData"
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "conditions": {
+        "mustOpenAsDialog": {
+            "expression": "data.contextKey !== 'fscContext' && (data.contextKey === 'variantConditionContext' || data.contextKey === 'ConfiguratorCtx')"
+        },
+        "mustOpenAsSubView": {
+            "expression": "data.contextKey === 'fscContext' || (data.contextKey !== 'variantConditionContext' && data.contextKey !== 'ConfiguratorCtx')"
+        }
+    }
+}

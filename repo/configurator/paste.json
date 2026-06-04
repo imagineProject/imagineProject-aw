@@ -1,0 +1,377 @@
+{
+  "schemaVersion": "1.0.0",
+  "pasteHandlers": {
+    "pasteHandlerForAddCharacteristicFeatureOnProductModel": {
+      "action": "pasteActionForAddMembership",
+      "activeWhen": {
+        "condition": "conditions.isPasteEnabledForAddCharacteristicFeatureOnProductModel"
+      }
+    },
+    "pasteHandlerForAddCharacteristicFeatureOnProductLine": {
+      "action": "pasteActionForAddMembership",
+      "activeWhen": {
+        "condition": "conditions.isPasteEnabledForAddCharacteristicFeatureOnProductLine"
+      }
+    },
+    "pasteHandlerForAddSummarizedModel": {
+      "action": "pasteActionForAddMembership",
+      "activeWhen": {
+        "condition": "conditions.isPasteEnabledForAddSummarizedModel"
+      }
+    },
+    "pasteHandlerForAddPackageFeatureMembers": {
+      "action": "pasteActionForAddMembership",
+      "activeWhen": {
+        "condition": "conditions.isPasteEnabledForAddPackageFeatureMembers"
+      }
+    },
+    "pasteHandlerForAddSummaryFeatureMembers": {
+      "action": "pasteActionForAddMembership",
+      "activeWhen": {
+        "condition": "conditions.isPasteEnabledForAddSummaryFeatureMembers"
+      }
+    },
+    "pasteHandlerForAddDynamicFamilyMember": {
+      "action": "pasteActionForAddMembershipForDynamicFamily",
+      "activeWhen": {
+        "condition": "conditions.isPasteEnabledForAddDynamicFamilyMember"
+      }
+    },
+    "pasteHandlerForAllocation": {
+      "action": "pasteActionForAllocation",
+      "activeWhen": {
+        "condition": "conditions.isPasteEnabledForAllocation"
+      }
+    }
+  },
+  "actions": {
+    "pasteActionForAddMembershipForDynamicFamily": {
+      "actionType": "batchJob",
+      "steps": [
+        {
+          "action": "loadAndReturnWsoThreadProp"
+        },
+        {
+          "action": "addChildren"
+        }
+      ]
+    },
+    "loadAndReturnWsoThreadProp": {
+      "actionType": "JSFunction",
+      "method": "loadAndReturnWsoThreadProp",
+      "deps": "js/pca0VariabilityExplorerService",
+      "inputData": {
+        "sourceContext": "{{pasteContext.sourceObject}}"
+      }
+    },
+    "addChildren": {
+      "actionType": "TcSoaService",
+      "serviceName": "Core-2014-10-DataManagement",
+      "method": "addChildren",
+      "inputData": {
+        "inputData": [
+          {
+            "clientId": "",
+            "childrenObj": "{{function:returnChildrenWSOThreadObjects}}",
+            "parentObj": "{{pasteContext.targetObject}}",
+            "propertyName": "{{function:getPropertyName}}"
+          }
+        ]
+      },
+      "events": {
+        "success": [
+          {
+            "name": "Pca0VariabilityExplorerTree.postStandaloneFeaturePasteHandler",
+            "eventData": {
+              "sourceObjects": "{{pasteContext.sourceObject}}",
+              "targetObject": "{{pasteContext.targetObject}}"
+            }
+          }
+        ],
+        "failure": [
+          {
+            "name": "Pca0VariabilityExplorerTree.postStandaloneFeaturePasteHandler",
+            "eventData": {
+              "sourceObjects": "{{pasteContext.sourceObject}}",
+              "targetObject": "{{pasteContext.targetObject}}"
+            }
+          }
+        ]
+      },
+      "actionMessages": {
+        "failure": [
+          {
+            "message": "pasteFailure"
+          }
+        ]
+      },
+      "deps": "js/pca0VariabilityExplorerService"
+    },
+    "pasteActionForAddMembership": {
+      "actionType": "TcSoaService",
+      "serviceName": "Core-2014-10-DataManagement",
+      "method": "addChildren",
+      "inputData": {
+        "inputData": [
+          {
+            "clientId": "",
+            "childrenObj": "{{pasteContext.sourceObject}}",
+            "parentObj": "{{pasteContext.targetObject}}",
+            "propertyName": "{{function:getPropertyName}}"
+          }
+        ]
+      },
+      "events": {
+        "success": [
+          {
+            "name": "cdm.relatedModified",
+            "eventData": {
+              "relatedModified": [
+                "{{ctx.xrtSummaryContextObject}}"
+              ],
+              "refreshLocationFlag": true
+            }
+          }
+        ],
+        "failure": [
+          {
+            "name": "cdm.relatedModified",
+            "eventData": {
+              "relatedModified": [
+                "{{ctx.xrtSummaryContextObject}}"
+              ],
+              "refreshLocationFlag": true
+            }
+          }
+        ]
+      },
+      "actionMessages": {
+        "failure": [
+          {
+            "message": "pasteFailure"
+          }
+        ]
+      },
+      "deps": "js/pca0VariabilityExplorerService"
+    },
+    "pasteActionForAllocation": {
+      "actionType": "JSFunctionAsync",
+      "method": "allocateVariability",
+      "deps": "js/pca0AdvancedReuseService",
+      "inputData": {
+        "sourceObjects": "{{pasteContext.sourceObject}}",
+        "configPerspective": "{{ctx.ConfiguratorCtx.configPerspective}}"
+      }
+    }
+  },
+  "conditions": {
+    "isPasteEnabledForAddCharacteristicFeatureOnProductModel": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Cfg0AbsProductModel"
+            }
+          },
+          {
+            "$or": [
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Cfg0AbsLiteralOptionValue"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Cfg0AbsFeature"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "isPasteEnabledForAddCharacteristicFeatureOnProductLine": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Cfg0AbsProductLine"
+            }
+          },
+          {
+            "$or": [
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Cfg0AbsLiteralOptionValue"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Cfg0AbsFeature"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "isPasteEnabledForAddSummarizedModel": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Cfg0AbsSummaryModel"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "Cfg0AbsProductModel"
+            }
+          }
+        ]
+      }
+    },
+    "isPasteEnabledForAddPackageFeatureMembers": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Cfg0AbsPackageOptionValue"
+            }
+          },
+          {
+            "$or": [
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Cfg0AbsLiteralOptionValue"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Cfg0AbsFeature"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "isPasteEnabledForAddSummaryFeatureMembers": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Cfg0AbsSummaryOptionValue"
+            }
+          },
+          {
+            "$or": [
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Cfg0AbsLiteralOptionValue"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Cfg0AbsFeature"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "isPasteEnabledForAddDynamicFamilyMember": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Cfg0AbsFeatureFamily"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "Cfg0AbsFeature"
+            }
+          }
+        ]
+      }
+    },
+    "isPasteEnabledForAllocation": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Cfg0ConfContext"
+            }
+          },
+          {
+            "$or": [
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Cfg0AbsFamilyGroup"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Cfg0AbsFamily"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Cfg0AbsOptionValue"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Cfg0AbsFeature"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "functions": {
+    "getPropertyName": {
+      "functionName": "getPropertyName",
+      "parameters": [
+        "{{pasteContext.targetObject}}"
+      ]
+    },
+    "returnChildrenWSOThreadObjects": {
+      "functionName": "returnChildrenWSOThreadObjects",
+      "parameters": [
+        "{{pasteContext.sourceObject}}"
+      ]
+    }
+  },
+  "messages": {
+    "pasteFailure": {
+      "messageType": "ERROR",
+      "messageText": "{{errorCode}}"
+    }
+  }
+}

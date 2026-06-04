@@ -1,0 +1,234 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "searchState": {
+            "initialValues": {
+                "autoApplyFilters": true,
+                "criteria": {
+                    "searchString": ""
+                },
+                "label": {
+                    "source": "/i18n/SearchMessages",
+                    "key": "resultsText"
+                },
+                "provider": "Awp0OrgTreeProvider",
+                "hideFilters":true,
+                "expansionStateCaching": true,
+                "useInactiveGMPref":"null"
+            },
+            "meta": {
+                "categories": [ {
+                    "filterValues": [ {
+                        "selected": {
+                            "field": "true",
+                            "type": "ViewModelProperty"
+                        }
+                    } ]
+                } ]
+            }
+        }
+    },
+    "actions": {
+        "dialogAction": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+
+                }
+            }
+        },
+        "handleSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateDuidsParamOnSelection"
+                },
+                {
+                    "action": "closePanelOnSelectionChange"
+                }
+            ]
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cacheInitialSelection",
+                    "condition": "!data.initialSelectionUids[0]"
+                },
+                {
+                    "action": "checkForInitialSelection"
+                },
+                {
+                    "action": "closeDialogEvent",
+                    "condition": "data.shouldClosePanel"
+                }
+            ]
+        },
+        "checkForInitialSelection":{
+            "actionType": "JSFunction",
+            "method": "checkForInitialSelection",
+            "inputData": {
+                "initialSelectionUids": "{{data.initialSelectionUids}}",
+                "initialSelectionCount": "{{data.initialSelectionCount}}",
+                "selected": "{{subPanelContext.selectionData.selected}}"
+            },
+            "outputData": {
+                "shouldClosePanel": ""
+            },
+            "deps": "js/userMgmtService"
+        },
+        "cacheInitialSelection":{
+            "actionType": "JSFunction",
+            "method": "cacheMultiSelection",
+            "inputData": {
+                "selectedUid": "{{props.subPanelContext.selectionData.selected}}"
+            },
+            "outputData": {
+                "initialSelectionUids": "selectedObjectUids",
+                "initialSelectionCount": "selectionCount"
+            },
+            "deps": "js/userMgmtService"
+        },
+        "updateDuidsParamOnSelection": {
+            "actionType": "JSFunction",
+            "method": "updateDuidsParamOnSelection",
+            "inputData": {
+                "context": "{{props.subPanelContext}}"
+            },
+            "deps": "js/userMgmtService"
+        },
+        "clearSelection": {
+            "actionType": "JSFunction",
+            "method": "clearSelection",
+            "inputData": {
+                "selectionData": "{{props.subPanelContext.selectionModel}}"
+            },
+            "deps": "js/userMgmtService"
+        },
+        "setSelectionOnLoad": {
+            "actionType": "JSFunction",
+            "method": "setSelectionOnLoad",
+            "inputData": {
+                "selectionData": "{{props.subPanelContext.selectionData}}",
+                "selectionModel": "{{props.subPanelContext.selectionModel}}"
+            },
+            "deps": "js/userMgmtService"
+        },
+        "prepareAddedNodesTree": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cacheInitialSelection"
+                },
+                {
+                    "action": "reloadOrgTree",
+                    "condition": "!data.eventData.panelPinned"
+                },
+                {
+                    "action": "treeNodeCreatedNew",
+                    "condition": "data.eventData.panelPinned"
+                }
+            ]
+        },
+        "treeNodeCreatedNew": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "awOrgTree.treeNodeCreated",
+                    "eventData": {
+                        "treeNodeSelection": "{{props.subPanelContext.selectionData.selected}}",
+                        "expandTreeNodeSelection":  true
+                    }
+                } ]
+            }
+        },
+        "reloadOrgTree": {
+            "actionType": "JSFunction",
+            "method": "reloadOrgTree",
+            "inputData": {
+                "selectionData": "{{props.subPanelContext.selectionData}}",
+                "eventData": "{{data.eventData}}",
+                "selectionModel": "{{props.subPanelContext.selectionModel}}"
+            },
+            "outputData":{
+                "treeNode":""
+            },
+            "events":{
+                "success":[
+                    {
+
+                        "name": "awOrgTree.treeNodeCreated",
+                        "eventData": {
+                            "treeNodeSelection": "{{data.treeNode}}"
+                        }
+
+                    }
+                ]
+            },
+            "deps": "js/userMgmtService"
+        },
+        "closeDialogEvent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "organization.closeDialog"
+                } ]
+            }
+        },
+        "orgTreeTableClientRefresh": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "orgTreeTable12.plTable.clientRefresh"
+                } ]
+            }
+        },
+         "updateSearchState": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{subPanelContext.searchState}}",
+                "value" : {
+                    "totalFound":"{{fields.searchState.totalFound}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "OrgTree.reloadOrgTree",
+            "cacheEventData": true,
+            "action": "prepareAddedNodesTree"
+        },
+        {
+            "eventId": "primaryWorkarea.multiSelectAction",
+            "action": "orgTreeTableClientRefresh"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "setSelectionOnLoad",
+        "onUpdate": [
+            {
+                "action": "handleSelectionChange",
+                "observers": [
+                    "props.subPanelContext.selectionData.selected[0]", "props.subPanelContext.selectionData.selected.length"
+                ]
+            },
+             {
+                "action": "updateSearchState",
+                "observers": [
+                    "viewModel.atomicData.searchState.totalFound"
+                ]
+            }
+        ],
+        "onUnmount": "clearSelection"
+    }
+}

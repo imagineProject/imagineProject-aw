@@ -1,0 +1,585 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "addPanelState": {
+            "initialValues": {
+                "creationType": "",
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {}
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub",
+                "previousView": "AddObjectPrimarySub",
+                "dynamicPanelId":"AceAddSubstituteComponent",
+                "context": {}
+            },
+            "meta": {}
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "substituteSetsInfo": {
+            "initialValues": { },
+            "meta": { }
+        },
+        "addElementState":{
+            "initialValues":{
+                "AddOccurrencePropertiesOnCreate" : false,
+                "parentElements" : [],
+                "parentToLoadAllowedTypes" : null,
+                "siblingElements" : [],
+                "elementCreateInput" : null,
+                "fetchPagedOccurrences" : null,
+                "isCopyButtonEnabled" : null,
+                "previousSelectionUid" : "",
+                "Awb0ElementCreateSubView" : false,
+                "numberOfElements" : 1,
+                "occurrenceTypeName": "PSOccurrence",
+                "isSubstituteElementAddPanel": true,
+                "fetchOccurrenceTypesFor": "substituteGroup",
+                "allowedTabs":"substitutes"
+            },
+            "meta": {
+            }
+        },
+        "allowedTypeInfo": {
+            "objectTypeName": "Fnd0OccSubstGroup",
+            "searchTypeName": "Fnd0OccSubstGroup",
+            "preferredType": "Fnd0OccSubstGroup"
+        },
+        "includeTypes": "Fnd0OccSubstGroup",
+        "previousSelectedUid": null,
+        "previousSelectionLength": null
+
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions": {
+        "setActiveView": {
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+
+        "createOccurrenceSubstituteGroupSOA": {
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action": "getBomLinesForPrimaryObjects"
+                },
+                {
+                    "action": "getAddElementInputAction"
+                },
+                {
+                    "action": "addElementsWithCreateInput",
+                    "condition": "data.objectsToBeAdded.length > 0"
+                },
+                {
+                    "action": "createOccurrenceSubstituteGroupSoaAction"
+                }
+            ]
+        },
+        "getAddElementInputAction": {
+            "actionType": "JSFunction",
+            "method": "getAddElementInput",
+            "inputData": {
+                "viewModelObjects": "{{data.substituteSetsInfo}}"
+            },
+            "outputData": {
+                "objectsToBeAdded": ""
+            },
+            "deps": "js/aceOccurrenceSubstituteGroupService"
+        },
+
+        "getBomLinesForPrimaryObjects": {
+            "actionType": "JSFunction",
+            "method": "getBackingObjectsSync",
+            "inputData": {
+                "viewModelObjects": "{{props.subPanelContext.occContext.pwaSelection}}"
+            },
+            "outputData": {
+                "inputBomLines": ""
+            },
+            "deps": "js/aceBackingObjectProviderService"
+        },
+        "addElementsWithCreateInput": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2021-06-OccurrenceManagement",
+            "method": "addObject3",
+            "inputData": {
+                "input": {
+                    "objectsToBeAdded": "{{data.objectsToBeAdded}}",
+                    "parentElement": "{{fields.addElementState.parents[0]}}",
+                    "createInputs": [{
+                        "boName":"PSOccurrence",
+                        "propertyNameValues":{
+                            "occ_type":["{{fields.addElementState.allowedPSOccurrenceTypes[0].uid}}"]
+                        }
+                    }],
+                    "siblingElement": "{{fields.addElementState.siblingElements[0]}}",
+                    "inputCtxt": {
+                        "productContext": "{{function:getPciForParentSelection}}"
+                    },
+                    "sortCriteria": {
+                        "propertyName": "{{ctx.aceActiveContext.context.sortCriteria[0].fieldName}}",
+                        "sortingOrder": "{{ctx.aceActiveContext.context.sortCriteria[0].sortDirection}}"
+                    },
+                    "addObjectIntent": "",
+                    "fetchPagedOccurrences":true,
+                    "requestPref": "{{function:getRequestPrefValue}}",
+                    "numberOfElements": 1
+                }
+            },
+            "outputData": {
+                "addElementResponse": "{{function:getAddElementResponse}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "addElement.elementsAdded",
+                        "eventData": {
+                            "objectsToSelect": "{{data.addElementResponse.newlyAddedChildElements}}",
+                            "addElementResponse": "{{data.addElementResponse}}",
+                            "viewToReact": "{{props.subPanelContext.provider.contextKey}}",
+                            "updatedParentElement" : "{{fields.addElementState.parents[0]}}"
+                        }
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "addElement.elementsAdded",
+                        "eventData": {
+                            "objectsToSelect": "{{data.addElementResponse.newlyAddedChildElements}}",
+                            "addElementResponse": "{{data.addElementResponse}}",
+                            "viewToReact": "{{props.subPanelContext.provider.contextKey}}",
+                            "updatedParentElement" : "{{fields.addElementState.parents[0]}}"
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "createOccSubstituteGroupFailure"
+                    }
+                ]
+            },
+            "deps": "js/aceAddElementService"
+        },
+
+        "createOccurrenceSubstituteGroupSoaAction":{
+            "actionType": "TcSoaService",
+            "serviceName": "StructureManagement-2024-12-Substitutes",
+            "method": "createSubstituteGroups",
+            "inputData": {
+                "createSubstituteGroupInputs":[{
+                    "clientId":"Fnd0OccSubstGroup",
+                    "substituteGroupCreateInput":{
+                        "boName":"Fnd0OccSubstGroup",
+                        "propertyNameValues":{
+                            "object_name":["{{fields.xrtState.xrtVMO.props.object_name.value}}"],
+                            "object_desc": ["{{fields.xrtState.xrtVMO.props.object_desc.fielddata.uiValue}}"]
+                        }
+                    },
+                    "primaryBOMLines":"{{data.inputBomLines}}",
+                    "substituteSets":"{{function:getInputForSubstituteGroupSets}}"
+                }]
+            },
+            "outputData": {
+                "createdSubstituteGroupInfo": "",
+                "occSubstituteGroupObject": "{{function:getCreatedOccSGObjectName}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "reloadsubstituteGroupTable"
+                    },
+                    {
+                        "name": "closePanelAfterAddingSubstituteGroup"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "closePanelAfterAddingSubstituteGroup"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "createOccSubstituteGroupSuccess"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "createOccSubstituteGroupFailure"
+                    }
+                ]
+            },
+            "deps": "js/aceOccurrenceSubstituteGroupService"
+        },
+        "initializeOccurrenceSubstituteGroupPanel": {
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action": "updateCtxForAceAddPanelAction"
+                },
+                {
+                    "action": "setPreviousSelectedUidAndLength"
+                },
+                {
+                    "action": "addSubstituteGroupSetEventBatchJob"
+                }
+            ]
+        },
+        "updateCtxForAceAddPanelAction":
+        {
+            "actionType": "JSFunction",
+            "method": "updateStateForAceAddSiblingPanel",
+            "inputData":
+            {
+                "selectedObjects": "{{subPanelContext.occContext.pwaSelection}}",
+                "addElementState": "{{data.addElementState}}"
+            },
+            "outputData": {
+                "addElementState" : ""
+            },
+
+            "deps": "js/aceAddElementService"
+        },
+        "addSubstituteGroupSetEventBatchJob": {
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action": "getNextSetId"
+                },
+                {
+                    "action": "getSubstituteSetInfoAction"
+                }
+            ]
+        },
+        "getNextSetId": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient"
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awb0SubstitutesProvider",
+                        "searchCriteria": {
+                            "selectedElement": "{{props.subPanelContext.occContext.pwaSelection[0].uid}}",
+                            "inputSetIds": "{{function:getExistingSetsAsInput}}",
+                            "usecase": "GenerateSetIdForCreateSubstituteGroup"
+                        },
+                        "searchFilterFieldSortType": "Priority"
+                    }
+                }
+            },
+            "outputData":
+            {
+                "nextSetId": "additionalSearchInfoMap.additionalInfoMessages[0]"
+            }
+        },
+        "getSubstituteSetInfoAction":{
+            "actionType": "JSFunction",
+            "method": "getSubstituteSetInfo",
+            "inputData": {
+                "data": "{{data.substituteSetsInfo}}",
+                "nextSetId":"{{data.nextSetId}}"
+            },
+            "outputData":
+            {
+                "substituteSetsInfo" : ""
+            },
+            "deps": "js/aceOccurrenceSubstituteGroupService"
+        },
+
+        "updateCreatedObjectOnStateAndNavigateBack": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateCreatedObjectsOnState"
+                },
+                {
+                    "action": "updateListWithBomlineEvent"
+                },
+                {
+                    "action": "naviagteBackToPreviousView"
+                }
+            ]
+        },
+        "getBackingObjectOfSubstituteElement": {
+            "actionType": "JSFunction",
+            "method": "getBackingObjectsSync",
+            "inputData": {
+                "viewModelObjects": "{{parameters.eventData.objectsToSelect}}"
+            },
+            "outputData": {
+                "newlyAddedBOMLines": ""
+            },
+            "deps": "js/aceBackingObjectProviderService"
+        },
+        "updateCreatedObjectsOnState": {
+            "actionType": "JSFunction",
+            "method": "updateCreatedObjectsOnState",
+            "inputData": {
+                "createdObject": "{{parameters.eventData.createdObject}}",
+                "data":"{{data}}"
+            },
+            "outputData": {
+                "addPanelState": ""
+            },
+            "deps": "js/aceOccurrenceSubstituteGroupService"
+        },
+        "updateListWithBomlineEvent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "updateListWithBomlineEvent"
+                    }
+                ]
+            }
+        },
+        "naviagteBackToPreviousView": {
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateListWithBOMLinesAndNavigateBack": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateListWithBomlineEvent"
+                },
+                {
+                    "action": "naviagteBackToPreviousView"
+                }
+            ]
+        },
+        "performPostProcessingAfterXRTLoaded": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "prePopulateOccSubstGrpNameField",
+                    "condition": "conditions.isXRTTypeLoaded"
+                }
+            ]
+        },
+        "prePopulateOccSubstGrpNameField":{
+            "actionType": "JSFunction",
+            "method": "prePopulateOccSubstGrpNameField",
+            "inputData":
+            {
+                "selectedElement":"{{props.subPanelContext.occContext.pwaSelection[0].uid}}",
+                "createType": "{{addPanelState.creationType.props.type_name.dbValues[0]}}",
+                "xrtType":"CREATE",
+                "editHandler": "{{editHandlers.addPanelEditHandler}}"
+            },
+            "deps": "js/aceOccurrenceSubstituteGroupService"
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "closeDialogPanel",
+                    "condition": "conditions.isPwaSelectionChangedInOccSubstitutePanel"
+                }
+            ]
+        },
+        "closeDialogPanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "CREATE_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "setPreviousSelectedUidAndLength":{
+            "actionType": "JSFunction",
+            "method": "updatePreviousSelectedUid",
+            "inputData": {
+                "pwaSelection":"{{props.subPanelContext.occContext.pwaSelection}}"
+            },
+            "outputData": {
+                "previousSelectedUid": "previousSelectedUid",
+                "previousSelectionLength": "previousSelectionLength"
+            },
+            "deps": "js/aceOccurrenceSubstituteGroupService"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeOccurrenceSubstituteGroupPanel",
+        "onUpdate": [
+            {
+                "action": "performPostProcessingAfterXRTLoaded",
+                "observers": [ "viewModel.atomicData.xrtState.xrtTypeLoaded" ]
+            },
+            {
+                "action": "closePanelOnSelectionChange",
+                "observers": [ "props.subPanelContext.occContext.pwaSelection" ]
+            }
+        ]
+    },
+    "onEvent": [
+        {
+            "eventId": "closePanelAfterAddingSubstituteGroup",
+            "action": "closeDialogPanel"
+        },
+        {
+            "eventId": "addSubstituteGroupSetEvent",
+            "action": "addSubstituteGroupSetEventBatchJob"
+        },
+        {
+            "eventId": "addSubstituteComponent.created",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "updateCreatedObjectOnStateAndNavigateBack"
+        },
+        {
+            "eventId": "addSubstituteComponent.updated",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "updateListWithBOMLinesAndNavigateBack"
+        }
+    ],
+    "functions": {
+        "getPropertiesSecondaryInputUIDs": {
+            "functionName": "getPropertiesInputUIDs",
+            "parameters": [
+                 "{{data.newlyAddedBOMLines}}"
+            ]
+        },
+        "getExistingSetsAsInput": {
+            "functionName": "getExistingSetsAsInput",
+            "parameters": [
+                "{{fields.substituteSetsInfo}}"
+            ],
+            "deps": "js/aceOccurrenceSubstituteGroupService"
+        },
+        "getCreatedOccSGObjectName": {
+            "functionName": "getCreatedOccSGObjectName",
+            "parameters": []
+        },
+        "getPciForParentSelection": {
+            "functionName": "getPciForParentSelection",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getRequestPrefValue": {
+            "functionName": "getRequestPrefValue",
+            "parameters": [
+                "{{props.subPanelContext.occContext}}",
+                "",
+                "{{fields.addElementState.value.sourceParent}}"
+            ]
+        },
+        "getAddElementResponse": {
+                "functionName" : "getAddElementResponse",
+                "parameters":[]
+            },
+
+        "getInputForSubstituteGroupSets": {
+                "functionName" : "getInputForSubstituteGroupSets",
+                "parameters":[
+                    "{{data.addElementResponse.newlyAddedChildElements}}",
+                    "{{fields.substituteSetsInfo}}"
+            ]
+        }
+    },
+    "conditions": {
+        "shouldShowAddOnNewTab": {
+            "expression": "addPanelState.selectedTab.view ==='NewTabPageSub' && addPanelState.creationType"
+        },
+        "isSelectionChangedFromOneToMultiple": {
+            "expression": "data.previousSelectionLength === 1 && props.subPanelContext.occContext.pwaSelection.length > 1"
+        },
+        "isXRTTypeLoaded": {
+            "expression": "xrtState.xrtTypeLoaded"
+        },
+        "isSelectionChangedFromMultipleToSingle" : {
+            "expression" : "data.previousSelectionLength > 1 && props.subPanelContext.occContext.pwaSelection.length === 1"
+        },
+        "isSelectionChangedFromMultipleToMultipleInsidePanel": {
+            "expression": "data.previousSelectionLength > 1 && props.subPanelContext.occContext.pwaSelection.length > 1 && data.activeState.activeView === 'AceAddSubstituteComponent'"
+        },
+        "isPwaSelectionChangedInOccSubstitutePanel": {
+            "expression": "conditions.isSelectionChangedFromOneToMultiple || conditions.isSelectionChanged || conditions.isSelectionChangedFromMultipleToSingle || conditions.isSelectionChangedFromMultipleToMultipleInsidePanel"
+        },
+        "isSelectionChanged": {
+            "expression": "data.previousSelectionLength === 1 && data.previousSelectedUid !== props.subPanelContext.occContext.pwaSelection[0].uid"
+        }
+    },
+    "messages": {
+        "createOccSubstituteGroupFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "createOccSubstituteGroupSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.createSubstituteGroupSuccess}}",
+            "messageTextParams": [
+                "{{data.occSubstituteGroupObject}}"
+            ]
+        }
+    },
+    "i18n": {
+        "addSubstituteGroup": [
+            "OccurrenceManagementConstants"
+        ],
+        "createBtn": [
+            "OccurrenceManagementConstants"
+        ],
+        "addSubstituteElementsTitle": [
+            "OccurrenceManagementConstants"
+        ],
+        "createSubstituteGroupSuccess": [
+            "OccurrenceManagementMessages"
+        ]
+
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

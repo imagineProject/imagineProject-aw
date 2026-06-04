@@ -1,0 +1,124 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "data": {
+        "flag": {
+            "type": "STRING",
+            "dbValue": "{{props.subPanelContext.data.flag.dbValue}}"
+        },
+        "dateOrUnitEffectivityTypeRadioButton": {
+            "type": "BOOLEAN",
+            "isRequired": "true",
+            "propertyRadioTrueText": "{{i18n.dateEffectivity}}",
+            "propertyRadioFalseText": "{{i18n.unitEffectivity}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue" : "{{props.subPanelContext.sharedData.dateOrUnitEffectivityTypeRadioButton.dbValue}}"
+        },
+        "dateEffectivityEnable":{
+            "type":"BOOLEAN",
+            "dbValue":"{{props.subPanelContext.sharedData.dateEffectivityEnable.dbValue}}"
+        },
+        "unitEffectivityEnable":{
+            "type":"BOOLEAN",
+            "dbValue":"{{props.subPanelContext.sharedData.unitEffectivityEnable.dbValue}}"
+        }
+    },
+    "i18n": {
+        "dateEffectivity": [
+            "OccurrenceManagementConstants"
+        ],
+        "unitEffectivity": [
+            "OccurrenceManagementConstants"
+        ],
+        "notiMessageForProtectedEffUnit":
+        [
+            "OccurrenceManagementMessages"
+        ],
+        "notiMessageForProtectedEffDate":
+        [
+            "OccurrenceManagementMessages"
+        ],
+        "okText":
+        [
+            "OccurrenceManagementConstants"
+        ]
+    },
+    "actions": {
+        "updateDateOrUnitEffectivityBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateEffectivityFieldsToDefaultState",
+                    "condition": "props.subPanelContext.data.flag.dbValue !== 'EDIT'"
+                },
+                {
+                    "action": "updateDateOrUnitEffectivity"
+                }
+            ]
+        },
+        "updateEffectivityFieldsToDefaultState": {
+            "actionType": "JSFunction",
+            "method": "clearEffectivityFieldsWithoutProtect",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "i18n":"{{data.i18n}}",
+                "data": "{{data}}"
+            },
+            "deps": "js/aceEffectivityService"
+        },
+        "updateDateOrUnitEffectivity": {
+            "actionType": "JSFunction",
+            "method": "updateRadioBtnValueOnState",
+            "inputData": {
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "flag":"{{props.subPanelContext.data.flag}}"
+            },
+            "outputData": {
+                "dateOrUnitEffectivityTypeRadioButton.dbValue": ""
+            },
+            "actionMessages": {
+                "success": [ {
+                        "condition": "props.subPanelContext.data.flag.dbValue === 'EDIT' && (props.subPanelContext.sharedData.isProtected.dbValue === true || props.subPanelContext.sharedData.isProtected.dbValue === 'true') && (props.subPanelContext.sharedData.dateOrUnitEffectivityTypeRadioButton.dbValue )",
+                        "message": "showNotificationMessageForUnit"
+                    },
+                    {
+                        "condition": "props.subPanelContext.data.flag.dbValue === 'EDIT' && (props.subPanelContext.sharedData.isProtected.dbValue === true || props.subPanelContext.sharedData.isProtected.dbValue === 'true') && (!props.subPanelContext.sharedData.dateOrUnitEffectivityTypeRadioButton.dbValue)",
+                        "message": "showNotificationMessageForDate"
+                    }
+                ]
+            },
+            "deps": "js/aceEffectivityService"
+        }
+    },
+
+    "lifecycleHooks": {
+
+    },
+    "messages": {
+        "showNotificationMessageForUnit": {
+           "messageType": "WARNING",
+           "messageText": "{{i18n.notiMessageForProtectedEffUnit}}",
+           "navigationOptions": [
+               {
+                   "option": "Ok",
+                   "text": "{{i18n.okText}}"
+               }
+           ]
+       },
+       "showNotificationMessageForDate": {
+           "messageType": "WARNING",
+           "messageText": "{{i18n.notiMessageForProtectedEffDate}}",
+           "navigationOptions": [
+               {
+                   "option": "Ok",
+                   "text": "{{i18n.okText}}"
+               }
+           ]
+       }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

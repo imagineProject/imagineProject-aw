@@ -1,0 +1,257 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "data": {
+        "saw1ScheduleMembersSectionCommands": "saw1_scheduleMembersSectionCommands",
+        "participantSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "observerSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "coordinatorSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+
+    "actions": {
+        "performOpeningPeoplePickerBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateProviderInformation"
+                },
+                {
+                    "action": "openPeoplePickerPanel"
+                }
+            ]
+        },
+        "updateProviderInformation": {
+            "actionType": "JSFunction",
+            "method": "updateProviderInformation",
+            "inputData": {
+                "commandContext": "{{commandContext}}",
+                "addUserPanelState": "{{commandContext.addUserPanelState}}",
+                "selectedUid": "{{props.subPanelContext.vmo.uid}}"
+            },
+            "deps": "js/Saw1ScheduleMemberService"
+        },
+        "openPeoplePickerPanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "AwPeoplePicker"
+            }
+        },
+        "pasteSelectedUsersWideMode": {
+            "actionType": "JSFunction",
+            "method": "addSelectedUsers",
+            "inputData": {
+                "data": "{{data}}",
+                "selectedUsers": "{{data.eventData.commandContext.selectedUsers}}",
+                "propName": "{{data.eventData.commandContext.propName}}"
+            },
+            "deps": "js/Saw1ScheduleMemberService"
+        },
+        "performAddBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "addSelectedUsersInternal",
+                    "condition": "conditions.isAddUsersNarrowMode"
+                },
+                {
+                    "action": "navigateToMainPanel",
+                    "condition": "conditions.isAddUsersNarrowMode"
+                },
+                {
+                    "action": "resentUserPanelContextData",
+                    "condition": "conditions.isAddUsersNarrowMode"
+                }
+            ]
+        },
+        "addSelectedUsersInternal": {
+            "actionType": "JSFunction",
+            "method": "addSelectedUsers",
+            "inputData": {
+                "data": "{{data}}",
+                "selectedUsers": "{{props.subPanelContext.addUserPanelState.selectedUsers}}",
+                "propName": "{{props.subPanelContext.addUserPanelState.propName}}"
+            },
+            "deps": "js/Saw1ScheduleMemberService"
+        },
+        "navigateToMainPanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "Saw1AddMembersToSchedule"
+            }
+        },
+        "resentUserPanelContextData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.addUserPanelState}}",
+                "value": {
+                    "propName": "",
+                    "selectedUsers": []
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "removeUsersAction": {
+            "actionType": "JSFunction",
+            "method": "removeUsers",
+            "inputData": {
+                "data": "{{data}}",
+                "propName": "{{commandContext.propName}}"
+            },
+            "deps": "js/Saw1ScheduleMemberService"
+        },
+        "performAddSchMember": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2008-06-ScheduleManagement",
+            "method": "addMemberships",
+            "inputData": {
+               "membershipData": "{{function:addSelectedMembers}}"
+            },
+            "events": {
+               "success": [
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{ctx.mselected[0]}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "soaErrorMessage"
+                } ]
+            },
+            "deps": "js/Saw1ScheduleMemberService"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+
+    "dataProviders": {
+        "participantDataProvider": {
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionData": "{{fields.participantSelectionData}}"
+            }
+        },
+        "observerDataProvider": {
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionData": "{{fields.observerSelectionData}}"
+            }
+        },
+        "coordinatorDataProvider": {
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionData": "{{fields.coordinatorSelectionData}}"
+            }
+        }
+    },
+
+    "conditions": {
+        "isAddUsersNarrowMode": {
+            "expression": "props.subPanelContext.sidenavMode === 'mobile' && props.subPanelContext.addUserPanelState.selectedUsers && props.subPanelContext.addUserPanelState.selectedUsers.length > 0"
+        },
+        "isValidToAdd": {
+            "expression": "data.dataProviders.participantDataProvider.viewModelCollection.totalFound > 0 || data.dataProviders.observerDataProvider.viewModelCollection.totalFound > 0 || data.dataProviders.coordinatorDataProvider.viewModelCollection.totalFound > 0"
+        }
+    },
+
+    "functions": {
+        "addSelectedMembers": {
+            "functionName": "addSelectedMembers",
+            "parameters": [
+                "{{data}}",
+                "{{ctx.mselected[0]}}"
+            ]
+        }
+    },
+
+    "messages": {
+        "soaErrorMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onUpdate": [ {
+            "action": "performAddBatchAction",
+            "observers": [
+                "props.subPanelContext.addUserPanelState.value.selectedUsers"
+            ]
+        } ]
+    },
+
+    "onEvent": [
+        {
+            "eventId": "addScheduleMembers.openUserPickerPanel",
+            "action": "performOpeningPeoplePickerBatchJob"
+        },
+        {
+            "eventId": "removeScheduleMembers.removeUsers",
+            "action": "removeUsersAction"
+        },
+        {
+            "eventId": "saw1.pasteSchedueMembersFromPeoplePicker",
+            "action": "pasteSelectedUsersWideMode",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+
+    "i18n": {
+        "addButtonText": [
+            "ScheduleManagerMessages"
+        ],
+        "observer": [
+            "ScheduleManagerMessages"
+        ],
+        "coordinator": [
+            "ScheduleManagerMessages"
+        ],
+        "participant": [
+            "ScheduleManagerMessages"
+        ],
+        "add": [
+            "ScheduleManagerMessages"
+        ],
+        "membership": [
+            "ScheduleManagerMessages"
+        ],
+        "repeatedMembersErrorMsg": [
+            "ScheduleManagerMessages"
+        ]
+    }
+}

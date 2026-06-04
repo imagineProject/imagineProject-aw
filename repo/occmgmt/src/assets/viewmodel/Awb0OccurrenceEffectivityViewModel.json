@@ -1,0 +1,193 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "actions":
+    {
+        "closePanel":
+        {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "backAction": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "inputData":
+            {
+                "destinationPanelId":"DisplayAndRemoveEffectivities",
+                "data": "{{data}}",
+                "subPanelContext": "{{props.subPanelContext}}",
+                "i18n": "{{data.i18n}}"
+            },
+            "outputData": {
+                "sharedData":""
+            },
+            "deps": "js/aceEffectivityService"
+        },
+        "backToPrevious":
+        {
+            "actionType": "JSFunction",
+            "method": "setActiveViewFromEndItem",
+            "inputData":
+            {
+                "destinationPanelId":"{{data.sharedData.previousView}}",
+                "sharedData": "{{data.sharedData}}"
+            },
+            "outputData": {
+                "sharedData":""
+            },
+            "deps": "js/aceEffectivityService"
+        },
+        "viewBatchJobAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "closePanel",
+                    "condition": "conditions.isSelectionChnagedfromOnetoMultiple || conditions.isSelectionChanged || conditions.isSelectionChagedFromMultipletoSingle || conditions.isSelectionChangedFromMultipleToMultipleInsidePanel"
+                }
+            ]
+        },
+        "setPreviousSelectedUidAndLength":{
+            "actionType": "JSFunction",
+            "method": "updatePreviousSelectedUid",
+            "inputData": {
+                    "currentSelectedUid": "{{ctx.selected.uid}}",
+                    "data":"{{data}}",
+                    "subPanelContext":"{{props.subPanelContext}}"
+            },
+            "deps": "js/aceEffectivityService"
+        }
+    },
+
+    "conditions": {
+        "isSelectionChnagedfromOnetoMultiple": {
+            "expression": "data.previousSelectionLength === 1 && props.subPanelContext.occContext.pwaSelection.length > 1"
+        },
+        "isSelectionChanged": {
+            "expression": "data.previousSelectionLength === 1 && data.previousSelectedUid !== props.subPanelContext.occContext.pwaSelection[0].uid"
+        },
+        "isSelectionChagedFromMultipletoSingle" : {
+            "expression" : "data.previousSelectionLength > 1 && props.subPanelContext.occContext.pwaSelection.length === 1"
+        },
+        "isSelectionChangedFromMultipleToMultipleInsidePanel": {
+            "expression": "data.previousSelectionLength > 1 && props.subPanelContext.occContext.pwaSelection.length > 1 && data.sharedData.activeView === 'AddEffectivities' || data.sharedData.activeView === 'AuthorEffectivityEndItemPanel'"
+        }
+    },
+
+    "onEvent": [
+                    {
+                        "eventId": "primaryWorkArea.selectionChangeEvent",
+                        "cacheEventData": true,
+                        "action": "closePanel",
+                        "condition": "dataProvider.selectedObjects[0].modelType.typeHierarchyArray.indexOf( 'Fgf0PartitionElement' ) > -1 "
+                    }
+                ],
+    "i18n":
+    {
+        "elementEffectivityTitle":[ "OccurrenceManagementConstants"],
+        "endItemMessage":[ "OccurrenceManagementConstants"],
+        "addEffectivity":[ "OccurrenceEffectivityConstants"],
+        "addDateEffectivity":[ "OccurrenceEffectivityConstants"],
+        "addUnitEffectivity":[ "OccurrenceEffectivityConstants"],
+        "editEffectivity":[ "OccurrenceEffectivityConstants"],
+        "editDateEffectivity":[ "OccurrenceEffectivityConstants"],
+        "editUnitEffectivity":[ "OccurrenceEffectivityConstants"],
+        "dateEffectivity": [ "OccurrenceManagementConstants"]
+    },
+    "lifecycleHooks": {
+        "onMount": "setPreviousSelectedUidAndLength",
+        "onUpdate": [ {
+            "action": "viewBatchJobAction",
+            "observers": [ "props.subPanelContext.occContext.pwaSelection" ]
+        }]
+    },
+    "data": {
+        "sharedData": {
+            "initialValues": {
+                "activeView": "DisplayAndRemoveEffectivities",
+                "previousView": "",
+                "dateOrUnitEffectivityTypeRadioButton":{
+                    "type": "BOOLEAN",
+                    "dbValue": true
+                },
+                "dateEffectivityEnable":{
+                    "type":"BOOLEAN",
+                    "dbValue":false
+                },
+                "unitEffectivityEnable":{
+                    "type":"BOOLEAN",
+                    "dbValue":false
+                },
+                "endItemVal":{
+                    "dbValue": null,
+                    "uiValue": null
+                },
+                "endItemValForDate": {
+                    "dbValue": null,
+                    "uiValue": null,
+                    "endItem":{
+                        "uid": null,
+                        "type": null
+                    }
+                },
+                "nameBox" : {
+                    "dbValue": null
+                },
+                "nameBoxForUnit" : {
+                    "dbValue": null
+                },
+                "unitRangeText": {
+                    "dbValue": null
+                },
+                "isShared": {
+                    "type": "BOOLEAN",
+                    "dbValue": false
+                },
+                "isSharedForUnit": {
+                    "type": "BOOLEAN",
+                    "dbValue": false
+                },
+                "startDate": {
+                    "type": "DATE",
+                    "dbValue": null
+                },
+                "endDate": {
+                    "type": "DATE",
+                    "dbValue": null
+                },
+                "endDateOptions": {
+                    "dbValue": "Date",
+                    "uiValue" : "{{i18n.dateEffectivity}}"
+                },
+                "isProtected": {
+                    "type": "BOOLEAN",
+                    "dbValue": false
+                },
+                "selectedCell": {
+                    "uid": null,
+                    "type": null
+                },
+                "isTimeEnabled": {
+                    "type": "BOOLEAN",
+                    "value": false
+                },
+                "isUnitUpdated": {
+                    "type": "BOOLEAN",
+                    "dbValue": false
+                }
+            },
+            "meta": { }
+        },
+        "previousSelectedUid": null,
+        "previousSelectionLength": []
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

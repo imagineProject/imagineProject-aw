@@ -1,0 +1,153 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-tab-set.directive",
+        "js/aw-command-panel.directive",
+        "js/aw-command-sub-panel.directive",
+        "js/visible-when.directive",
+        "js/aw-init.directive"
+        ],
+
+    "actions": {
+        "clearVariantInfoSection": {
+            "actionType": "dataProvider",
+            "method": "clearVariantInfo"
+        },
+
+        "clearVariantInfo": {
+            "actionType": "JSFunction",
+            "method": "clearVariantConfigurationData",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "initSVROwningItems": {
+            "actionType": "JSFunction",
+            "method": "initSVROwningItems",
+            "inputData": {
+                "context": "{{props.subPanelContext.occContext}}",
+                "contextKey":"{{props.subPanelContext.contextKey}}"
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "applyEndItemChanged": {
+            "actionType": "JSFunction",
+            "method": "applyVariantConfigChange",
+            "inputData": {
+                "value": {
+                    "configContext": {
+                        "r_uid": "{{props.subPanelContext.occContext.productContextInfo.props.awb0CurrentRevRule.dbValues[0]}}",
+                        "var_uids": "{{data.eventData.variantRules}}",
+                        "iro_uid": "{{data.eventData.svrOwningItem.uid}}",
+                        "de": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EffDate.dbValues[0]}}",
+                        "ue": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EffUnitNo.dbValues[0]}}",
+                        "ei_uid": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EffEndItem.dbValues[0]}}",
+                        "startDate": "{{props.subPanelContext.occContext.productContextInfo.props.awb0StartEffDates.dbValues[0]}}",
+                        "endDate": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EndEffDates.dbValues[0]}}",
+                        "fromUnit": "{{props.subPanelContext.occContext.productContextInfo.props.awb0StartEffUnits.dbValues[0]}}",
+                        "toUnit": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EndEffUnits.dbValues[0]}}",
+                        "startFreshNavigation": true
+                    },
+                    "transientRequestPref": {
+                        "jitterFreePropLoad" : true,
+                        "userGesture": "VARIANT_RULE_CHANGE"
+                    }
+                },
+                "occContext":"{{props.subPanelContext.occContext}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "launchConfigurationPanel"
+                } ]
+            },
+
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "launchConfigurationPanelOnBack": {
+            "actionType": "JSFunction",
+            "method": "goToPrevPanel",
+            "deps": "js/aceNestedNavigationPanelService",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}"
+            }
+        }
+    },
+
+    "onEvent": [ {
+        "eventId": "awPanel.navigate",
+        "action": "clearVariantInfoSection",
+        "criteria": {
+            "destPanelId": "AceConfigurationPanelFilters"
+        }
+        },
+        {
+            "eventId": "launchConfigurationPanel",
+            "action": "launchConfigurationPanelOnBack"
+        },
+        {
+            "eventId": "awConfigPanel.variantInfoChanged",
+            "cacheEventData": true,
+            "condition": "svrOwningItem && !variantRules",
+            "action": "applyEndItemChanged"
+        }
+    ],
+
+    "dataProviders": {
+        "clearVariantInfo": {
+            "action": "clearVariantInfo"
+        }
+    },
+
+    "data": {
+        "svrOwningItemTabsModel": {
+            "isArray": "true",
+            "dbValue": [ {
+                    "panelId": "SVROwningElementPaletteTab",
+                    "name": "{{i18n.paletteEndItemPresenterBtn}}",
+                    "recreatePanel": true,
+                    "selectedTab": true
+                },
+                {
+                    "panelId": "SVROwningElementSearchTab",
+                    "name": "{{i18n.searchEndItemPresenterBtn}}",
+                    "recreatePanel": true
+                }
+            ]
+        }
+    },
+
+    "i18n": {
+        "paletteEndItemPresenterBtn": [
+             "OccurrenceManagementConstants"
+        ],
+        "searchEndItemPresenterBtn": [
+            "OccurrenceManagementConstants"
+        ],
+        "variant": [
+            "OccurrenceManagementConstants"
+        ],
+        "configPanelEffectiveVariantForTitle": [
+            "OccurrenceManagementConstants"
+        ],
+        "occmgmtConfigurationFilterTitle": [
+            "OccurrenceManagementConstants"
+        ]
+    },
+    "messages": {},
+    "conditions": {
+        "isConfigurationFilterNotSupported": {
+            "expression": "props.subPanelContext.occContext.supportedFeatures.Awb0EnableConfigurationPanelFeature === undefined || props.subPanelContext.occContext.supportedFeatures.Awb0EnableConfigurationPanelFeature === false"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "initSVROwningItems",
+                "observers": [
+                    "props.subPanelContext.occContext.svrOwningItemSelected"
+                ]
+            }
+        ]
+    }
+}

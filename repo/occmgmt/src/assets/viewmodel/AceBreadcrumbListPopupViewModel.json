@@ -1,0 +1,73 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "actions": {
+        "onMount": {
+            "actionType": "dataProvider",
+            "method": "aceBreadcrumbDataProvider"
+        },
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadData",
+            "deps": "js/aceListBreadcrumbService",
+            "inputData": {
+                "methodArgument": {
+                    "listLoadInput": {
+                        "parentUid": "{{props.selectedCrumb.scopedUid}}",
+                        "parentElement": "{{props.selectedCrumb.scopedUid}}",
+                        "skipFocusOccurrenceCheck": true,
+                        "startChildNdx": 0,
+                        "pageSize": 15,
+                        "addAfter": true,
+                        "props":"{{props}}"
+                    },
+                    "openedObject": "{{data.openedObject}}",
+                    "cursorObject": "{{data.cursorObject}}",
+                    "occContext": "{{props.selectedCrumb.occContext}}"
+                }
+            },
+            "outputData": {
+                "data.openedObject": "result.listLoadResult.openedObject",
+                "data.cursorObject": "result.listLoadResult.cursorObject",
+                "totalFound": "result.listLoadResult.totalChildCount",
+                "childOccurrences": "result.listLoadResult.childOccurrences"
+            }
+        },
+        "onChevronPopupObjSelected": {
+            "actionType": "JSFunction",
+            "method": "navigateToBreadcrumbSelectedObject",
+            "inputData": {
+                "selection": "{{data.dataProviders.aceBreadcrumbDataProvider.selectedObjects}}",
+                "occContext": "{{props.selectedCrumb.occContext}}",
+                "chevronPopup": "{{props}}"
+            },
+            "deps": "js/aceListBreadcrumbService"
+        }
+    },
+    "data": {},
+    "conditions": {},
+    "onEvent": [ {
+        "eventId": "aceBreadcrumbDataProvider.selectionChangeEvent",
+        "action": "onChevronPopupObjSelected",
+        "inputArgs": {
+            "selectedObjects": "{{eventData.selectedObjects}}"
+        }
+    } ],
+    "dataProviders": {
+        "aceBreadcrumbDataProvider": {
+            "action": "loadData",
+            "response": "action.result.listLoadResult.childNodes",
+            "totalFound": "action.result.listLoadResult.totalChildCount",
+            "selectionModelMode": "single",
+            "commandsAnchor": "occmgmt_breadcrumb_cell_commands"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "onMount"
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

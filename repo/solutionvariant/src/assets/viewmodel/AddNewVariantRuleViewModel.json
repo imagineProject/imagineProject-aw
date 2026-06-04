@@ -1,0 +1,198 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "variantRuleObjectType": "VariantRule"
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions": {
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "complete",
+                    "condition": "!subPanelContext.panelPinned || conditions.isPwaSelectionChanged",
+                    "eventData": {
+                        "source": "toolAndInfoPanel"
+                    }
+                } ]
+            }
+        },
+        "createVariantRuleObject": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2016-09-DataManagement",
+            "method": "createAttachAndSubmitObjects",
+            "inputData": {
+                "inputs": "{{function:getCreateInput}}"
+            },
+            "outputData": {
+                "variantRuleObject": "{{function:getCreatedObject}}"
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "soaOperationFailure"
+                } ]
+            },
+            "events": {
+                "success": [ {
+                    "name": "postProcessNewRuleEvent"
+                } ]
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "postProcessNewRule": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "setDefaultSolveProfileOnVariantRule"
+                },
+                {
+                    "action": "populateVariantRuleObjects"
+                },
+                {
+                    "action": "updateVariantContext"
+                }
+
+            ]
+        },
+        "setDefaultSolveProfileOnVariantRule": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2020-12-ConfiguratorManagement",
+            "method": "variantConfigurationView2",
+            "inputData": {
+                "input": {
+                    "configPerspective": {
+                        "uid": "{{ctx.variantConditionContext.configPerspectiveFromConsumerApps}}",
+                        "type": "Cfg0ConfiguratorPerspective"
+                    },
+                    "activeVariantRules": [ "{{data.variantRuleObject}}" ],
+                    "requestInfo": {
+                        "requestType": [ "createUpdateVariantRule" ],
+                        "configurationControlMode": [ "manual" ],
+                        "isVCV2": [ "true" ],
+                        "profileSettings": [ "{{function:getProfileSetting}}" ],
+                        "attachVariantRuleToContent": [ "false" ]
+                    }
+                }
+            },
+            "deps": "js/solutionVariantService"
+        },
+        "populateVariantRuleObjects": {
+            "actionType": "JSFunction",
+            "method": "addNewRuleToExistingRulesAndReturn",
+            "inputData": {
+                "newVariantRule": "{{data.variantRuleObject}}"
+            },
+            "outputData": {
+                "variantRules": ""
+            },
+            "deps": "js/solutionVariantService"
+        },
+        "getSVBomLineObject": {
+            "actionType": "JSFunctionAsync",
+            "method": "getBackingObjects",
+            "inputData": {
+                "viewModelObjects": "{{ctx.mselected}}"
+            },
+            "outputData": {
+                "svBomlines": ""
+            },
+            "deps": "js/aceBackingObjectProviderService"
+        },
+        "updateVariantContext": {
+            "actionType": "JSFunction",
+            "method": "updateCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "variantConditionContext",
+                "value": {
+                    "allowConsumerAppsToLoadData": true,
+                    "selectedObjectsFromConsumerApps": "{{data.variantRules}}",
+                    "configPerspectiveFromConsumerApps": "{{ctx.variantConditionContext.configPerspectiveFromConsumerApps}}",
+                    "isVariantContextForSolutionVariant": true
+                }
+            },
+            "events": {
+                "success": [ {
+                        "name": "Pca0VariantConditionAuthoringGrid.loadVariabilityData"
+                    },
+                    {
+                        "condition": "!subPanelContext.panelPinned",
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "solutionVariant.getSVRsAndSolVar"
+                    }
+                ]
+            }
+        }
+    },
+    "functions": {
+        "getCreateInput": {
+            "functionName": "getCreateInput",
+            "parameters": [
+                "{{data}}",
+                "",
+                "{{data.variantRuleObjectType}}",
+                "{{editHandlers.addPanelEditHandler}}"
+            ]
+        },
+        "getProfileSetting": {
+            "functionName": "getProfileSetting",
+            "parameters": []
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "postProcessNewRuleEvent",
+            "action": "postProcessNewRule",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "primaryWorkArea.selectionChangeEvent",
+            "action": "closePanel",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "addRule.closePanel",
+            "action": "closePanel"
+        }
+    ],
+    "messages": {
+        "soaOperationFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n": {
+        "add": [
+            "SolutionVariantConstants"
+        ],
+        "addVariantRule": [
+            "SolutionVariantConstants"
+        ]
+    },
+    "conditions": {
+        "isPwaSelectionChanged": {
+            "expression": "subPanelContext.selectionData.selected !== undefined"
+        }
+    }
+}

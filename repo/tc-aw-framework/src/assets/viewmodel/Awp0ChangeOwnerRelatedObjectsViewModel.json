@@ -1,0 +1,160 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "initialize": {
+            "actionType": "dataProvider",
+            "method": "changeOwnerRelatedObjectsDataProvider"
+        },
+        "updateSelectedObj": {
+            "actionType": "JSFunction",
+            "method": "updateSelectedObj",
+            "inputData": {
+                "inputObjects": "{{props.subPanelContext}}"
+            },
+            "outputData": {
+                "selectedObjs": ""
+            },
+            "deps": "js/tcChangeOwnerService"
+        },
+        "loadRelatedObjectsData2": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadRelatedObjectsData2",
+            "inputData": {
+                "data": "{{data}}",
+                "inputObjects": "{{props.subPanelContext}}"
+            },
+            "outputData": {
+                "treeLoadResult": "{{function:loadChangeOwnerRelatedObjectsData}}"
+            },
+            "deps": "js/tcChangeOwnerService",
+            "events": {
+                "success": [
+                    {
+                        "name": "changeOwnerRelatedObjectsDataProvider.multiSelectModeAction",
+                        "eventData": {
+                            "multiSelect": true
+                        }
+                    }
+                ]
+            }
+        },
+        "selectTreeNodes": {
+            "actionType": "JSFunction",
+            "method": "selectTreeNodes",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.changeOwnerRelatedObjectsDataProvider}}"
+            },
+            "deps": "js/tcChangeOwnerService"
+        },
+        "loadRelatedObjectsData2batch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadRelatedObjectsData2"
+                },
+                {
+                    "action": "selectTreeNodes"
+                }
+            ]
+        }
+    },
+    "data": {
+        "selectedObjs": {}
+    },
+    "dataProviders": {
+        "changeOwnerRelatedObjectsDataProvider": {
+            "action": "loadRelatedObjectsData2batch",
+            "initializeAction": "loadRelatedObjectsData2batch",
+            "treeLoadResult": "{{data.treeLoadResult}}",
+            "cacheCollapse": true,
+            "inputData": {
+                "accessMode": "tree",
+                "topNodeUid": "{{data.selectedObjs[0].uid}}",
+                "selectionData": "{{props.selectionData}}"
+            },
+            "selectionModelMode": "multiple",
+            "selectionModel": "{{data.selectionModels.changeOwnerRelatedObjectsSelectionModel}}"
+        }
+    },
+    "columnProviders": {
+        "changeOwnerRelatedObjectsColumnProvider": {
+            "columns": [
+                {
+                    "name": "object_name",
+                    "displayName": "Name",
+                    "minWidth": 100,
+                    "width": 200,
+                    "isTreeNavigation": true
+                },
+                {
+                    "name": "object_type",
+                    "displayName": "Type",
+                    "minWidth": 150,
+                    "width": 150
+                },
+                {
+                    "name": "relation",
+                    "displayName": "Relation",
+                    "minWidth": 150,
+                    "width": 150
+                }
+            ]
+        }
+    },
+    "grids": {
+        "changeOwnerGrid": {
+            "dataProvider": "changeOwnerRelatedObjectsDataProvider",
+            "columnProvider": "changeOwnerRelatedObjectsColumnProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableGridMenu": false,
+                "enablePinning": false,
+                "enableSorting": false
+            }
+        }
+    },
+    "functions": {
+        "loadChangeOwnerRelatedObjectsData": {
+            "functionName": "loadChangeOwnerRelatedObjectsData",
+            "parameters": [
+                "{{data}}",
+                "{{data.treeLoadInput.parentNode}}",
+                "{{props.subPanelContext}}"
+            ]
+        }
+    },
+    "selectionModels": {
+        "changeOwnerRelatedObjectsSelectionModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "props": {
+        "selection-data": {
+            "type": "object"
+        },
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initialize",
+        "onUpdate": [
+            {
+                "action": "updateSelectedObj",
+                "observers": [
+                    "props.subPanelContext.selectionData.selected[0].uid",
+                    "props.subPanelContext.seachState.selectedModelObjects[0].uid"
+                ]
+            },
+            {
+                "action": "selectTreeNodes",
+                "observers": [
+                    "viewModel.dataProviders.changeOwnerRelatedObjectsDataProvider.viewModelCollection.loadedVMObjects"
+                ]
+            }
+        ]
+    },
+    "i18n": {
+        "selectRelatedObjects": [ "Awp0ChangeOwnerMessages" ]
+    }
+}

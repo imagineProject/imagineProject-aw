@@ -1,0 +1,205 @@
+{
+    "schemaVersion" : "1.0.0",
+    "actions": {
+        "checkForRemovePrivilegeBatchActions": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadProperties",
+                    "condition": "subPanelContext.openedObject !== undefined"
+                },
+                {
+                    "action": "getAssignAllConditionVerdict",
+                    "condition": "conditions.isVerdictNotPresent"
+                },
+                {
+                    "action": "executeRemovePrivilegeCondition",
+                    "condition": "conditions.isAssignAllConditionFalse"
+                },
+                {
+                    "action": "updateVerdict",
+                    "condition": "conditions.isVerdictNotPresent"
+                }
+            ]
+
+        },
+        "loadProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData":
+            {
+                "objects":
+                [
+                    "{{props.subPanelContext.openedObject}}"
+                ],
+                "attributes": [
+                    "fnd0ParentTask",
+                    "awp0AddReviewerByMeBehavior",
+                    "child_tasks"
+                ]
+            },
+            "policy":
+            {
+                "types":
+                [
+                    {
+                        "name": "Signoff",
+                        "properties":
+                        [
+                            {
+                                "name": "fnd0ParentTask",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "getAssignAllConditionVerdict": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2018-05-Workflow",
+            "method": "getWorkflowTaskViewModel",
+            "inputData": {
+                "input": [
+                    {
+                        "selection": "{{function:getWorkflowTaskViewModelInputs}}",
+                        "typeToPropertiesMap":
+                        {
+                            "assignalltask_isUserPrivileged": [ ]
+                        }
+                    }
+                ] 
+            },
+            "outputData":
+            {
+                "assignAllConditionVerdict": "output[0].additionalData.assignalltask_isUserPrivileged[0]"
+            },
+            "deps": "js/Awp0RemoveReviewers"
+        },
+        "executeRemovePrivilegeCondition": {
+            "actionType": "TcSoaService",
+            "serviceName": "BusinessModeler-2008-06-ConditionEngine",
+            "method": "evaluateConditions",
+            "inputData": {
+                "inputs": "{{function:getExecuteConditionInput}}"
+            },
+            "outputData": {
+                "removePrivilegeConditionVerdict": "outputs[0].result"
+            },
+            "deps": "js/Awp0TaskAssignmentTable"
+        },
+        "updateVerdict": {
+            "actionType": "JSFunction",
+            "method": "updateVerdictToCtx",
+            "inputData": {
+                "input": "{{data}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/Awp0RemoveReviewers"
+        },
+        "removeSignoffsAction": {
+            "actionType": "JSFunction",
+            "method": "removeSignoffsAction",
+            "inputData": {
+                "commandContext": "{{data.eventMap['callRemoveSignoffsSOA'].commandContext}}",
+                "validRemovalSignoffs": "{{data.eventMap['callRemoveSignoffsSOA'].validRemovals}}",
+                "ctx":"{{ctx}}"
+            },
+            "deps":"js/Awp0RemoveReviewers"
+        },
+        "replaceReviewerAction": {
+            "actionType": "JSFunction",
+            "method": "replaceReviewerAction",
+            "deps": "js/Awp0RemoveReviewers",
+            "inputData": {
+                "commandContext": "{{data.eventMap['callRemoveSignoffsSOA'].commandContext}}"
+            }
+        }
+    },
+    "data": {
+        "assignAllConditionVerdict": false,
+        "removePrivilegeConditionVerdict":false
+    },
+    "functions":
+    {
+        "getWorkflowTaskViewModelInputs":
+        {
+            "functionName": "getWorkflowTaskViewModelInputs",
+            "parameters":
+            [
+                "{{props.subPanelContext.xrtState}}"
+            ]
+        },
+        "getExecuteConditionInput":
+        {
+            "functionName": "getExecuteConditionInput",
+            "parameters":
+            [
+                "{{data}}",
+                "{{props}}",
+                "{{ctx}}"
+            ]
+        },
+        "getRemoveSignoffsInput":{
+            "functionName": "getRemoveSignoffsInput",
+            "parameters": [
+                "{{data.eventMap['callRemoveSignoffsSOA'].commandContext}}",
+                "{{data.eventMap['callRemoveSignoffsSOA'].validRemovals}}"
+            ]
+        }
+    },
+    "conditions": {
+        "isVerdictNotPresent": {
+            "expression": "props.subPanelContext.selected[0].assignAllConditionVerdict === undefined && props.subPanelContext.selected[0].removePrivilegeConditionVerdict === undefined"
+        },
+        "isAssignAllConditionFalse": {
+            "expression": "(data.assignAllConditionVerdict === 'false')"
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "updateVerdictInCtx",
+            "action": "updateVerdict"
+        },
+        {
+            "eventId": "callRemoveSignoffsSOA",
+            "action": "removeSignoffsAction",
+            "cacheEventData": true
+        }
+    ],
+    "messages": {
+        "handleQuorumCaseFailure": {
+            "messageType": "WARNING",
+            "messageText": "{{errorCode}}",
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}"
+                },
+                {
+                    "option": "Replace",
+                    "text": "{{i18n.replace}}",
+                    "action": "replaceReviewerAction"
+                }
+            ]
+        }
+    },
+    "lifecycleHooks":{
+        "onMount" : "checkForRemovePrivilegeBatchActions"
+    },
+    "i18n": {
+        "replace": [
+            "InboxMessages"
+        ],
+        "cancel": [
+            "ZeroCompileCommandMessages"
+        ]
+    }
+}

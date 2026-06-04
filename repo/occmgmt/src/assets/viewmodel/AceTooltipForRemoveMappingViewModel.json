@@ -1,0 +1,77 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "removeMappingCmd": {
+            "action": "removeSubstituteMappingActionBatchJob",
+            "iconName": "cmdClearText"
+        }
+    },
+    "actions": {
+        "removeSubstituteMappingActionBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getBOMLineForSelectedPWAElement"
+                },
+                {
+                    "action": "removeSubstituteMappingAction"
+                }
+            ]
+        },
+        "getBOMLineForSelectedPWAElement": {
+            "actionType": "JSFunction",
+            "method": "getBackingObjectsSync",
+            "inputData": {
+                "viewModelObjects": "{{subPanelContext.subPanelContext.selection}}"
+            },
+            "outputData": {
+                "selectedBOMLines": ""
+            },
+            "deps": "js/aceBackingObjectProviderService"
+        },
+
+        "removeSubstituteMappingAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "StructureManagement-2024-12-Substitutes",
+            "method": "deleteOrUpdateSubstituteGroups",
+            "inputData": {
+                "updateSubstituteGroups": [{
+                    "bomLineHavingSubstituteGroup": "{{data.selectedBOMLines[0]}}",
+                    "substituteGroup": "{{subPanelContext.vmoHovered.fnd0OccSubstGroupObj}}",
+                    "updateSubstituteGroupMapping": {
+                        "deletePrimaryToSubstituteMappings":[{
+                            "substituteGroupSet":"{{subPanelContext.vmoHovered.fnd0setId}}",
+                            "substituteBOMLines":["{{subPanelContext.vmoHovered}}"]
+                        }]
+                    }
+                }]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "reloadsubstituteGroupTable"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [{
+                    "message": "removeMappingFailure"
+                }]
+            },
+            "deps": "js/aceOccurrenceSubstituteGroupService"
+        }
+    },
+    "i18n": {
+        "removeSubstituteMappingLabel": [
+            "OccurrenceManagementConstants"
+        ]
+    },
+    "lifecycleHooks": {
+    },
+    "messages": {
+        "removeMappingFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    }
+}

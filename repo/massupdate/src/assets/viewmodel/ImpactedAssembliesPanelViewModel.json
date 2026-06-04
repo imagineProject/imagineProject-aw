@@ -1,0 +1,325 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+
+    "data": {
+        "dropdownSelection": {
+            "type": "STRING",
+            "hasLov": true,
+            "displayName": "{{i18n.addProblemItem}}",
+            "dataProvider": "dropdownProvider",
+            "emptyLOVEntry": false,
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE"
+        }
+    },
+
+    "dataProviders": {
+        "dropdownProvider": {
+            "action": "reveal",
+            "response": "{{data.problemItemList}}"
+        }
+    },
+
+    "actions": {
+        "loadMassUpdate": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "reveal"
+                },
+                {
+                    "action": "setProblemItem"
+                }
+            ]
+        },
+        "reveal": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-09-DataManagement",
+            "method": "expandGRMRelationsForPrimary",
+            "inputData": {
+                "primaryObjects": [ {
+                    "uid": "{{ctx.xrtSummaryContextObject.uid}}",
+                    "type": "ChangeRequestRevision"
+                } ],
+                "pref": {
+                    "expItemRev": false,
+                    "returnRelations": false,
+                    "info": [ {
+                        "relationTypeName": "CMHasProblemItem",
+                        "otherSideObjectTypes": ""
+                    } ]
+                }
+            },
+            "outputData": {
+                "problemItemList": "{{function:processProblemItemList}}",
+                "totalFound": "data.problemItemList.length"
+            },
+            "deps": "js/massUpdateService"
+        },
+
+        "cancelEdits": {
+            "actionType": "JSFunction",
+            "method": "cancelEdits",
+            "deps": "js/editHandlerService",
+            "events": {
+                "success": [{
+                    "name": "ImpactedAssembliesPanel.setSelectedProblemItem"
+                }]
+            }
+        },
+
+        "saveEdits": {
+            "actionType": "JSFunction",
+            "method": "saveEdits",
+            "deps": "js/editHandlerService",
+            "events": {
+                "success": [{
+                    "name": "ImpactedAssembliesPanel.setSelectedProblemItem"
+                }]
+            }
+        },
+
+        "removeProblemObjectFromECN": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "deleteRelations",
+            "inputData": {
+                "input": [ {
+                    "clientId": "dettachProblemItemFromECR",
+                    "relationType": "CMHasProblemItem",
+                    "primaryObject": {
+                        "uid": "{{ctx.xrtSummaryContextObject.uid}}",
+                        "type": "{{ctx.xrtSummaryContextObject.type}}"
+                    },
+                    "secondaryObject": {
+                        "uid": "{{ctx.problemItem.uid}}",
+                        "type": "{{ctx.problemItem.type}}"
+                    }
+                } ]
+            },
+            "outputData": {},
+            "events": {
+                "success": [ {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": false,
+                            "relations": "",
+                            "relatedModified": [
+                                "{{ctx.xrtSummaryContextObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "ImpactedAssembliesPanel.clearSelectedProblem"
+                    }
+                ]
+            },
+            "deps": "js/massUpdateService"
+        },
+
+        "selectionChange": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "operationType": "union",
+                        "hostingClientName": "",
+                        "columnsToExclude": []
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Fnd0WhereConfiguredProvider",
+                        "searchCriteria": {
+                            "problemItemUid": "{{data.dropdownSelection.dbValue.uid}}",
+                            "parentUid": "{{ctx.xrtSummaryContextObject.uid}}"
+                        }
+                    },
+                    "inflateProperties": true,
+                    "noServiceData": false
+                }
+            },
+            "outputData": {
+                "partialErorrs": "ServiceData.partialErrors"
+            },
+            "events": {
+                "success": [ {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": false,
+                            "relations": "",
+                            "relatedModified": [
+                                "{{ctx.xrtSummaryContextObject}}"
+                            ]
+                        }
+                    }
+                ],
+                "failure": [{
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": false,
+                            "relations": "",
+                            "relatedModified": [
+                                "{{ctx.xrtSummaryContextObject}}"
+                            ]
+                        }
+                },
+                {
+                        "name": "ImpactedAssembliesPanel.showError",
+                        "condition": "data.partialErrors.length > 0"
+                }
+            ]
+            }
+        },
+
+        "checkForUnsavedChanges": {
+            "actionType": "JSFunctionAsync",
+            "method": "isDirty",
+            "outputData": {
+                "isDirty": "isDirty"
+            },
+            "events": {
+                "success": [{
+                    "name": "ImpactedAssembliesPanel.showWarning",
+                    "condition": "ctx.editInProgress === true && data.isDirty === true && data.dropdownSelection.dbValue.uid !== ctx.problemItem.uid"
+                },
+                {
+                    "name": "ImpactedAssembliesPanel.setSelectedProblemItem",
+                    "condition": "(ctx.editInProgress === false || ctx.editInProgress === undefined) && data.dropdownSelection.dbValue.uid !== ctx.problemItem.uid"
+                },
+                {
+                    "name": "ImpactedAssembliesPanel.cancelEdits",
+                    "condition": "ctx.editInProgress === true && data.isDirty === false && data.dropdownSelection.dbValue.uid !== ctx.problemItem.uid"
+                }]
+            },
+            "deps": "js/editHandlerService"
+        },
+
+        "setProblemItem": {
+            "actionType": "JSFunction",
+            "method": "setProblemItem",
+            "inputData": {
+                "problemItem": "{{data}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "ImpactedAssembliesPanel.updateDropdown"
+                    }
+                ]
+            },
+            "deps": "js/massUpdateService"
+        },
+
+        "clearSelectedProblem": {
+            "actionType": "JSFunction",
+            "method": "clear",
+            "inputData": {
+                "data": "{{data}}",
+                "resetProp": {
+                    "displayName": "",
+                    "type": "STRING",
+                    "dbValue": "noProblem",
+                    "uiValue": ""
+                }
+            },
+            "outputData": {
+                "problemItemList": "problemItemList"
+            },
+            "deps": "js/massUpdateService"
+        },
+
+        "refreshContextObjectOnRevRuleChange": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events":[ {
+                    "name": "cdm.relatedModified",
+                    "eventData": {
+                        "refreshLocationFlag": false,
+                        "relations": "",
+                        "relatedModified": [
+                            "{{ctx.xrtSummaryContextObject}}"
+                        ]
+                    }
+                }]
+            }
+        }
+    },
+
+    "onEvent": [ {
+            "eventId": "ImpactedAssembliesPanel.setSelectedProblemItem",
+            "action": "setProblemItem"
+        },
+        {
+            "eventId": "ImpactedAssembliesPanel.updateDropdown",
+            "action": "selectionChange"
+        },
+        {
+            "eventId": "ImpactedAssembliesPanel.cancelEdits",
+            "action": "cancelEdits"
+        },
+        {
+            "eventId": "ImpactedAssembliesPanel.showWarning",
+            "message": "unsavedEditsWarning"
+        },
+        {
+            "eventId": "ImpactedAssembliesPanel.showError",
+            "message": "partialError"
+        },
+        {
+            "eventId": "ImpactedAssembliesPanel.clearSelectedProblem",
+            "action": "clearSelectedProblem"
+        },
+        {
+            "eventId":"aw.revisionRuleChangeEvent",
+            "action": "refreshContextObjectOnRevRuleChange"
+        },
+        {
+            "eventId": "ImpactedAssembliesPanel.removeProblemItem",
+            "action": "removeProblemObjectFromECN"
+        },
+        {
+            "eventId": "ImpactedAssembliesPanel.clearSelectedProblem",
+            "action": "cancelEdits"
+        }
+    ],
+
+    "lifecycleHooks": {
+        "onMount": "loadMassUpdate"
+    },
+
+    "messages": {
+        "unsavedEditsWarning": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.navigationConfirmationSingle}}",
+            "messageTextParams": [
+                "{{ctx.problemItem.props.object_string.uiValues[0]}}"
+            ],
+            "navigationOptions": [
+                {
+                    "option": "Discard",
+                    "text": "{{i18n.discard}}",
+                    "action": "cancelEdits"
+                },
+                {
+                    "option": "Save",
+                    "text": "{{i18n.saveButtonText}}",
+                    "action": "saveEdits"
+                }
+            ]
+        },
+        "partialError": {
+            "messageType": "ERROR",
+            "messageText": "{{data.partialErorrs[0].errorValues[0].message}}"
+        }
+    },
+
+    "i18n": {
+        "addProblemItem": [ "MassUpdateConstants" ],
+        "discard": [ "OccurrenceManagementConstants" ],
+        "saveButtonText": [ "OccurrenceManagementConstants" ],
+        "navigationConfirmationSingle": [ "TCUICommandPanelsMessages" ]
+    }
+}

@@ -1,0 +1,51 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "actions": {
+        "loadChevronPopup": {
+            "actionType": "dataProvider",
+            "method": "workflowDesignerBreadcrumbDataProvider"
+        },
+        "loadPopupData": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadChevronPopup",
+            "inputData":
+            {
+                "selectedCrumbUid" : "{{props.selectedCrumb.scopedUid}}"
+            },
+            "outputData":
+            {
+                "totalFound": "totalFound",
+                "searchResults": "searchResults"
+            },
+            "deps": "js/Awp0WorkflowDesignerBreadcrumbPanel"
+        },
+        "updateWorkflowDesignerBreadcrumb":{
+            "actionType": "JSFunction",
+            "method": "updateWorkflowDesignerBreadcrumb",
+            "inputData": {
+                "selection": "{{data.dataProviders.workflowDesignerBreadcrumbDataProvider.selectedObjects}}",
+                "chevronPopup": "{{props.chevronPopup}}"
+            },
+            "deps": "js/Awp0WorkflowDesignerBreadcrumbPanel"
+        }
+    },
+    "dataProviders": {
+        "workflowDesignerBreadcrumbDataProvider": {
+            "action": "loadPopupData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "loadChevronPopup"
+    },
+    "onEvent": [ {
+        "eventId": "workflowDesignerBreadcrumbDataProvider.selectionChangeEvent",
+        "action": "updateWorkflowDesignerBreadcrumb",
+        "inputArgs": {
+            "selectedObjects": "{{eventData.selectedObjects}}"
+        }
+    } ]
+}

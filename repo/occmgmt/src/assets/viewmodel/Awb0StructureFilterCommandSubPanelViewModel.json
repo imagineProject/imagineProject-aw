@@ -1,0 +1,203 @@
+{
+    "schemaVersion" : "1.0.0",
+    "actions":
+    {
+        "performFacetSearch": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2018-05-Finder",
+            "method": "performFacetSearch",
+            "inputData": {
+                "facetSearchInput": {
+                    "maxToReturn": 100,
+                    "providerName": "Awb0FullTextSearchProvider",
+                    "searchCriteria": {
+                        "categoryForFacetSearch": "{{data.facetCategorySearchInput.name}}",
+                        "facetSearchString": "{{data.facetCategorySearchInput.facetSearchString}}",
+                        "forceThreshhold": false,
+                        "searchString": "$DefaultSearchProvider_STD$*",
+                        "productContextUids": "{{props.subPanelContext.occContext.productContextInfo.uid}}"
+                    },
+                    "searchFilterMap": {},
+                    "startIndex": "{{data.facetCategorySearchInput.startIndex}}"
+                }
+            },
+            "outputData": {
+                "categories": "{{function:updateCategoriesAfterFacetSearch}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "updateFilterPanel"
+                }]
+            },
+            "deps": "js/structureFilterService"
+        },
+        "initializeAndReveal": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "initialize"
+                },
+                {
+                    "action": "getFilters"
+                }
+            ]
+        },
+        "initialize":
+        {
+            "actionType": "JSFunction",
+            "method": "initialize",
+            "inputData": {
+                "occContext": "{{props.subPanelContext.occContext}}"
+            },
+            "deps": "js/structureFilterService"
+        },
+        "getFilters":
+        {
+            "actionType": "JSFunction",
+            "method": "updateSearchStateOnPanelLoad",
+            "inputData": {
+                "searchState": "{{data.searchState}}",
+                "subPanelContext": "{{props.subPanelContext.occContext}}"
+            },
+            "outputData": {
+                "searchState": ""
+            },
+            "deps": "js/structureFilterService"
+        },
+        "getFiltersFromSoa": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2019-12-OccurrenceManagement",
+            "method": "getSubsetInfo3",
+            "inputData": {
+                "subsetInputs": "{{function:getSubsetInfoSoaInput}}"
+            },
+            "outputData": {
+                "searchState": "{{function:processGetSubsetInfoSoaResponse}}"
+            },
+            "deps": "js/structureFilterService"
+        },
+        "modifySearchStateWithUpdatedFilters": {
+            "actionType": "JSFunction",
+            "method": "modifySearchStateWithUpdatedFilters",
+            "inputData": {
+                "searchState" : "{{data.searchState}}",
+                "occContext": "{{props.subPanelContext.occContext}}"
+            },
+            "outputData": {
+                "searchState": ""
+            },
+            "deps": "js/structureFilterService"
+        },
+        "updateSearchStateAfterFilterAction": {
+            "actionType": "JSFunction",
+            "method": "updateSearchStateAfterFilterAction",
+            "inputData": {
+                "filter": "{{data.filter}}",
+                "category": "{{data.category}}",
+                "updateAtomicData": "{{data.updateAtomicData}}",
+                "occContext": "{{props.subPanelContext.occContext}}"
+            },
+            "outputData": {
+                "searchState": ""
+            },
+            "deps": "js/structureFilterService"
+        },
+        "clearFilterInfoFromURL":{
+            "actionType": "JSFunction",
+            "method": "clearFilterInfoFromURL",
+            "inputData": {
+                "occContext": "{{props.subPanelContext.occContext}}"
+            },
+            "deps": "js/structureFilterService"
+        },
+        "render":{
+            "method": "awStructureFilterPanelRenderFunction",
+            "deps": "js/AwStructureFilterPanelService"
+        }
+    },
+    "functions": {
+        "getSubsetInfoSoaInput": {
+            "functionName": "getSubsetInfoSoaInput",
+            "parameters": [
+                "{{props.subPanelContext.occContext}}"
+            ]
+        },
+        "processGetSubsetInfoSoaResponse": {
+            "functionName": "processGetSubsetInfoSoaResponse",
+            "parameters": [
+              "{{data.searchState}}", "{{props.subPanelContext.occContext}}","{{response}}"]
+        },
+        "updateCategoriesAfterFacetSearch": {
+            "functionName": "updateCategoriesAfterFacetSearch",
+            "parameters": [
+                "{{data.searchState}}",
+                "{{data.updateAtomicData}}",
+                "{{data.facetCategorySearchInput}}",
+                "{{data.facetCategory}}",
+                "{{props.subPanelContext.occContext}}"
+            ]
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "acefilterPanel.getFilters",
+            "action": "getFiltersFromSoa"
+        },
+        {
+            "eventId": "productContextChangedEvent",
+            "action": "getFilters" ,
+            "condition": "dataProviderActionType === 'productChangedOnSelectionChange'"
+        },
+        {
+            "eventId": "aw.ColorFilteringToggleEvent",
+            "action": "getFilters" ,
+            "condition": "conditions.isStructureIndexed"
+        }
+    ],
+    "conditions": {
+        "isStructureIndexed": {
+            "expression": "!(props.subPanelContext.occContext.productContextInfo.props.awb0AlternateConfiguration!==undefined && props.subPanelContext.occContext.productContextInfo.props.awb0AlternateConfiguration.dbValues[0] !== '' && props.subPanelContext.occContext.productContextInfo.props.awb0AlternateConfiguration.dbValues[0].endsWith( 'AWBIB' ) ) || (props.subPanelContext.occContext.supportedFeatures.Awb0EnableSmartDiscoveryFeature === undefined)"
+        }
+    },
+    "data":
+    {
+        "searchState": {
+            "initialValues": {},
+            "meta": {
+                "categories": [ {
+                    "filterValues": [ {
+                        "selected": {
+                            "field": "true",
+                            "type": "ViewModelProperty"
+                        }
+                    } ]
+                } ]
+            }
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeAndReveal",
+        "render": "render",
+        "onUpdate": [
+            {
+                "action": "modifySearchStateWithUpdatedFilters",
+                "observers": [ "props.subPanelContext.occContext.searchFilterMap" ]
+            },
+            {
+                "action": "clearFilterInfoFromURL",
+                "observers": [ "props.subPanelContext.occContext.configContext" ]
+            }
+        ]
+    },
+    "i18n":
+    {
+          "subset" :        ["OccurrenceManagementConstants"],
+          "MORE_LINK_TEXT": [ "BaseMessages" ],
+          "LESS_LINK_TEXT": [ "BaseMessages" ]
+    }
+}

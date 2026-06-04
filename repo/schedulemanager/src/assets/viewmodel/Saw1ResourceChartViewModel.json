@@ -1,0 +1,561 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "reveal":
+        {
+            "actionType": "dataProvider",
+            "method": "resourceChartDataProvider"
+        },
+        "loadData": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagementAw-2020-05-ScheduleManagementAw",
+            "method": "getResourceChartInfo",
+            "inputData": {
+                "resources":"",
+                "assignedObjects": ["{{ctx.xrtSummaryContextObject}}"],
+                "startDate": "{{function:getStartDate}}",
+                "schedulesToInclude": "{{function:getWorkload}}",
+                "loadOptions":
+                [{
+                    "name": "includeSubSchedules",
+                    "keyValue": "true"
+                }]
+            },
+            "outputData": {
+                "loadDataSearchResults": "{{function:loadTableData}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "loadColumnsEvent"
+                    },
+                    {
+                        "name": "Saw1ResourceChart.cellSelected"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/Saw1ResourceChartService"
+        },
+        "resetResourceChart": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "resetResourceChartEvent",
+                    "eventData": {
+                        "eventData":"{{data.eventData}}"
+                    }
+                } ]
+            }
+        },
+        "jumpToTwoWeeks": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "resetResourceChartEvent",
+                    "eventData": {
+                        "eventData":"{{data.eventData}}"
+                    }
+                } ]
+            }
+        },
+        "loadColumns": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadColumns",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.resourceChartDataProvider}}",
+                "i18n": "{{data.i18n}}"
+            },
+            "deps": "js/Saw1ResourceChartService"
+        },
+        "setResourceCellSelection": {
+            "actionType": "JSFunction",
+            "method": "setResourceCellSelection",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "ctx":"{{ctx}}"
+            },
+            "deps": "js/Saw1ResourceChartService"
+        },
+        "assignedTask" : {
+            "actionType":"JSFunction",
+            "method":"selectAssignedTasks",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "props":"{{props.subPanelContext.selectionData}}"
+            },
+            "deps": "js/Saw1ResourceChartService"
+
+
+        },
+        "resetColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [ {
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos": [ {
+                            "clientScopeURI": "Saw1ResourceChartTasks",
+                            "operationType": "configured",
+                            "typeNames": [
+                                        "ScheduleTask"
+                                    ],
+                            "columnsToExclude": []
+                        } ],
+                        "businessObjects": [ {} ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "dataProviders.tasksDataProvider.columnConfig": "columnConfigurations[0].columnConfigurations[0]"
+            },
+            "actionMessages": {
+               "failure": [
+                   {
+                       "message": "soaFailureMessage"
+                   }
+               ]
+            }
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "loadTasks": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Saw1ResourceChartTasks"
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0ObjectSetRowProvider",
+                        "searchCriteria": {
+                            "searchContentType": "ResourceChartAssignedTasks",
+                            "resources":"{{data.eventMap['Saw1ResourceChart.cellSelected'].resources}}",
+                            "assignedObjects":"{{data.eventMap['Saw1ResourceChart.cellSelected'].assignedObjects}}",
+                            "startDate":"{{data.eventMap['Saw1ResourceChart.cellSelected'].startDate}}",
+                            "endDate":"{{data.eventMap['Saw1ResourceChart.cellSelected'].startDate}}",
+                            "schedulesToInclude":"{{data.eventMap['Saw1ResourceChart.cellSelected'].schedulesToInclude}}",
+                            "objectSet":"Saw1TaskSearchProvider.ScheduleTask",
+                            "parentUid": "{{ctx.xrtSummaryContextObject.uid}}"
+
+                        },
+                        "searchFilterFieldSortType": "Alphabetical",
+                        "startIndex": "{{data.dataProviders.tasksDataProvider.startIndex}}",
+                        "searchSortCriteria": "{{data.columnProviders.tasksColumnProvider.sortCriteria}}",
+                        "columnFilters": "{{data.columnProviders.tasksColumnProvider.columnFilters}}"
+
+                    },
+                    "inflateProperties": true,
+                    "noServiceData": false
+                }
+            },
+            "outputData": {
+                "assignedTasksTotalFound": "totalFound",
+                "assignedTasksSearchResults": "{{json:searchResultsJSON}}",
+                "dataProviders.tasksDataProvider.columnConfig": "columnConfig",
+                "commandContext.dataProvider.columnConfig": "columnConfig"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "Saw1ResourceChart.taskLoaded"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            }
+        },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "operationType": "as_arranged",
+                        "clientScopeURI": "Saw1ResourceChartTasks"
+                    },
+                    "saveColumnConfigData": {
+                        "clientScopeURI": "Saw1ResourceChartTasks",
+                        "columnConfigId": "{{data.dataProviders.tasksDataProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.tasksDataProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Saw1TaskSearchProvider",
+                        "searchCriteria": {
+                            "searchContentType": "ResourceChartAssignedTasks",
+                            "resources":"{{data.eventMap['Saw1ResourceChart.cellSelected'].resources}}",
+                            "assignedObjects":"{{data.eventMap['Saw1ResourceChart.cellSelected'].assignedObjects}}",
+                            "startDate":"{{data.eventMap['Saw1ResourceChart.cellSelected'].startDate}}",
+                            "endDate":"{{data.eventMap['Saw1ResourceChart.cellSelected'].startDate}}",
+                            "schedulesToInclude":""
+                        },
+                        "searchFilterFieldSortType": "Alphabetical",
+                        "startIndex": "{{data.dataProviders.tasksDataProvider.startIndex}}",
+                        "searchSortCriteria": "{{data.columnProviders.tasksColumnProvider.sortCriteria}}",
+                        "columnFilters": "{{data.columnProviders.tasksColumnProvider.columnFilters}}"
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults":"{{json:searchResultsJSON}}",
+                "dataProviders.tasksDataProvider.columnConfig": "columnConfig"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            }
+        },
+        "unregisterContext": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "resourceChartCtx"
+            }
+        },
+        "plTableClientReload": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "gridTableView.plTable.reload"
+                } ]
+            }
+        },
+        "setAssignedTasksSearchCriteria": {
+            "actionType": "JSFunction",
+            "method": "setCommandContextSearchCriteria",
+            "inputData": {
+                "commandContext": "{{data.commandContext}}",
+                "eventMap": "{{data.eventMap}}",
+                "ctx": "{{ctx}}"
+            },
+            "outputData": {
+                "commandContext": ""
+            },
+            "deps": "js/Saw1ResourceChartService"
+        }
+    },
+    "data": {
+        "commandContext": {
+            "tableDataProviderName": "Awp0ObjectSetRowProvider",
+            "clientScopeURI": "Saw1ResourceChartTasks"
+        },
+        "tasksLocation": {
+            "initialValues": {
+                "location": "bottom"
+            },
+            "meta": {
+                "location":{
+                    "type":"STRING",
+                    "field":"true"
+                }
+            }
+        }
+    },
+    "messages":{
+        "validUserRoleMessageInfo": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.validUserRoleMessageInfo}}",
+            "messageTextLinks": [
+            ]
+        },
+        "validTCVersionMessageInfo":{
+            "messageType": "INFO",
+            "messageText": "{{i18n.validTCVersionMessageInfo}}",
+            "messageTextLinks": [
+            ]
+        },
+        "soaFailureMessage": {
+           "messageType": "ERROR",
+           "messageText": "{{errorCode}}"
+        },
+        "saw1ReplicaResourceHiddenMessageInfo": {
+            "messageType": "INFO",
+            "messageText":  "{{i18n.saw1ReplicaResourceHiddenMessageInfo}}",
+            "messageTextParams": [
+                "{{ctx.selected.props.object_name.uiValues[0]}}"
+            ],
+            "messageTextLinks": [
+            ]
+        }
+    },
+    "conditions":{
+        "isValidUserRole":{
+            "expression":"ctx.userSession && ctx.preferences.SM_RESOURCE_GRAPH_VIEWER_ROLE.indexOf(ctx.userSession.props.role_name.dbValues[0]) > -1 "
+        },
+        "splitBottom":{
+            "expression":"(tasksLocation.location === 'bottom')"
+        },
+        "splitRight":{
+            "expression":"(tasksLocation.location === 'right')"
+        },
+        "isScheduleNotReplica":{
+            "expression":"ctx.selected?.props?.owning_site?.dbValues[0] == null "
+        }
+    },
+    "functions": {
+        "getStartDate": {
+            "functionName": "getStartDate",
+            "parameters": [
+                "{{data.startDate}}",
+                "{{data.eventData}}",
+                "{{ctx}}"
+            ]
+        },
+        "getWorkload": {
+            "functionName": "getWorkload",
+            "parameters": [
+                "{{data.eventData}}",
+                "{{ctx}}"
+            ]
+        },
+        "loadTableData": {
+            "functionName": "loadTableData",
+            "parameters": [
+                "{{data.resourceLoadResponse}}",
+                "{{data.i18n}}",
+                "{{data.searchIndex}}",
+                "{{ctx}}",
+                "{{data.dataProviders.resourceChartDataProvider}}"
+            ]
+        }
+    },
+    "i18n": {
+        "saw1_ResourceLoadViewSectionTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "saw1_AssignedTasksSectionTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "saw1Month_Jan":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Month_Feb":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Month_Mar":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Month_Apr":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Month_May_short":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Month_Jun":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Month_Jul":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Month_Aug":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Month_Sep":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Month_Oct":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Month_Nov":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Month_Dec":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Day_Sun":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Day_Mon":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Day_Tue":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Day_Wed":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Day_Thu":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Day_Fri":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1Day_Sat":[
+            "ScheduleManagerMessages"
+        ],
+        "validUserRoleMessageInfo":[
+            "ScheduleManagerMessages"
+        ],
+        "validTCVersionMessageInfo":[
+            "ScheduleManagerMessages"
+        ],
+        "resources":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1ReplicaResourceHiddenMessageInfo":[
+            "ScheduleManagerMessages"
+        ]
+    },
+    "dataProviders": {
+        "resourceChartDataProvider": {
+            "action": "loadData",
+            "response": "{{data.loadDataSearchResults}}",
+            "totalFound": "{{data.loadDataSearchResults.length}}",
+            "searchIndex": 0
+        },
+        "tasksDataProvider": {
+            "action": "loadTasks",
+            "editContext": "TABLE_CONTEXT",
+            "response": "{{data.assignedTasksSearchResults}}",
+            "totalFound": "{{data.assignedTasksTotalFound}}",
+            "selectionModelMode": "multiple",
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+    "columnProviders": {
+        "resourceChartColumnProvider": {
+            "loadColumnAction": "loadColumns",
+            "columns": "{{data.columns}}",
+            "sortCriteria": []
+
+        },
+        "tasksColumnProvider": {
+            "saveColumnAndLoadAction": "saveColumnConfigLoadData",
+            "resetColumnAction": "resetColumnConfig",
+            "sortCriteria": [],
+            "columns": [{
+                "enableColumnMoving": false
+            }]
+        }
+    },
+    "grids": {
+        "Saw1ResourceLoadViewTable": {
+            "dataProvider": "resourceChartDataProvider",
+            "columnProvider": "resourceChartColumnProvider",
+            "addIconColumn": false,
+            "enableArrangeMenu": false,
+            "gridOptions": {
+                "enableGridMenu": false,
+                "isFilteringEnabled": false,
+                "enableSorting": false,
+                "enablePinning": true,
+                "headerHeight": "LARGE",
+                "enableCellHeaderSelection": true
+            }
+        },
+        "gridTableView": {
+            "dataProvider": "tasksDataProvider",
+            "columnProvider": "tasksColumnProvider",
+            "addIconColumn": false,
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "enableGridMenu": true,
+                "isFilteringEnabled": true,
+                "enableSorting": true,
+                "enablePinning": true
+           }
+        }
+
+    },
+    "onEvent": [
+        {
+            "eventId": "resourceLoadViewTable.gridCellSelection",
+            "cacheEventData": true,
+            "action": "setResourceCellSelection"
+        },
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent"
+        },
+        {
+            "eventId": "loadColumnsEvent",
+            "action": "loadColumns"
+        },
+        {
+            "eventId": "Saw1ResourceChart.ApplyDate",
+            "cacheEventData": true,
+            "action": "resetResourceChart"
+        },
+        {
+            "eventId": "resetResourceChartEvent",
+            "action": "reveal"
+        },
+        {
+            "eventId": "jumpToTwoWeeksEvent",
+            "cacheEventData": true,
+            "action": "jumpToTwoWeeks"
+        },
+        {
+            "eventId": "Saw1ResourceChart.ReloadResourceChartByTwoWeeksEvent",
+            "action": "reveal"
+        },
+        {
+            "eventId": "Saw1ResourceChart.cellSelected",
+            "cacheEventData": true,
+            "action": "plTableClientReload"
+        },
+        {
+            "eventId": "Saw1ResourceChart.taskLoaded",
+            "action": "setAssignedTasksSearchCriteria"
+        },
+        {
+            "eventId": "Saw1ResourceLoadViewTable.initialized",
+            "action": "reveal"
+        },
+        {
+            "eventId": "tasksDataProvider.selectionChangeEvent",
+            "cacheEventData": true,
+            "action": "selectAssignedTasks"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "reveal",
+        "onUnmount": "unregisterContext"
+    }
+}

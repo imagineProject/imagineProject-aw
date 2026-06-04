@@ -1,0 +1,150 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "reassign": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "reassignTask.showMessage",
+                    "condition": ""
+                } ]
+            }
+        },
+        "updateAddContextClosePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "closeDialog",
+                    "condition": "!data.isDestroyed()"
+                } ]
+            }
+        },
+        "finalReassign": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagementAw-2016-12-ScheduleManagementAw",
+            "method": "replaceMemberAssignments",
+            "inputData": {
+                "replaceMemberAssignmentData": [ {
+                    "oldResource": "{{ctx.schedule.ScheduleMember}}",
+                    "newResource": "{{addUserPanelState.selectedUsers[0]}}"
+                } ],
+                "runInBackground": true
+            },
+            "events": {
+                "success": [ {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{ctx.schedule.selectedObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+            }
+        },
+        "actionMessages": {
+            "failure": [ {
+                "message": "soaFailureMessage"
+            } ]
+        },
+        "closePanelDialog":{
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "messages": {
+        "reassignTask": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.replaceConfirmation}}",
+            "messageTextParams": [
+                "{{ctx.schedule.ScheduleMember}}",
+                "{{addUserPanelState.selectedUsers[0].props.user_name.uiValues[0]}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}",
+                    "action": ""
+                },
+                {
+                    "option": "Reassign",
+                    "text": "{{i18n.reassign}}",
+                    "action": "finalReassign"
+                }
+            ]
+        },
+        "soaFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "onEvent": [ {
+        "eventId": "reassignTask.showMessage",
+        "message": "reassignTask"
+    },
+    {
+        "eventId": "appCtx.register",
+        "condition": "name === 'mselected'",
+        "action": "updateAddContextClosePanel"
+    },
+    {
+        "eventId":"closeDialog",
+        "action":"closePanelDialog"
+    }
+],
+    "conditions": {
+        "isValidToAdd": {
+            "expression": "addUserPanelState.selectedUsers && addUserPanelState.selectedUsers.length === 1"
+        }
+    },
+    "i18n": {
+        "reassignTask": [
+            "ScheduleManagerMessages"
+        ],
+        "reassign": [
+            "ScheduleManagerMessages"
+        ],
+        "cancel": [
+            "ScheduleManagerMessages"
+        ],
+        "replaceConfirmation": [
+            "ScheduleManagerMessages"
+        ]
+    },
+    "data": {
+        "addUserPanelState": {
+            "initialValues": {
+                "provider": "Awp0PeoplePickerProvider",
+                "selectionModelMode": "single",
+                "criteria": {
+                    "providerContentType": "User",
+                    "searchString": "*",
+                    "selectedObject": "",
+                    "searchSubGroup": "true"
+                },
+                "preferenceCriteria": [
+                    "WRKFLW_user_panel_content_display",
+                    "WRKFLW_allow_resourcepool_assignments",
+                    "WRKFLW_show_user_assignment_options"
+                ],
+                "selectedUsers": "",
+                "isAddButtonNeeded": false
+            },
+            "meta": {
+                "selectedUsers": {
+                    "field": "true",
+                    "type": "OBJECTARRAY"
+                }
+            }
+        }
+    }
+}

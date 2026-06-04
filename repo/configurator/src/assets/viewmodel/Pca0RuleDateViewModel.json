@@ -1,0 +1,120 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-link.directive",
+        "js/aw-property-non-edit-val.directive"
+    ],
+    "actions": {
+        "initializeRuleDateConfigurationData": {
+            "actionType": "JSFunction",
+            "method": "initializeRuleDateConfigurationData",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "outputData": {
+                "contextKey": "contextKey",
+                "isRuleDateFeatureReadOnly": "isRuleDateFeatureReadOnly",
+                "currentRuleDate": "currentRuleDate"
+            },
+            "deps": "js/Pca0RuleDateConfigurationService"
+        },
+        "openRuleDateSubView": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0FilterCriteria.navigateToSubView",
+                    "eventData": {
+                        "subView": "Pca0RuleDateSub"
+                    }
+                } ]
+            }
+        },
+        "openRuleDateDialog": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view": "Pca0RuleDatePanel",
+                    "parent": ".sw-secondary-workarea",
+                    "placement": "right",
+                    "width": "SMALL",
+                    "height": "FULL",
+                    "isCloseVisible": false,
+                    "isPinUnpinEnabled": true,
+                    "subPanelContext": {
+                        "contextKey": "{{data.contextKey}}"
+                    }
+                }
+            },
+            "outputData": {
+                "popupId": "id"
+            }
+        },
+        "toggleRuleDateLinkState": {
+            "actionType": "JSFunction",
+            "method": "toggleRuleDateLinkState",
+            "inputData": {
+                "isDisableRuleDateLink": "{{data.eventMap['Pca0RuleDate.toggleRuleDateLinkState'].isDisableRuleDateLink}}"
+            },
+            "outputData": {
+                "isRuleDateFeatureReadOnly": "isRuleDateFeatureReadOnly"
+            },
+            "deps": "js/Pca0RuleDateConfigurationService"
+        },
+        "closeRuleDatePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{data.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "Pca0FilterCriteriaSettings.refreshContent",
+            "action": "initializeRuleDateConfigurationData"
+        },
+        {
+            "eventId": "Pca0RuleDate.toggleRuleDateLinkState",
+            "action": "toggleRuleDateLinkState",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0RuleDate.closeDialog",
+            "action": "closeRuleDatePanel"
+        },
+        {
+            "eventId": "complete",
+            "action": "closeRuleDatePanel",
+            "condition":"ctx.activeToolsAndInfoCommand_dialog.commandId === 'Pca0RuleDatePanel'"
+        }
+    ],
+    "data": {
+        "contextKey": "",
+        "currentRuleDate": {
+            "uiValue": "",
+            "type": "STRING"
+        },
+        "isRuleDateFeatureReadOnly": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeRuleDateConfigurationData"
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "conditions": {
+        "mustOpenAsDialog": {
+            "expression": "data.contextKey !== 'fscContext' && (data.contextKey === 'variantConditionContext' || data.contextKey === 'ConfiguratorCtx')"
+        },
+        "mustOpenAsSubView": {
+            "expression": "data.contextKey === 'fscContext' || (data.contextKey !== 'variantConditionContext' && data.contextKey !== 'ConfiguratorCtx')"
+        }
+    }
+}

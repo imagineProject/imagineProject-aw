@@ -1,0 +1,248 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "closureWorkflow": {
+            "displayName": "{{i18n.closureWorkflow}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "hasLov": true
+        },
+        "reviseWorkingContent": {
+            "displayName": "{{i18n.reviseWorkingContent}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": true,
+            "dispValue": "{{i18n.reviseWorkingContent}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "actionOnWorkingContent": {
+            "displayName": "{{i18n.actionOnWorkingContent}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "hasLov": true
+        },
+        "actionOnWorkingContents_list": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.captureAndApplyStatus}}",
+                    "propDisplayDescription": "{{i18n.captureAndApplyStatusDesc}}",
+                    "dispValue": "{{i18n.captureAndApplyStatus}}",
+                    "propInternalValue": 0
+                },
+                {
+                    "propDisplayValue": "{{i18n.freezeAndApplyStatus}}",
+                    "propDisplayDescription": "{{i18n.freezeAndApplyStatusDesc}}",
+                    "dispValue": "{{i18n.freezeAndApplyStatus}}",
+                    "propInternalValue": 1
+                },
+                {
+                    "propDisplayValue": "{{i18n.captureConfigurationAsIs}}",
+                    "propDisplayDescription": "{{i18n.captureConfigurationAsIsDesc}}",
+                    "dispValue": "{{i18n.captureConfigurationAsIs}}",
+                    "propInternalValue": 2
+                }
+            ]
+        },
+        "runInBackground": {
+            "displayName": "{{i18n.runInBackground}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": false,
+            "dispValue": "{{i18n.runInBackground}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+    "actions": {
+        "closeConfigurationBaselineAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Bom-2024-06-ConfigBaselineManagement",
+            "method": "closeConfigurationBaselines2",
+            "inputData": {
+                "closeConfigBaselineInput": [
+                    {
+                        "clientId": "cblId",
+                        "configBaseline": {
+                            "uid": "{{props.subPanelContext.occContext.baseModelObject.uid}}",
+                            "type": "Fnd0ConfigurationBaseline"
+                        },
+                        "actionOnWorkingContent": "{{data.actionOnWorkingContent.dbValue}}",
+                        "releaseProcessName": "{{function:releaseProcessNameInputForCloseBaselineSOA}}"
+                    }
+                ],
+                "runInBackground": "{{data.runInBackground.dbValue}}"
+            },
+            "outputData": {
+                "workflowOutput": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "closePanelEvent"
+                    },
+                    {
+                        "name": "configBaseline.closeComplete"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "closePanelEvent"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "closeSuccessMessage",
+                        "condition": "!data.runInBackground.dbValue"
+                    },
+                    {
+                        "message": "closeSuccessWithRunInBgMessage",
+                        "condition": "data.runInBackground.dbValue"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "closeFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/configurationBaselineService"
+        },
+        "configBaselineCloseCompleteAction": {
+            "actionType": "JSFunction",
+            "method": "configBaselineCloseComplete",
+            "deps": "js/configurationBaselineService",
+            "inputData": {
+                "configBaselineUid": "{{props.subPanelContext.occContext.baseModelObject.uid}}"
+            }
+        },
+        "getConfigBaselineTemplateList": {
+            "actionType": "JSFunction",
+            "method": "getConfigBaselineTemplateList",
+            "inputData": {
+                "input": "{{ctx.preferences.Baseline_release_procedures}}"
+            },
+            "outputData": {
+                "configBaselineTemplateList": ""
+            },
+            "deps": "js/configurationBaselineService"
+        },
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "",
+                "popupId": "{{props.subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "functions": {
+        "releaseProcessNameInputForCloseBaselineSOA": {
+            "functionName": "releaseProcessNameInputForCloseBaselineSOA",
+            "parameters": [
+                "{{data}}"
+            ]
+        }
+    },
+    "conditions": {
+        "isClosureWorkflowVisible": {
+            "expression": "data.actionOnWorkingContent.dbValue === 0 || data.actionOnWorkingContent.dbValue === 1"
+        }
+    },
+    "messages": {
+        "closeFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.genericServerError}}",
+            "messageTextParams": [
+                "{{data.workflowOutput.partialErrors[0].errorValues[0].message}}"
+            ]
+        },
+        "closeSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.closeConfigurationBaselineInfoMsg}}",
+            "messageTextParams": [
+                "{{props.subPanelContext.occContext.baseModelObject.props.object_string.dbValues[0]}}"
+            ]
+        },
+        "closeSuccessWithRunInBgMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.closeConfigBaselineInfoWithRunInBgMsg}}",
+            "messageTextParams": [
+                "{{props.subPanelContext.occContext.baseModelObject.props.object_string.dbValues[0]}}"
+            ]
+        }
+    },
+    "i18n": {
+        "closeConfigurationBaselineWarning": [
+            "OccMgmtConfigBaselineMessages"
+        ],
+        "reviseWorkingContent": [
+            "OccMgmtConfigBaselineConstants"
+        ],
+        "closeConfigurationBaselineInfoMsg": [
+            "OccMgmtConfigBaselineMessages"
+        ],
+        "closeConfigBaselineInfoWithRunInBgMsg": [
+            "OccMgmtConfigBaselineMessages"
+        ],
+        "closeConfigurationBaseline": [
+            "OccMgmtConfigBaselineConstants"
+        ],
+        "genericServerError": [
+            "OccMgmtConfigBaselineMessages"
+        ],
+        "runInBackground": [
+            "OccMgmtConfigBaselineConstants"
+        ],
+        "closeAsyncConfigurationBaselineInfoMsg": [
+            "OccMgmtConfigBaselineMessages"
+        ],
+        "configBaselineTemplate": [
+            "OccMgmtConfigBaselineConstants"
+        ],
+        "configBaselineOptions": [
+            "OccMgmtConfigBaselineConstants"
+        ],
+        "actionOnWorkingContent": [
+            "OccMgmtConfigBaselineConstants"
+        ],
+        "closureWorkflow": [
+            "OccMgmtConfigBaselineConstants"
+        ],
+        "freezeAndApplyStatus": [
+            "OccMgmtConfigBaselineConstants"
+        ],
+        "captureAndApplyStatus": [
+            "OccMgmtConfigBaselineConstants"
+        ],
+        "captureConfigurationAsIs": [
+            "OccMgmtConfigBaselineConstants"
+        ],
+        "captureAndApplyStatusDesc": [
+            "OccMgmtConfigBaselineMessages"
+        ],
+        "freezeAndApplyStatusDesc": [
+            "OccMgmtConfigBaselineMessages"
+        ],
+        "captureConfigurationAsIsDesc": [
+            "OccMgmtConfigBaselineMessages"
+        ]
+    },
+    "lifecycleHooks": {
+        "onMount": "getConfigBaselineTemplateList"
+    },
+    "onEvent": [
+        {
+            "eventId": "closePanelEvent",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "configBaseline.closeComplete",
+            "action": "configBaselineCloseCompleteAction"
+        }
+    ]
+}

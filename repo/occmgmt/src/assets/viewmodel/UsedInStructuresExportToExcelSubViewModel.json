@@ -1,0 +1,280 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "actions": {
+        "doExportDocumentAndClose": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "doExportDocument"
+                },
+                {
+                    "action": "closeDialog"
+                }
+            ]
+        },
+        "closeDialog": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "inputData": {
+                "popupId": "{{props.popupOptions.popupId}}"
+            },
+            "deps": "js/popupService"
+        },
+        "exportToFile": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2017-06-RequirementsManagement",
+            "method": "exportToApplication3",
+            "inputData": {
+                "input": [ {
+                    "templateName": "",
+                    "applicationFormat": "WhereUsedMSExcel",
+                    "objectsToExport": [ "{{props.vmo}}" ],
+                    "targetObjectsToExport": [],
+                    "exportOptions": "{{function:getExportOptionValueForExcel}}",
+                    "attributesToExport": "{{function:getSelectedProperties}}",
+                    "recipeSourceObjects": [],
+                    "recipeTargetObjects": [],
+                    "objectTemplateInputs": [],
+                    "includeAttachments": false
+                } ]
+            },
+
+            "outputData": {
+                "fileTicket": "transientFileReadTickets"
+
+            },
+
+            "events": {
+                "success": [ {
+                        "condition": "!data.runInBackground.dbValue",
+                        "name": "exportToOfficeUtil.doExportDocumentEvent"
+                    },
+                    {
+                        "condition": "data.runInBackground.dbValue",
+                        "name": "exportExcel.closeDialog"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                        "message": "dispatcherNotInstalledExportFailure",
+                        "condition": "errorCode.code===3104"
+                    },
+                    {
+                        "message": "notificationForExportRoundTripWarningMsg",
+                        "condition": "errorCode.code===223036"
+                    }
+                ],
+                "success": [ {
+                        "condition": "data.runInBackground.dbValue",
+                        "message": "notificationForExportRunInBackgroundMsg"
+                    }
+
+                ]
+            },
+
+            "deps": "js/usedInStructuresExportToExcel"
+        },
+        "refreshProvider": {
+            "actionType": "dataProvider",
+            "method": "exportColumnList"
+        },
+        "removeColumn": {
+            "actionType": "JSFunction",
+            "method": "removeColumn",
+            "inputData": {
+                "exportColumns": "{{data.exportColumns}}",
+                "column": "{{data.eventData}}"
+            },
+            "outputData": {
+                "exportColumns": "result.exportColumns"
+            },
+            "events": {
+                "success": [ {
+                    "name": "exportExcel.refreshColumnList"
+                } ]
+            },
+            "deps": "js/exportToFile"
+        },
+        "doExportDocument": {
+            "actionType": "JSFunction",
+            "method": "processReadTicketResponse",
+            "inputData": {
+                "readFileTicketsResponse": "{{data.fileTicket}}"
+            },
+            "deps": "js/usedInStructuresExportToExcel"
+        },
+        "moveUp": {
+            "actionType": "JSFunction",
+            "method": "moveUpDown",
+            "inputData": {
+                "data": "{{data.dataProviders}}",
+                "moveTo": "Up"
+            },
+            "deps": "js/exportToFile"
+        },
+        "moveDown": {
+            "actionType": "JSFunction",
+            "method": "moveUpDown",
+            "inputData": {
+                "data": "{{data.dataProviders}}",
+                "moveTo": "Down"
+            },
+            "deps": "js/exportToFile"
+        },
+        "columnSelectionChanged": {
+            "actionType": "JSFunction",
+            "method": "columnSelectionChanged",
+            "inputData": {
+                "data": "{{data.dataProviders}}"
+            },
+            "deps": "js/exportToFile"
+        },
+        "prepareColumnList": {
+            "actionType": "JSFunction",
+            "method": "prepareColumnList",
+            "inputData": {
+                "data": "{{data}}",
+                "ctx": "{{ctx}}",
+                "props": "{{props}}"
+            },
+            "outputData": {
+                "exportColumns": "result.exportColumns",
+                "exportToExcelFileName": "result.exportToExcelFileName"
+            },
+            "events": {
+                "success": [ {
+                    "name": "exportExcel.refreshColumnList"
+                } ]
+            },
+            "deps": "js/exportToFile"
+        },
+        "unRegisterExportContext": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "exportContext"
+            }
+        }
+    },
+    "onEvent": [ {
+            "eventId": "exportExcel.refreshColumnList",
+            "action": "refreshProvider"
+        },
+        {
+            "eventId": "exportToOfficeUtil.doExportDocumentEvent",
+            "action": "doExportDocumentAndClose"
+
+        },
+        {
+            "eventId": "Awp0ExportMoveDown",
+            "action": "moveDown"
+        },
+        {
+            "eventId": "Awp0ExportMoveUp",
+            "action": "moveUp"
+        },
+        {
+            "eventId": "exportColumnList.selectionChangeEvent",
+            "action": "columnSelectionChanged"
+        },
+        {
+            "eventId": "awPanel.reveal",
+            "action": "prepareColumnList"
+        },
+        {
+            "eventId": "exportExcel.removeColumn",
+            "action": "removeColumn",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "exportExcel.exportToFile",
+            "action": "exportToFile"
+        },
+        {
+            "eventId": "exportExcel.unRegisterExportContext",
+            "action": "unRegisterExportContext"
+        },
+        {
+            "eventId": "exportExcel.closeDialog",
+            "action": "closeDialog"
+        }
+    ],
+    "dataProviders": {
+        "exportColumnList": {
+            "commandsAnchor": "awp0_exportToExcelDelete",
+            "response": "{{data.exportColumns.dbValue}}",
+            "selectionModelMode": "single"
+        }
+    },
+
+    "data": {
+        "selectedColumnsSubCommands": "exportSelectedColumnsCommands",
+        "exportColumns": {
+            "isArray": "true",
+            "dbValue": []
+        },
+        "runInBackground": {
+            "type": "BOOLEAN",
+            "displayName": "{{i18n.runInBackground}}",
+            "isRequired": "false",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": true
+        }
+    },
+    "functions": {
+        "getSelectedProperties": {
+            "functionName": "getSelectedProperties",
+            "parameters": [
+                "{{data.exportColumns}}"
+            ]
+        },
+        "getExportOptionValueForExcel": {
+            "functionName": "getExportOptionValueForExcel",
+            "parameters": [
+                "{{data}}",
+                "{{props}}"
+            ]
+        }
+    },
+    "conditions": {},
+    "messages": {
+        "notificationForExportRunInBackgroundMsg": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.usedInStructuresExportRInB}}",
+            "messageTextParams": [
+                "{{props.vmo.props.object_string.dbValues[0]}}"
+            ]
+        },
+        "dispatcherNotInstalledExportFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "notificationForExportRoundTripWarningMsg": {
+            "messageType": "WARNING",
+            "messageText": "{{partialErrors[0].errorValues[0].message}}"
+
+        }
+    },
+    "i18n": {
+        "exportPanelTitle": [
+            "Awp0ExportToExcelMessages"
+        ],
+        "export": [
+            "Awp0ExportToExcelMessages"
+        ],
+        "selectedcolumns": [
+            "Awp0ExportToExcelMessages"
+        ],
+        "exportProperties": [
+            "Awp0ExportToExcelMessages"
+        ],
+        "runInBackground": [
+            "OccurrenceManagementConstants"
+        ],
+        "usedInStructuresExportRInB": [
+            "PSMessages"
+        ]
+    }
+}

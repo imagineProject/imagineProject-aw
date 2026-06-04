@@ -1,0 +1,135 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-command-panel.directive",
+        "js/visible-when.directive",
+        "js/aw-command-panel-section.directive",
+        "js/aw-command-sub-panel.directive"
+    ],
+    "actions": {
+        "setActiveView": {
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "Awp0TaskAssignmentSubCommandPanel"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateSideNavUserPanelStateBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateSideNavUserPanelState",
+                    "condition": "activeState.activeView ==='Awp0TaskAssignmentSubCommandPanel'"
+                }
+            ]
+        },
+        "updateSideNavUserPanelState": {
+            "actionType": "JSFunction",
+            "method": "updateSideNavUserPanelState",
+            "inputData": {
+                "sideNavMode": "{{props.subPanelContext.sidenavMode}}",
+                "addUserPanelState": "{{fields.addUserPanelState}}"
+            },
+            "deps": "js/peoplePickerUtils"
+        },
+        "updateSearchCriteriaState": {
+            "actionType": "JSFunction",
+            "method": "updateUserPanelSearchStateCriteria",
+            "inputData": {
+                "AtomicObj": "{{fields.addUserPanelState}}",
+                "value" : {
+                    "selectedObject": "{{props.subPanelContext.selectionData.value.selected[0]._childObj.uid}}"
+                }
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        }
+    },
+    "functions": {},
+    "conditions": {},
+    "data": {
+        "activeView": "Awp0TaskAssignmentSubCommandPanel",
+        "addUserPanelState": {
+            "initialValues": {
+                "provider": "Awp0PeoplePickerProvider",
+                "selectionModelMode": "multiple",
+                "criteria": {
+                    "providerContentType": "GroupMember,User,ResourcePool",
+                    "searchString": "*",
+                    "selectedObject": "",
+                    "searchSubGroup": "true",
+                    "group": "",
+                    "role": "",
+                    "participantType": ""
+                },
+                "defaultCriteria": {
+                    "providerContentType": "GroupMember,User,ResourcePool",
+                    "searchSubGroup": "true",
+                    "group": "",
+                    "role": "",
+                    "participantType": ""
+                },
+                "preferenceCriteria": [
+                    "WRKFLW_user_panel_content_display",
+                    "WRKFLW_allow_resourcepool_assignments",
+                    "WRKFLW_show_user_assignment_options"
+                ],
+                "selectedUsers": "",
+                "isAddButtonNeeded": false,
+                "triggerUpdateSearchCriteria": false
+            },
+            "meta": {
+                "selectedUsers": {
+                    "field": "true",
+                    "type": "OBJECTARRAY"
+                }
+            }
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "Awp0TaskAssignmentSubCommandPanel",
+                "prePanelId": "Awp0TaskAssignmentSubCommandPanel",
+                "context": {}
+            },
+            "meta": {
+                "activeView": {
+                    "field": "true",
+                    "type": "STRING"
+                },
+                "context": {
+                    "field": "true",
+                    "type": "OBJECT"
+                }
+            }
+        },
+        "taskInfoObject": {
+            "initialValues": {
+                "updatePropContext": ""
+            },
+            "meta": {
+            }
+        }
+    },
+    "onEvent": [
+    ],
+    "lifecycleHooks": {
+        "onMount": "updateSearchCriteriaState",
+        "onUpdate": [
+            {
+                "action": "updateSideNavUserPanelStateBatchJob",
+                "observers": [ "props.subPanelContext.sidenavMode" ]
+            }
+        ]
+    },
+    "ctx": {
+        "panelContext": null
+    },
+    "i18n": {
+        "taskAssignments": [ "WorkflowCommandPanelsMessages" ],
+        "Add_Title": [ "WorkflowCommandPanelsMessages" ]
+    }
+}

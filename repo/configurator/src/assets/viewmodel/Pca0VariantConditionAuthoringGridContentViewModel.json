@@ -1,0 +1,1040 @@
+{
+    "schemaVersion": "1.0.0",
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "actions": {
+        "doInitActions": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "updateVCAGridInputSelection"
+                },
+                {
+                    "action": "handleInitActions"
+                }
+            ]
+        },
+        "updateVCAGridInputSelection": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "variantConditionContext.selectedModelObjects",
+                "value": "{{props.subPanelContext.selection}}"
+            },
+            "deps": "js/appCtxService"
+        },
+        "handleInitActions": {
+            "actionType": "JSFunction",
+            "method": "handleInitActions",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "declViewModel": "{{data}}"
+            },
+            "outputData": {
+                "pwaSelectionData": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "configuratorVcaTable.gridLoaded",
+                    "eventData": {
+                        "activeTab": "{{props.subPanelContext.activeTab}}"
+                    }
+                },
+                {
+                    "name": "Pca0VariantConditionAuthoringGrid.loadVariabilityData",
+                    "eventData": {
+                        "resetFilter": false
+                    }
+                } ]
+            },
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "loadVariabilityData": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadVariabilityData",
+            "inputData": {
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "gridSelectionState": "{{data.atomicDataRef.gridSelectionState}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "variabilityPropertiesToDisplay": "{{data.variabilityPropertiesToDisplay}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "outputData": {
+                "treeMaps": "result.treeMaps",
+                "dataProviders.treeDataProvider.columnConfig": "result.treeColumnConfig",
+                "ctx.searchResponseInfo.columnConfig": "result.treeColumnConfig",
+                "dataProviders.treeDataProvider.objectSetUri": "result.objectSetUri",
+                "isDataLoaded": "result.isDataLoaded"
+            },
+            "events": {
+                "success": [ {
+                    "name": "pca0VariantFormulaEditor.refresh",
+                    "condition":"conditions.isFormulaEditorRefreshRequired"
+                } ]
+            },
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "reloadVariabilityData": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "loadVariabilityData"
+                },
+                {
+                    "action": "triggerDataProviderAction"
+                }
+            ]
+        },
+        "triggerDataProviderAction": {
+            "actionType": "JSFunction",
+            "method": "triggerDataProviderAction",
+            "inputData": {
+                "eventData": "{{parameters.eventData.resetFilter}}"
+            },
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "doVcaGridUnmount": {
+            "actionType": "JSFunction",
+            "method": "doVcaGridUnmount",
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "refreshTreeDataProvider": {
+            "actionType": "dataProvider",
+            "method": "treeDataProvider"
+        },
+        "loadTreeDataProvider": {
+            "actionType": "JSFunction",
+            "method": "loadTreeDataProvider",
+            "inputData": {
+                "isDataLoaded": "{{data.isDataLoaded}}",
+                "treeLoadInput": "{{data.treeLoadInput}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "columnProvider": "{{data.columnProviders.treeColumnProvider}}",
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "treeMaps": "{{data.data.treeMaps}}"
+            },
+            "outputData": {
+                "treeLoadResult": "treeLoadResult",
+                "treeLoadInput.parentNode": "treeLoadParentNode",
+                "treeMaps": "treeMaps",
+                "isCommandBarVisible": "isCommandBarVisible"
+            },
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "handleEditModeChanged": {
+            "actionType": "JSFunction",
+            "method": "handleEditModeChanged",
+            "inputData": {
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "editOperation": "{{data.eventData.editOperation}}",
+                "treeMaps": "{{data.treeMaps}}",
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "isConfigurationReadOnly": "{{data.subPanelContextInfo.isConfigurationReadOnly}}"
+            },
+            "outputData": {
+                "mustRefreshContent": "result.mustRefreshContent",
+                "dataProviders.treeDataProvider.columnConfig": "result.columnConfig",
+                "treeMaps": "result.treeMaps",
+                "variabilityProps": "result.variabilityProps",
+                "operation": "result.editOperation"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0VariantConditionAuthoringGrid.refreshTreeDataProvider",
+                    "condition": "data.mustRefreshContent === true"
+                } ]
+            },
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "setVariantExpressionData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "setVariantExpressionData3",
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{function:getConfigPerspective}}",
+                    "selectedExpressions": "{{function:getExpressionData}}",
+                    "requestInfo": {
+                        "requestType": []
+                    }
+                }
+            },
+            "outputData": {
+                "ServiceData": "ServiceData"
+            },
+            "events": {
+                "failure": [ {
+                    "name": "Pca0VariantConditionAuthoringGridViewModel.postProcessSaveEditsWithPartialErrors",
+                    "eventData": {
+                        "ServiceData": "{{data.ServiceData}}"
+                    }
+                } ],
+                "success": [ {
+                    "name": "pca0VariabilityTree.editModeChanged",
+                    "eventData": {
+                        "gridID": "variantConditionAuthoringGrid",
+                        "editOperation": "saveComplete"
+                    }
+                }, {
+                    "name": "Pca0VariantConditionAuthoringGrid.postProcessSetVariantExpressionData"
+                } ]
+            },
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "validateProductConfigurations": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "validateProductConfigurations3",
+            "inputData": {
+                "validateProductConfigsInput": {
+                    "configPerspective": "{{function:getConfigPerspective}}",
+                    "selectedExpressions": "{{function:getExpressionDataForValidation}}",
+                    "requestInfo": "{{function:getRequestInfoForValidation}}"
+                }
+            },
+            "outputData": {
+                "validateProductConfigurationsResponse": "",
+                "validateSoaResponse": "validateProductConfigurationOutputs"
+            },
+            "events": {
+                "failure": [ {
+                    "name": "Pca0VariantConditionAuthoringGridViewModel.processPartialErrors",
+                    "eventData": {
+                        "ServiceData": "{{data.validateProductConfigurationsResponse}}"
+                    }
+                } ],
+                "success": [ {
+                    "name": "Pca0VariantConditionAuthoringGrid.postProcessValidateProductConfigurations"
+                } ]
+            },
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "validateVariantConditions": {
+            "actionType": "JSFunction",
+            "method": "validateProductConfigurations",
+            "inputData": {
+                "validationProps": "{{data.validationProps}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0ConfiguratorGrid.validateProductConfigurations",
+                    "eventData": {
+                        "action": "verboseValidate"
+                    }
+                } ]
+            },
+            "deps": "js/pca0GridAuthoringService"
+        },
+        "createSplitColumn": {
+            "actionType": "JSFunction",
+            "method": "createSplitColumn",
+            "inputData": {
+                "contextKey": "{{data.contextKey}}",
+                "eventData": "{{data.eventData}}",
+                "treeMaps": "{{data.treeMaps}}",
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "gridSelectionState": "{{data.atomicDataRef.gridSelectionState}}"
+            },
+            "outputData": {
+                "dataProviders.treeDataProvider.columnConfig": "result.columnConfig",
+                "treeMaps": "result.treeMaps",
+                "variabilityProps": "result.variabilityProps"
+            },
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "clearColumnSelections": {
+            "actionType": "JSFunction",
+            "method": "clearColumnSelections",
+            "inputData": {
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "eventData": "{{parameters.eventData}}"
+            },
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "copyColumnSelections": {
+            "actionType": "JSFunction",
+            "method": "copyColumnSelections",
+            "inputData": {
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "eventData": "{{parameters.eventData}}",
+                "contextKey": "variantConditionContext"
+            },
+            "deps": "js/pca0GridAuthoringService"
+        },
+        "pasteSelectionsOnColumn": {
+            "actionType": "JSFunction",
+            "method": "pasteSelectionsOnColumn",
+            "inputData": {
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "eventData": "{{parameters.eventData}}"
+            },
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "populateUserEdits": {
+            "actionType": "JSFunction",
+            "method": "populateUserEdits",
+            "inputData": {
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "outputData": {
+                "variabilityProps": ""
+            },
+            "deps": "js/pca0GridAuthoringService"
+        },
+        "addFreeFormOptionValue": {
+            "actionType": "JSFunction",
+            "method": "addFreeFormOptionValue",
+            "inputData": {
+                "gridSelectionState": "{{data.atomicDataRef.gridSelectionState}}",
+                "treeMaps": "{{data.treeMaps}}",
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "eventData": "{{data.eventMap['Pca0AddRangeFeaturePanel.valueCreated']}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "postProcessSaveEditsActions": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getListOfUnsavedColumns"
+                },
+                {
+                    "action": "postProcessSetVariantExpressionData"
+                }
+            ]
+        },
+        "postProcessSetVariantExpressionData": {
+            "actionType": "JSFunction",
+            "method": "postProcessSetVariantExpressionData",
+            "inputData": {
+                "commandContext": "{{data.atomicDataRef.vcaEditState}}"
+            },
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "postProcessValidateProductConfigurations": {
+            "actionType": "JSFunction",
+            "method": "postProcessValidateProductConfigurations",
+            "inputData": {
+                "validateSoaResponse": "{{data.validateSoaResponse}}",
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "validationProps": "{{data.validationProps}}",
+                "currentView": "variantConditionAuthoringGrid"
+            },
+            "outputData": {
+                "validationProps": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0VariabilityTree.validationComplete",
+                    "eventData": {
+                        "column": "{{data.validationProps.columnValidation}}",
+                        "columnToValidationMap": "{{data.validationProps.columnToValidationMap}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "processPartialErrorsAfterSave": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "processPartialErrors"
+                },
+                {
+                    "action": "getListOfUnsavedColumns"
+                }
+            ]
+        },
+        "processPartialErrors": {
+            "actionType": "JSFunction",
+            "method": "processPartialErrors",
+            "inputData": {
+                "eventData": "{{data.eventData.ServiceData}}"
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "getListOfUnsavedColumns": {
+            "actionType": "JSFunction",
+            "method": "getListOfUnsavedColumns",
+            "inputData": {
+                "ServiceData": "{{data.ServiceData}}"
+            },
+            "outputData": {
+                "unsavedColumns": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0VariantConditionAuthoringGrid.updateDirtyVMOs",
+                    "eventData": {
+                        "unsavedColumns": "{{data.unsavedColumns}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "updateDirtyVMOs": {
+            "actionType": "JSFunction",
+            "method": "updateDirtyVMOs",
+            "inputData": {
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "selectedObjects": "{{data.variabilityProps.businessObjectToSelectionMap}}",
+                "eventData": "{{parameters.eventData.unsavedColumns}}"
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "cancelEdits": {
+            "actionType": "JSFunction",
+            "method": "cancelEditVCA2Table",
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "handlePrimarySelectionChange": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "handleLeaveConfirmation",
+                    "condition": "conditions.isNotOkToLeave && conditions.isPwaSelectionChanged"
+                },
+                {
+                    "action": "triggerLoadVariability",
+                    "condition": "conditions.isOkToLeave && conditions.isPwaSelectionChanged && conditions.consumerAppNotLoadingData"
+                },
+                {
+                    "action": "resetEditModeStatus",
+                    "condition": "conditions.isPwaSelectionChanged"
+                },
+                {
+                    "action": "resetColumnFilters",
+                    "condition": "conditions.isPwaSelectionChanged"
+                },
+                {
+                    "action": "updatePwaSelection",
+                    "condition": "conditions.isPwaSelectionChanged"
+                }
+            ]
+        },
+        "handleLeaveConfirmation": {
+            "actionType": "JSFunction",
+            "method": "leaveConfirmation",
+            "inputData": {},
+            "events": {
+                "success": [ {
+                    "name": "Pca0VariantConditionAuthoringGrid.loadVariabilityData",
+                    "eventData": {
+                        "resetFilter": true
+                    }
+                } ],
+                "failure": [ {
+                    "name": "Pca0VariantConditionAuthoringGrid.loadVariabilityData",
+                    "eventData": {
+                        "resetFilter": true
+                    }
+                } ]
+            },
+            "deps": "js/editHandlerService"
+        },
+        "triggerLoadVariability": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0VariantConditionAuthoringGrid.loadVariabilityData",
+                    "eventData": {
+                        "resetFilter": false
+                    }
+                } ]
+            }
+        },
+        "resetEditModeStatus": {
+            "actionType": "JSFunction",
+            "method": "resetEditModeStatus",
+            "inputData": {
+                "isConfigurationReadOnly": "{{data.subPanelContextInfo.isConfigurationReadOnly}}",
+                "commandContext": "{{data.atomicDataRef.vcaEditState}}"
+            },
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "resetColumnFilters": {
+            "actionType": "JSFunction",
+            "method": "resetColumnFilters",
+            "inputData": {
+                "columnProvider": "{{data.columnProviders.treeColumnProvider}}",
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}"
+            },
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "updatePwaSelection": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext.selection}}"
+            },
+            "outputData": {
+                "pwaSelectionData": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "saveExpressionsInECNContext": {
+            "actionType": "JSFunction",
+            "method": "saveExpressionsInECNContext",
+            "inputData": {
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "treeMaps": "{{data.treeMaps}}",
+                "eventData": "{{data.eventMap['Pca0VariantConditionAuthoringGrid.SaveExpressionsInECNContext']}}"
+            },
+            "outputData": {
+                "variabilityProps": "result.variabilityProps",
+                "treeMaps": "result.vmtreeMaps"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0VariantConditionAuthoringGrid.SaveExpressions"
+                } ]
+            },
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "saveCompleteInNonTcApp": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "handleEditModeChanged"
+                },
+                {
+                    "action": "postProcessSetVariantExpressionData"
+                }
+            ]
+        },
+        "updateColumnSelection": {
+            "actionType": "JSFunction",
+            "method": "updateColumnSelection",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "selectionData": "{{props.subPanelContext.selectionData}}"
+            },
+            "deps": "js/Pca0VariantConditionAuthoringGridService"
+        },
+        "initializeColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetTableViewModelProperties",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "input": {
+                        "objectUids": [],
+                        "columnConfigInput": {
+                            "clientName": "AWClient",
+                            "hostingClientName": "",
+                            "clientScopeURI": "Pca0VariantConditions",
+                            "operationType": "union",
+                            "columnsToExclude": []
+                        },
+                        "requestPreference": {
+                            "typesToInclude": []
+                        }
+                    }
+                }
+            },
+            "outputData": {
+                "dataProviders.treeDataProvider.columnConfig":"{{function:loadTreeColumns}}"
+            }
+        },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI": "Pca0VariantConditions",
+                        "columnConfigId": "Pca0VariantConditionsColConfig",
+                        "columns": "{{function:getColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "outputData": {
+                "dataProviders.treeDataProvider.columnConfig": "{{function:postArrangeFunction}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0VariantConditionAuthoringGrid.loadVariabilityData"
+                    }
+                ]
+            }
+        },
+        "saveColumnConfigData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI": "Pca0VariantConditions",
+                        "columnConfigId": "Pca0VariantConditionsColConfig",
+                        "columns": "{{function:getColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "outputData": {}
+        },
+        "resetColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [ {
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos": [ {
+                            "clientScopeURI": "Pca0VariantConditions",
+                            "operationType": "union",
+                            "typeNames": [],
+                            "columnsToExclude": []
+                        } ],
+                        "businessObjects": [ {} ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "dataProviders.treeDataProvider.columnConfig": "{{function:postResetFunction}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0VariantConditionAuthoringGrid.loadVariabilityData"
+                } ]
+            }
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{parameters.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        }
+    },
+    "data": {
+        "variabilityPropertiesToDisplay": [],
+        "validationProps": {},
+        "isCommandBarVisible": false,
+        "treeMaps": {},
+        "gridSelectionState": {
+            "initialValues": {
+                "selectionInfo": {},
+                "isFreeFormOptionValueSelected": false
+            },
+            "meta": {
+                "selectionInfo": {
+                    "type": "OBJECT",
+                    "field": "true"
+                },
+                "isFreeFormOptionValueSelected": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                }
+            }
+        },
+        "vcaEditState": {
+            "initialValues": {
+                "vcaEditInProgress": false
+            },
+            "meta": {
+                "vcaEditInProgress": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                }
+            }
+        },
+        "variabilityProps": {
+            "initialValues": {
+                "consumerAppsData": {},
+                "dirtyElements": [],
+                "multiGrid": false,
+                "expandAll": true,
+                "businessObjectToSelectionMap": {},
+                "backupOfBusinessObjectToSelectionMap": {}
+            },
+            "meta": {
+                "activeFilter": {
+                    "type": "OBJECT",
+                    "field": "true"
+                },
+                "expandAll": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                },
+                "expansionMap": {
+                    "type": "OBJECT",
+                    "field": "true"
+                },
+                "filterApplied": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                },
+                "useCachedData": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                },
+                "soaResponse": {
+                    "type": "OBJECT",
+                    "field": "true"
+                },
+                "businessObjectToSelectionMap": {
+                    "type": "OBJECT",
+                    "field": "true"
+                },
+                "backupOfBusinessObjectToSelectionMap": {
+                    "type": "OBJECT",
+                    "field": "true"
+                }
+            }
+        },
+        "subPanelContextInfo": {
+            "contextKey": "variantConditionContext",
+            "effectivityFeature": "{{ctx.preferences.PCA_effectivity_shown_columns[0]}}",
+            "isRevRuleActionDefaultBehavior": {
+                "dbValue": true,
+                "type": "BOOLEAN"
+            },
+            "isConfigurationReadOnly": {
+                "dbValue": false,
+                "type": "BOOLEAN"
+            }
+        }
+    },
+    "dataProviders": {
+        "treeDataProvider": {
+            "action": "loadTreeDataProvider",
+            "initializeAction": "loadTreeDataProvider",
+            "columnMenuCommandsAnchor": "aw_vca2_splmTable_columnMenu",
+            "gridId": "variantConditionAuthoringGrid",
+            "inputData": {
+                "accessMode": "tree",
+                "topNodeUid": "variabilityTreeData"
+            },
+            "treeLoadResult": "action.result.treeLoadResult"
+        }
+    },
+    "columnProviders": {
+        "treeColumnProvider": {
+            "columns": "{{data.columns}}",
+            "loadColumnAction": "initializeColumnConfig",
+            "saveColumnAction": "saveColumnConfigData",
+            "saveColumnAndLoadAction": "saveColumnConfigLoadData",
+            "resetColumnAction": "resetColumnConfig"
+        }
+    },
+    "grids": {
+        "variantConditionAuthoringGrid": {
+            "dataProvider": "treeDataProvider",
+            "columnProvider": "treeColumnProvider",
+            "addIconColumn": false,
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "useStaticFirstCol": true,
+                "enableSorting": false,
+                "enableGridMenu": true,
+                "headerHeight": "150",
+                "isFilteringEnabled": true,
+                "enablePinning": false,
+                "enableExpansionStateCaching": false,
+                "enableHeaderResizing": true
+            }
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "doInitActions",
+        "onUnmount": "doVcaGridUnmount",
+        "onUpdate": [ {
+            "action": "handlePrimarySelectionChange",
+            "observers": [ "props.subPanelContext.summaryContext.headerVmo.uid", "props.subPanelContext.summaryContext.headerVmo[0].uid", "props.subPanelContext.summaryContext.headerVmo.length" ]
+        } ]
+    },
+    "i18n": {},
+    "functions": {
+        "getConfigPerspective": {
+            "functionName": "getConfigPerspective"
+        },
+        "getExpressionData": {
+            "functionName": "getExpressionData",
+            "parameters": [
+                "{{data.variabilityProps}}",
+                "{{data.treeMaps.columnSplitIDsMap}}"
+            ]
+        },
+        "getExpressionDataForValidation": {
+            "functionName": "getExpressionDataForValidation",
+            "parameters": [
+                "{{data.validationProps}}",
+                "{{data.variabilityProps.businessObjectToSelectionMap}}"
+            ]
+        },
+        "getRequestInfoForValidation": {
+            "functionName": "getRequestInfoForValidation",
+            "parameters": [
+                "{{data.validationProps}}",
+                "{{parameters.eventData.action}}"
+            ]
+        },
+        "loadTreeColumns": {
+            "functionName": "loadTreeColumns",
+            "parameters": [
+                "variantConditions",
+                "{{data.dataProviders.treeDataProvider}}",
+                "{{data.atomicDataRef.gridSelectionState}}"
+            ],
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "postResetFunction": {
+            "functionName": "postResetUpdateColumnConfig",
+            "parameters": [
+                "{{data.dataProviders.treeDataProvider}}",
+                "{{data.atomicDataRef.gridSelectionState}}",
+                "variantConditionContext"
+            ],
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "postArrangeFunction": {
+            "functionName": "postArrangeUpdateColumnConfig",
+            "parameters": [
+                "{{data.dataProviders.treeDataProvider}}",
+                "{{data.atomicDataRef.gridSelectionState}}",
+                "variantConditionContext"
+            ],
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "getColumns": {
+            "functionName": "getGridServerColumns",
+            "parameters": [ "{{data.dataProviders.treeDataProvider.newColumns}}" ],
+            "deps": "js/pca0GridCommonUtils"
+        }
+    },
+    "conditions": {
+        "isPwaSelectionChanged": {
+            "expression": "data.pwaSelectionData !== undefined && subPanelContext.selection !== data.pwaSelectionData"
+        },
+        "isOkToLeave": {
+            "expression": "!ctx.isVariantTableEditing"
+        },
+        "isNotOkToLeave": {
+            "expression": "ctx.isVariantTableEditing"
+        },
+        "consumerAppNotLoadingData": {
+            "expression": "ctx.variantConditionContext.allowConsumerAppsToLoadData === undefined || ctx.variantConditionContext.allowConsumerAppsToLoadData === false"
+        },
+        "isFormulaEditorRefreshRequired": {
+            "expression": {
+                "$and": [
+                    {
+                        "$source": "ctx.variantConditionContext.formulaEditorProps.isFormulaEditorOpen",
+                        "$query": {
+                            "$eq": true
+                        }
+                    },{
+                        "$or": [
+                            {
+                                "$source": "ctx.variantConditionContext.variantFormulaEditInProgress",
+                                    "$query": {
+                                    "$eq": false
+                                }
+                            },
+                            {
+                                "$and": [
+                                    {
+                                        "$source": "ctx.variantConditionContext.variantFormulaEditInProgress",
+                                        "$query": {
+                                            "$eq": true
+                                        }
+                                    },
+                                    {
+                                        "$source": "props.subPanelContext.selection",
+                                        "$query": {
+                                            "$all": {
+                                                "$source": {
+                                                    "$adapt": "uid"
+                                                },
+                                                "$query": {
+                                                    "$notin": [
+                                                        "{{ctx.variantConditionContext.formulaEditorProps.selectedObject.uid}}"
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    "onEvent": [ {
+            "eventId": "Pca0VariantConditionAuthoringGrid.loadVariabilityData",
+            "action": "reloadVariabilityData",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariantConditionAuthoringGrid.refreshTreeDataProvider",
+            "action": "refreshTreeDataProvider"
+        },
+        {
+            "eventId": "pca0VariabilityTree.editModeChanged",
+            "action": "handleEditModeChanged",
+            "cacheEventData": true,
+            "criteria": {
+                "gridID": "variantConditionAuthoringGrid"
+            }
+        },
+        {
+            "eventId": "Pca0VariantConditionAuthoringGrid.SaveExpressions",
+            "action": "setVariantExpressionData"
+        },
+        {
+            "eventId": "Pca0ConfiguratorGrid.validateProductConfigurations",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "validateProductConfigurations"
+        },
+        {
+            "eventId": "Pca0VariabilityTreeCustomMenuService.performColumnValidate",
+            "action": "validateVariantConditions",
+            "cacheEventData": true,
+            "criteria": {
+                "gridID": "variantConditionAuthoringGrid"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityTreeDisplayService.performSplitColumn",
+            "action": "createSplitColumn",
+            "cacheEventData": true,
+            "criteria": {
+                "gridID": "variantConditionAuthoringGrid"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityTreeCustomMenuService.performColumnClearSelections",
+            "action": "clearColumnSelections",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "criteria": {
+                "gridID": "variantConditionAuthoringGrid"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityTreeCustomMenuService.performColumnCopySelections",
+            "action": "copyColumnSelections",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "criteria": {
+                "gridID": "variantConditionAuthoringGrid"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityTreeCustomMenuService.performPasteSelectionsOnColumn",
+            "action": "pasteSelectionsOnColumn",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "criteria": {
+                "gridID": "variantConditionAuthoringGrid"
+            }
+        },
+        {
+            "eventId": "Pca0GridAuthoring.populateUserEdits",
+            "action": "populateUserEdits",
+            "cacheEventData": true,
+            "criteria": {
+                "gridId": "variantConditionAuthoringGrid"
+            }
+        },
+        {
+            "eventId": "Pca0VariantConditionAuthoringGrid.postProcessSetVariantExpressionData",
+            "action": "postProcessSaveEditsActions"
+        },
+        {
+            "eventId": "Pca0VariantConditionAuthoringGrid.postProcessValidateProductConfigurations",
+            "action": "postProcessValidateProductConfigurations"
+        },
+        {
+            "eventId": "Pca0FilterCriteriaSettings.filterCriteriaUpdated",
+            "action": "reloadVariabilityData",
+            "criteria": {
+                "contextKey": "variantConditionContext"
+            }
+        },
+        {
+            "eventId": "Pca0AddRangeFeaturePanel.valueCreated",
+            "action": "addFreeFormOptionValue",
+            "cacheEventData": true,
+            "criteria": {
+                "sourceID": "variantConditionAuthoringGrid"
+            }
+        },
+        {
+            "eventId": "Pca0VariantConditionAuthoringGridViewModel.processPartialErrors",
+            "action": "processPartialErrors",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0VariantConditionAuthoringGridViewModel.postProcessSaveEditsWithPartialErrors",
+            "action": "processPartialErrorsAfterSave",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0VariantConditionAuthoringGrid.SaveExpressionsInECNContext",
+            "action": "saveExpressionsInECNContext",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0VariantConditionAuthoringGrid.updateDirtyVMOs",
+            "action": "updateDirtyVMOs",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0HostedConfigurator.saveCompleteInNonTcApp",
+            "action": "saveCompleteInNonTcApp",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "pcaGrid.updateSelection",
+            "action": "updateColumnSelection"
+        },
+        {
+            "eventId": "columnArrange",
+            "action": "doArrangeEvent",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+    ],
+    "editHandlers": {
+        "pca0EditHandler": {
+            "context": "VARIANT_TREE_CONTEXT"
+        }
+    },
+    "ctx": {
+        "variantConditionContext": {
+            "type": "object"
+        },
+        "isVariantTableEditing": {
+            "type": "Boolean"
+        }
+    }
+}

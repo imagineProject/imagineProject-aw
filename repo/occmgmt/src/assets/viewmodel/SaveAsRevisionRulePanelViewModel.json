@@ -1,0 +1,142 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "actions": {
+        "closeRevisionRulePanelAction": {
+            "actionType": "JSFunction",
+            "method": "closeSaveAsAndRevisionRulePanel",
+            "inputData": {
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },            
+            "deps": "js/revisionRuleAdminPanelService"
+        },
+        "closeRevisionRuleAdminPanelAction": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "unRegisterRevisionRuleAdminCtx"
+                },
+                {
+                    "action": "closeRevisionRulePanelAction"
+                }
+            ]
+        },
+        "unRegisterRevisionRuleAdminCtx": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "path": "RevisionRuleAdmin"
+            }
+        },       
+        "saveRevisionRuleAction":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "saveRevisionRule"
+                },               
+                {
+                    "action": "backToPreviousPanel"
+                }                
+            ]
+        },
+        "saveRevisionRule": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-StructureManagement-2023-06-RevisionRuleAdministration",
+            "method": "createOrUpdateRevisionRule2",
+            "inputData": {
+                "inputData": {
+                    "updateExisting": false,                    
+                    "revisionRuleInfo": {
+                        "name": "{{data.saveAsRevRuleName.dbValue}}",
+                        "description": "{{data.saveAsRevRuleDesc.dbValue}}",
+                        "entriesInfo": "{{function:getUpdatedClauses}}",
+                        "nestedEffectivity": "{{ctx.RevisionRuleAdmin.isNestedEffectivityPresent}}"
+                    }
+                }
+            },
+            "outputData": {
+                "updatedRevisionRule": "{{function:getNewRevisionRule}}",
+                "revisionRuleCreationError": "ServiceData.partialErrors[0]"                
+            },
+            "actionMessages": {
+                "failure": [ {
+
+                    "message": "revisionRuleCreationFailed"
+                } ]
+            },
+            "deps": "js/revisionRuleAdminPanelService"
+        },
+        "backToPreviousPanel": {
+            "actionType": "JSFunction",
+            "method": "goToPrevPanel",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}"
+            },            
+            "deps": "js/aceNestedNavigationPanelService"
+        }        
+    },
+
+    "functions": {
+        "getUpdatedClauses": {
+            "functionName": "getUpdatedClauses",
+            "parameters": [
+                "{{props.subPanelContext.nestedNavigationState}}"
+            ]
+        },
+        "getNewRevisionRule": {
+            "functionName": "updateCtxAndNestedNavigationStateForNewRevRule",
+            "parameters": [                
+                "{{props.subPanelContext.nestedNavigationState}}"
+            ]
+        }        
+    },
+    
+    "data": {
+        "saveAsRevRuleName":{
+            "displayName": "{{i18n.revRuleName}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "isEditable": "true",
+            "dbValue": "",
+            "dispValue": ""
+        },
+        "saveAsRevRuleDesc":{
+            "displayName":"{{i18n.revRuleDesc}}",
+            "type":"STRING",
+            "isRequired":"false",
+            "isEditable":"true",
+            "dbValue":"",
+            "dispValue":""
+        }
+    },
+
+    "i18n": {
+        "revRuleName": [
+            "RevisionRuleAdminConstants"
+        ],
+        "revRuleDesc": [
+            "RevisionRuleAdminConstants"
+        ],
+        "save": [
+            "RevisionRuleAdminConstants"
+        ],
+        "clauses": [
+            "RevisionRuleAdminConstants"
+        ]
+    },
+
+    "messages": {
+        "revisionRuleCreationFailed": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+
+    "onEvent": [
+        {
+            "eventId": "RevisionRuleAdminPanel.closeRevisionRulePanel",
+            "action": "closeRevisionRuleAdminPanelAction"
+        }
+    ]
+
+}

@@ -1,0 +1,78 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "initializeRevisionRuleConfigurationInfo": {
+            "actionType": "JSFunction",
+            "method": "getInitialRevisionRuleConfigurationData",
+            "inputData": {
+                "data": "{{data}}",
+                "occContext":"{{props.subPanelContext.occContext}}"
+            },
+            "outputData":{
+                "currentRevisionRule":"currentRevisionRule",
+                "currentRevisionRuleDescription" : "currentRevisionRuleDescription",
+                "globalRuleValue":"globalRevRuleProperty"
+            },
+            "deps": "js/aceRevisionRuleConfigurationService"
+        },
+        "updateCurrentRevisionRule": {
+            "actionType": "JSFunction",
+            "method": "updateCurrentRevisionRule",
+            "inputData": {
+                "eventData": "{{data.eventData}}"
+            },
+            "outputData":{
+                "currentRevisionRule":"currentRevisionRule"
+            },
+            "deps": "js/aceRevisionRuleConfigurationService"
+        }
+    },
+    "conditions": {
+        "isUpdateApplicable": {
+            "expression": "subPanelContext.contextKey === viewKey"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeRevisionRuleConfigurationInfo",
+        "onUpdate":
+        {
+            "action": "initializeRevisionRuleConfigurationInfo",
+            "observers": [ "props.subPanelContext.occContext.productContextInfo.props.awb0CurrentRevRule" ]
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "awConfigPanel.revisionRuleChanged",
+            "cacheEventData": true,
+            "condition": "conditions.isUpdateApplicable",
+            "action": "updateCurrentRevisionRule"
+        }
+    ],
+
+    "data": {
+        "globalLabel": {
+            "uiValue": "{{i18n.globalLabel}}",
+            "type": "STRING"
+        },
+        "globalRuleValue": {
+            "dbValue": "{{data.globalRuleValue}}",
+            "type": "STRING"
+        },
+        "currentRevisionRule": {
+            "uiValue": "{{data.currentRevisionRule}}",
+            "type": "STRING"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "i18n": {
+        "revision": [ "OccurrenceManagementConstants" ],
+        "currentRevisionRule": [ "OccurrenceManagementConstants" ],
+        "globalLabel": [ "OccurrenceManagementConstants" ],
+        "occurrenceManagementLoadingMsg": [ "OccurrenceManagementConstants" ],
+        "errorInGettingPreferredConfigInfo": [ "OccurrenceManagementMessages" ]
+    }
+}

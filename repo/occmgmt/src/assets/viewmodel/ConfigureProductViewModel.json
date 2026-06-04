@@ -1,0 +1,126 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "saveRevRuleAndConfigureProduct": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-StructureManagement-2023-06-RevisionRuleAdministration",
+            "method": "createOrUpdateRevisionRule2",
+            "inputData": {
+                "inputData": {
+                    "updateExisting": true,
+                    "revisionRuleInfo": {
+                        "uid": "{{function:getRevisionRule}}",
+                        "name": "{{function:getModifiedRevisionRuleName}}",
+                        "description": "{{subPanelContext.revRuleDesc.uiValue}}",
+                        "entriesInfo": "{{function:getUpdatedClauses}}",
+                        "nestedEffectivity": "{{ctx.RevisionRuleAdmin.isNestedEffectivityPresent}}",
+                        "isPrivate": true
+                    }
+                }
+            },
+            "policy": {
+                "types": [ {
+                    "name": "RevisionRule",
+                    "properties": [ {
+                        "name": "rule_date"
+                    } ]
+                } ]
+            },
+            "outputData": {
+                "updatedRevisionRule": "{{function:getUpdatedRevisionRule}}",
+                "revisionRuleCreationError": "ServiceData.partialErrors[0]"
+            },
+            "actionMessages": {
+                "failure": [ {
+
+                    "message": "revisionRuleCreationFailed"
+                } ]
+            },
+            "deps": "js/revisionRuleAdminPanelService"
+        },
+
+        "cancelModification": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "RevisionRuleAdminPanel.cancelModification"
+                } ]
+            }
+        },
+        "saveRevRuleIfRequiredAndConfigureProduct": {
+            "actionType": "JSFunction",
+            "method": "saveRevRuleIfRequiredAndConfigureProduct",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "deps": "js/revisionRuleAdminPanelService"
+        }
+    },
+
+    "data": {
+        "nestedEffectivity": {
+            "displayName": "{{i18n.nestedEffectivity}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "dbValue": true,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+    "functions": {
+        "getModifiedRevisionRuleName": {
+            "functionName": "getModifiedRevisionRuleName",
+            "parameters": [
+                    "{{data.subPanelContext.revRuleName}}",
+                    "{{data.subPanelContext.isClauseModified}}",
+                    "{{data.subPanelContext.nestedNavigationState}}"
+            ]
+        },
+        "getUpdatedClauses": {
+            "functionName": "getUpdatedClauses",
+            "parameters": [
+                "{{props.subPanelContext.nestedNavigationState}}"
+            ]
+        },
+        "getUpdatedRevisionRule": {
+            "functionName": "getUpdatedRevisionRule",
+            "parameters": [
+                "{{data}}",
+                "{{data.subPanelContext.occContext.productContextInfo}}"
+            ]
+        },
+        "getRevisionRule": {
+            "functionName": "getRevisionRule",
+            "parameters": [
+
+            ]
+        }
+    },
+
+    "onEvent": [ {
+        "eventId": "RevisionRuleAdminPanel.saveRevRuleAndConfigureProduct",
+        "action": "saveRevRuleAndConfigureProduct",
+        "cacheEventData": true
+    } ],
+
+    "conditions": {
+        "isRevisionRuleEditable": {
+            "expression": "ctx.RevisionRuleAdmin.isBranchClausePresent !== undefined&& ctx.RevisionRuleAdmin.isBranchClausePresent === false"
+        }
+    },
+
+    "i18n": {
+        "configure": [ "RevisionRuleAdminConstants" ],
+        "modifyAndConfigure": [ "RevisionRuleAdminConstants" ],
+        "cancelModification": [ "RevisionRuleAdminConstants" ],
+        "nestedEffectivity": [ "RevisionRuleAdminConstants" ],
+        "confirmModification": [ "RevisionRuleAdminConstants" ]
+
+    },
+    "messages": {
+        "revisionRuleCreationFailed": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    }
+}

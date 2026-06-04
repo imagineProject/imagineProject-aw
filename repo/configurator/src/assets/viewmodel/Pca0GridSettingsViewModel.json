@@ -1,0 +1,327 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {
+        "onMount": "initializeView"
+    },
+    "actions": {
+        "initializeView": {
+            "actionType": "JSFunction",
+            "method": "initializeSettingsPanel",
+            "inputData": {
+                "gridSettings": "{{props.subPanelContext.gridSettings}}",
+                "fields": {
+                    "includeSeverityInComparison": "{{fields.includeSeverityInComparison}}",
+                    "showPropsInfoInGrid": "{{fields.showPropsInfoInGrid}}",
+                    "showSubjectInTopGrid": "{{fields.showSubjectInTopGrid}}",
+                    "useAllVariabilityInGridEditor": "{{fields.useAllVariabilityInGridEditor}}",
+                    "showLegend": "{{fields.showLegend}}"
+                }
+            },
+            "outputData": {
+                "headerHeight.dbValue[0].sliderOption.value": "topTableHeight"
+            },
+            "deps": "js/pca0GridSettingsService"
+        },
+        "applyGridSettings": {
+            "actionType": "JSFunction",
+            "method": "applyGridSettings",
+            "inputData": {
+                "gridSettingsDataForColumnHeader": "{{data.atomicDataRef.gridSettingsDataForColumnHeader}}",
+                "gridSettingsFromPanel": "{{data.data}}",
+                "gridSettings": "{{props.subPanelContext.gridSettings}}",
+                "displayMode": "{{props.subPanelContext.displayMode}}",
+                "gridEditorMode": "{{props.subPanelContext.gridEditorMode}}"
+            },
+            "outputData": {
+                "mustTriggerNewColumnWidthUpdate": "mustTriggerNewColumnWidthUpdate",
+                "mustTriggerHeaderOrientationChange": "mustTriggerHeaderOrientationChange",
+                "mustTriggerUpdateIncludeSeverityInComparison": "mustTriggerUpdateIncludeSeverityInComparison",
+                "mustTriggerPropertiesInformationChanged": "mustTriggerPropertiesInformationChanged",
+                "mustTriggerConfigurationSectionsChanged": "mustTriggerConfigurationSectionsChanged"
+
+            },
+            "events": {
+                "success": [ 
+                    {
+                        "name": "Pca0Grid.updateColumnWidth",
+                        "condition": "data.mustTriggerNewColumnWidthUpdate !== -1",
+                        "eventData": {
+                            "newColumnWidth": "{{data.mustTriggerNewColumnWidthUpdate}}"
+                        }
+                    },
+                    {
+                        "name": "Pca0Grid.updateHeaderOrientation",
+                        "condition": "data.mustTriggerHeaderOrientationChange"
+                    },
+                    {
+                        "name": "Pca0MultiVariantsGrid.updateIncludeSeverityInComparison",
+                        "condition": "data.mustTriggerUpdateIncludeSeverityInComparison"
+                    },
+                    {
+                        "name": "Pca0ConstraintsGrid.showPropertiesInformationChanged",
+                        "condition": "data.mustTriggerPropertiesInformationChanged"
+                    },
+                    {
+                        "name": "Pca0ConstraintsGrid.sectionsConfigurationChanged",
+                        "condition": "data.mustTriggerConfigurationSectionsChanged"
+                    },
+                    {
+                        "name": "closePanelDialog.gridSettings"
+                    }
+                ]
+            },
+            "deps": "js/pca0GridSettingsService"
+        },
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "headerHeightChangeAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "triggerLiveUpdateTableHeight"
+                },
+                {
+                    "action": "updateTableHeightChangedLocalFlag",
+                    "condition": "!data.headerHeightUpdated"
+                }
+            ]
+        },
+        "triggerLiveUpdateTableHeight": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "Pca0Grid.liveUpdateTableHeight",
+                        "eventData": {
+                            "sliderValue": "{{data.headerHeight.dbValue}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "updateTableHeightChangedLocalFlag": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "value": true
+            },
+            "outputData": {
+                "headerHeightUpdated": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        }
+    },
+    "data": {
+        "headerHeightUpdated": false,
+        "headerHeight": {
+            "isArray": "true",
+            "dbValue": [
+                {
+                    "sliderOption": {
+                        "disabled": false,
+                        "min": 25,
+                        "max": 80,
+                        "step": 1,
+                        "orientation": "horizontal",
+                        "range": false
+                    },
+                    "showIncrementButtons": true,
+                    "showSliderDisplayValueLabel": false,
+                    "sliderChangeEventAction": "headerHeightChangeAction"
+                }
+            ]
+        },
+        "gridSettingsDataForColumnHeader": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "includeSeverityInComparison": {
+            "displayName": "{{i18n.includeSeverityInComparison}}",
+            "type": "BOOLEAN",
+            "isRequired": false,
+            "isEditable": true,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "resizeTopSectionHeightLabel": {
+            "displayName": "{{i18n.resizeTopSectionHeightLabel}}"
+        },
+        "showSubjectInTopGrid": {
+            "displayName": "{{i18n.showSubjectInTopGrid}}",
+            "type": "BOOLEAN",
+            "isRequired": false,
+            "isEditable": true,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "showPropsInfoInGrid": {
+            "displayName": "{{i18n.showPropsInfoInGrid}}",
+            "type": "BOOLEAN",
+            "isRequired": false,
+            "isEditable": true,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "useAllVariabilityInGridEditor": {
+            "displayName": "{{i18n.useAllVariabilityInGridEditor}}",
+            "type": "BOOLEAN",
+            "isRequired": false,
+            "isEditable": true,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "showLegend": {
+            "displayName": "{{i18n.showLegend}}",
+            "type": "BOOLEAN",
+            "isRequired": false,
+            "isEditable": true,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+    "i18n": {
+        "settings": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "applyCmd": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "includeSeverityInComparison": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "dataViewRelatedSettings": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "sectionTitle": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "resizeTopSectionHeightLabel": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "showSubjectInTopGrid": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "properties": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "showPropsInfoInGrid": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "variabilityContent": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "useAllVariabilityInGridEditor": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "legend":[
+            "ConfiguratorExplorerMessages"
+        ],
+        "showLegend":[
+            "ConfiguratorExplorerMessages"
+        ]
+    },
+    "onEvent": [ 
+        {
+            "eventId": "closePanelDialog.gridSettings",
+            "action": "closePanel"
+        } 
+    ],
+    "conditions": {
+        "isSnOMatrix": {
+            "expression":"props.subPanelContext.activeTab.pageId === 'Pca0SnOMatrix'"
+        },
+        "isGridEditor": {
+            "expression": "props.subPanelContext.activeTab.pageId === 'Pca0GridEditor'"
+        },
+        "isConstraintsGrid": {
+            "expression": "conditions.isSnOMatrix || conditions.isGridEditor"
+        },
+        "isMultivariantsGrid": {
+            "expression": "props.subPanelContext.activeTab.pageId === 'Pca0MultipleVariantsConfiguration'"
+        },
+        "isShowSubjectInTopGridChanged": {
+            "expression": "data.showSubjectInTopGrid.valueUpdated"
+        },
+        "isCompactColumnWidthChanged": {
+            "expression": "data.gridSettingsDataForColumnHeader.useCompactColumnWidth.valueUpdated"
+        },
+        "isVerticalColumnHeaderChanged": {
+            "expression": "data.gridSettingsDataForColumnHeader.useVerticalColumnHeader.valueUpdated"
+        },
+        "isColumnWidthPxChanged": {
+            "expression": "data.gridSettingsDataForColumnHeader.columnWidthUpdated"
+        },
+        "isColumnWidthChanged": {
+            "expression": "conditions.isCompactColumnWidthChanged || conditions.isColumnWidthPxChanged"
+        },
+        "includeSeverityInComparisonChanged": {
+            "expression": "data.includeSeverityInComparison.valueUpdated"
+        },
+        "isShowPropertiesInfoInGridChanged": {
+            "expression": "data.showPropsInfoInGrid.valueUpdated"
+        },
+        "isUseAllVariabilityInGridEditorChanged": {
+            "expression": "data.useAllVariabilityInGridEditor.valueUpdated"
+        },
+        "isShowLegendChanged":{
+            "expression": "data.showLegend.valueUpdated"
+        },
+        "settingsChanged": {
+            "expression": {
+                "$or": [ 
+                    {
+                        "$source": "data.headerHeightUpdated",
+                        "$query": {
+                            "$eq": true
+                        }
+                    },
+                    {
+                        "$source": "conditions.isColumnWidthChanged",
+                        "$query": {
+                            "$eq": true
+                        }
+                    },
+                    {
+                        "$source": "conditions.isVerticalColumnHeaderChanged",
+                        "$query": {
+                            "$eq": true
+                        }
+                    },
+                    {
+                        "$source": "conditions.includeSeverityInComparisonChanged",
+                        "$query": {
+                            "$eq": true
+                        }
+                    },
+                    {
+                        "$source": "conditions.isShowSubjectInTopGridChanged",
+                        "$query": {
+                            "$eq": true
+                        }
+                    },
+                    {
+                        "$source": "conditions.isShowPropertiesInfoInGridChanged",
+                        "$query": {
+                            "$eq": true
+                        }
+                    },
+                    {
+                        "$source": "conditions.isUseAllVariabilityInGridEditorChanged",
+                        "$query": {
+                            "$eq": true
+                        }
+                    },
+                    {
+                        "$source": "conditions.isShowLegendChanged",
+                        "$query": {
+                            "$eq": true
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,112 @@
+{
+   "schemaVersion":"1.0.0",
+   "data":{
+      "typeListProp": {
+        "type": "STRING",
+        "hasLov": true,
+        "isEditable": true,
+        "propertyLabelDisplay": "NO_PROPERTY_LABEL"
+    },
+      "object_name":{
+         "displayName":"{{i18n.name}}",
+         "type":"STRING",
+         "isRequired":"true",
+         "dbValue":""
+      },
+      "description":{
+         "displayName":"{{i18n.description}}",
+         "type":"STRING",
+         "isRequired":"false",
+         "dbValue":""
+      },  
+      "deliverableType": {
+         "initialValues": {},
+         "meta": {}
+      }
+   },
+   "actions":{
+      "add":{
+         "actionType":"TcSoaService",
+         "serviceName":"ProjectManagement-2008-06-ScheduleManagement",
+         "method":"createScheduleDeliverableTemplates",
+         "inputData":{
+            "scheduleDeliverableData":[
+               {
+                  "schedule":"{{ctx.selected}}",
+                  "deliverableType": "{{deliverableType.selected[0].object.props.type_name.dbValues[0]}}",
+                  "deliverableName":"{{data.object_name.dbValue}}"
+               }
+            ]
+         },
+         "events":{
+            "success":[
+               {
+                  "name":"cdm.relatedModified",
+                  "eventData":{
+                     "relatedModified":[
+                        "{{ctx.selected}}"
+                     ]
+                  }
+               },
+               {
+                  "name": "closeDialog"
+               }
+            ]
+         },
+         "actionMessages": {
+            "failure": [
+                {
+                    "message": "soaErrorMessage"
+                }
+            ]
+        }
+      },
+      "closePanelDialog":{
+         "actionType": "JSFunction",
+         "method": "closeDialog",
+         "inputData": {
+             "editContext": "INFO_PANEL_CONTEXT",
+             "popupId": "{{subPanelContext.popupOptions.popupId}}"
+         },
+         "deps": "js/dialogService"
+     }
+   },
+   "conditions": {
+        "isValidToAdd":
+        {
+           "expression": "data.typeListProp.dbValue && data.object_name.dbValue!==''"
+        }
+    },
+   "i18n":{
+      "addDeliverableCommandTitle":[
+         "ScheduleManagerMessages"
+      ],
+      "type":[
+         "ScheduleManagerMessages"
+      ],
+      "loading":[
+         "ScheduleManagerMessages"
+      ],
+      "name":[
+         "ScheduleManagerMessages"
+      ],
+      "description":[
+         "ScheduleManagerMessages"
+      ],
+      "addButtonText":[
+         "ScheduleManagerMessages"
+      ]
+   },   
+   "messages":{
+      "soaErrorMessage": {
+        "messageType": "ERROR",
+        "messageText": "{{errorCode}}"
+      }
+  },
+"onEvent": [
+   {
+      "eventId": "closeDialog",
+      "action": "closePanelDialog"
+   }
+]
+}

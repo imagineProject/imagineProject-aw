@@ -1,0 +1,140 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "availability": {
+            "displayName": "{{i18n.Saw1AvailabilityText}}",
+            "type": "STRING",
+            "dbValue": "Availability",
+            "dispValue": ""
+        },
+        "load": {
+            "displayName": "{{i18n.Saw1LoadText}}",
+            "type": "STRING",
+            "dbValue": "Load",
+            "dispValue": ""
+        },
+        "capacity": {
+            "displayName": "{{i18n.Saw1CapacityText}}",
+            "type": "STRING",
+            "dbValue": "Capacity",
+            "dispValue": ""
+        },
+        "iconURL": {
+            "dbValue": "assets/image/indicatorFlagGreen16.svg",
+            "title":""
+        }
+    },
+    "dataProviders": {
+        "assignedTasksList": {
+            "action": "callResGraphSOA",
+            "commands":
+            {
+                "Awp0ShowObjectCell":
+                {
+                    "id": "cmdOpen",
+                    "title": "Open",
+                    "areas": [ "com.siemens.splm.clientfx.ui.modelObjectListActionCommands" ],
+                    "priorities": [ 300 ],
+                    "dependencies": [ "js/showObjectCommandHandler" ],
+                    "displayOption": "ON_HOVER_AND_SELECTION",
+                    "position": "TOP_RIGHT"
+                }
+            }
+        }
+    },
+    "actions": {
+        "reveal": {
+            "actionType": "dataProvider",
+            "methods": [
+                "assignedTasksList"
+            ]
+        },
+        "callResGraphSOA": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2014-10-ScheduleManagement",
+            "method": "getResourceGraphData",
+            "inputData": {
+                "loadResourceGraphContainer": "{{function:getResourceGraphSOAInput}}"
+            },
+            "outputData":{
+                "resourceGraphOutput": ""
+            },
+            "events":{
+                "success": [
+                    {
+                        "name": "parseResGraphSOAOutput"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/Saw1ResourceGraphParamsHelper"
+        },
+        "parseResGraphSOAOutputAction": {
+            "actionType": "JSFunction",
+            "method": "parseResGraphSOAOutput",
+            "inputData": {
+                "resourceStacksVector": "{{data.resourceGraphOutput.stacksVector}}",
+                "availability": "{{data.availability}}",
+                "dataLoad": "{{data.load}}",
+                "iconURL": "{{data.iconURL}}",
+                "capacity": "{{data.capacity}}",
+                "assignedTasksList": "{{data.dataProviders.assignedTasksList}}",
+                "duration": "{{ctx.selected.props.duration.dbValues}}",
+                "fields": "{{fields}}"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/Saw1ResourceGraphParamsHelper"
+        }
+    },
+    "functions": {
+        "getResourceGraphSOAInput": {
+            "functionName": "getResourceGraphSOAInput",
+            "parameters": [
+                "{{props.selectedResource.value.vmo}}",
+                "{{ctx.selected.props}}"
+            ]
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "awPanel.reveal",
+            "action": "reveal"
+        },
+        {
+            "eventId": "parseResGraphSOAOutput",
+            "action": "parseResGraphSOAOutputAction"
+        }
+    ],
+    "messages":{
+        "soaFailureMessage": {
+           "messageType": "ERROR",
+           "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n": {
+        "saw1AssignedTasksSectionTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1AvailabilityText": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1LoadText": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1CapacityText": [
+            "ScheduleManagerMessages"
+        ]
+    }
+}

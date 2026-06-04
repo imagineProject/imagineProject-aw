@@ -1,0 +1,281 @@
+{
+  "schemaVersion": "1.0.0",
+  "pasteHandlers": {
+    "defaultPasteHandlerForImpactAnalysis": {
+      "action": "defaultPasteHandlerForImpactAnalysis",
+      "activeWhen": {
+        "condition": "conditions.isPasteHandlerActiveForImpactAnalysisNew"
+      }
+    },
+    "defaultPasteHandlerForParticipant": {
+      "action": "cmPasteParticipantNotSupported",
+      "activeWhen": {
+        "condition": "conditions.isPasteHandlerActiveForParticipant"
+      }
+    },
+    "pasteHandlerForImpactedItemsInConcurrentChange": {
+      "action": "showConcurrentChangeWarningForImpactedItems",
+      "activeWhen": {
+        "condition": "conditions.isPasteHandlerActiveForImItemsInConcChange"
+      }
+    },
+    "pasteHandlerForAddToImpactedItemsPanel": {
+      "action": "tcDefaultPasteAction",
+      "activeWhen": {
+        "condition": "conditions.isPasteHandlerActiveForCMAddToImpactedItemsPanel"
+      }
+    }
+  },
+  "actions": {
+    "cmPasteParticipantNotSupported": {
+      "actionType": "JSFunction",
+      "method": "participantDefaultPasteHandler",
+      "deps": "js/Cm1CreateParticipantsService",
+      "inputData": {
+        "targetObject": "{{pasteContext.targetObject}}"
+      }
+    },
+    "defaultPasteHandlerForImpactAnalysis": {
+      "actionType": "JSFunction",
+      "method": "defaultPasteHandlerForImpactAnalysis",
+      "deps": "js/Cm1ImpactedWidgetService",
+      "inputData": {
+        "targetObject": "{{pasteContext.targetObject}}",
+        "sourceObject": "{{pasteContext.sourceObject}}"
+      },
+      "events": {
+        "success": [
+          {
+            "name": "dragDrop.success",
+            "condition": "pasteContext.isDragDropIntent",
+            "eventData": {
+              "sourceObjects": "{{pasteContext.sourceObject}}",
+              "targetObject": "{{pasteContext.targetObject}}"
+            }
+          }
+        ]
+      }
+    },
+    "showConcurrentChangeWarningForImpactedItems": {
+      "actionType": "JSFunctionAsync",
+      "method": "showConcurrentWarningForPasteAction",
+      "deps": "js/Cm1CreateChangeService",
+      "inputData": {
+        "pasteContext": "{{pasteContext}}"
+      },
+      "events": {
+        "success": [
+          {
+            "name": "dragDrop.success",
+            "condition": "pasteContext.isDragDropIntent",
+            "eventData": {
+              "sourceObjects": "{{pasteContext.sourceObject}}",
+              "targetObject": "{{pasteContext.targetObject}}"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "conditions": {
+    "isPasteHandlerActiveForImpactAnalysisNew": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "ChangeImpactedItem"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "WorkspaceObject"
+            }
+          }
+        ]
+      }
+    },
+    "isPasteHandlerActiveForParticipant": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.relationType",
+            "$query": {
+              "$eq": "HasParticipant"
+            }
+          },
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Participant"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "Participant"
+            }
+          }
+        ]
+      }
+    },
+    "isPasteHandlerActiveForImItemsInConcChange": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "ctx.preferences.CM_show_concurrent_change_warning[0]",
+            "$query": {
+              "$eq": "true"
+            }
+          },
+          {
+            "$or": [
+              {
+                "$source": "ctx.xrtSummaryContextObject.modelType.typeHierarchyArray",
+                "$query": {
+                  "$in": [
+                    "GnChangeNoticeRevision"
+                  ]
+                }
+              },
+              {
+                "$source": "ctx.pselected.modelType.typeHierarchyArray",
+                "$query": {
+                  "$in": [
+                    "GnChangeNoticeRevision"
+                  ]
+                }
+              },
+              {
+                "$source": "ctx.selected.modelType.typeHierarchyArray",
+                "$query": {
+                  "$in": [
+                    "GnChangeNoticeRevision"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "$source": "pasteContext.relationType",
+            "$query": {
+              "$eq": "CMHasImpactedItem"
+            }
+          },
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "GnChangeNoticeRevision"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "ItemRevision"
+            }
+          }
+        ]
+      }
+    },
+    "isPasteHandlerActiveForCMAddToImpactedItemsPanel": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "ctx.preferences.CM_show_concurrent_change_warning[0]",
+            "$query": {
+              "$eq": "true"
+            }
+          },
+          {
+            "$or": [
+              {
+                "$source": "ctx.xrtSummaryContextObject.modelType.typeHierarchyArray",
+                "$query": {
+                  "$in": [
+                    "GnChangeNoticeRevision"
+                  ]
+                }
+              },
+              {
+                "$source": "ctx.pselected.modelType.typeHierarchyArray",
+                "$query": {
+                  "$in": [
+                    "GnChangeNoticeRevision"
+                  ]
+                }
+              },
+              {
+                "$source": "ctx.selected.modelType.typeHierarchyArray",
+                "$query": {
+                  "$in": [
+                    "GnChangeNoticeRevision"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "$source": "pasteContext.relationType",
+            "$query": {
+              "$eq": "CMHasImpactedItem"
+            }
+          },
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "GnChangeNoticeRevision"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "ItemRevision"
+            }
+          },
+          {
+            "$or": [
+              {
+                "$source": "pasteContext.pageId",
+                "$query": {
+                  "$eq": "palette"
+                }
+              },
+              {
+                "$source": "pasteContext.pageId",
+                "$query": {
+                  "$eq": "search"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "functions": {},
+  "messages": {},
+  "i18n": {
+    "ParticipantPasteNotSupported": [
+      "ChangeMessages"
+    ],
+    "showSingleSelectionChangeWarning": [
+      "ChangeMessages"
+    ],
+    "showMultiSelectionChangeWarning": [
+      "ChangeMessages"
+    ],
+    "showMultiSelectionChangeWarnEmptyMsg": [
+      "ChangeMessages"
+    ],
+    "continueButtonTxt": [
+      "ChangeMessages"
+    ],
+    "addButtonTitle": [
+      "ChangeMessages"
+    ],
+    "cancelText": [
+      "ChangeMessages"
+    ]
+  }
+}

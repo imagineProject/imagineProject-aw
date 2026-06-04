@@ -1,0 +1,78 @@
+<div class="sw-column justify-center">
+    <div class="sw-row align-left">
+        <div class="sw-column aw-icon-padding" visible-when="conditions.isNotAutoMsg">
+            <aw-avatar size="small" source="props.details.commentDetails.thumbnailUrl" exist-when="props.details.commentDetails.hasThumbnail"></aw-avatar>
+            <aw-avatar size="small" source="props.details.typeIconURL" initials="{{props.details.commentDetails.props.userName.displayValues[0]}}" exist-when="!props.details.commentDetails.hasThumbnail"></aw-avatar>
+        </div>
+        <div class="sw-column w-12">
+            <div class="sw-row h-1 justify-justified align-left aw-activecollab-propertyNonEditValue aw-activecollab-convCreds">
+                <div class="sw-column aw-activecollab-autoMsg" visible-when="conditions.isAutoMsg">
+                    <div visible-when="props.details.commentDetails.props.richTextObject && props.details.commentDetails.props.richTextObject.curtailRichText.length > 0 && props.details.commentDetails.showMore">
+                        <div aw-parse-html="" display-val="props.details.commentDetails.props.richTextObject.curtailRichText" is-rich-text="true" ></div>
+                    </div>
+                    <div visible-when="props.details.commentDetails.props.richText.displayValues[0] && props.details.commentDetails.props.richText.displayValues[0].length > 0 && !props.details.commentDetails.showMore">
+                        <div aw-parse-html="" display-val="props.details.commentDetails.props.richText.displayValues[0]" is-rich-text="true" ></div>
+                    </div>
+                    <div visible-when="props.details.contents.switch.showMoreCommands === true || props.details.contents.switch.showMoreCommentCommands === true" >
+                        <aw-link prop="data.moreLink" action="showMoreCommentText" visible-when="props.details.commentDetails.showMoreLink"></aw-link>
+                        <aw-link prop="data.lessLink" action="showLessCommentText" visible-when="props.details.commentDetails.showLessLink"></aw-link>
+                    </div>
+                </div>
+                <div class="sw-column w-6 aw-activecollab-userBold" visible-when="conditions.isNotAutoMsg">
+                    {{props.details.commentDetails.props.userName.displayValues[0]}}
+                </div>
+                <div class="sw-column w-4 align-bottom">
+                    {{props.details.commentDetails.props.modifiedDateTime.displayValues[0]}}
+                </div>
+            </div>
+            <div class="sw-row h-11 aw-activecollab-viewRichText" visible-when="conditions.displayRichText && conditions.isMoreCommandsAllowed">
+                <div class="sw-column w-12">
+                    <div visible-when="props.details.commentDetails.props.richTextObject && props.details.commentDetails.props.richTextObject.curtailRichText.length > 0 && props.details.commentDetails.showMore">
+                        <div aw-parse-html="props.details.commentDetails.props.richTextObject.curtailRichText" display-val="props.details.commentDetails.props.richTextObject.curtailRichText" is-rich-text="true" ></div>
+                    </div>
+                    <div visible-when="props.details.commentDetails.props.richText.displayValues[0] && props.details.commentDetails.props.richText.displayValues[0].length > 0 && !props.details.commentDetails.showMore">
+                        <div aw-parse-html="props.details.commentDetails.props.richText.displayValues[0]" display-val="props.details.commentDetails.props.richText.displayValues[0]" is-rich-text="true" ></div>
+                    </div>
+                    <div visible-when="!props.details.commentDetails.props.richText.displayValues[0] && props.details.commentDetails.showMore">
+                        {{props.details.commentDetails.props.plainTextObject.curtailPlainText}}
+                    </div>
+                    <div visible-when="!props.details.commentDetails.props.richText.displayValues[0] && !props.details.commentDetails.showMore">
+                        {{props.details.commentDetails.props.plainText.displayValues[0]}}
+                    </div>
+                </div>
+                <div class="sw-column">
+                    <aw-command-bar context="{ discussionItem: props.details.convItem, sharedData: props.sharedDataObj.sharedData, details: props.details.commentDetails, discussionIsExpanded: props.showReplyDiscussion.value.discussionIsExpanded }" anchor="ac0_commentShowMoreCmd" alignment="HORIZONTAL" show-command-labels="false" ></aw-command-bar>
+                </div>
+            </div class="sw-row">
+
+            <div class="sw-row h-11 aw-activecollab-viewRichText" visible-when="conditions.displayRichText && !conditions.isMoreCommandsAllowed">
+                <div aw-parse-html="props.details.commentDetails.props.richTextObject.curtailRichText" display-val="props.details.commentDetails.props.richTextObject.curtailRichText" is-rich-text="true" ></div>
+            </div>
+
+            <div class="sw-row" visible-when="props.details.commentDetails.beingEdited === false && conditions.isMoreCommandsAllowed && !conditions.isAutoMsg" >
+                <aw-link prop="data.moreLink" action="showMoreCommentText" visible-when="props.details.commentDetails.showMoreLink"></aw-link>
+                <aw-link prop="data.lessLink" action="showLessCommentText" visible-when="props.details.commentDetails.showLessLink"></aw-link>
+            </div>
+
+            <div class="aw-activecollab-quickReply" exist-when="props.details.commentDetails.beingEdited === true && !props.details.commentDetails.props.autoMsgType.displayValues[0] && conditions.isMoreCommandsAllowed">
+                <div class="sw-column">
+                    <div class="aw-activecollab-editor">
+                        <div id="{{props.details.commentDetails.commentCKEId}}" name="{{props.details.commentDetails.commentCKEId}}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <aw-include name="Ac0DiscardSaveComment" sub-panel-context="{commentDetails: props.details.commentDetails, sharedData: props.sharedDataObj.sharedData}" exist-when="conditions.isBeingEdited && conditions.isNotAutoMsg && conditions.isMoreCommandsAllowed"></aw-include>
+    <div class="sw-row justify-justified">
+        <div class="sw-column w-9 aw-viewersnapshot-snapshotPanel aw-activecollab-snapshotTile" width="100%" aw-repeat=" relatedObj : props.details.commentDetails.props.collabRelatedObjectInfo.dbValues" exist-when="props.details.commentDetails.discussionHasSnapshot && props.details.commentDetails.convViewSnapshotPerm">
+            <aw-product-snapshot-card vmo="{{relatedObj}}" exist-when="props.details.contents.switch.showMoreCommands === true" command-anchor="aw_ProductSnapshotOnDiscussion2" context="{{{snapshotPanelData:props.sharedDataObj.sharedData, occmgmtContext:props.occmgmtContext}}}"></aw-product-snapshot-card>
+            <aw-product-snapshot-card vmo="{{relatedObj}}" exist-when="props.details.contents.switch.showMoreCommands === false" context="{{{snapshotPanelData:props.sharedDataObj.sharedData, occmgmtContext:props.occmgmtContext}}}"></aw-product-snapshot-card>
+        </div class="sw-column">
+
+        <div class="sw-column" visible-when="props.details.commentDetails.discussionHasSnapshot && !props.details.commentDetails.convViewSnapshotPerm">
+            <aw-guidance-message message="participantSnapshotWarningMsg" banner-style="true" show-icon="false" show-type="false"></aw-guidance-message>
+        </div class="sw-column">
+    </div class="sw-row">
+    <div class="aw-activecollab-convSeparator aw-theme-separator" visible-when="props.details.commentDetails.rootCommentObj || conditions.isDiscussionLocation"></div>
+</div>

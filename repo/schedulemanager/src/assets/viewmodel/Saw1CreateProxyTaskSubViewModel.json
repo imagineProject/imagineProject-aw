@@ -1,0 +1,171 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-listbox.directive",     
+        "js/aw-list-filter.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-default-cell.directive"
+    ],
+    "actions": {
+      "getScheduleList": {
+        "actionType": "TcSoaService",
+        "serviceName": "Query-2014-11-Finder",
+        "method": "performSearch",
+        "inputData": {
+            "searchInput": {
+                "maxToLoad": 2000,
+                "maxToReturn": 2000,
+                "providerName": "Saw1ScheduleSearchProvider",
+                "searchCriteria": {
+                    "searchContentType": "ProxyTaskSchedules",
+                    "masterSchedule": "{{function:getMasterSchedule}}"
+                },
+                "startIndex": 0,
+                "searchFilterFieldSortType" : "Alphabetical"
+            }
+        },
+        "outputData": {
+            "scheduleList": "{{function:processScheduleResponseObjects}}"
+        },
+          "actionMessages": {
+            "failure": [
+                {
+                    "message": "soaErrorMessage"
+                }
+            ]
+          },
+          "deps": "js/Saw1CreatePanelService"
+      },
+      "getScheduleTasks": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData":
+            {
+                "searchInput": {
+                    "maxToLoad": 50,
+                    "maxToReturn": 50,
+                    "providerName": "Saw1TaskSearchProvider",
+                    "searchCriteria":
+                    {
+                        "searchContentType": "ScheduleTask",
+                        "sublocationToken": "tc_xrt_Gantt",
+                        "searchString": "{{data.filterBox.dbValue}}",
+                        "parentUid": "{{data.schedule.dbValue.uid}}"
+                    },
+                    "startIndex": "{{data.dataProviders.scheduleTasksProvider.startIndex}}",
+                    "searchFilterFieldSortType": "Alphabetical",
+                    "searchFilterMap": {},       
+                    "searchSortCriteria": []
+
+                }
+            },
+            "policy":
+            {
+                "types":
+                [
+                    {
+                        "name": "BusinessObject",
+                        "properties": [
+                            {
+                                "name": "awp0CellProperties"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaErrorMessage"
+                    }
+                ]
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "totalLoaded": "totalLoaded",
+                "searchResults": "searchResults"
+            }
+
+        }
+    },
+    "data": {
+        "schedule": {
+            "displayName": "{{i18n.Saw1Schedule}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": true
+        },
+        "filterBox": {
+            "displayName": "",
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "showScheduleList": {
+            "displayName": "",
+            "type": "STRING",
+            "dbValue": "true"
+       }
+    },
+    "messages":{
+        "soaErrorMessage": {
+          "messageType": "ERROR",
+          "messageText": "{{errorCode}}"
+        }
+    },
+   "dataProviders": {
+       "scheduleTasksProvider": {
+           "action": "getScheduleTasks",
+           "response": "{{data.searchResults}}",
+           "totalFound": "{{data.totalFound}}",
+           "totalLoaded": "{{data.totalLoaded}}",
+           "selectionModelMode": "multiple",
+           "commands": {
+                "Awp0ShowObjectCell": {
+                "id": "cmdOpen",
+                "areas": [
+                    "com.siemens.splm.clientfx.ui.modelObjectListActionCommands"
+                ],
+                "priorities": [
+                    50
+                ],
+                "dependencies": [
+                    "js/showObjectCommandHandler"
+                ],
+                "displayOption": "ON_HOVER_AND_SELECTION",
+                "position": "TOP_RIGHT"
+            }
+         }
+      }
+
+   },
+
+   "functions":{
+        "getMasterSchedule": {
+            "functionName": "getScheduleUid",
+            "parameters": [
+                "{{ctx.selected}}"
+            ]
+        },
+        "processScheduleResponseObjects": {
+            "functionName": "processScheduleResponseObjects",
+            "parameters": [
+            ]
+        }
+   },
+    "onEvent": [
+        {
+            "eventId": "awPanel.reveal",
+             "criteria":
+             {
+                "panelId": "Saw1CreateProxyTaskSub"
+             },
+             "action": "getScheduleList"
+        }
+    ],
+    "i18n": {
+        "Saw1Schedule":[
+            "ScheduleManagerMessages"
+        ]
+    }
+}

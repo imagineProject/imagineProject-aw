@@ -1,0 +1,109 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "initializeUnitEffectivityConfigurationData": {
+            "actionType": "JSFunction",
+            "method": "initializeUnitEffectivityConfigurationData",
+            "inputData": {
+                "data": "{{data.data}}",
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "outputData": {
+                "contextKey": "contextKey",
+                "isEffectivityReadOnly": "isEffectivityReadOnly",
+                "currentEffectivity": "currentEffectivity",
+                "widgetUnitRange": "widgetUnitRange"
+            },
+            "deps": "js/Pca0UnitEffectivityConfigurationService"
+        },
+        "applyUnitEffectivity": {
+            "actionType": "JSFunctionAsync",
+            "method": "applyUnitEffectivity",
+            "inputData": {
+                "data": "{{data.data}}",
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "deps": "js/Pca0UnitEffectivityConfigurationService"
+        },
+        "updateUnitEffectivityVMProperty": {
+            "actionType": "JSFunction",
+            "method": "updateUnitEffectivityVMProperty",
+            "inputData": {
+                "viewModel": "{{data}}"
+            },
+            "outputData": {
+                "currentEffectivity": "currentEffectivity",
+                "widgetUnitRange": "widgetUnitRange"
+            },
+            "deps": "js/Pca0UnitEffectivityConfigurationService"
+        },
+        "toggleEffectivityLinkState": {
+            "actionType": "JSFunction",
+            "method": "toggleEffectivityLinkState",
+            "inputData": {
+                "isDisableEffectivityLink": "{{data.eventMap['Pca0UnitEffectivity.toggleEffectivityLinkState'].isDisableEffectivityLink}}"
+            },
+            "outputData": {
+                "isEffectivityReadOnly": "isEffectivityReadOnly"
+            },
+            "deps": "js/Pca0UnitEffectivityConfigurationService"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "Pca0FilterCriteriaSettings.refreshContent",
+            "action": "initializeUnitEffectivityConfigurationData"
+        },
+        {
+            "eventId": "Pca0UnitEffectivity.effectivityChanged",
+            "action": "updateUnitEffectivityVMProperty"
+        },
+        {
+            "eventId": "Pca0UnitEffectivity.toggleEffectivityLinkState",
+            "action": "toggleEffectivityLinkState",
+            "cacheEventData": true
+        }
+    ],
+    "data": {
+        "contextKey": "",
+        "currentEffectivity": {
+            "uiValue": "",
+            "type": "STRING"
+        },
+        "widgetUnitRange": {
+            "type": "STRING",
+            "isEditable": "true",
+            "dbValue": "",
+            "displayName": "{{i18n.unitEffectivityPlaceholder}}",
+            "validationCriteria": [ {
+                "condition": "conditions.isNotInRegexp",
+                "value": "{{i18n.INVALID_SYNTAX}}"
+            } ]
+        },
+        "isEffectivityReadOnly": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        }
+    },
+    "conditions": {
+        "isNotInRegexp": {
+            "expression": {
+                "$source": "data.widgetUnitRange.dbValue",
+                "$query": {
+                    "$notinregexp": "^[0-9]+$|^[0-9]+\\.\\.$|^\\.\\.([0-9]+|UP|SO|up|so)$|^[0-9]+\\.\\.([0-9]+|UP|SO|up|so)$"
+                }
+            }
+        }
+    },
+    "i18n": {
+        "unitEffectivityPlaceholder": [ "FullScreenConfigurationMessages" ],
+        "INVALID_SYNTAX": [ "FullScreenConfigurationMessages" ]
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeUnitEffectivityConfigurationData"
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

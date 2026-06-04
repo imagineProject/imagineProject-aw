@@ -1,0 +1,133 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-include.directive",
+        "js/aw-flex-row.directive",
+        "js/aw-panel-body.directive",
+        "js/exist-when.directive",
+        "js/aw-flex-column.directive",
+        "js/aw-navigate-breadcrumb.directive",
+        "js/aw-model-icon.directive"
+
+
+    ],
+    "actions": {
+        "updateStateForMerge": {
+            "actionType": "JSFunction",
+            "method": "updateState",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "sublocInitialization": true
+            },
+            "deps": "js/aceUrlManagementService"
+        },
+        "updateStartFreshNavigation": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "deps": "js/occmgmtUtils",
+            "inputData": {
+                "path": "",
+                "value": {
+                    "transientRequestPref": {
+                        "jitterFreePropLoad": true,
+                        "useProductIndex": false,
+                        "startFreshNavigation": true
+                    },
+                    "pwaReset": true
+                },
+                "target": "{{props.subPanelContext.occContext}}"
+
+            }
+        },
+        "registerShowChangeRedlines": {
+            "actionType": "JSFunction",
+            "method": "registerShowChangeRedlines",
+            "inputData": {
+                "isShowChange": "{{data.isShowChange}}",
+                "isRegister": true
+            },
+            "deps": "js/Cm1RevertMergeUtils"
+        },
+        "deregisterShowChangeRedlines": {
+            "actionType": "JSFunction",
+            "method": "registerShowChangeRedlines",
+            "inputData": {
+                "isShowChange": "{{data.isShowChange}}",
+                "isRegister": false
+            },
+            "deps": "js/Cm1RevertMergeUtils"
+        }
+
+    },
+    "onEvent": [ {
+        "eventId": "updateStartFreshNavigation",
+        "action": "updateStartFreshNavigation"
+
+    },{
+        "eventId": "updateStateForMerge",
+        "action": "updateStateForMerge"
+    } ,
+    {
+        "eventId": "locationChangeSuccess",
+        "action": "updateStateForMerge",
+        "condition": "conditions.isNotSplitView"
+    }],
+    "dataProviders": {
+    },
+
+    "lifecycleHooks": {
+        "onMount": "registerShowChangeRedlines",
+        "onUnmount": "deregisterShowChangeRedlines"
+    },
+
+    "data": {
+        "contextInfo":{},
+        "occContext": {
+            "initialValues": {
+                "configContext": {},
+                "displayToggleOptions": {},
+                "supportedFeatures": {},
+                "productContextInfo": {},
+                "currentState": {},
+                "previousState": {},
+                "transientRequestPref": {},
+                "persistentRequestPref":{},
+                "disabledFeatures":[],
+                "viewKey": "occmgmtContext"
+            },
+            "meta": {}
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "isShowChange": {
+            "type": "BOOLEAN",
+            "dbValue": false
+        }
+    },
+    "props": {
+
+        "sub-panel-context":{
+            "type":"object"
+        },
+        "base-selection": {
+            "type": "object"
+        }
+    },
+
+    "i18n":
+    {
+
+    },
+    "conditions": {
+        "isNotSplitView": {
+            "expression": "!ctx.splitView"
+        }
+    }
+}

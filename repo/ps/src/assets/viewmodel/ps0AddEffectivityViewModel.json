@@ -1,0 +1,48 @@
+{
+    "schemaVersion": "1.0.0",
+    "data":{
+        "flag":{
+            "type":"STRING",
+            "dbValue": "AUTHOR"
+        }
+    },
+    "actions": {
+        "closePanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "closeDialogPanel",
+                    "condition": "!data._internal.isDestroyed && conditions.isPwaSelectionChanged"
+                }
+            ]
+        },
+        "closeDialogPanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+
+    "conditions": {
+        "isPwaSelectionChanged": {
+            "expression": "(props.subPanelContext.expEffPanelState.previousSelectionUid !== props.subPanelContext.occContext.pwaSelection[0].uid) || props.subPanelContext.occContext.pwaSelection.length > 1"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onUpdate": [{
+            "action": "closePanel",
+            "observers": [ "props.subPanelContext.occContext.pwaSelection" ]
+        }]
+    },
+
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

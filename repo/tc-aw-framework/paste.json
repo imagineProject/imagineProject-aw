@@ -1,0 +1,444 @@
+{
+  "schemaVersion": "1.0.0",
+  "defaultPasteHandler": {
+    "dep": "js/tcDefaultPasteHandler"
+  },
+  "defaultPasteFileHandler": {
+    "dep": "js/pasteFileHandler"
+  },
+  "pasteHandlers": {
+    "tcDefaultPasteHandler": {
+      "action": "tcDefaultPasteAction"
+    },
+    "pasteHandlerForFavoritesFolder": {
+      "action": "favoritesFolderPasteBatchAction",
+      "activeWhen": {
+        "condition": "conditions.isPasteHandlerActiveForFavoritesFolder"
+      }
+    },
+    "pasteHandlerForRootFolder": {
+      "action": "blockDragDropOfRootFolder",
+      "activeWhen": {
+        "condition": "conditions.isPasteHandlerForRootFolder"
+      }
+    },
+    "pasteHandlerForDocumentRevision": {
+      "action": "tcDefaultPasteAction",
+      "activeWhen": {
+        "condition": "conditions.isPasteHandlerActiveForDocumentRevision"
+      }
+    },
+    "pasteHandlerForFolder": {
+      "action": "tcDefaultPasteAction",
+      "activeWhen": {
+        "condition": "conditions.isPasteHandlerActiveForFolder"
+      }
+    },
+    "pasteHandlerForFolderNew": {
+      "action": "tcDefaultPasteAction",
+      "activeWhen": {
+        "condition": "conditions.isPasteHandlerActiveForFolderNew"
+      }
+    },
+    "pasteHandlerForItem": {
+      "action": "tcDefaultPasteAction",
+      "activeWhen": {
+        "condition": "conditions.isPasteHandlerActiveForItem"
+      }
+    },
+    "pasteHandlerForItemRevisionDataset": {
+      "action": "tcDefaultPasteAction",
+      "activeWhen": {
+        "condition": "conditions.isPasteHandlerActiveForItemRevisionDataset"
+      }
+    },
+    "pasteHandlerForItemRevisionDocumentRevision": {
+      "action": "tcDefaultPasteAction",
+      "activeWhen": {
+        "condition": "conditions.isPasteHandlerActiveForItemRevisionDocumentRevision"
+      }
+    },
+    "pasteHandlerForPseudoFolder": {
+      "action": "tcDefaultPasteAction",
+      "activeWhen": {
+        "condition": "conditions.isPasteHandlerActiveForPseudoFolder"
+      }
+    },
+    "msgPasteHandler": {
+      "action": "msgPasteForMsgFiles",
+      "activeWhen": {
+        "condition": "conditions.isPasteHandlerActiveForMsgFiles"
+      }
+    }
+  },
+  "actions": {
+    "tcDefaultPasteAction": {
+      "actionType": "JSFunction",
+      "method": "tcDefaultPasteHandler",
+      "deps": "js/tcDefaultPasteHandler",
+      "inputData": {
+        "targetObject": "{{pasteContext.targetObject}}",
+        "sourceObject": "{{pasteContext.sourceObject}}",
+        "relationType": "{{pasteContext.relationType}}"
+      },
+      "events": {
+        "success": [
+          {
+            "name": "dragDrop.success",
+            "condition": "pasteContext.isDragDropIntent",
+            "eventData": {
+              "sourceObjects": "{{pasteContext.sourceObject}}",
+              "targetObject": "{{pasteContext.targetObject}}"
+            }
+          }
+        ]
+      },
+      "actionMessages": {
+        "failure": [
+          {
+            "condition": "errorCode.code !== 515107  && errorCode.code !== 35015 && errorCode.code !== 6007 && errorCode.code !== 48004 && errorCode.code !== 6157",
+            "message": "pasteFailure"
+          },
+          {
+            "condition": "errorCode.code === 35015",
+            "message": "pasteRelationFailureMessage"
+          },
+          {
+            "condition": "errorCode.code === 6007",
+            "message": "pasteSourceDuplicateFailureMessage"
+          },
+          {
+            "condition": "errorCode.code === 48004",
+            "message": "pasteTargetSourceSameFailureMessage"
+          },
+          {
+            "condition": "errorCode.code === 6157",
+            "message": "pasteSameFolderFailureMessage"
+          }
+        ]
+      }
+    },
+    "favoritesFolderPasteBatchAction": {
+      "actionType": "batchJob",
+      "steps": [
+        {
+          "action": "addToFavoritesAction"
+        },
+        {
+          "action": "refreshFavoritesFolderAction"
+        }
+      ]
+    },
+    "addToFavoritesAction": {
+      "actionType": "JSFunctionAsync",
+      "method": "addFavorites",
+      "inputData": {
+        "selectedObjects": {
+          "$adapt": "{{pasteContext.sourceObject}}"
+        }
+      },
+      "deps": "js/favoritesService"
+    },
+    "blockDragDropOfRootFolder": {
+      "actionType": "Event",
+      "method": "Event",
+      "inputData": {
+        "events": [
+          {}
+        ]
+      },
+      "actionMessages": {
+        "success": [
+          {
+            "message": "rootFolderDragDropDisabledMessage"
+          }
+        ]
+      }
+    },
+    "refreshFavoritesFolderAction": {
+      "actionType": "Event",
+      "method": "Event",
+      "inputData": {
+        "events": [
+          {
+            "name": "cdm.updated",
+            "eventData": {
+              "updatedObjects": "{{pasteContext.targetObject}}"
+            }
+          }
+        ]
+      }
+    },
+    "msgPasteForMsgFiles": {
+      "actionType": "JSFunction",
+      "method": "createEmailAttachFiles",
+      "deps": "js/msgCreateDocOnDropService",
+      "inputData": {
+        "targetObject": "{{pasteContext.targetObject}}",
+        "sourceObject": "{{pasteContext.sourceObject}}",
+        "relationType": "{{pasteContext.relationType}}",
+        "runActionWithViewModel": "{{pasteContext.runActionWithViewModel}}"
+      }
+    }
+  },
+  "conditions": {
+    "isPasteHandlerActiveForDocumentRevision": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "DocumentRevision"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "Dataset"
+            }
+          }
+        ]
+      }
+    },
+    "isPasteHandlerActiveForItem": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Item"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "Dataset"
+            }
+          }
+        ]
+      }
+    },
+    "isPasteHandlerActiveForItemRevisionDataset": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "ItemRevision"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "Dataset"
+            }
+          }
+        ]
+      }
+    },
+    "isPasteHandlerActiveForFolder": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Folder"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "WorkspaceObject"
+            }
+          },
+          {
+            "expression": "ctx.mselected.length === 1"
+          }
+        ]
+      }
+    },
+    "isPasteHandlerForRootFolder": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "Awp0Folders"
+            }
+          },
+          {
+            "$or": [
+              {
+                "$source": "pasteContext.targetObject",
+                "$query": {
+                  "$typeOf": "Folder"
+                }
+              },
+              {
+                "$source": "pasteContext.targetObject",
+                "$query": {
+                  "$typeOf": "Awp0FavoritesFolder"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "isPasteHandlerActiveForFavoritesFolder": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Awp0FavoritesFolder"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "WorkspaceObject"
+            }
+          }
+        ]
+      }
+    },
+    "isPasteHandlerActiveForFolderNew": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Folder"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "WorkspaceObject"
+            }
+          }
+        ]
+      }
+    },
+    "isPasteHandlerActiveForItemRevisionDocumentRevision": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "ItemRevision"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "DocumentRevision"
+            }
+          }
+        ]
+      }
+    },
+    "isPasteHandlerActiveForPseudoFolder": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "PseudoFolder"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "WorkspaceObject"
+            }
+          }
+        ]
+      }
+    },
+    "isPasteHandlerActiveForMsgFiles": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Folder"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "osFileHandles"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$source": "name",
+              "$query": {
+                "$notNull": true
+              }
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$source": "name",
+              "$query": {
+                "$regexp": "^.*\\.[mM][sS][gG]$"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "messages": {
+    "pasteFailure": {
+      "messageType": "ERROR",
+      "messageText": "{{errorCode}}"
+    },
+    "pasteRelationFailureMessage": {
+      "messageType": "ERROR",
+      "messageText": "{{i18n.pasteRelationFailureMessage}}"
+    },
+    "pasteSourceDuplicateFailureMessage": {
+      "messageType": "ERROR",
+      "messageText": "{{errorCode}}"
+    },
+    "pasteTargetSourceSameFailureMessage": {
+      "messageType": "ERROR",
+      "messageText": "{{i18n.pasteTargetSourceSameFailureMessage}}"
+    },
+    "pasteSameFolderFailureMessage": {
+      "messageType": "ERROR",
+      "messageText": "{{i18n.pasteSameFolderFailureMessage}}"
+    },
+    "rootFolderDragDropDisabledMessage": {
+      "messageType": "ERROR",
+      "messageText": "{{i18n.rootFolderDragDropDisabledMessage}}",
+      "messageTextParams": [
+        "{{pasteContext.sourceObject}}",
+        "{{pasteContext.targetObject}}"
+      ]
+    }
+  },
+  "i18n": {
+    "pasteRelationFailureMessage": [
+      "ZeroCompileCommandMessages"
+    ],
+    "pasteSourceDuplicateFailureMessage": [
+      "ZeroCompileCommandMessages"
+    ],
+    "pasteTargetSourceSameFailureMessage": [
+      "ZeroCompileCommandMessages"
+    ],
+    "pasteSameFolderFailureMessage": [
+      "ZeroCompileCommandMessages"
+    ],
+    "rootFolderDragDropDisabledMessage": [
+      "ZeroCompileCommandMessages"
+    ]
+  }
+}

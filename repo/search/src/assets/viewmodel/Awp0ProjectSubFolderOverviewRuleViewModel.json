@@ -1,0 +1,105 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "searchFolderCriteria": {
+            "displayName": "{{i18n.searchCriteria}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false"
+        },
+        "searchFolderFilters": {
+            "displayName": "{{i18n.searchFiltersTitle}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false"
+        }
+    },
+    "actions":
+    {
+        "getSearchCriteriaAndFilters":
+        {
+            "actionType": "JSFunction",
+            "method": "getSearchCriteriaAndFilters",
+            "inputData":
+            {
+                "searchFolderObject": "{{data.searchFolderObject}}",
+                "searchFolderCriteria": "{{data.searchFolderCriteria}}",
+                "searchFolderFilters": "{{data.searchFolderFilters}}"
+            },
+            "outputData":
+            {
+                "searchFolderCriteria": "searchFolderCriteria",
+                "searchFolderFilters": "searchFolderFilters"
+            },
+            "deps": "js/projectFolderUtils"
+        },
+        "loadProjectSubFolderPropertiesBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadProjectSubFolderProperties"
+                },
+                {
+                    "action": "getSearchCriteriaAndFilters",
+                    "condition": "data.searchFolderObject"
+                }
+            ]
+        },
+        "loadProjectSubFolderProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": [
+                    {
+                        "uid": "{{props.subPanelContext.selected.uid}}",
+                        "type": "Awp0ProjectSubFolder"
+                    }
+                ],
+                "attributes": [
+                    "awp0SearchFolder"
+                ]
+            },
+            "outputData": {
+                "searchFolderObject": "{{function:getObject}}"
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "Awp0SearchFolder",
+                        "properties": [
+                            {
+                                "name": "awp0Rule"
+                            },
+                            {
+                                "name": "awp0SearchType"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "deps": "js/projectFolderUtils"
+        }
+    },
+    "functions": {
+        "getObject": {
+            "functionName": "getObject",
+            "parameters": [ "Awp0SearchFolder" ]
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "onEvent": [],
+    "lifecycleHooks": {
+        "onMount": "loadProjectSubFolderPropertiesBatchJob"
+    },
+    "i18n":
+    {
+        "searchCriteria": [ "SearchMessages" ],
+        "searchFiltersTitle": [ "SearchMessages" ]
+    }
+}
+

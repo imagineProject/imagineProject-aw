@@ -1,0 +1,609 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "actions": {
+        "search": {
+            "actionType": "JSFunction",
+            "method": "doSearch",
+            "inputData": {
+                "searchString": "{{data.searchString.dbValue}}",
+                "isGroupRadioButtonSelected": false,
+                "subPanelContext":"{{subPanelContext}}"
+            },
+            "deps": "js/um0AddInAnOrganizationService"
+        },
+
+        "performSearch": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2016-03-Finder",
+            "method": "performSearch",
+            "inputData": {
+                "columnConfigInput": {
+                    "clientName": "AWClient",
+                    "clientScopeURI": "Awp0SearchResults",
+                    "columnsToExclude": [],
+                    "hostingClientName": "",
+                    "operationType": "intersection"
+                },
+                "searchInput": {
+                    "maxToLoad": 50,
+                    "maxToReturn": 50,
+                    "providerName": "um0AdminDataProvider",
+                    "searchCriteria": {
+                        "resourceProviderContentType": "{{ctx.icsContentTypeString}}",
+                        "searchString": "{{data.searchString.dbValue}}",
+                        "isActiveUsers": "true"
+                    },
+                    "searchFilterFieldSortType": "Priority",
+                    "startIndex": "{{data.dataProviders.doSearchForSWASearchTab.startIndex}}"
+                }
+            },
+            "outputData": {
+                "searchResults": "searchResults",
+                "totalFound": "totalFound"
+            },
+
+            "deps": "js/um0AddInAnOrganizationService"
+        },
+
+        "doSearchForSWASearchTab": {
+            "actionType": "dataProvider",
+            "method": "doSearchForSWASearchTab"
+        },
+
+        "addRolesToGroup": {
+            "actionType": "TcSoaService",
+            "serviceName": "Administration-2017-05-RoleManagement",
+            "method": "addRolesToGroup",
+            "deps": "js/um0AddInAnOrganizationService",
+            "inputData": {
+                "roleGroupStructs": "{{function:addRolesToGroups}}"
+            },
+            "outputData": {
+                "clientId": "{{ctx.lastSelectedObject.uid}}",
+                "partialErrors": "{{function:partialErrorsForAddRolesToGroup}}",
+                "selectedGroups": "{{function:getSelectedGroups}}",
+                "roleresponse": "",
+                "groupName": "{{function:getGroupName}}"
+
+            },
+
+            "events": {
+                "success": [
+                    {
+                        "name": "OrgList.registerCtxForNewNodes",
+                        "condition":"conditions.reloadOnAddRole && !subPanelContext.panelPinned",
+                        "eventData": {
+                            "multipleNodes": "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects}}"
+                        }
+                    },
+                    {
+                        "name": "closeDialog",
+                        "condition": "!subPanelContext.panelPinned"
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "condition": "ctx.mselected.length === 1",
+                        "eventData": {
+                            "relatedModified": [ "{{ctx.mselected[0]}}" ],
+                            "refreshLocationFlag": false
+                        }
+                    },
+                    {
+                        "name": "OrgTree.reloadOrgTree",
+                        "condition": "conditions.isTreeMode",
+                        "eventData": {
+                            "multipleNodeAdded": "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects}}",
+                            "selectedNode": "{{data.selectedGroups}}",
+                            "panelPinned": "{{subPanelContext.panelPinned}}"
+                        }
+                    },
+                    {
+                        "name": "primaryWorkarea.reset",
+                        "condition":"conditions.reloadOnAddRole"
+                    }
+                ],
+                "failure": [ {
+                    "name": "OrgTree.reloadOrgTree",
+                    "condition": "conditions.isTreeMode && data.roleresponse.updated.length > 0",
+                    "eventData": {
+                        "multipleNodeAdded": "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects}}",
+                        "selectedNode": "{{data.selectedGroups}}",
+                        "panelPinned": "{{subPanelContext.panelPinned}}"
+                    }
+                } ]
+
+            },
+
+            "actionMessages": {
+                "success": [ {
+                        "message": "addSingleRoleToGroupSuccessMessage",
+                        "condition": "data.dataProviders.doSearchForSWASearchTab.selectedObjects.length === 1 && (data.selectedGroups.length === 0 || data.selectedGroups.length === 1 )"
+                    },
+                    {
+                        "message": "addMultipleRolesToSingleGroupSuccessMessage",
+                        "condition": "data.dataProviders.doSearchForSWASearchTab.selectedObjects.length>1 && (data.selectedGroups.length === 0 || data.selectedGroups.length === 1 )"
+                    },
+                    {
+                        "message": "addSingleRoleToMultipleGroupSuccessMessage",
+                        "condition": "data.selectedGroups.length > 1 && data.dataProviders.doSearchForSWASearchTab.selectedObjects.length===1"
+                    },
+                    {
+                        "message": "addMultipleRolesToMultipleGroupsSuccessMessage",
+                        "condition": "data.selectedGroups.length > 1 && data.dataProviders.doSearchForSWASearchTab.selectedObjects.length>1"
+                    }
+                ],
+                "failure": [ {
+                        "message": "addSingleRoleToGroupFailureMessage",
+                        "condition": "data.selectedGroups.length <= 1  && data.dataProviders.doSearchForSWASearchTab.selectedObjects.length === 1"
+                    },
+                    {
+                        "message": "addMultipleRolesToGroupFailureMessage",
+                        "condition": "data.dataProviders.doSearchForSWASearchTab.selectedObjects.length>1 && (!roleresponse.updated)"
+                    },
+                    {
+                        "message": "addSingleRoleToMultipleGroupsFailureMessage",
+                        "condition": "data.selectedGroups.length > 1 && data.dataProviders.doSearchForSWASearchTab.selectedObjects.length===1"
+                    },
+
+                    {
+                        "message": "addMultipleRolesToMultipleGroupsPartialFailureMessage",
+                        "condition": "data.selectedGroups.length > 1 && data.dataProviders.doSearchForSWASearchTab.selectedObjects.length>1 && roleresponse.updated.length > 0"
+                    }
+
+                ]
+
+            }
+        },
+        "addUsersAsGroupMembers": {
+            "actionType": "TcSoaService",
+            "serviceName": "Administration-2017-05-UserManagement",
+            "method": "addUsersAsGroupMembers",
+            "inputData": {
+                "userRoleGroupStructs": "{{function:getAddUsersInput}}"
+            },
+            "outputData": {
+                "clientId": "{{ctx.lastSelectedObject.uid}}",
+                "partialErrors": "partialErrors",
+                "messageObj": "{{function:prepareSuccessAndFailureMessages}}",
+                "selectedRoleNode": "{{function:getSelectedRoleNode}}",
+                "response": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "OrgList.registerCtxForNewNodes",
+                        "condition":"conditions.reloadPWA && !subPanelContext.panelPinned",
+                        "eventData": {
+                            "multipleNodes": "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects}}"
+                        }
+                    },
+                    {
+                        "name": "closeDialog",
+                        "condition": "!subPanelContext.panelPinned"
+                    },
+                    {
+                        "name": "gwt.ModelObjectRelatedDataModifiedEvent",
+                        "eventData": {
+                            "refreshLocationFlag": false,
+                            "relations": "",
+                            "modifiedObjects": [
+                                "{{ctx.lastSelectedObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "condition": "ctx.mselected.length === 1",
+                        "eventData": {
+                            "relatedModified": [ "{{ctx.lastSelectedObject}}" ],
+                            "refreshLocationFlag": false
+                        }
+                    },
+                    {
+                        "name": "OrgTree.reloadOrgTree",
+                        "condition": "conditions.isTreeMode",
+                        "eventData": {
+                            "multipleNodeAdded": "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects}}",
+                            "selectedNode": "{{data.selectedRoleNode}}",
+                            "panelPinned": "{{subPanelContext.panelPinned}}"
+                        }
+                    },
+                    {
+                        "name": "primaryWorkarea.reset",
+                        "condition": "conditions.reloadPWA"
+                    }
+
+                ],
+                "failure": [ {
+                        "name": "OrgList.registerCtxForNewNodes",
+                        "condition":"(conditions.reloadPWA && data.messageObj.successMessage) && !subPanelContext.panelPinned",
+                        "eventData": {
+                            "multipleNodes": "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects}}"
+                        }
+                    },
+                    {
+                        "name": "OrgTree.reloadOrgTree",
+                        "condition": "data.response.created.length > 0 || data.messageObj.successMessage",
+                        "eventData": {
+                            "multipleNodeAdded": "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects}}",
+                            "selectedNode": "{{data.selectedRoleNode}}",
+                            "panelPinned": "{{subPanelContext.panelPinned}}"
+                        }
+                    },
+                    {
+                        "name": "primaryWorkarea.reset",
+                        "condition":"conditions.reloadPWA  && data.messageObj.successMessage"
+                    },
+                    {
+                        "name": "closeDialog",
+                        "condition": "(data.response.created.length > 0 || data.messageObj.successMessage) && !subPanelContext.panelPinned"
+
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "addUserToRoleSuccess",
+                    "condition": "data.messageObj.successMessage"
+                } ],
+                "failure": [ {
+                        "message": "addUserToRoleSuccess",
+                        "condition": "data.messageObj.successMessage && !data.messageObj.failureMessage"
+                    },
+                    {
+                        "message": "addUsersAsGroupMembersFailure",
+                        "condition": "data.messageObj.failureMessage"
+                    }
+                ]
+            },
+            "deps": "js/Um0UserSearchAndAddService"
+        },
+
+        "addChildGroups": {
+            "actionType": "TcSoaService",
+            "serviceName": "Administration-2017-05-GroupManagement",
+            "method": "addChildGroups",
+            "inputData": {
+                "childGroupsToGroupStructs": [ {
+                    "groupsToAdd": "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects}}",
+                    "parentGroup": "{{ctx.lastSelectedObject}}"
+                } ]
+            },
+            "outputData": {
+                "response": "",
+                "clientId": "{{ctx.lastSelectedObject.uid}}",
+                "addChildGroupsMsg": "{{function:processAddChildGroupMessage}}",
+                "multipleNodeAdded": "{{function:getSuccessfullyAddedChildgroup}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "OrgList.registerCtxForNewNodes",
+                        "condition":"conditions.reloadOnAddRole",
+                        "eventData": {
+                            "multipleNodes": "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects}}"
+                        }
+                    },
+                    {
+                        "name": "closeDialog",
+                        "condition": "!subPanelContext.panelPinned"
+
+                    },
+                    {
+                        "name": "gwt.ModelObjectRelatedDataModifiedEvent",
+                        "eventData": {
+                            "refreshLocationFlag": false,
+                            "relations": "",
+                            "modifiedObjects": [
+                                "{{ctx.lastSelectedObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "OrgTree.reloadOrgTree",
+                        "eventData": {
+                            "multipleNodeAdded": "{{data.multipleNodeAdded}}"
+                        }
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "OrgTree.reloadOrgTree",
+                        "condition": "data.response.updated.length > 0",
+                        "eventData":
+                        {
+                            "multipleNodeAdded": "{{data.multipleNodeAdded}}"
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "addChildGroupSuccessMessage"
+                } ],
+                "failure": [ {
+                    "message": "addChildGroupsFailureMessage"
+                } ]
+            },
+            "deps": "js/um0AddInAnOrganizationService"
+        },
+        "add": {
+            "actionType": "JSFunction",
+            "method": "addAdminObjects",
+            "inputData": {
+                "selectedPanelId": "SecondaryWorkAreaSearchTab",
+                "isGroupRadioButtonSelected": false,
+                "subPanelContext": "{{subPanelContext}}",
+                "searchResults": "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects}}"
+            },
+            "deps": "js/um0AddInAnOrganizationService"
+        },
+        "getSuccessfullyAddedChildgroup":{
+            "actionType": "JSFunction",
+            "method": "getSuccessfullyAddedChildgroup",
+            "inputData":{
+                "selectedNodes": "{{data.dataProviders.doSearchForGroupsTab.selectedObjects}}",
+                "updated": "{{data.response.updated}}"
+            },
+            "outputData":{
+                "multipleNodeAdded": ""
+            },
+            "deps": "js/um0AddInAnOrganizationService"
+        },
+         "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+
+    "data": {
+        "searchString": {
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "true",
+            "dbValue": ""
+        },
+
+        "isGroupRadioButtonSelected": {
+            "type": "BOOLEAN",
+            "isRequired": "true",
+            "propertyRadioTrueText": "{{i18n.GroupName}}",
+            "propertyRadioFalseText": "{{i18n.RoleName}}",
+            "dbValue": false
+        }
+    },
+
+    "dataProviders": {
+        "doSearchForSWASearchTab": {
+            "action": "performSearch",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+
+    "onEvent": [
+        {
+            "eventId": "ics.doSearch",
+            "action": "doSearchForSWASearchTab"
+        },
+        {
+            "eventId": "ics.addRoles",
+            "action": "addRolesToGroup"
+        },
+        {
+            "eventId": "ics.addUsers",
+            "action": "addUsersAsGroupMembers"
+        },
+        {
+            "eventId": "ics.addChildGroups",
+            "action": "addChildGroups"
+        },
+        {
+            "eventId": "primaryWorkArea.selectionChangeEvent",
+            "condition": "!conditions.isTreeMode",
+            "action": "closePanelDialog"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+
+    "messages": {
+        "addUsersAsGroupMembersFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{data.messageObj.failureMessage}}"
+        },
+        "addUserToRoleSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{data.messageObj.successMessage}}"
+        },
+        "addChildGroupSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{data.addChildGroupsMsg}}"
+        },
+        "addChildGroupsFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{data.addChildGroupsMsg}}"
+        },
+        "addSingleRoleToGroupSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.addSingleRoleToGroupSuccess}}",
+            "messageTextParams": [
+                "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects[0].props.object_string.uiValue}}",
+                "{{data.groupName}}"
+            ]
+        },
+        "addMultipleRolesToSingleGroupSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.addMultipleRolesToSingleGroupSuccessMessage}}",
+            "messageTextParams": [
+                "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects.length}}",
+                "{{data.groupName}}"
+            ]
+        },
+        "addSingleRoleToMultipleGroupSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.addSingleRoleToMultipleGroupSuccessMessage}}",
+            "messageTextParams": [
+                "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects[0].props.object_string.uiValue}}"
+            ]
+        },
+
+        "addMultipleRolesToMultipleGroupsSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.addMultipleRolesToMultipleGroupsSuccessMessage}}",
+            "messageTextParams": [
+                "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects.length}}",
+                "{{data.selectedGroups.length}}"
+            ]
+        },
+        "addSingleRoleToGroupFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.addSingleRoleToGroupFailureMessage}}",
+            "expression": {
+                "groupName": "subPanelContext.selectionData.selected && subPanelContext.selectionData.selected[0].dbValue ? subPanelContext.selectionData.selected[0].dbValue : subPanelContext.selectionData.selected[0].props.name.uiValue"
+            },
+            "messageTextParams": [
+                "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects[0].props.object_string.uiValue}}",
+                "{{data.groupName}}",
+                "{{data.partialErrors}}"
+            ]
+        },
+        "addMultipleRolesToGroupFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.addMultipleRolesToGroupFailureMessage}}",
+            "expression": {
+                "roles": "roleresponse.partialErrors.length - data.selectedGroups.length"
+            },
+            "messageTextParams": [
+                "{{expression.roles}}",
+                "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects.length}}",
+                "{{data.partialErrors}}"
+            ]
+        },
+        "addSingleRoleToMultipleGroupsFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.addSingleRoleToMultipleGroupsFailureMessage}}",
+            "messageTextParams": [
+                "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects[0].props.object_string.uiValue}}",
+                "{{data.partialErrors}}"
+            ]
+        },
+
+        "addMultipleRolesToMultipleGroupsPartialFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.addMultipleRolesToGroupsPartialFailure}}",
+
+            "messageTextParams": [
+                "{{data.partialErrors}}"
+            ]
+        }
+
+    },
+    "conditions": {
+        "isValidToAddAdminObjects": {
+            "expression": "data.dataProviders.doSearchForSWASearchTab.selectedObjects.length>0"
+        },
+        "isAllowedShowTabSet": {
+            "expression": "ctx.panelContext.panelType==\"Role\" || ctx.panelContext.panelType==\"User\""
+        },
+        "isTreeMode": {
+            "expression": "ctx.ViewModeContext && (ctx.ViewModeContext.ViewModeContext === 'TreeView' || ctx.ViewModeContext.ViewModeContext === 'TreeSummaryView')"
+        },
+        "reloadPWA": {
+            "expression":"!conditions.isTreeMode && (!ctx.selected || (ctx.locationContext['ActiveWorkspace:Location'] === 'com.siemens.splm.client.usermanagement.peoplelocation' &&  ctx.locationContext['ActiveWorkspace:SubLocation'] !== 'organization'))"
+        },
+        "reloadOnAddRole":
+        {
+            "expression":"!conditions.isTreeMode && !ctx.selected"
+        }
+    },
+    "functions": {
+        "processAddChildGroupMessage": {
+            "functionName": "processAddChildGroupMessage",
+            "parameters": [
+                "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects}}",
+                "{{ctx.lastSelectedObject}}"
+            ]
+        },
+        "getAddUsersInput": {
+            "functionName": "getAddUsersInput",
+            "parameters": [
+                "{{subPanelContext}}",
+                "{{data.dataProviders.doSearchForSWASearchTab}}"
+            ]
+        },
+        "prepareSuccessAndFailureMessages": {
+            "functionName": "prepareSuccessAndFailureMessages",
+            "parameters": [
+                "{{subPanelContext}}",
+                "{{data.dataProviders.doSearchForSWASearchTab}}"
+            ]
+        },
+        "getSelectedRoleNode": {
+            "functionName": "getSelectedRoleNode",
+            "parameters": [
+                "{{subPanelContext}}"
+            ]
+        },
+        "addRolesToGroups": {
+            "functionName": "addRolesToGroups",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext}}"
+            ]
+        },
+        "partialErrorsForAddRolesToGroup": {
+            "functionName": "partialErrorsForAddRolesToGroup",
+            "parameters": [
+                "{{data}}",
+                "{{data.dataProviders.doSearchForSWASearchTab.selectedObjects}}",
+                "{{subPanelContext.selectionData.selected}}"
+            ]
+        },
+        "getSelectedGroups": {
+            "functionName": "getSelectedGroups",
+            "parameters": [
+                "{{subPanelContext}}"
+            ]
+        },
+        "getGroupName": {
+            "functionName": "getGroupName",
+            "parameters": [
+                "{{subPanelContext}}"
+            ]
+
+        },
+        "getSuccessfullyAddedChildgroup": {
+            "functionName": "getSuccessfullyAddedChildgroup",
+            "parameters": [
+                "{{data.dataProviders.doSearchForGroupsTab.selectedObjects}}"
+            ]
+        }
+
+    },
+    "i18n": {
+        "GroupName": [ "UsermanagementCommandPanelMessages" ],
+        "RoleName": [ "UsermanagementCommandPanelMessages" ],
+        "UserName": [ "UsermanagementCommandPanelMessages" ],
+        "AddButton": [ "UsermanagementCommandPanelMessages" ],
+        "addUserToRoleSuccess": [ "UsermanagementCommandPanelMessages" ],
+        "addSingleRoleToGroupSuccess": [ "UsermanagementCommandPanelMessages" ],
+        "addMultipleRolesToSingleGroupSuccessMessage": [ "UsermanagementCommandPanelMessages" ],
+        "addSingleRoleToMultipleGroupSuccessMessage": [ "UsermanagementCommandPanelMessages" ],
+        "addMultipleRolesToMultipleGroupsSuccessMessage": [ "UsermanagementCommandPanelMessages" ],
+        "addSingleRoleToGroupFailureMessage": [ "UsermanagementCommandPanelMessages" ],
+        "addMultipleRolesToGroupFailureMessage": [ "UsermanagementCommandPanelMessages" ],
+        "addSingleRoleToMultipleGroupsFailureMessage": [ "UsermanagementCommandPanelMessages" ],
+        "addMultipleUsersToRolesPartialFailure": [ "UsermanagementCommandPanelMessages" ],
+        "addMultipleRolesToGroupsPartialFailure": [ "UsermanagementCommandPanelMessages" ]
+    }
+}

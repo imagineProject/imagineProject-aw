@@ -1,0 +1,129 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "awp0ProcessTemplates": {
+            "displayName": "{{i18n.processTemplatesFieldName}}",
+            "type": "STRING",
+            "uiValue": "",
+            "dbValue": "",
+            "isSelectOnly": false,
+            "labelPosition": "PROPERTY_LABEL_AT_TOP",
+            "dataProvider": "processTemplateList",
+            "hasLov": true,
+            "isEditable": true
+        }
+    },
+    "actions": {
+        "getFilteredProcessTemplateList": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getWorkflowTemplatesForChange",
+                    "condition": "subPanelContext.xrtState.xrtTypeLoaded"
+                },
+                {
+                    "action": "populateChangeProcessTemplates",
+                    "condition": "data.templates && data.templates.filterTemplates && data.templates.filterTemplates.length > 0"
+                }
+            ]
+        },
+        "getWorkflowTemplatesForChange": {
+           "actionType": "TcSoaService",
+            "serviceName": "Workflow-2013-05-Workflow",
+            "method": "getWorkflowTemplates",
+            "inputData": {
+                "input": [
+                    {
+                        "clientId": "filterTemplates",
+                        "getFiltered": true,
+                        "objectTypes": "{{function:getSelectedType}}",
+                        "targetObjects": []
+                    }
+                ]
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "object_desc"
+                            },
+                            {
+                                "name": "fnd0Instructions"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "templates": "{{function:getWorkflowTemplatesDataForChange}}"
+            },
+            "deps": "js/Cm1CreateChangeProcessTemplates"
+        },
+        "populateChangeProcessTemplates": {
+            "actionType": "JSFunction",
+            "method": "populateChangeProcessTemplates",
+            "inputData": {
+                "templatesData": "{{data.templates}}",
+                "subPanelContext": "{{subPanelContext}}",
+                "processTemplatesProp": "{{data.awp0ProcessTemplates}}"
+            },
+            "outputData": {
+                "templateList": "templateList",
+                "awp0ProcessTemplates": "awp0ProcessTemplates"
+            },
+            "deps": "js/Cm1CreateChangeProcessTemplates"
+        },
+        "updateXrtVMOProps": {
+            "actionType": "JSFunction",
+            "method": "updateXrtVMOProps",
+            "inputData": {
+                "awp0ProcessTemplates": "{{data.awp0ProcessTemplates}}",
+                "xrtState": "{{subPanelContext.xrtState}}"
+            },
+            "deps": "js/Cm1CreateChangeProcessTemplates"
+        }
+    },
+    "dataProviders": {
+        "processTemplateList": {
+            "response": "{{data.templateList}}",
+            "totalFound": "{{data.templateList.length}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "functions": {
+        "getSelectedType": {
+            "functionName": "getSelectedType",
+            "parameters": ["{{subPanelContext.xrtState.xrtTypeLoaded}}"],
+            "deps": "js/Cm1CreateChangeProcessTemplates"
+        },
+        "getTypeInformation": {
+            "functionName": "getTypeInformation",
+            "deps": "js/Cm1CreateChangeProcessTemplates"
+        },
+        "getWorkflowTemplatesDataForChange": {
+            "functionName": "getWorkflowTemplatesDataForChange",
+            "parameters": ["{{data.templates}}"],
+            "deps": "js/Cm1CreateChangeProcessTemplates"
+        }
+    },
+    "i18n": {
+        "processTemplatesFieldName": ["CreateChangeMessages"]
+    },
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "getFilteredProcessTemplateList",
+                "observers": ["viewModel.subPanelContext.xrtState.xrtTypeLoaded"]
+            },
+            {
+                "action": "updateXrtVMOProps",
+                "observers": ["viewModel.data.awp0ProcessTemplates.dbValue"]
+            }
+        ]
+    }
+}

@@ -1,0 +1,115 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "navigateToAddSubstituteElementCommand": {
+            "action": "navigateToAddSubstituteElementBatchJob",
+            "iconName": "Add",
+            "tooltip": "{{i18n.addSubstituteElementsTitle}}"
+        },
+        "substituteSetId": {
+            "displayName": "{{i18n.substituteSetIdLabel}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "isEditable": "true",
+            "dbValue":"{{props.substituteSetSectionInfo.setId}}",
+            "uiValue":"{{props.substituteSetSectionInfo.setId}}"
+        }
+    },
+    "actions": {
+        "navigateToAddSubstituteElementBatchJob": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "updateGeneratedsetIdOnState"
+                },
+                {
+                    "action": "navigateToAddSubstituteElementPanel"
+                }
+            ]
+        },
+        "updateGeneratedsetIdOnState": {
+            "actionType": "JSFunction",
+            "method": "updateGeneratedsetIdOnState",
+            "inputData": {
+                "commandContext": "{{props.substituteSetSectionInfo}}",
+                "subPanelContext": "{{props.subPanelContext.addPanelState}}",
+                "substituteSetId": "{{data.substituteSetId.dbValue}}"
+            },
+            "deps": "js/aceOccurrenceSubstituteGroupService"
+        },
+        "navigateToAddSubstituteElementPanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "inputData": {
+                "activeViewState": "{{props.subPanelContext.activeState}}",
+                "destPanelId": "AceAddSubstituteComponent"
+            },
+            "deps": "js/addObjectUtils"
+        },
+
+        "initGetSubstituteOcccurrenceProvider":
+        {
+            "actionType": "dataProvider",
+            "method": "getSubstituteOcccurrenceProvider"
+        },
+        "updateListWithBomlineAction": {
+            "actionType": "JSFunction",
+            "method": "updateListWithBomline",
+            "inputData": {
+                "substituteSetSectionInfo":"{{props.substituteSetSectionInfo}}",
+                "addPanelState": "{{props.subPanelContext.addPanelState}}",
+                "substituteSetsInfo":"{{props.subPanelContext.substituteSetsInfo}}",
+                "dataProvider": "{{dataProviders.getSubstituteOcccurrenceProvider}}"
+            },
+            "deps": "js/aceOccurrenceSubstituteGroupService"
+        }
+
+    },
+    "lifecycleHooks": {
+        "onMount":"initGetSubstituteOcccurrenceProvider",
+        "onUpdate": [
+            {
+                "action": "updateGeneratedsetIdOnState",
+                "observers": [ "viewModel.data.substituteSetId.dbValue" ]
+            }
+        ]
+    },
+    "dataProviders": {
+        "getSubstituteOcccurrenceProvider": {
+            "response": "{{props.substituteSetSectionInfo.substituteBOMLines}}",
+            "totalFound" : "{{props.substituteSetSectionInfo.substituteBOMLines.length}}",
+            "totalLoaded" : "{{props.substituteSetSectionInfo.substituteBOMLines.length}}",
+            "selectionModelMode": "none"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "updateListWithBomlineEvent",
+            "action": "updateListWithBomlineAction"
+        }
+
+    ],
+    "functions": {
+    },
+    "conditions": {
+
+    },
+    "messages": {
+
+    },
+    "i18n": {
+        "addSubstituteElementsTitle": [
+            "OccurrenceManagementConstants"
+        ],
+        "substituteSetIdLabel": [
+            "OccurrenceManagementConstants"
+        ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "substitute-set-section-info": {
+            "type": "object"
+        }
+    }
+}

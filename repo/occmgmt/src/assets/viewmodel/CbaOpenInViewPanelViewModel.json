@@ -1,0 +1,317 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "LinkedBomDataTabs":{
+            "isArray": "true",
+                "dbValue": [
+                    {
+                        "tabKey": "LinkedBOM",
+                        "panelId": "LinkedBomTabPageSub",
+                        "name": "{{i18n.LinkedBOMTabTitle}}",
+                        "recreatePanel": true,
+                        "visibleWhen": "{{props.subPanelContext.popupOptions.eventData.cbaContext.linkedBOM.relatedModelObjects.length > 0}}"
+                    },
+                    {
+                        "tabKey": "palette",
+                        "panelId": "PaletteTabPageSub",
+                        "name": "{{i18n.PaletteTabTitle}}",
+                        "recreatePanel": true
+                    },
+                    {
+                        "tabKey": "search",
+                        "panelId": "SearchTabPageSub",
+                        "name": "{{i18n.SearchTabTitle}}",
+                        "recreatePanel": true
+                    }
+                ]
+            },
+            "addPanelState": {
+                "initialValues": {
+                    "creationType": "",
+                    "sourceObjects": "",
+                    "selectedTab": ""
+                },
+                "meta": {
+                    "creationType": {
+                        "field": "true",
+                        "type": "OBJECT"
+                    },
+                    "sourceObjects": {
+                        "field": "true",
+                        "type": "OBJECTARRAY"
+                    },
+                    "selectedTab": {
+                        "field": "true",
+                        "type": "OBJECT"
+                    }
+                }
+            },
+            "typeFilter": "{{ctx.cbaContext.filterTypes}}",
+            "visibleSearchFilterPanelTabKeys": "[ 'results', 'filters' ]"
+    },
+    "actions": {
+        "openSelectedElement":{
+            "actionType": "JSFunction",
+            "method": "navigateWithGivenParams",
+            "inputData": {
+                "urlParamsMap": "{{props.subPanelContext.popupOptions.eventData.urlParamsMap}}",
+                "urlParamsWithValue": {
+                    "rootQueryParamKey": "{{addPanelState.sourceObjects[0].uid}}"
+                }
+            },
+            "events": {
+
+                "success": [
+                    {
+                        "name": "updateViewModelObjectInContext",
+                        "eventData": {
+                            "source": "{{props.subPanelContext.popupOptions.eventData.contextKey}}",
+                            "selection": "{{addPanelState.sourceObjects[0]}}"
+                        }
+                    },
+                    {
+                        "name": "productChangedEvent"
+                    },
+
+                    {
+                        "name": "CbaOpenInViewPanel.closePanel"
+                    },
+
+                    {
+                        "name" : "CbaOpenInViewPanel.cleanupLinkedBOM"
+                    }
+                ]
+            },
+            "deps": "js/aceNavigationService"
+
+        },
+        "openInViewSelectedElement": {
+            "actionType": "JSFunction",
+            "method": "isValidObjectToOpen",
+            "inputData":
+            {
+                "source": "{{props.subPanelContext.popupOptions.eventData.contextKey}}",
+                "selection": "{{addPanelState.sourceObjects[0]}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "EntCBAOPenView.validObjectSelected"
+                    }
+                ]
+            },
+            "deps": "js/cbaOpenInViewPanelService"
+        },
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData":
+            {
+                "editContext": "",
+                "popupId": "{{props.subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "updateViewModelObjectInContext":{
+            "actionType": "JSFunction",
+            "method": "updateViewModelObjectInContext",
+            "inputData":
+            {
+                "data":"{{data.eventData}}"
+            },
+            "deps": "js/CadBomOccurrenceAlignmentUtil"
+        },
+        "handleClipboardPaletteSelection": {
+            "actionType": "JSFunction",
+            "method": "handlePaletteSelection",
+            "inputData":
+            {
+                "data": "{{ctx}}",
+                "provider": "{{ctx.getClipboardProvider}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "cba.updateSelectionInPanelContext"
+
+                    }
+                ]
+            },
+            "deps": "js/cbaOpenInViewPanelService"
+        },
+        "handleFavouritePaletteSelection": {
+            "actionType": "JSFunction",
+            "method": "handlePaletteSelection",
+            "inputData":
+            {
+                "data": "{{ctx}}",
+                "provider": "{{data.dataProviders.getFavoriteProvider}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "cba.updateSelectionInPanelContext"
+
+                    }
+                ]
+            },
+            "deps": "js/cbaOpenInViewPanelService"
+        },
+        "handleRecentPaletteSelection": {
+            "actionType": "JSFunction",
+            "method": "handlePaletteSelection",
+            "inputData":
+            {
+                "data": "{{ctx}}",
+                "provider": "{{data.dataProviders.getRecentObjsProvider}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "cba.updateSelectionInPanelContext"
+
+                    }
+                ]
+            },
+            "deps": "js/cbaOpenInViewPanelService"
+        },
+        "updateSelectionInPanelContext":{
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData":
+            {
+                "path": "panelContext.selectedObject",
+                "value": "{{data.eventData.selectedObjects}}"
+            },
+            "deps": "js/appCtxService"
+        },
+        "cleanUpLinkedBOM":{
+            "actionType": "JSFunction",
+            "method": "cleanUpLinkedBOM",
+            "deps": "js/cbaOpenInViewPanelService"
+        },
+        "updateTabSelection": {
+            "actionType": "JSFunction",
+            "method": "updateTabSelection",
+            "inputData": {
+                "addPanelState" : "{{fields.addPanelState}}"
+            },
+            "outputData": {
+                "addPanelState": "addPanelState"
+            },
+            "deps": "js/cbaOpenInViewPanelService"
+        },
+        "handleSelection": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateSelectionInContext"
+                },
+                {
+                    "action": "updateSelectionInPanelState"
+                }
+
+            ]
+        },
+        "updateSelectionInContext":{
+            "actionType": "JSFunction",
+            "method": "updateSelectionInContext",
+            "inputData": {
+                "data": "{{data.eventData.selectedObjects}}"
+            },
+            "deps": "js/cbaOpenInViewPanelService"
+        },
+        "updateSelectionInPanelState":{
+            "actionType": "JSFunction",
+            "method": "updateSelectionInPanelState",
+            "inputData": {
+                "sourceObjects": "{{fields.addPanelState}}",
+                "data": "{{ctx.panelContext.selectedObject}}"
+            },
+            "deps": "js/cbaOpenInViewPanelService"
+        }
+    },
+    "onEvent": [ {
+
+        "eventId": "CbaOpenInViewPanel.closePanel",
+        "action": "closePanel"
+
+    },{
+
+        "eventId": "updateViewModelObjectInContext",
+        "action": "updateViewModelObjectInContext",
+        "cacheEventData": true
+
+    },{
+        "eventId": "EntCBAOPenView.validObjectSelected",
+        "action": "openSelectedElement",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "getClipboardProvider.selectionChangeEvent",
+        "action": "updateSelectionInPanelContext",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "getFavoriteProvider.selectionChangeEvent",
+        "action": "updateSelectionInPanelContext",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "getRecentObjsProvider.selectionChangeEvent",
+        "action": "updateSelectionInPanelContext",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "performSearch.selectionChangeEvent",
+        "action": "updateSelectionInPanelContext",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "cba.updateSelectionInPanelContext",
+        "action": "updateSelectionInPanelContext",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "getLinkedObjectProvider.selectionChangeEvent",
+        "action": "handleSelection",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "CbaOpenInViewPanel.cleanupLinkedBOM",
+        "action": "cleanUpLinkedBOM"
+    },
+    {
+        "eventId": "awTab.selected",
+        "action": "updateTabSelection"
+    }
+
+ ],
+    "conditions": {
+
+        "isPalatteTabSelection": {
+            "expression": "data.selectedTab.panelId=='PaletteTabPageSub' && data.addPanelState.sourceObjects.length === 1"
+        },
+        "isResultTabSelection": {
+            "expression": "data.selectedTab.panelId==='SearchTabPageSub' && data.addPanelState.sourceObjects[0].modelType.typeHierarchyArray.indexOf( 'ItemRevision' ) > -1 && data.addPanelState.sourceObjects.length === 1"
+        },
+        "isLinkedBomTabSelection":{
+            "expression": "data.selectedTab.panelId==='LinkedBomTabPageSub' && data.addPanelState.sourceObjects.length === 1"
+        },
+        "isSingleElementSelected": {
+            "expression": "conditions.isPalatteTabSelection || conditions.isResultTabSelection|| conditions.isLinkedBomTabSelection"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+
+    },
+    "i18n": {
+        "openBtn": [ "CadBomAlignmentConstants" ],
+        "PaletteTabTitle":[ "CadBomAlignmentConstants" ],
+        "SearchTabTitle":[ "CadBomAlignmentConstants" ],
+        "LinkedBOMTabTitle":[ "CadBomAlignmentConstants" ]
+    }
+}

@@ -1,0 +1,85 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "visibleTabs": "palette,search",
+        "addPanelState": {
+            "initialValues": {
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {}
+        }
+    },
+    "actions": {
+        "openInViewSelectedElement": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "validateIfSelectedIsValidToOpenInView"
+                },
+                {
+                    "action": "OpenInView",
+                    "condition": "conditions.shouldProcessOpenInView"
+                } ]
+        },
+        "validateIfSelectedIsValidToOpenInView": {
+            "actionType": "JSFunction",
+            "method": "checkIfOpenInViewIsValid",
+            "inputData": {
+                "addPanelState": "{{data.addPanelState}}",
+                "sameObjectOfTypeNotAllowedInBothViews": "{{props.sameObjectOfTypeNotAllowedInBothViews}}"
+            },
+            "outputData": {
+                "isOpenInViewValid": ""
+            },
+            "deps": "js/occmgmtSplitViewService"
+        },
+        "OpenInView": {
+            "actionType": "JSFunction",
+            "method": "navigateWithGivenParams",
+            "inputData": {
+                "urlParamsMap": "{{subPanelContext.urlParams}}",
+                "urlParamsWithValue": {
+                    "rootQueryParamKey": "{{addPanelState.sourceObjects[0].uid}}"
+                }
+            },
+            "events": {
+
+                "success": [ {
+                        "name": "productChangedEvent"
+                    },
+                    {
+                        "name": "openInView.closePanel"
+                    }
+                ]
+            },
+            "deps": "js/aceNavigationService"
+        },
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "onEvent": [ {
+
+        "eventId": "openInView.closePanel",
+        "action": "closePanel"
+
+    } ],
+    "conditions": {
+        "isSingleElementSelected": {
+            "expression": "(addPanelState.selectedTab.view==='PaletteTabPageSub' && addPanelState.sourceObjects.length === 1) || (addPanelState.selectedTab.tabKey==='search' && addPanelState.sourceObjects.length === 1 )"
+        },
+        "shouldProcessOpenInView": {
+            "expression": "data.isOpenInViewValid === true"
+        }
+    },
+    "i18n": {
+        "openInView": [ "occmgmtSplitViewsConstants" ],
+        "openInViewBtn": [ "occmgmtSplitViewsConstants" ]
+    }
+}

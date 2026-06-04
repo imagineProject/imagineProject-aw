@@ -1,0 +1,131 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "getDisplaySetValues": {
+            "actionType": "TcSoaService",
+            "serviceName": "Ums-2024-06-UnitMgmt",
+            "method": "getDisplaySets",
+            "inputData": {
+                "input": {
+                    "searchString": "",
+                    "quantities": ""
+                }
+            },
+            "outputData": {
+                "displaySetsData": "{{function:processDisplaySetsData}}"
+            },
+            "deps": "js/Ums0DisplaySetsConfigHandler"
+        },
+        "reloadLocationsAction": {
+            "actionType": "JSFunction",
+            "method": "reloadLocations",
+            "deps": "js/Ums0DisplaySetsConfigHandler",
+            "inputData": {
+                "displaySet": "{{data.displaySetValues.dbValue}}"
+            }
+        },
+        "updateDefaultDisplatSetPreference": {
+            "actionType": "TcSoaService",
+            "serviceName": "Administration-2012-09-PreferenceManagement",
+            "method": "setPreferencesAtLocations",
+            "inputData": {
+                "setPreferenceIn": [
+                    {
+                        "location": {
+                            "object": {
+                                "type": "",
+                                "uid": ""
+                            },
+                            "location": "user"
+                        },
+                        "preferenceInputs": {
+                            "preferenceName": "UMS_Preferred_Display_Unit_Set",
+                            "values": [
+                                "{{displaySetValues.dbValue}}"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "reloadLocations"
+                    }
+                ]
+            }
+        },
+        "setDefaultDisplaySetSelected": {
+            "actionType": "JSFunction",
+            "method": "setDefaultDisplaySetSelected",
+            "inputData": {
+                "unitDisplaySetData":"{{fields.unitDisplaySetData}}",
+                "dataProvider":"{{data.displaySetValues}}"
+            },
+            "outputData": {
+                "displaySetValues":""
+
+            },
+            "deps": "js/Ums0DisplaySetsConfigHandler"
+        }
+    },
+    "conditions": {},
+    "lifecycleHooks": {
+        "onMount":"getDisplaySetValues",
+        "onUpdate": [
+            {
+            "action": "setDefaultDisplaySetSelected",
+            "observers": [ "fields.unitDisplaySetData.preferredDisplaySet" ]
+            }
+        ]
+    },
+    "onEvent": [
+        {
+            "eventId": "displaySetValues.lovValueChanged",
+            "action": "updateDefaultDisplatSetPreference"
+        },
+        {
+            "eventId": "reloadLocations",
+            "action": "reloadLocationsAction"
+        }
+    ],
+    "functions": {
+        "processDisplaySetsData": {
+            "functionName": "processDisplaySetsData",
+            "parameters": [
+                "{{fields.unitDisplaySetData}}"
+            ]
+        }
+    },
+    "data": {
+        "displaySetValues": {
+            "name": "displaySetValues",
+            "type": "STRING",
+            "dataProvider": "displaySetValuesDataProvider",
+            "dbValue": "",
+            "dispValue": "",
+            "displayName": "{{i18n.unitDisplaySet}}",
+            "hasLOV": true
+        },
+        "unitDisplaySetData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "dataProviders": {
+        "displaySetValuesDataProvider": {
+            "action": "getDisplaySetValues",
+            "response": "{{fields.unitDisplaySetData.displaySetsData}}"
+        }
+    },
+    "messages": {
+        "dropMsg": {
+            "messageType": "info",
+            "messageText": "{{i18n.onlyPararameterSupportMsg}}"
+        }
+    },
+    "i18n": {
+        "onlyPararameterSupportMsg": [ "UnitMgmtMessages" ],
+        "unitDisplaySet": [ "UnitMgmtMessages" ]
+    }
+}

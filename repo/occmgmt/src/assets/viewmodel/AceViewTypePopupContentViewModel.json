@@ -1,0 +1,165 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-list-filter.directive"
+    ],
+
+    "actions": {
+        "getAllViewTypesAction": {
+            "actionType": "dataProvider",
+            "method": "getViewTypes"
+        },
+        "getViewTypes": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData": {
+                "searchInput": {
+                    "maxToLoad": 50,
+                    "maxToReturn": 50,
+                    "providerName": "{{function:getProviderName}}",
+                    "searchCriteria": {
+                        "parentUid": "{{props.subPanelContext.occContext.productContextInfo.props.awb0Product.dbValues[0]}}"
+                    },
+                    "searchFilterFieldSortType": "Priority",
+                    "startIndex": 0
+                }
+            },
+            "outputData": {
+                "searchResults": "searchResults"
+            },
+            "deps": "js/aceStructureConfigurationService"
+        },
+        "applyViewTypeBatchJob": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "updateJitterFreePropLoadOnCurrentContext"
+                },{
+                    "action": "applyViewType"
+                }
+            ]
+        },
+        "updateJitterFreePropLoadOnCurrentContext": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "aceActiveContext.context.transientRequestPref.jitterFreePropLoad",
+                "value": true
+            },
+            "deps": "js/appCtxService"
+        },
+        "applyViewType": {
+            "actionType": "JSFunctionAsync",
+            "method": "applyViewType",
+            "inputData": {
+                "data":"{{data}}",
+                "subPanelContext":"{{props.subPanelContext}}"
+            },
+            "deps": "js/aceViewTypesService"
+        },
+        "selectViewType": {
+            "actionType": "JSFunction",
+            "method": "selectViewType",
+            "inputData": {
+                "data": "{{data}}",
+                "occContext":"{{props.subPanelContext.occContext}}"
+            },
+            "deps": "js/aceViewTypesService"
+        },
+        "updateViewType": {
+            "actionType": "JSFunction",
+            "method": "updateViewType",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "occContext": "{{props.subPanelContext.occContext}}",
+                "key":"{{props.subPanelContext.contextKey}}"
+            },
+            "deps": "js/aceViewTypesService"
+        },
+        "activateCurrentView": {
+            "actionType": "JSFunction",
+            "method": "updateActiveContext",
+            "inputData": {
+                "data": "{{props.subPanelContext.contextKey}}"
+            },
+            "deps": "js/aceContextStateMgmtService"
+        },
+        "initializeViewTypeView": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getAllViewTypesAction"
+                },
+                {
+                    "action": "activateCurrentView",
+                    "condition": "conditions.isActiveViewDifferent"
+                }
+            ]
+        }
+    },
+
+    "dataProviders": {
+        "getViewTypes": {
+            "action": "getViewTypes",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeViewTypeView"
+    },
+    "functions": {
+        "getProviderName": {
+            "functionName": "getProviderName",
+            "parameters": [
+                "ViewTypeProvider"
+            ]
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "getViewTypes.selectionChangeEvent",
+            "cacheEventData": true,
+            "action": "updateViewType"
+        },
+        {
+            "eventId": "getViewTypes.modelObjectsUpdated",
+            "action": "selectViewType"
+
+        },
+        {
+            "eventId": "awViewType.ValueChanged",
+            "cacheEventData": true,
+            "action": "applyViewTypeBatchJob"
+        }
+    ],
+
+    "messages": {},
+
+    "conditions": {
+        "isActiveViewDifferent": {
+            "expression": "props.subPanelContext.contextkey !== ctx.aceActiveContext.key"
+        }
+    },
+
+    "data": {
+        "viewTypeFilterbox":
+        {
+            "displayName": "{{i18n.filter}}",
+            "type": "STRING",
+            "dbValue": ""
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "i18n":
+    {
+        "viewtype": ["OccurrenceManagementConstants"],
+        "filter": ["OccurrenceManagementConstants"]
+    }
+
+}

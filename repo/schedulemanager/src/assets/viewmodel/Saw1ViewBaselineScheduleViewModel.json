@@ -1,0 +1,224 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "reveal": {
+            "actionType": "dataProvider",
+            "methods": [
+                "getBaselines"
+            ]
+        },
+        "search": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData": {
+                "searchInput": {
+                    "maxToLoad": "{{function:getDefaultPageSize}}",
+                    "maxToReturn": "{{function:getDefaultPageSize}}",
+                    "providerName": "Saw1TaskSearchProvider",
+                    "searchCriteria": {
+                        "searchContentType": "ScheduleBaseline",
+                        "scheduleUid": "{{ctx.selected.uid}}",
+                        "searchString": "{{data.filterBox.dbValue}}"
+                    },
+                    "startIndex": "{{data.dataProviders.getBaselines.startIndex}}",
+                    "searchFilterFieldSortType": "Alphabetical",
+                    "searchFilterMap": {},
+                    "searchSortCriteria": []
+                }
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "WorkspaceObject",
+                        "properties": [
+                            {
+                                "name": "object_desc"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "searchResults": "{{function:processProviderResponse}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "selectedBaselinesEvent"
+                } ]
+            },
+            "deps": "js/Saw1BaselineScheduleService"
+        },
+        "replaceBaseline":{
+            "actionType": "JSFunction",
+            "method": "replaceBaseline",
+            "deps": "js/Saw1ReplaceBaselineCellCommandHandler",
+            "inputData":{
+                "selection": "{{data.eventData.selection}}",
+                "getBaselinesProvider": "{{data.dataProviders.getBaselines}}",
+                "selectedBaselinesProvider": "{{data.dataProviders.selectedBaseline}}",
+                "scheduleNavigationContext":"{{subPanelContext.scheduleNavigationContext}}"
+            }
+        },
+        "getSelectedBaseline": {
+            "actionType": "JSFunction",
+            "method": "getSelectedBaseline",
+            "inputData": {
+                "dataProviders":"{{data.dataProviders}}",
+                "scheduleNavigationContext":"{{subPanelContext.scheduleNavigationContext}}"
+            },
+            "outputData": {
+                "selectedBaseline": ""
+            },
+            "deps": "js/Saw1BaselineScheduleService"
+        },
+        "addBaseline": {
+            "actionType": "JSFunction",
+            "method": "addBaseline",
+            "inputData": {
+                "dataProviders": "{{data.dataProviders}}",
+                "scheduleNavigationContext":"{{subPanelContext.scheduleNavigationContext}}"
+            },
+            "outputData":
+            {
+                "visibleSaveBtn" : "visibleSaveBtn",
+                "dataProviders" : "dataProviders"
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "condition": "errorCode=='assignmentsViewBaselineErrorMsg'",
+                    "message": "assignmentsViewBaselineErrorMsg"
+                } ]
+            },
+            "deps": "js/Saw1AddBaselineCellCommandHandler"
+        },
+        "activateViewButton": {
+            "actionType": "JSFunction",
+            "method": "activateViewButton",
+            "deps": "js/Saw1ReplaceBaselineCellCommandHandler"
+        },
+        "removeBaseline": {
+            "actionType": "JSFunction",
+            "method": "removeBaseline",
+            "inputData": {
+                "dataProviders": "{{data.dataProviders}}",
+                "scheduleNavigationContext":"{{subPanelContext.scheduleNavigationContext}}"
+            },
+            "outputData":
+            {
+                "visibleSaveBtn" : "visibleSaveBtn",
+                "dataProviders" : "dataProviders"
+            },
+            "deps": "js/Saw1RemoveBaselineCellCommandHandler"
+        },
+        "closePanelDialog":{
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "dataProviders": {
+        "getBaselines": {
+            "action": "search",
+            "response": "{{data.searchResults}}",
+            "selectionModelMode": "single",
+            "commandsAnchor": "aw_baselineCellCommand"
+        },
+        "selectedBaseline": {
+            "action": "getSelectedBaseline",
+            "response": "{{data.selectedBaseline}}",
+            "commandsAnchor": "aw_removeBaselineCellCommand"
+        }
+    },
+    "data": {
+        "filterBox": {
+            "displayName": "",
+            "type": "STRING",
+            "dbValue": ""
+        }
+    },
+    "functions": {
+        "getDefaultPageSize": {
+            "functionName": "getDefaultPageSize",
+            "parameters": [
+                "{{ctx.preferences.AWC_DefaultPageSize}}"
+            ]
+        },
+        "processProviderResponse": {
+            "functionName": "processProviderResponse",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.scheduleNavigationContext}}"
+            ]
+        }
+    },
+    "messages": {
+        "assignmentsViewBaselineErrorMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.assignmentsViewBaselineError}}"
+        }
+    },
+    "i18n": {
+        "viewBaseline": [
+            "ScheduleManagerMessages"
+        ],
+        "availableSectionTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "currentlyViewingTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "assignmentsViewBaselineError": [
+            "ScheduleManagerMessages"
+        ],
+        "saw1ActiveBaseline": [
+            "ScheduleManagerMessages"
+        ],
+        "baselineName": [
+            "ScheduleManagerMessages"
+        ],
+        "creationDate": [
+            "ScheduleManagerMessages"
+        ],
+        "owner": [
+            "ScheduleManagerMessages"
+        ]
+    },
+    "onEvent": [ {
+            "eventId": "awPanel.reveal",
+            "criteria": {
+                "panelId": "Saw1ViewBaselineSchedule"
+            },
+            "action": "reveal"
+        },
+        {
+            "eventId": "Saw1BaselineCommand.addBaseline",
+            "action": "addBaseline"
+        },
+        {
+            "eventId": "Saw1RemoveBaselineCommand.removeBaseline",
+            "action": "removeBaseline"
+        },
+        {
+            "eventId": "selectedBaselinesEvent",
+            "action": "selectedBaseline"
+        },
+        {
+            "eventId": "Saw1ReplaceBaselineCommand.replaceBaseline",
+            "action": "activateViewButton"
+        },
+        {
+            "eventId": "replaceBaselineEvent",
+            "cacheEventData": true,
+            "action": "replaceBaseline"
+        },
+        {
+            "eventId":"closeDialog",
+            "action":"closePanelDialog"
+        }
+    ]
+}

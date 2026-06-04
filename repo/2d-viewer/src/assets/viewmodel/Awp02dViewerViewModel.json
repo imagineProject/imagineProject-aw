@@ -1,0 +1,254 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "actions": {
+        "setup2DViewer": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setTwoDViewerNamespace"
+                },
+                {
+                    "action": "initialize2DViewer"
+                }
+            ]
+        },
+        "initialize2DViewer": {
+            "actionType": "JSFunctionAsync",
+            "method": "initialize2DViewer",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}",
+                "force2DViewerReload": false,
+                "atomicDataRef": "{{atomicDataRef}}"
+            },
+            "outputData": {
+                "awTwoDViewer.loadingViewer": false,
+                "atomicViewerContext.numPages": "numPages"
+            },
+            "deps": "js/twoDViewerService"
+        },
+        "reloadViewer": {
+            "actionType": "JSFunction",
+            "method": "initialize2DViewer",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}",
+                "force2DViewerReload": true
+            },
+            "outputData": {
+                "awTwoDViewer.loadingViewer": false
+            },
+            "deps": "js/twoDViewerService"
+        },
+        "setTwoDViewerNamespace": {
+            "actionType": "JSFunction",
+            "method": "setTwoDViewerNamespace",
+            "outputData": {
+                "viewerCtxNamespace": "viewerCtxNamespace"
+            },
+            "deps": "js/twoDViewerService"
+        },
+        "setViewerLoadingStatus": {
+            "actionType": "JSFunction",
+            "method": "setViewerLoadingStatus",
+            "inputData": {
+                "status": "{{data.eventMap['twoDViewer.viewerLoadingStatus'].loadingStatus}}"
+            },
+            "outputData": {
+                "awTwoDViewer.loadingViewer": ""
+            },
+            "deps": "js/twoDViewerService"
+        },
+        "setLoadingErrorStatus": {
+            "actionType": "JSFunction",
+            "method": "setLoadingErrorStatus",
+            "inputData": {
+                "status": "{{data.eventMap['twoDViewer.loadingErrorStatus'].loadingErrorStatus}}"
+            },
+            "outputData": {
+                "awTwoDViewer.viewerError": ""
+            },
+            "deps": "js/twoDViewerService"
+        },
+        "showViewerEmmProgress": {
+            "actionType": "JSFunction",
+            "method": "showViewerEmmProgress",
+            "inputData": {
+                "status": "{{data.eventMap['twoDViewer.emmProgressStatus'].emmProgressIndicatorStatus}}"
+            },
+            "outputData": {
+                "awTwoDViewer.showViewerEmmProgress": ""
+            },
+            "deps": "js/twoDViewerService"
+        },
+        "showViewerProgress": {
+            "actionType": "JSFunction",
+            "method": "showViewerProgress",
+            "inputData": {
+                "isShow": "{{data.eventMap['progressIndicator'].progressIndicatorStatus}}"
+            },
+            "outputData": {
+                "awTwoDViewer.showViewerProgress": ""
+            },
+            "deps": "js/twoDViewerService"
+        },
+        "set2DViewerSize": {
+            "actionType": "JSFunction",
+            "method": "set2DViewerSize",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}"
+            },
+
+            "deps": "js/twoDViewerService"
+        },
+        "cleanup2DViewer": {
+            "actionType": "JSFunction",
+            "method": "cleanup2DViewer",
+            "inputData": {
+                "viewerCtxNamespace": "{{data.viewerCtxNamespace}}"
+            },
+            "deps": "js/twoDViewerService"
+        }
+    },
+
+    "data": {
+        "atomicViewerContext": {
+            "initialValues": {
+                "navMode": "pan",
+                "numPages": 0,
+                "currentPage": 0,
+                "vmo": {},
+                "type": "aw-2d-viewer"
+            },
+            "meta": {}
+        },
+        "awTwoDViewer": {
+            "loadingViewer": true,
+            "showViewerEmmProgress": false,
+            "showViewerProgress": false,
+            "viewerError": false
+        }
+    },
+
+    "messages": { },
+
+    "conditions": {
+        "loadingViewer": {
+            "expression": "data.awTwoDViewer.loadingViewer && !data.awTwoDViewer.viewerError"
+        },
+        "viewerError": {
+            "expression": "data.awTwoDViewer.viewerError"
+        },
+        "show2DViewer": {
+            "expression": "!data.awTwoDViewer.loadingViewer && !data.awTwoDViewer.viewerError"
+        },
+        "showViewerProgress": {
+            "expression": "data.awTwoDViewer.showViewerProgress && !data.awTwoDViewer.viewerError"
+        },
+        "showViewerEmmProgress": {
+            "expression": "data.awTwoDViewer.showViewerEmmProgress && !data.awTwoDViewer.viewerError"
+        },
+        "doesPanelChangeRequire2DResize": {
+            "expression": "name === 'activeNavigationCommand' || (name === 'activeToolsAndInfoCommand' && value === undefined) || name === 'fullscreen' || name === 'ViewModeContext'"
+        },
+        "isSideNavConfigChangeRequire2DResize": {
+            "expression": "name === 'awSidenavConfig' && target === 'globalSidenavContext.globalNavigationSideNav'"
+        }
+    },
+
+    "functions": {},
+
+    "onEvent": [
+        {
+            "eventId": "twoDViewer.emmProgressStatus",
+            "action": "showViewerEmmProgress",
+            "condition": "viewerContext === data.viewerCtxNamespace",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "twoDViewer.viewerLoadingStatus",
+            "action": "setViewerLoadingStatus",
+            "condition": "viewerContext === data.viewerCtxNamespace",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "twoDViewer.loadingErrorStatus",
+            "action": "setLoadingErrorStatus",
+            "condition": "viewerContext === data.viewerCtxNamespace",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "progressIndicator",
+            "action": "showViewerProgress",
+            "condition": "viewerContext === data.viewerCtxNamespace",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "fileReplace.success",
+            "action": "reloadViewer",
+            "condition": "viewerContext === data.viewerCtxNamespace",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "twoDViewer.reloadViewer",
+            "action": "reloadViewer",
+            "condition": "viewerContext === data.viewerCtxNamespace",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "appCtx.register",
+            "condition": "conditions.doesPanelChangeRequire2DResize",
+            "action": "set2DViewerSize"
+        },
+        {
+            "eventId": "appCtx.update",
+            "condition": "conditions.isSideNavConfigChangeRequire2DResize",
+            "action": "set2DViewerSize"
+        },
+        {
+            "eventId": "appCtx.register",
+            "condition": "name==='taskbarfullscreen'",
+            "action": "set2DViewerSize"
+        },
+        {
+            "eventId": "commandBarResized",
+            "action": "set2DViewerSize"
+        },
+        {
+            "eventId": "aw-splitter-update",
+            "action": "set2DViewerSize"
+        },
+        {
+            "eventId": "twoDViewer.onResize",
+            "action": "set2DViewerSize"
+        }
+    ],
+
+    "lifecycleHooks": {
+        "onMount": "setup2DViewer",
+        "onUnmount": "cleanup2DViewer",
+        "onUpdate": [ {
+            "action":"set2DViewerSize",
+            "observers":["props.subPanelContext.fullScreenState"]
+        } ]
+    },
+
+    "i18n": {
+        "LoadingViewer": [ "StructureViewerMessages" ],
+        "viewerIssue": [ "Viewer2DMessages" ]
+    },
+
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "view-model": {
+            "type": "object"
+        }
+    },
+
+    "ctx": {
+        "viewerContext" : {
+            "type": "object"
+        }
+    }
+}

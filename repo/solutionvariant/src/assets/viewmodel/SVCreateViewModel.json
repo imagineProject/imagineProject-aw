@@ -1,0 +1,153 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-popup2.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-label.directive",
+        "js/aw-checkbox.directive",
+        "js/aw-button.directive"
+    ],
+    "actions": {
+        "actionForCreatingSVInForeground": {
+            "actionType": "JSFunction",
+            "method": "createMultiLevelSolutionVariantInput",
+            "deps": "js/solutionVariantService",
+            "events": {
+                "success": [
+                    {
+                        "name": "SVCreate.hidePopup"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "SVCreate.hidePopup"
+                    }
+                ]
+            }
+        },
+        "actionForCreatingSVInBackground": {
+            "actionType": "JSFunction",
+            "method": "createMultiLevelSolutionVariantInput",
+            "inputData": {
+                "runInBackground": "{{data.runInBackground.dbValue}}"
+            },
+            "deps": "js/solutionVariantService",
+            "actionMessages": {
+                "success": [
+                    {
+                        "condition": "data.runInBackground.dbValue === true",
+                        "message": "svCreationProgressNotification"
+                    }
+                ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "SVCreate.hidePopup"
+                    },
+                    {
+                        "name": "cancelPreviewAndGoBack"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "SVCreate.hidePopup"
+                    }
+                ]
+            }
+        },
+        "createSolutionVariant": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "createSVInForegroundMode",
+                        "condition": "data.runInBackground.dbValue === false"
+                    },
+                    {
+                        "name": "createSVInBackgroundMode",
+                        "condition": "data.runInBackground.dbValue === true"
+                    }
+                ]
+            }
+        },
+        "hidePopup": {
+            "actionType": "JSFunctionAsync",
+            "method": "hide",
+            "inputData": {
+                "popupEl": "{{data.popupId}}"
+            },
+            "deps": "js/popupService"
+        },
+        "cancelPreview": {
+            "actionType": "JSFunction",
+            "method": "goBack",
+            "deps": "js/locationNavigation.service"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "SVCreate.hidePopup",
+            "action": "hidePopup"
+        },
+        {
+            "eventId": "createSVInForegroundMode",
+            "action": "actionForCreatingSVInForeground"
+        },
+        {
+            "eventId": "createSVInBackgroundMode",
+            "action": "actionForCreatingSVInBackground"
+        },
+        {
+            "eventId": "cancelPreviewAndGoBack",
+            "action": "cancelPreview"
+        }
+    ],
+    "data": {
+        "runInBackground": {
+            "displayName": "{{i18n.runInBackground}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": true,
+            "dispValue": "{{i18n.runInBackground}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "generateCreateSVMessage": {
+            "displayName": {
+                "text": "{{i18n.createSVConfirmation}}",
+                "params": ["{{ctx.aceActiveContext.context.productTitle}}"]
+            },
+            "dbValue": "Test_Value",
+            "type": "STRING",
+            "dispValue": "{{i18n.createSVConfirmation}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        }
+    },
+    "conditions": {},
+    "messages": {
+        "svCreationProgressNotification": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.svCreationProgressNotification}}",
+            "messageTextParams": []
+        }
+    },
+    "i18n": {
+        "createSolutionVariant": [
+            "SolutionVariantConstants"
+        ],
+        "runInBackground": [
+            "SolutionVariantConstants"
+        ],
+        "cancelPreview": [
+            "SolutionVariantConstants"
+        ],
+        "createSVConfirmation": [
+            "SolutionVariantMessages"
+        ],
+        "svCreationProgressNotification": [
+            "SolutionVariantMessages"
+        ]
+    }
+}

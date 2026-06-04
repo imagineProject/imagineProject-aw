@@ -1,0 +1,380 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "render": {
+            "method": "awAm0AMTreeNamedACLLOVComponentRenderFunction",
+            "deps": "js/AmTreeNamedACLLOVComponentService"
+        },
+        "getAccessorTypeAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2022-12-AwAccessManager",
+            "method": "getAccessorTypes",
+            "inputData": {
+                "searchString": "{{function:getAccessorTypeSearchString}}",
+                "startIndex": "{{data.dataProviders.accessorTypeProvider.startIndex}}",
+                "maxToReturn": 50
+            },
+            "outputData": {
+                "accessorTypeNameInfos": "{{function:getAccessorTypeInfoNameAction}}",
+                "accessorTypeTotalFound": "totalFound"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "getAccessorActionCall": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2022-06-AwAccessManager",
+            "method": "getAccessorsByType",
+            "inputData": {
+                "accessorType": "{{props.vmo.props.AccessorType.dbValue}}",
+                "filter": "{{function:getFilterString}}",
+                "startIndex": "{{data.dataProviders.accessorProvider.startIndex}}",
+                "maxToReturn": 50
+            },
+            "outputData": {
+                "accessorNameInfos": "{{function:getAccessorInfoNameAction}}",
+                "totalFound": "totalFound"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+
+        "getAccessorAction":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getAccessorActionCall",
+                    "condition":"props.vmo.props.AccessorType.dbValue !=='' && !props.vmo.props.AccessorType.filterString"
+                }
+            ]
+
+        },
+
+        "clearAccessorBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateSelectedAccessorType"
+                },
+                {
+                    "action": "getAccessorAction"
+                },
+                {
+                    "action": "clearAccessorFieldValue"
+                }
+            ]
+        },
+        "filterValidAccessorType":{
+            "actionType": "JSFunction",
+            "method": "filterValidAccessorType",
+            "inputData": {
+                "AccessorType":"{{props.vmo}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "filterValidAccessor":{
+            "actionType": "JSFunction",
+            "method": "filterValidAccessor",
+            "inputData": {
+                "vmo":"{{props.vmo}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "filterValidPropertyGroup":{
+            "actionType": "JSFunction",
+            "method": "filterValidPropertyGroup",
+            "inputData": {
+                "vmo":"{{props.vmo}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "clearAccessorFieldValue":{
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "AccessorType.selectionChangeEvent",
+                        "eventData": {
+                            "accessorNameInfos": "{{response.accessors}}",
+                            "selectedRow":"{{props.vmo}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "updateSelectedAccessorType":{
+            "actionType": "JSFunction",
+            "method": "updateSelectedAccessorType",
+            "inputData": {
+                "eventData": "{{eventData}}",
+                "props":"{{props.vmo}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "updateSelectedAccessors":{
+            "actionType": "JSFunction",
+            "method": "updateSelectedAccessors",
+            "inputData": {
+                "eventData": "{{eventData}}",
+                "props":"{{props.vmo}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "readDenyWarningMessageAction":{
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "readDenyWarningMessageEvent"
+                    }
+                ]
+            }
+        },
+        "loadPropertyGroup": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "columnFilters": [],
+                        "providerName": "Am0ALSGroupProvider",
+                        "searchCriteria": {
+                            "searchString": "{{function:getPropertyGroupFilterString}}"
+                        },
+                        "searchFilterFieldSortType": "Alphabetical",
+                        "searchSortCriteria": [ {
+                            "fieldName": "fnd0AlsGroupName",
+                            "sortDirection": "ASC"
+                        } ],
+                        "searchFilterMap6": {},
+                        "startIndex": "{{data.dataProviders.propertyGroupProvider.startIndex}}"
+                    },
+                    "inflateProperties": false
+                },
+                "1": {
+                    "types": [{
+                        "name": "Fnd0AlsGroup",
+                        "properties": [
+                            {
+                                "name": "fnd0AlsGroupName"
+                            },
+                            {
+                                "name": "fnd0AlsGroupType"
+                            },
+                            {
+                                "name": "fnd0AlsGroupProperties"
+                            }
+                        ]
+                    }]
+                }
+            },
+            "outputData": {
+                "totalPropertyGroupFound": "totalFound",
+                "propertyGroupResult": "{{function:processPropertyGroup}}"
+            }
+        },
+        "updateSelectedPropertyGroup":{
+            "actionType": "JSFunction",
+            "method": "updateSelectedPropertyGroup",
+            "inputData": {
+                "eventData": "{{eventData}}",
+                "props":"{{props.vmo}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "updateReadWritePrivilegeAction":{
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "updateReadWritePrivilege",
+                        "eventData": {
+                            "lovValue":"{{data.eventData}}",
+                            "selectedRow":"{{props.vmo}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "updateReadWritePrivilegeBatchAction":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "readDenyWarningMessageAction",
+                    "condition": "conditions.isReadDenyWarningMessage && !conditions.isAttributeACESelected"
+                },
+                {
+                    "action": "updateReadWritePrivilegeAction",
+                    "condition": "conditions.isAttributeACESelected"
+                }
+
+            ]
+        }
+
+    },
+    "data": {
+        "permissionArray": [
+           {
+            "propInternalValue": "Allow",
+            "iconName": "indicatorApprovedPass16"
+           },
+           {
+            "propInternalValue": "Deny",
+            "iconName": "indicatorNo16"
+           }
+        ]
+    },
+    "conditions": {
+        "isAttributeACESelected": {
+            "expression": "props.vmo.type === 'Fnd0AlsAce'"
+        },
+        "isReadDenyWarningMessage": {
+            "expression": "data.eventData.viewModelProp.propertyName === 'READ' && data.eventData.selectedObjects[0].propInternalValue === 'Deny'"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "AccessorType.lovValueChanged",
+            "cacheEventData": true,
+            "action": "clearAccessorBatchAction"
+        },
+        {
+            "eventId": "Accessor.lovValueChanged",
+            "cacheEventData": true,
+            "action": "updateSelectedAccessors"
+        },
+        {
+            "eventId": "readDenyWarningMessageEvent",
+            "message": "readDenyWarningMessage"
+        },
+        {
+            "eventId": "PropertyGroup.lovValueChanged",
+            "cacheEventData": true,
+            "action": "updateSelectedPropertyGroup"
+        },
+        {
+            "eventId": "grantPermissionProvider.validSelectionEvent",
+            "cacheEventData": true,
+            "action": "updateReadWritePrivilegeBatchAction"
+        }
+
+    ],
+    "messages": {
+        "readDenyWarningMessage": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.readDenyWarning}}",
+            "navigationOptions": [
+                {
+                    "option": "OK",
+                    "text": "{{i18n.OK}}"
+                }
+            ]
+        }
+    },
+    "dataProviders": {
+        "accessorTypeProvider": {
+            "action": "getAccessorTypeAction",
+            "response": "{{data.accessorTypeNameInfos.lovEntries}}",
+            "totalFound": "{{data.accessorTypeNameInfos.totalFound}}"
+        },
+        "grantPermissionProvider": {
+            "response": "{{data.permissionArray}}"
+        },
+        "accessorProvider":{
+            "action": "getAccessorAction",
+            "initializeAction": "getAccessorAction",
+            "nextAction": "getAccessorAction",
+            "totalFound": "{{data.accessorNameInfos.totalFound}}",
+            "response": "{{data.accessorNameInfos.lovEntries}}"
+        },
+        "propertyGroupProvider": {
+            "action": "loadPropertyGroup",
+            "totalFound": "{{data.propertyGroupResult.totalFound}}",
+            "response": "{{data.propertyGroupResult.lovEntries}}"
+        }
+    },
+    "functions": {
+        "getAccessorTypeInfoNameAction": {
+            "functionName": "getAccessorTypeInfoName",
+            "parameters": [
+                "{{props.vmo}}"
+            ]
+        },
+        "getAccessorInfoNameAction": {
+            "functionName": "getAccessorInfoName",
+            "parameters": [
+                "{{props.vmo.props.AccessorType.dbValue}}", "{{props.vmo}}"
+            ]
+        },
+        "getAccessorTypeSearchString": {
+            "functionName": "getFilterString",
+            "parameters": [
+                "{{props.vmo.props.AccessorType.filterString}}"
+            ]
+        },
+        "getFilterString": {
+            "functionName": "getFilterString",
+            "parameters": [
+                "{{props.vmo.props.Accessor.filterString}}"
+            ]
+        },
+        "getPropertyGroupFilterString": {
+            "functionName": "getFilterString",
+            "parameters": [
+                "{{props.vmo.props.PropertyGroup.filterString}}"
+            ],
+            "deps": "js/Am0AclTableService"
+        },
+        "processPropertyGroup": {
+            "functionName": "processPropertyGroup",
+            "parameters": [
+                "fnd0AlsGroupName", "{{props.vmo}}"
+            ],
+            "deps": "js/Am0AclTableService"
+        }
+    },
+    "lifecycleHooks": {
+        "render": "render",
+        "onUpdate": [ {
+            "action": "filterValidAccessorType",
+            "observers": [
+                "props.vmo.props.AccessorType.dbValue"
+            ]
+        },
+        {
+            "action": "filterValidAccessor",
+            "observers": [
+                "props.vmo.props.Accessor.dbValue"
+            ]
+        },
+        {
+            "action": "filterValidPropertyGroup",
+            "observers": [
+                "props.vmo.props.PropertyGroup.dbValue"
+            ]
+        }]
+    },
+    "props":{
+        "prop":{
+            "type": "field"
+        }
+    },
+    "i18n": {
+        "allowPropDisplayValue": [
+            "AccessmgmtConstants"
+        ],
+        "denyPropDisplayValue": [
+            "AccessmgmtConstants"
+        ],
+        "readDenyWarning": [
+            "AccessmgmtConstants"
+        ],
+        "OK": [
+            "AccessmgmtConstants"
+        ]
+    }
+}

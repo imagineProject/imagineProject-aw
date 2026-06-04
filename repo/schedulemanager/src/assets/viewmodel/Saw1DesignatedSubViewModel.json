@@ -1,0 +1,122 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {        
+        "openDesignatedUserPanel": {
+            "actionType": "JSFunction",
+            "method": "openDesignatedUserPanel",
+            "deps": "js/Saw1DesignateDisciplineService",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "Saw1DesignatedUsers",
+                "selectedDisciplineProp": "{{props.selectedDiscipline}}",
+                "selectedDiscipline": "{{data.dataProviders.disciplineList.selectedObjects}}",
+                "data": "{{data}}"
+            }
+        },
+        "getDisciplineSubReveal": {
+            "actionType": "dataProvider",
+            "method": "disciplineList"
+        },
+        "getDesignteDiscEvent": {
+            "actionType": "JSFunction",
+            "method": "getDesignteDiscEvent",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "AllDiscipline",
+                        "condition": "data.disciplineData.dbValue === true"
+                    },
+                    {
+                        "name": "CommonDiscipline",
+                        "condition": "data.disciplineData.dbValue === false"
+                    }
+                ]
+            },
+            "deps": "js/ResourcesService"
+        },
+        "getDesignteDisciplines": {
+            "actionType": "JSFunction",
+            "method": "getDesigntedDisciplines",
+            "inputData": {
+                "data": "{{data}}",
+                "dataProvider": "{{data.dataProviders.disciplineList}}"
+            },
+            "outputData": {
+                "searchResults": "searchResults",
+                "totalFound": "totalFound",
+                "totalLoaded": "totalLoaded"
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "displayError"
+                } ]
+            },
+            "deps": "js/ResourcesService"
+        }
+    },
+    "data": {
+        "activeView": "Saw1DesignatedSub",
+        "filterBoxDiscipline": {
+            "displayName": "",
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "disciplineData": {
+            "type": "BOOLEAN",
+            "isRequired": "true",
+            "propertyRadioTrueText": "{{i18n.common}}",
+            "propertyRadioFalseText": "{{i18n.all}}",
+            "dbValue": true,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+    "dataProviders": {
+        "disciplineList": {
+            "action": "getDesignteDisciplines",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "totalLoaded": "{{data.totalLoaded}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "conditions": {
+        "isSelected": {
+            "expression": "data.dataProviders.disciplineList.selectedObjects.length > 0"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "AllDiscipline",
+            "action": "getDisciplineSubReveal"
+        },
+        {
+            "eventId": "CommonDiscipline",
+            "action": "getDisciplineSubReveal"
+        },
+        {
+            "eventId": "disciplineList.selectionChangeEvent",
+            "action": "openDesignatedUserPanel"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "getDesignteDiscEvent"
+    },
+    "messages": {
+        "displayError": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n": {
+        "all": [
+            "ScheduleManagerMessages"
+        ],
+        "common": [
+            "ScheduleManagerMessages"
+        ],
+        "discipline": [
+            "ScheduleManagerMessages"
+        ]
+    }
+}

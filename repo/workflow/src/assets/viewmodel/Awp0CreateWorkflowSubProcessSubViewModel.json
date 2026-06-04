@@ -1,0 +1,412 @@
+{
+    "schemaVersion":"1.0.0",
+    "imports":
+    [
+        "js/visible-when.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-i18n.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-include.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-command-panel-section.directive",
+        "js/aw-flex-row.directive",
+        "js/aw-widget.directive",
+        "js/aw-listbox.directive",
+        "js/aw-radiobutton.directive",
+        "js/exist-when.directive",
+        "js/aw-list.directive",
+        "js/aw-default-cell.directive",
+        "js/aw-scrollpanel.directive"
+    ],
+
+    "actions": {
+        "createSubProcess": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2008-06-Workflow",
+            "method": "createInstance",
+            "inputData": {
+                "startImmediately": true,
+                "observerKey": "",
+                "name": "{{props.subPanelContext.submitPanelState.processName}}",
+                "subject": "",
+                "description": "{{props.subPanelContext.submitPanelState.processDescription}}",
+                "contextData": {
+                    "processTemplate": "{{props.subPanelContext.submitPanelState.processTemplate.props.template_name.dbValues[0]}}",
+                    "attachmentCount": "{{props.subPanelContext.submitPanelState.targetObjects.length}}",
+                    "attachments": "{{function:getUids}}",
+                    "attachmentTypes": "{{function:getAttachmentTypes}}",
+                    "processAssignmentList": "{{function:getProcessAssignmentList}}",
+                    "dependencyTask": "{{function:getDependentTaskObject}}"
+                }
+            },
+            "outputData": {
+                "errorMsg": "{{function:populateErrorMessageOnNewWorkflowProcess}}",
+                "createdProcess":"ServiceData.created"
+            },
+            "deps": "js/Awp0NewWorkflowProcess",
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name":"workflow.updateTaskCount"
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "condition": "data.createdProcess && ctx.locationContext['ActiveWorkspace:Location'] === 'com.siemens.splm.clientfx.tcui.xrt.showObjectLocation' && subPanelContext.openedObject",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": [
+                                "{{subPanelContext.openedObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "primaryWorkarea.reset",
+                        "condition": "data.createdProcess && ctx.locationContext['ActiveWorkspace:Location'] === 'com.siemens.splm.client.inbox.tasksLocation'"
+                    },
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+                ],
+
+                "failure":
+                [
+                    {
+                        "name": "newWorkflowProcess.submissionFailed",
+                        "eventData":
+                        {
+                            "eventData": "{{data.errorMsg}}"
+                        }
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "condition": "data.createdProcess && ctx.locationContext['ActiveWorkspace:Location'] === 'com.siemens.splm.clientfx.tcui.xrt.showObjectLocation' && subPanelContext.openedObject",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": [
+                                "{{subPanelContext.openedObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "primaryWorkarea.reset",
+                        "condition": "data.createdProcess && ctx.locationContext['ActiveWorkspace:Location'] === 'com.siemens.splm.client.inbox.tasksLocation'"
+                    },
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        },
+                        "condition": "(errorCode.code==33352) || (data.createdProcess && data.createdProcess.length>0) "
+                    }
+                ]
+            },
+
+            "actionMessages":
+            {
+                "success":
+                [
+                    {
+                        "condition": "subPanelContext.submitPanelState.targetObjects.length==1",
+                        "message": "singleSubmitToSubWorkflowSuccess"
+                    },
+
+                    {
+                        "condition": "subPanelContext.submitPanelState.targetObjects.length>1",
+                        "message": "submitToSubWorkflowSuccess"
+                    }
+                ],
+                "failure":
+                [
+                    {
+                        "condition": "data.errorMsg && data.errorMsg.length > 0 && errorCode.code === 33352",
+                        "message": "subProcessCreationBackgroundError"
+                    },
+                    {
+                        "condition": "data.errorMsg && data.errorMsg.length > 0 && errorCode.code !== 33352",
+                        "message": "subProcessCreationError"
+                    }
+                ]
+            }
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events":
+                [
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            }
+        },
+        "resetValue": {
+            "actionType": "JSFunction",
+            "method": "resetValue",
+            "inputData": {
+                "input": "{{props.subPanelContext.submitPanelState}}"
+            },
+
+            "deps": "js/Awp0NewWorkflowProcess"
+        },
+        "submitToHostAction": {
+            "actionType": "JSFunction",
+            "method": "sendEventToHost",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/Awp0NewWorkflowProcess"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+
+    "data": {
+        "mainPanelId": "Awp0CreateWorkflowSubProcessSub",
+        "tabsModel":
+        {
+            "isArray": "true",
+            "dbValue":
+            [
+                {
+                    "tabKey": "Awp0NewWorkflowProcessWorkflowTab",
+                    "name": "{{i18n.Workflow}}"
+
+                },
+                {
+                    "tabKey": "Awp0NewWorkflowProcessAssignmentsTab",
+                    "name": "{{i18n.assignments}}"
+                }
+            ]
+        }
+    },
+    "dataProviders": {
+    },
+    "lifecycleHooks": {
+    },
+    "props": {
+        "sub-panel-context":{
+            "type": "object"
+        }
+    },
+    "messages":
+    {
+        "singleSubmitToSubWorkflowSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.singleSubmitToSubWorkflowSuccess}}",
+            "messageTextParams": [
+                "{{props.subPanelContext.submitPanelState.targetObjects[0].props.object_string.dbValues[0]}}"
+            ]
+        },
+        "submitToSubWorkflowSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.submitToSubWorkflowSuccess}}",
+            "messageTextParams": [
+                "{{props.subPanelContext.submitPanelState.targetObjects.length}}"
+            ]
+        },
+        "subProcessCreationError": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.serverError}}",
+            "messageTextParams": [
+                "{{data.errorMsg}}"
+            ]
+        },
+        "subProcessCreationBackgroundError": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.serverError}}",
+            "messageTextParams": [
+                "{{data.errorMsg}}"
+            ]
+        }
+    },
+
+    "functions":
+    {
+        "getFiltered":
+        {
+            "functionName": "getFiltered",
+            "parameters":
+            [
+                "{{data.allowAlternateProcedures.dbValue}}"
+            ]
+        },
+        "getUids":
+        {
+            "functionName": "getUids",
+            "parameters":
+            [
+                "{{props.subPanelContext.submitPanelState}}",
+                "{{props.subPanelContext.assignmentState}}"
+            ]
+        },
+
+        "getAttachmentTypes":
+        {
+            "functionName": "getAttachmentTypes",
+            "parameters":
+            [
+                "{{props.subPanelContext.submitPanelState}}",
+                "{{props.subPanelContext.submitPanelState.targetObjects}}",
+                "{{props.subPanelContext.submitPanelState.referenceObjects}}"
+            ]
+        },
+        "getProcessAssignmentList": {
+            "functionName": "getProcessAssignmentList",
+            "parameters":
+            [
+                "{{props.submitPanelState.assignmentState}}"
+            ]
+        },
+        "populateErrorMessageOnNewWorkflowProcess": {
+            "functionName": "populateErrorMessageOnNewWorkflowProcess",
+            "parameters":
+            [
+                "{{props.subPanelContext.submitPanelState}}"
+            ]
+        },
+        "getDependentTaskObject": {
+            "functionName": "getDependentTaskObject",
+            "parameters": [
+                "{{props.subPanelContext.submitPanelState.sourceObject}}"
+            ]
+        }
+    },
+    "ctx": {
+        "ViewModeContext": null,
+        "editInProgress": null,
+        "locationContext": null
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "submissionSuccessful",
+            "action": "submitToHostAction"
+        },
+        {
+            "eventId": "newWorkflowProcess.submissionSuccessful",
+            "action": "resetValue"
+        },
+        {
+            "eventId": "newWorkflowProcess.submissionFailed",
+            "action": "resetValue"
+        },
+        {
+            "eventId": "primaryWorkArea.selectionChangeEvent",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "primaryWorkArea.selectionChangeEvent",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+
+    ],
+
+    "conditions":
+    {
+        "isValidToSubmit":
+        {
+            "expression": "subPanelContext.submitPanelState.processName && subPanelContext.submitPanelState.processName.length > 0 && subPanelContext.submitPanelState.processTemplate && !subPanelContext.submitPanelState.submitActionInProgress"
+        }
+    },
+
+    "i18n":
+    {
+        "assignments":
+        [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "Submit":
+        [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "singleSubmitToSubWorkflowSuccess":
+        [
+            "WorkflowCommandPanelsMessages"
+        ],
+
+        "submitToSubWorkflowSuccess":
+        [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "none":
+        [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "Workflow_Title":
+        [
+            "WorkflowCommandPanelsMessages"
+        ],
+
+        "Workflow":
+        [
+            "WorkflowCommandPanelsMessages"
+        ],
+
+        "Workflow_Name":
+        [
+            "WorkflowCommandPanelsMessages"
+        ],
+
+        "Workflow_Template":
+        [
+            "WorkflowCommandPanelsMessages"
+        ],
+
+        "Description":
+        [
+            "WorkflowCommandPanelsMessages"
+        ],
+
+        "All":
+        [
+            "WorkflowCommandPanelsMessages"
+        ],
+
+        "Assigned":
+        [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "addReviewerLabelText":
+        [
+            "InboxMessages"
+        ],
+        "required": ["InboxMessages"],
+        "additionalReviewers": [ "InboxMessages" ],
+        "assignee": ["WorkflowCommandPanelsMessages"],
+        "targets": ["WorkflowCommandPanelsMessages"],
+        "notifyLabel": ["InboxMessages"],
+        "acknowledge": ["InboxMessages"],
+        "serverError": ["WorkflowCommandPanelsMessages"],
+        "analystTypeName": ["PlantDataManagementConstants"],
+        "responsibleUser": ["PlantDataManagementConstants"],
+        "changeSpecialistTypeName": ["PlantDataManagementConstants"],
+        "implementer": ["PlantDataManagementConstants"]
+    }
+}

@@ -1,0 +1,207 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+
+    "data": {},
+    "actions": {
+        "initDataProvider": {
+            "actionType": "dataProvider",
+            "method": "productSnapshotCardViewDataProvider"
+        },
+        "openSharedWithMe":{
+            "actionType": "JSFunction",
+            "method": "changeTab",
+            "inputData": {
+                "0": "primary",
+                "1": "Shared With Me"
+            },
+            "deps": "js/tabRegistry.service"
+        },
+        "openCreatedByMe":{
+            "actionType": "JSFunction",
+            "method": "changeTab",
+            "inputData": {
+                "0": "primary",
+                "1": "Created By Me"
+            },
+            "deps": "js/tabRegistry.service"
+        },
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "attributesToInflate": [
+                            "object_name",
+                            "object_desc"
+                        ],
+                        "internalPropertyName": "",
+                        "maxToLoad": "{{subPanelContext.searchState.maxToLoad}}",
+                        "maxToReturn": "{{subPanelContext.searchState.maxToReturn}}",
+                        "providerName": "{{subPanelContext.searchState.provider}}",
+                        "searchCriteria": "{{subPanelContext.searchState.criteria}}",
+                        "searchFilterFieldSortType": "Alphabetical",
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.productSnapshotCardViewDataProvider.startIndex}}",
+                            "endIndex": "{{data.dataProviders.productSnapshotCardViewDataProvider.endIndex}}",
+                            "startReached": "{{data.dataProviders.productSnapshotCardViewDataProvider.startReached}}",
+                            "endReached": "{{data.dataProviders.productSnapshotCardViewDataProvider.endReached}}"
+                        },
+                        "startIndex": "{{data.dataProviders.productSnapshotCardViewDataProvider.startIndex}}",
+                        "searchFilterMap6": "{{subPanelContext.searchState.activeFilterMap}}",
+                        "searchSortCriteria": [ {
+                            "fieldName": "{{ctx.state.params.fieldName}}",
+                            "sortDirection": "{{ctx.state.params.sortOrder}}"
+                        } ]
+                    }
+                },
+                "1": {
+                    "types": [ {
+                            "name": "BusinessObject",
+                            "properties": [ {
+                                    "name": "awp0CellProperties"
+                                },
+                                {
+                                    "name": "owning_user"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Fnd0Snapshot",
+                            "properties": [ {
+                                "name": "fnd0OwningIdentifier"
+                            } ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "output": "{{function:processOutput}}",
+                "dataProviders.productSnapshotCardViewDataProvider.cursorObject": "cursor",
+                "dataProviders.productSnapshotCardViewDataProvider.cursorObject.startReached": true
+            },
+            "events": {
+                "success": [ {
+                    "name": "snapshotSearchImage.selectFirstItem"
+                } ]
+            }
+        },
+        "selectFirstItem": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "productSnapshotCardViewDataProvider.selectAction",
+                    "eventData": {
+                        "setSelection": "{{data.searchResults.objects[0].uid}}"
+                    }
+                } ]
+            }
+        },
+        "resetProductSnapshot": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "primaryWorkarea.reset"
+                } ]
+            }
+        },
+        "renameProductSnapshotAction": {
+            "actionType": "JSFunction",
+            "method": "inlineRenameProductSnapshot",
+            "inputData": {
+                "snapshotName": "{{data.dataProviders.productSnapshotCardViewDataProvider.selectedObjects}}",
+                "data": "{{data}}"
+            },
+            "deps": "js/viewerProductSnapshotService"
+        },
+        "modifyProductSnapshotCardViewAction": {
+            "actionType": "JSFunction",
+            "method": "modifyProductSnapshot",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/viewerProductSnapshotService"
+        },
+        "dialogActionForContextMenu": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                }
+            }
+        }
+    },
+    "functions": {
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.searchState}}"
+            ],
+            "deps": "js/awSearchService"
+        }
+    },
+    "dataProviders": {
+        "productSnapshotCardViewDataProvider": {
+            "action": "loadData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            },
+            "selectionModelMode": "single"
+        }
+    },
+    "lifecycleHooks": {
+        "onInit": "initialize",
+        "onUpdate": {
+            "action": "initDataProvider",
+            "observers": [
+                "props.subPanelContext.searchState.criteria.searchString",
+                "props.subPanelContext.searchState.filterString"
+            ]
+        }
+    },
+    "onEvent": [ {
+            "eventId": "$locationChangeSuccess",
+            "action": "resetProductSnapshot"
+        },
+        {
+            "eventId": "snapshotSearchImage.selectFirstItem",
+            "action": "selectFirstItem"
+        },
+        {
+            "eventId": "productSnapshotCardViewDataProvider.selectionChangeEvent",
+            "action": "modifyProductSnapshotCardViewAction"
+        }
+    ],
+    "conditions": {
+        "isEmptySearchResult": {
+            "expression": "!subPanelContext.searchState.searchInProgress && subPanelContext.searchState.totalFound==0 && !subPanelContext.searchState.totalLoaded"
+        },
+        "isNoItemsCreatedByMe": {
+            "expression": "subPanelContext.provider.name === 'mySnapshots'"
+        },
+        "isNoItemsSharedByMe": {
+            "expression": "subPanelContext.provider.name === 'sharedByMeSnapshots'"
+        },
+        "isNoItemsSharedWithMe": {
+            "expression": "subPanelContext.provider.name === 'sharedwithMeSnapshots'"
+        }
+    },
+    "i18n": {
+        "updatedProductSnapshotSuccessfully": [ "ViewerSnapshotMessages" ],
+        "noSnapshotsFound": [ "ViewerSnapshotMessages" ],
+        "noSnapshotsCreatedByMeHint": [ "ViewerSnapshotMessages" ],
+        "noSnapshotsSharedByMeHint": [ "ViewerSnapshotMessages" ],
+        "noSnapshotsSharedWitMeHint": [ "ViewerSnapshotMessages" ],
+        "snapshotsCreatedByMe": [ "ViewerSnapshotMessages" ],
+        "snapshotsSharedWithMe": [ "ViewerSnapshotMessages" ]
+
+    }
+}

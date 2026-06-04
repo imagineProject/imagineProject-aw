@@ -1,0 +1,73 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "initializeGridHeader": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getConstraintType"
+                },
+                {
+                    "action": "buildGridHeaderTooltipDetails"
+                }
+            ]
+        },
+        "getConstraintType":{
+            "actionType": "JSFunction",
+            "method": "getConstraintType",
+            "inputData": {
+                "columnData": "{{props.column}}"
+            },
+            "outputData": {
+                "constraintType": ""
+            },
+            "deps": "js/pca0ConstraintsHeaderService"
+        },
+        "buildGridHeaderTooltipDetails": {
+            "actionType": "JSFunction",
+            "method": "buildGridHeaderTooltipDetails",
+            "inputData": {
+                "columnData": "{{props.column}}"
+            },
+            "outputData": {
+                "tooltipInfo": ""
+            },
+            "deps": "js/pca0GridHeaderService"
+        },
+        "checkViolations": {
+            "actionType": "JSFunction",
+            "method": "checkViolations",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}",
+                "data": "{{props.column}}"
+            },
+            "outputData": {
+                "violationsInColumn": "violationsInColumn",
+                "violationTooltipDetails": "tooltipDetails",
+                "errorIconUrl": "errorIconUrl"
+            },
+            "deps": "js/pca0RendererService"
+        }
+    },
+    "data": {},
+    "messages": {},
+    "onEvent": [ {
+            "eventId": "Pca0Grid.refreshHeader",
+            "action": "buildGridHeaderTooltipDetails"
+        },
+        {
+            "eventId": "Pca0ConstraintsGrid.validationComplete",
+            "action": "checkViolations",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+    ],
+    "conditions": {
+        "inVerticalMode": {
+            "expression": "props.column.isVertical"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeGridHeader"
+    }
+}

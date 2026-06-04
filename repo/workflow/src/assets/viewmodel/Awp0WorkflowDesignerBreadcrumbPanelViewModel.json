@@ -1,0 +1,138 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports":
+    [
+        "js/aw-navigate-breadcrumb.directive",
+        "js/aw-panel.directive"
+    ],
+    "actions":
+    {
+        "reveal":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData":
+            {
+                "objects":
+                [
+                    "{{ctx.xrtSummaryContextObject}}"
+                ],
+                "attributes": [
+                    "fnd0AllWorkflows",
+                    "fnd0MyWorkflowTasks",
+                    "object_string"
+                ]
+            },
+            "policy":
+            {
+
+                "types": [
+
+                    {
+                        "name": "WorkspaceObject",
+                        "properties": [
+                            {
+                                "name": "object_string"
+                            },
+                            {
+                                "name": "fnd0AllWorkflows",
+                                "modifiers": [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "fnd0MyWorkflowTasks",
+                                "modifiers": [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "EPMTask",
+                        "properties": [
+                            {
+                                "name": "parent_process",
+                                "modifiers":
+                                [
+                                    {
+                                        "Value":"true",
+                                        "name":"withProperties"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "object_name"
+                            }
+                        ]
+                    }
+                ]
+
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "workflowDesignerBreadCrumb.PropertiesLoaded"
+                    }
+                ]
+            },
+
+            "deps": "js/Awp0WorkflowDesignerBreadcrumbPanel"
+
+        }
+    },
+    "data":
+    {
+        "provider": {
+            "crumbs": [
+                {
+                    "clicked": false,
+                    "displayName": "First",
+                    "selectedCrumb": false,
+                    "showArrow": true
+                },
+                {
+                    "clicked": false,
+                    "displayName": "Second",
+                    "selectedCrumb": false,
+                    "showArrow": true
+                },
+                {
+                    "clicked": false,
+                    "displayName": "Third",
+                    "selectedCrumb": false,
+                    "showArrow": true
+                }
+            ]
+        },
+
+        "breadCrumbConfig":{
+            "workflowDesignerBreadcrumbConfig": {
+                "type" : "navigate",
+                "vm" : "Awp0WorkflowDesignerBreadcrumbChevron",
+                "chevronDataProvider": "workflowDesignerChevronDataProvider",
+                "id": "workflowDesignerNativeBreadCrumb",
+                "noUpdate": false,
+                "displayProperty": "object_string",
+                "popuplist": "/html/defaultbreadcrumblist.html"
+            }
+        }
+
+    },
+    "conditions":
+    {
+        "isSelectedEPMTaskOrSignOffTask":
+        {
+          "expression":"ctx.xrtSummaryContextObject.modelType.typeHierarchyArray.indexOf('Signoff') >= 0 || ctx.xrtSummaryContextObject.modelType.typeHierarchyArray.indexOf('EPMTask') >= 0"
+        }
+    }
+}

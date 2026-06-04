@@ -1,0 +1,86 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "chatBoxVisibility": "",
+        "selectedListValue":{
+            "initialValues":{
+                "value" : ""
+            },
+            "meta": {}
+        },
+        "prop": {
+            "userName": "{{i18n.usernameYou}}",
+            "chatName": "{{i18n.copilot}}",
+            "userIcon": "",
+            "chatIcon": "miscCopilotAvatarChat",
+            "emptyChatImage": "miscCopilotEmptyState",
+            "emptyChatTitle": "{{i18n.firstOpenChatTitle}}",
+            "emptyChatHint": "{{i18n.firstOpenChatHint}}",
+            "disclaimer": "{{i18n.tcCopilotDisclaimer}}"
+        }
+    },
+    "actions": {
+        "changeChatBoxVisibility": {
+            "actionType": "JSFunctionAsync",
+            "method": "changeChatBoxVisibility",
+            "inputData": {
+                "selectedKBCount": "{{ctx.selectKB.selectedKBCount}}",
+                "selectedListValue": "{{data.selectedListValue}}"
+            },
+            "outputData": {
+                "chatBoxVisibility": ""
+            },
+            "deps": "js/tcCopilotService"
+        },
+        "openDialogState": {
+            "actionType": "JSFunction",
+            "method": "updateCtx",
+            "inputData": {
+                "name": "AwTcCopilotOpen",
+                "value": "true"
+            },
+            "deps": "js/appCtxService"
+        },
+        "closeDialogState": {
+            "actionType": "JSFunction",
+            "method": "updateCtx",
+            "inputData": {
+                "name": "AwTcCopilotOpen",
+                "value": "false"
+            },
+            "deps": "js/appCtxService"
+        },
+        "onMountAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "openDialogState"
+                },
+                {
+                    "action": "changeChatBoxVisibility"
+                }
+            ]
+        }
+    },
+    "i18n": {
+        "usernameYou": [ "tcCopilotMessages" ],
+        "firstOpenChatTitle": [ "tcCopilotMessages" ],
+        "firstOpenChatHint": [ "tcCopilotMessages" ],
+        "tcCopilotDisclaimer": [ "tcCopilotMessages" ],
+        "copilot": [ "tcCopilotMessages" ]
+    },
+    "conditions": {},
+    "lifecycleHooks": {
+        "onMount": "onMountAction",
+        "onUnmount": "closeDialogState",
+        "onUpdate": [
+            {
+                "action": "changeChatBoxVisibility",
+                "observers": [
+                    "viewModel.ctx.selectKB.selectedKBCount",
+                    "viewModel.atomicData.selectedListValue"
+                ]
+            }
+        ]
+    }
+}

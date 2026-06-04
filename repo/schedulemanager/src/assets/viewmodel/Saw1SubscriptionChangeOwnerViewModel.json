@@ -1,0 +1,190 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "actions": {
+        "isValidSubTransfer": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "condition": "addUserPanelState.selectedUsers.length > 0",
+                    "name": "transferChangeOwnerEvent"
+                } ]
+            }
+        },
+        "transferChangeOwner": {
+            "actionType": "JSFunction",
+            "method": "getChangeOwnerUpdateSubscriptionSOAInputs",
+            "inputData": {
+                "subscriptions": "{{ctx.mselected}}",
+                "transferTo": {
+                    "type": "{{addUserPanelState.selectedUsers[0].props.user.referenceTypeName}}",
+                    "uid": "{{addUserPanelState.selectedUsers[0].props.user.dbValue}}"
+                }
+            },
+            "outputData": {
+                "updateSubscriptionsInput": "inputs"
+            },
+            "events": {
+                "success": [ {
+                    "name": "updateChangeOwnerEvent",
+                    "condition": "data.updateSubscriptionsInput || data.updateSubscriptionsInput.length >=0"
+                } ]
+            },
+            "deps": "js/Saw1SubscriptionSummaryNotificationService"
+        },
+        "updateChangeOwner": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2022-06-ScheduleManagement",
+            "method": "createOrUpdateNotificationRules",
+            "deps": "js/Saw1SubscriptionSummaryNotificationService",
+            "inputData": {
+                "notificationRuleInfos": "{{data.updateSubscriptionsInput}}"
+            },
+            "outputData": {
+                "partialErorrs": "partialErrors"
+            },
+            "policy": {
+                "types": [ {
+                    "name": "ImanSubscription",
+                    "properties": [ {
+                        "name": "event_type"
+                    } ]
+                } ]
+            },
+            "events": {
+                "success": [ {
+                        "name": "primaryWorkarea.reset"
+                    },
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ],
+                "failure": [ {
+                        "name": "primaryWorkarea.reset"
+                    },
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                        "message": "failureChangeOwnerMessage",
+                        "condition": "(ctx.mselected && ctx.mselected.length === 1)"
+                    },
+                    {
+                        "message": "multipleFailureChangeOwnerMessage",
+                        "condition": "(ctx.mselected && ctx.mselected.length > 1)"
+                    }
+                ],
+                "success": [ {
+                        "message": "successfulChangeOwnerMessage",
+                        "condition": "(ctx.mselected && ctx.mselected.length === 1)"
+                    },
+                    {
+                        "message": "multipleSuccessfulChangeOwnerMessage",
+                        "condition": "(ctx.mselected && ctx.mselected.length > 1)"
+                    }
+                ]
+            }
+        }
+    },
+
+    "data": {
+        "addUserPanelState": {
+            "initialValues": {
+                "provider": "Awp0PeoplePickerProvider",
+                "selectionModelMode": "single",
+                "criteria": {
+                    "providerContentType": "GroupMember",
+                    "searchString": "*",
+                    "selectedObject": "",
+                    "searchSubGroup": "true"
+                },
+                "preferenceCriteria": [
+                    "WRKFLW_user_panel_content_display",
+                    "WRKFLW_allow_resourcepool_assignments",
+                    "WRKFLW_show_user_assignment_options"
+                ],
+                "selectedUsers": "",
+                "isAddButtonNeeded": false
+            },
+            "meta": {
+                "selectedUsers": {
+                    "field": "true",
+                    "type": "OBJECTARRAY"
+                }
+            }
+        }
+    },
+    "messages": {
+        "successfulChangeOwnerMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.successfulTransferNotification}}",
+            "messageTextParams": [
+                "{{ctx.selected.props.object_string.dbValues[0]}}",
+                "{{addUserPanelState.selectedUsers[0].props.user.uiValues[0]}}"
+            ]
+        },
+        "multipleSuccessfulChangeOwnerMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.multipleSubscriptionTransferNotification}}",
+            "messageTextParams": [
+                "{{ctx.mselected.length}}",
+                "{{ctx.mselected.length}}"
+            ]
+        },
+        "failureChangeOwnerMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.errorTransferNotification}}",
+            "messageTextParams": [
+                "{{ctx.selected.props.object_string.dbValues[0]}}",
+                "{{addUserPanelState.selectedUsers[0].props.user.uiValues[0]}}"
+            ]
+        },
+        "multipleFailureChangeOwnerMessage": {
+            "expression": {
+                "successCount": "ctx.mselected.length - data.partialErorrs.length"
+            },
+            "messageType": "ERROR",
+            "messageText": "{{i18n.multipleSubscriptionTransferNotification}}",
+            "messageTextParams": [
+                "{{expression.successCount}}",
+                "{{ctx.mselected.length}}"
+            ],
+            "messageData": {
+                "partialErrors": "{{data.partialErorrs}}"
+            }
+        }
+    },
+
+    "onEvent": [ {
+            "eventId": "transferChangeOwnerEvent",
+            "action": "transferChangeOwner"
+        },
+        {
+            "eventId": "updateChangeOwnerEvent",
+            "action": "updateChangeOwner"
+        }
+    ],
+    "conditions": {
+        "isValidToAdd": {
+            "expression": "addUserPanelState.selectedUsers && addUserPanelState.selectedUsers.length > 0"
+        }
+    },
+    "i18n": {
+        "transferButtonTitle": [ "ScheduleManagerMessages" ],
+        "Saw1SubscriptionChangeOwner": [ "ScheduleManagerMessages" ],
+        "successfulTransferNotification": [ "ScheduleManagerMessages" ],
+        "errorTransferNotification": [ "ScheduleManagerMessages" ],
+        "multipleSubscriptionTransferNotification": [ "ScheduleManagerMessages" ]
+    }
+
+}

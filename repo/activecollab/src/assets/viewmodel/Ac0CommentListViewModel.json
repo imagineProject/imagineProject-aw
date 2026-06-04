@@ -1,0 +1,393 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "actions": {
+
+        "render": {
+            "method": "ac0CommentListRenderFunction",
+            "deps": "js/Ac0CommentListService"
+        },
+
+        "searchComments": {
+            "actionType": "GraphQL",
+            "serviceName": "",
+            "inputData": {
+                "request": {
+                    "query": "query($searchInput:SearchInput){collabCommentList(searchInput:$searchInput){totalFound totalLoaded cursor results{uid type typeHierarchy typeIconURL thumbnailURL collabPlainText collabRichText collabAutoMsgType collabCreateUserId{uid user_id object_string} collabNumResponses collabDateModified collabRootComment collabRelatedObjectInfo { ... on ClientObject { uid type cellHeader1 thumbnailURL } ... on CollabSnapshotObject { uid type cellHeader1 thumbnailURL }} }}}",
+                    "variables": {
+                        "searchInput": {
+                            "searchCriteria": {
+                                "SearchMode": "commentsForConversation",
+                                "ObjectUID": "{{props.discussionUid}}"
+                            },
+                            "maxToLoad": "{{data.commentsPage.pageSize}}",
+                            "maxToReturn": "{{data.commentsPage.pageSize}}",
+                            "searchFilterFieldSortType": "{{ctx.search.sortType}}",
+                            "cursor": {
+                                "startIndex": "{{data.commentsPage.currentStartIndex}}",
+                                "endIndex": "{{data.commentsPage.currentEndIndex}}",
+                                "startReached": "{{function:getCursorEndReachedValue}}",
+                                "endReached": "{{function:getCursorStartReachedValue}}"
+                            },
+                            "inflateProperties": false
+                        }
+                    }
+                },
+                "endPoint": "tcgql/graphql"
+            },
+            "outputData": {
+                "totalFound": "data.collabCommentList.totalFound",
+                "searchResults": "data.collabCommentList.results",
+                "commentsPage.cursorObject": "data.collabCommentList.cursor",
+                "commentsDataProviderNotCalled": false
+            },
+            "dataParsers": [{
+                "id": "searchCommDataParser",
+                "responseObjs": "data.collabCommentList.results"
+            }],
+            "events": {
+                "success": [ {
+                    "name": "Ac0Conversation.commentsListLoaded"
+                } ],
+                "failure": [ {
+                    "name": "displayGraphqlErrorMsgEvent",
+                    "eventData": {
+                        "response": "data.collabConversationList.results"
+                    }
+                }]
+            },
+            "deps": "js/Ac0ConversationUtils"
+        },
+
+        "noop": {
+            "actionType": "JSFunction",
+            "method": "getRandObjId",
+            "deps": "js/Ac0ConversationService"
+        },
+
+        "loadMore": {
+            "actionType": "JSFunction",
+            "method": "loadMoreAction",
+            "deps": "js/Ac0ConversationService",
+            "inputData": {
+                "vmData": "{{data}}",
+                "currentCommentCtx": "{{subPanelContext}}"
+            }
+        },
+
+        "modifyCommentsPostLoad": {
+            "actionType": "JSFunction",
+            "method": "modifyComments",
+            "deps": "js/Ac0ConversationService",
+            "inputData": {
+                "vmData": "{{data}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Ac0CommentList.searchedCommentsModified"
+                } ]
+            }
+        },
+
+        "tileSetupAfterEditSaveComment": {
+            "actionType": "JSFunction",
+            "method": "modifyComments",
+            "deps": "js/Ac0ConversationService",
+            "inputData": {
+                "vmData": "{{data}}"
+            }
+        },
+
+        "initCommentsPanel": {
+            "actionType": "JSFunction",
+            "method": "initCommentList",
+            "deps": "js/Ac0CommentListService",
+            "inputData": {
+                "commentsPage": "{{data.commentsPage}}",
+                "discussionData": "{{props.discussionData}}",
+                "commentReplyObj": "{{props.commentReplyObj.sharedReplyObj}}",
+                "loadedComments": "{{data.loadedCommentsObject}}"
+            },
+            "outputData": {
+                "commentsPage": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "Ac0Conversation.initCommentsPanelComplete"
+                } ]
+            }
+        },
+
+        "updateLoadedCommentsObject": {
+            "actionType": "JSFunction",
+            "method": "prependSearchedCommentstoLoadedComments",
+            "deps": "js/Ac0CommentListService",
+            "inputData": {
+                "loadedComments": "{{data.loadedCommentsObject}}",
+                "searchedComments": "{{data.searchResults}}",
+                "commentsPage": "{{data.commentsPage}}",
+                "sharedCommentsReplyData": "{{props.commentReplyObj.sharedReplyObj}}"
+            },
+            "outputData": {
+                "loadedCommentsObject": "loadedCommentsObject",
+                "commentsPage": "commentsPage"
+            }
+        },
+        "checkCKEInputTextValidity": {
+            "actionType": "JSFunction",
+            "method": "checkCKEInputTextValidityAndPublishEvent",
+            "inputData": {
+                "cke": "{{data.ckeInstance.cke._instance}}"
+            },
+            "deps": "js/Ac0CreateCollabObjectService"
+        },
+        "getLatestComments": {
+            "actionType": "JSFunction",
+            "method": "resetCommentCounts",
+            "inputData": {
+                "commentsPage": "{{data.commentsPage}}",
+                "discussionData": "{{props.discussionData}}",
+                "commentReplyObj": "{{props.commentReplyObj.sharedReplyObj}}",
+                "loadedComments": "{{data.loadedCommentsObject}}"
+            },
+            "outputData": {
+                "commentsPage": "commentsPage",
+                "loadedCommentsObject": {
+                    "loadedComments": []
+                }
+            },
+            "events": {
+                "success": [ {
+                    "name": "Ac0CommentList.searchComments"
+                } ]
+            },
+            "deps": "js/Ac0CommentListService"
+        },
+        "displayGraphqlErrorMsgAction": {
+            "actionType": "JSFunctionAsync",
+            "method": "displayGraphqlErrorMsg",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/Ac0ConversationService"
+        }
+    },
+
+    "data": {
+        "loadMoreButton": "{{i18n.moreReplies}}",
+        "loadMoreComments": false,
+        "hideMoreRepliesButton": true,
+        "moreCommentsAvailable": true,
+        "loadedCommentsObject": {
+            "loadedComments": []
+        },
+        "commentsDataProviderNotCalled": true,
+        "cmdMore": "cmdMore",
+        "endIndexCalled": 0,
+        "commentsPage": {
+            "pageSize": 5
+        }
+    },
+
+    "ctx": {
+        "Ac0ConvCtx": {
+            "type": "object"
+        },
+        "search": {
+            "type": "object"
+        }
+    },
+
+    "props": {
+        "discussion-uid": {
+            "type": "string"
+        },
+        "discussion-data": {
+            "type": "object"
+        },
+        "comment-reply-obj": {
+            "type": "object"
+        },
+        "shared-data-obj": {
+            "type": "object"
+        }
+    },
+
+    "functions": {
+        "getConvObjectUID": {
+            "functionName": "getConvObjectUID",
+            "parameters": [
+                "{{subPanelContext}}", "{{ctx}}"
+            ]
+        },
+        "getCursorEndIndexValue": {
+            "functionName": "getCursorEndIndexValue",
+            "parameters": [ "{{data.commentsPage}}" ]
+        },
+        "getCursorEndReachedValue": {
+            "functionName": "getCursorEndReachedValue",
+            "parameters": [ "{{data.commentsPage}}" ]
+        },
+        "getCursorStartReachedValue": {
+            "functionName": "getCursorStartReachedValue",
+            "parameters": [ "{{data.commentsPage}}" ]
+        },
+        "sanitizeRichText": {
+            "functionName": "sanitizeRichTextForDisplay",
+            "parameters": [
+                "{{response.collabRichText}}"
+            ],
+            "deps": "js/Ac0ConversationUtils"
+        }
+    },
+
+    "dataParseDefinitions": {
+        "searchCommDataParser": {
+            "identifier": "{{response.uid}}",
+            "thumbnailUrl": "{{response.thumbnailURL}}",
+            "props": {
+                "userId": {
+                    "name": "userId",
+                    "displayName": "id",
+                    "value": "{{response.collabCreateUserId.uid}}",
+                    "displayValue": "{{response.collabCreateUserId.uid}}",
+                    "type": "STRING"
+                },
+                "uid": {
+                    "name": "userId",
+                    "displayName": "id",
+                    "value": "{{response.collabCreateUserId.uid}}",
+                    "displayValue": "{{response.collabCreateUserId.uid}}",
+                    "type": "STRING"
+                },
+                "userName": {
+                    "name": "userName",
+                    "displayName": "userName",
+                    "value": "{{response.collabCreateUserId.object_string}}",
+                    "displayValue": "{{response.collabCreateUserId.object_string}}",
+                    "type": "STRING"
+                },
+                "modifiedDateTime": {
+                    "name": "modifiedDateTime",
+                    "displayName": "date",
+                    "value": "{{response.collabDateModified}}",
+                    "displayValue": "{{response.collabDateModified}}",
+                    "type": "DATETIME"
+                },
+                "plainText": {
+                    "name": "collabPlainText",
+                    "displayName": "text",
+                    "value": "{{response.collabPlainText}}",
+                    "displayValue": "{{response.collabPlainText}}",
+                    "type": "STRING"
+                },
+                "richText": {
+                    "name": "collabRichText",
+                    "displayName": "text",
+                    "value": "{{function:sanitizeRichText}}",
+                    "displayValue": "{{function:sanitizeRichText}}",
+                    "type": "STRING"
+                },
+                "autoMsgType": {
+                    "name": "collabAutoMsgType",
+                    "displayName": "text",
+                    "value": "{{response.collabAutoMsgType}}",
+                    "displayValue": "{{response.collabAutoMsgType}}",
+                    "type": "STRING"
+                },
+                "collabRelatedObjectInfoList": {
+                    "name": "collabRelatedObjectInfoList",
+                    "displayName": "sourceObjects",
+                    "value": "{{response.collabRelatedObjectInfo}}",
+                    "displayValue": "{{response.collabRelatedObjectInfo}}",
+                    "type": "OBJECT",
+                    "isArray": true
+                }
+            }
+        }
+    },
+
+    "onEvent": [ {
+            "eventId": "S2clConvComment.commentsLoaded",
+            "action": "postCommentsLoadedAction"
+        },
+        {
+            "eventId": "Ac0Conversation.commentsListLoaded",
+            "condition": "conditions.callSerchCommentListAction",
+            "action": "modifyCommentsPostLoad"
+        },
+        {
+            "eventId": "Ac0CommentList.searchedCommentsModified",
+            "condition": "conditions.callSerchCommentListAction",
+            "action": "updateLoadedCommentsObject"
+        },
+        {
+            "eventId": "Ac0Conversation.initCommentsPanelComplete",
+            "condition": "conditions.callSerchCommentListAction",
+            "action": "searchComments"
+        },
+        {
+            "eventId": "isInputTextValidEvent",
+            "cacheEventData": true,
+            "action": "isInputTextValidAction"
+        },
+        {
+            "eventId": "Ac0CommentList.getLatestComments",
+            "action": "getLatestComments"
+        },
+        {
+            "eventId": "Ac0CommentList.searchComments",
+            "action": "searchComments"
+        },
+        {
+            "eventId": "ac0EditComm.editCommentComplete",
+            "action": "checkCKEInputTextValidity"
+        },
+        {
+            "eventId": "ac0EditComm.editCommentComplete2",
+            "action": "tileSetupAfterEditSaveComment"
+        },
+        {
+            "eventId": "displayGraphqlErrorMsgEvent",
+            "action": "displayGraphqlErrorMsgAction",
+            "cacheEventData": true
+        }
+    ],
+
+    "conditions": {
+        "validInputDataForCreateComment":
+        {
+            "expression":"data.isInputTextValid"
+        },
+        "commentsDataProviderNotCalled": {
+            "expression": "data.commentsDataProviderNotCalled"
+        },
+        "isDiscussionLocation":
+        {
+            "expression":"(ctx.sublocation.clientScopeURI === 'Ac0CollaborationFeed' || ctx.sublocation.clientScopeURI === 'Ac0CollaborationActions')"
+        },
+        "callSerchCommentListAction": {
+            "expression": "conditions.isDiscussionLocation || props.discussionUid === data.commentsPage.discussionUID"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "initCommentsPanel",
+        "render": "render"
+    },
+
+    "i18n": {
+        "conversation": [ "ActiveCollabDeclarativeMessages" ],
+        "newConversation": [ "ActiveCollabDeclarativeMessages" ],
+        "newComment": [ "ActiveCollabDeclarativeMessages" ],
+        "more": [ "ActiveCollabDeclarativeMessages" ],
+        "less": [ "ActiveCollabDeclarativeMessages" ],
+        "reply": [ "ActiveCollabDeclarativeMessages" ],
+        "save": [ "ActiveCollabDeclarativeMessages" ],
+        "replies": [ "ActiveCollabDeclarativeMessages" ],
+        "discard": ["ZeroCompileCommandMessages"],
+        "moreReplies": [ "ActiveCollabDeclarativeMessages" ],
+        "graphqlErrorMsg": [ "ActiveCollabDeclarativeMessages" ]
+    }
+
+}

@@ -1,0 +1,369 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "scheduleTaskBoardDataProvider": {
+            "actionType": "dataProvider",
+            "method": "SMTasksBoardProvider"
+        },
+        "initSearch": {
+            "actionType": "JSFunction",
+            "method": "initSearch",
+            "inputData": {
+                "data": "{{data.actions}}",
+                "actionName": "scheduleTaskBoardDataProvider",
+                "tableLoaded": "{{data.tableLoaded}}"
+            },
+            "deps": "js/awSearchService"
+        },
+        "initializeKanbanColumns": {
+            "actionType": "JSFunction",
+            "deps": "js/SmTasksKanbanService",
+            "method": "initializeKanbanColumns",
+            "inputData": {
+                "kanbanColumns": "{{data.kanbanColumns}}",
+                "atomicDataRef": "{{data.atomicDataRef}}",
+                "kanbanId": "{{data.kanbanid}}",
+                "selectionData": "{{props.subPanelContext.selectionData}}",
+                "i18n": "{{data.i18n}}"
+            },
+            "outputData": {
+                "kanbanState": ""
+            }
+        },
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "maxToLoad": "{{function:getMaxToLoadAndReturnValueFromDisplayLimitPreference}}",
+                        "maxToReturn":"{{function:getMaxToLoadAndReturnValueFromDisplayLimitPreference}}",
+                        "providerName": "Saw1TaskSearchProvider",
+                        "searchCriteria": {
+                            "searchContentType" : "ScheduleTask",
+                            "sublocationToken" : "ScheduleTaskBoard",
+                            "displayLimit" : "{{function:getSchTaskKanbanBoardDisplayLimitFromPreference}}",
+                            "stateStatusMap": "not_started:not_started,in_progress:in_progress,in_progress:late,in_progress:needs_attention,complete:complete"
+                        },
+                        "searchFilterFieldSortType": "{{subPanelContext.searchState.sortType}}",
+                        "searchFilterMap6": "{{subPanelContext.searchState.activeFilterMap}}",
+                        "searchSortCriteria": [],
+                        "startIndex": "{{data.dataProviders.Saw1TaskSearchProvider.startIndex}}"
+                    }
+                },
+                "1": {
+                    "types": [ {
+                        "name": "ScheduleTask",
+                        "properties": [ {
+                                "name": "Saw1Schedule"
+                            },
+                            {
+                                "name": "Saw1FinishDate"
+                            },
+                            {
+                                "name": "Saw1Priority"
+                            },
+                            {
+                                "name": "fnd0PercentCompleteString"
+                            }
+                        ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "kanbanState": "{{function:parseKanbanSOAResponse}}",
+                "output": "{{function:processOutput}}"
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "schTaskKanbanTableErrorMsg"
+                } ]
+            }
+        },
+        "callSaveEditSOA": {
+            "actionType": "saveEdits",
+            "inputData": {
+                "inputs": "{{function:prepareDataForSaveEdit}}"
+            },
+            "events": {
+                "failure": [ {
+                    "name": "SMKanban.dragDropFailure",
+                    "eventData": {
+                        "data": "{{data.eventMap['SMKanban.onAfterDrop']}}",
+                        "failedUids": "{{data.eventMap['SMKanban.onAfterDrop'].dragContext.source}}"
+                    }
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "schTaskKanbanTableErrorMsg"
+                } ]
+            },
+            "deps": "js/SmTasksKanbanService"
+        },
+        "updateTaskData": {
+            "actionType": "JSFunction",
+            "method": "updateTaskData",
+            "inputData": {
+                "updatedObjects": "{{data}}"
+            },
+            "deps": "js/SmTasksKanbanService"
+        },
+        "reLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "maxToLoad": "{{function:getMaxToLoadAndReturnValueFromDisplayLimitPreference}}",
+                        "maxToReturn": "{{function:getMaxToLoadAndReturnValueFromDisplayLimitPreference}}",
+                        "providerName": "Saw1TaskSearchProvider",
+                        "searchCriteria": {
+                            "searchContentType" : "ScheduleTask",
+                            "sublocationToken" : "ScheduleTaskBoard",
+                            "displayLimit" : "{{function:getSchTaskKanbanBoardDisplayLimitFromPreference}}",
+                            "stateStatusMap": "not_started:not_started,in_progress:in_progress,in_progress:late,in_progress:needs_attention,complete:complete"
+                        },
+                        "searchFilterFieldSortType": "{{subPanelContext.searchState.sortType}}",
+                        "searchFilterMap6": "{{subPanelContext.searchState.activeFilterMap}}",
+                        "searchSortCriteria": [],
+                        "startIndex": "{{data.dataProviders.Saw1TaskSearchProvider.startIndex}}"
+                    }
+                },
+                "1": {
+                    "types": [ {
+                        "name": "ScheduleTask",
+                        "properties": [ {
+                                "name": "Saw1Schedule"
+                            },
+                            {
+                                "name": "Saw1FinishDate"
+                            },
+                            {
+                                "name": "Saw1Priority"
+                            },
+                            {
+                                "name": "fnd0PercentCompleteString"
+                            }
+                        ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "kanbanState": "{{function:parseKanbanSOAResponse}}",
+                "output": "{{function:processOutput}}"
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "schTaskKanbanTableErrorMsg"
+                } ]
+            }
+        },
+        "revertSchTaskCardDragDrop": {
+            "actionType": "JSFunction",
+            "method": "revertSchTaskCardDragDrop",
+            "inputData": {
+                "kanbanState": "{{data.atomicDataRef.kanbanState}}"
+            },
+            "deps": "js/SmTasksKanbanService"
+        },
+        "handleOperationsForKanban": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "callSaveEditSOAEvent",
+                    "condition": "data.atomicData.kanbanState.operation.action === 'dragDropCard'"
+                } ]
+            }
+        }
+    },
+    "columnProviders": {
+        "SMTasksBoardColumnProvider": {
+
+        }
+    },
+    "grids": {
+        "SMKanban": {
+            "dataProvider": "SMTasksBoardProvider",
+            "columnProvider": "SMTasksBoardColumnProvider",
+            "gridOptions": {}
+        }
+    },
+    "dataProviders": {
+        "SMTasksBoardProvider": {
+            "action": "loadData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+    "functions": {
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.searchState}}"
+            ],
+            "deps": "js/SmTasksKanbanService"
+        },
+        "parseKanbanSOAResponse": {
+            "functionName": "parseKanbanSOAResponse",
+            "parameters": [
+                "{{data}}",
+                "{{data.atomicDataRef.kanbanState}}"
+            ],
+            "deps": "js/SmTasksKanbanService"
+        },
+        "prepareLoadAssignTasksContainer": {
+            "functionName": "prepareLoadAssignTasksContainer",
+            "parameters": [
+                "{{data.atomicData.kanbanState.kanbanColumnObject.columnMapping}}"
+            ]
+        },
+        "prepareDataForSaveEdit": {
+            "functionName": "prepareDataForSaveEdit",
+            "parameters": [
+                "{{data.atomicData.kanbanState}}"
+            ]
+        },
+        "getSchTaskKanbanBoardDisplayLimitFromPreference": {
+
+          "functionName": "getSchTaskKanbanBoardDisplayLimitFromPreference",
+          "parameters": [
+
+          ],
+          "deps": "js/SmTasksKanbanService"
+        },
+        "getMaxToLoadAndReturnValueFromDisplayLimitPreference": {
+
+            "functionName": "getMaxToLoadAndReturnValueFromDisplayLimitPreference",
+            "parameters": [
+
+            ],
+            "deps": "js/SmTasksKanbanService"
+        }
+
+    },
+    "onEvent": [ {
+            "eventId": "callSaveEditSOA",
+            "action": "callSaveEditSOA"
+        },
+        {
+            "eventId": "cdm.updated",
+            "cacheEventData": true,
+            "action": "updateTaskData"
+        },
+        {
+            "eventId": "SMKanban.dragDropFailure",
+            "cacheEventData": true,
+            "action": "revertSchTaskCardDragDrop"
+        },
+        {
+            "eventId": "callSaveEditSOAEvent",
+            "action": "callSaveEditSOA"
+        }
+    ],
+    "messages": {
+        "schTaskKanbanTableErrorMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "data": {
+        "kanbanid": "SMKanban",
+        "kanbanColumnMap": {},
+        "kanbanState": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "kanbanColumns": [ {
+                "name": "not_started",
+                "displayName": "Saw1StatusNotStarted",
+                "isGroup": false,
+                "multiselect": true
+            },
+            {
+                "name": "in_progress_state",
+                "groupName": "in_progress",
+                "displayName": "Saw1StateInProgress",
+                "isGroup": true
+            },
+            {
+                "name": "in_progress",
+                "displayName": "Saw1StatusInProgress",
+                "isGroup": false,
+                "groupID": "in_progress_state",
+                "multiselect": true
+            },
+            {
+                "name": "needs_attention",
+                "displayName": "Saw1StatusNeedsAttention",
+                "isGroup": false,
+                "groupID": "in_progress_state",
+                "multiselect": true
+            },
+            {
+                "name": "late",
+                "displayName": "Saw1StatusLate",
+                "isGroup": false,
+                "groupID": "in_progress_state",
+                "multiselect": true
+            },
+            {
+                "name": "complete",
+                "displayName": "Saw1StatusComplete",
+                "isGroup": false,
+                "multiselect": true
+            }
+        ]
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeKanbanColumns",
+        "onUpdate": [
+            {
+                "action": "initSearch",
+                "observers": [
+                    "props.subPanelContext.searchState.criteria.searchString",
+                    "props.subPanelContext.searchState.filterString"
+                ]
+            },
+            {
+                "action": "reLoadData",
+                "observers": [ "props.subPanelContext.searchState.displayLimit" ]
+            },
+            {
+                "action": "loadData",
+                "observers": [ "viewModel.atomicData.kanbanState.kanbanInitialized" ]
+            },
+            {
+                "action": "handleOperationsForKanban",
+                "observers": [ "viewModel.atomicData.kanbanState.operation" ]
+            }
+        ],
+        "onUnmount": "unsubscribeEvents"
+    },
+    "i18n": {
+        "Saw1PriorityLowest": [ "ScheduleManagerMessages" ],
+        "Saw1PriorityLow": [ "ScheduleManagerMessages" ],
+        "Saw1PriorityMediumLow": [ "ScheduleManagerMessages" ],
+        "Saw1PriorityMedium": [ "ScheduleManagerMessages" ],
+        "Saw1PriorityHigh": [ "ScheduleManagerMessages" ],
+        "Saw1PriorityVeryHigh": [ "ScheduleManagerMessages" ],
+        "Saw1PriorityHighest": [ "ScheduleManagerMessages" ],
+        "Saw1StatusNotStarted": [ "ScheduleManagerMessages" ],
+        "Saw1StatusInProgress": [ "ScheduleManagerMessages" ],
+        "Saw1StatusNeedsAttention": [ "ScheduleManagerMessages" ],
+        "Saw1StatusLate": [ "ScheduleManagerMessages" ],
+        "Saw1StatusComplete": [ "ScheduleManagerMessages" ],
+        "Saw1StateInProgress": [ "ScheduleManagerMessages" ],
+        "Saw1FinishDate": [ "ScheduleManagerMessages" ],
+        "Saw1Priority": [ "ScheduleManagerMessages" ],
+        "Saw1Schedule": [ "ScheduleManagerMessages" ],
+        "Saw1ShowScheduleObject": [ "ScheduleManagerMessages" ],
+        "Saw1OpenObjectTooltip": [ "ScheduleManagerMessages" ],
+        "Saw1PercentComplete": [ "ScheduleManagerMessages" ]
+    }
+}

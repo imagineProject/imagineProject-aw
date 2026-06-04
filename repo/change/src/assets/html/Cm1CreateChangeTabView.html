@@ -1,0 +1,94 @@
+<aw-form name="changeCommandPanelForm" context="subPanelContext">
+    <aw-panel-body>
+        <aw-title-link prop="data.displayedType" action="clearSelectedType">
+        </aw-title-link>
+        <aw-xrt type="CREATE" object-type="{{data.selectedType.dbValue}}" xrt-state="data.xrtState"
+        active-state="props.subPanelContext.activeState" exist-when="data.selectedType && data.selectedType.dbValue"></aw-xrt>
+        <!-- including the "Audit Finding" (used in Qa0QualityAudit template) sub view if the Category value is selected as "Audit" -->
+        <aw-panel-section caption="i18n.implementsText" context="data" exist-when="conditions.isAuditFindingSelected" >
+            <aw-include name="qa0SubFindingGuideline" sub-panel-context="{qa0FindingGuideline: data.qa0FindingGuideline}"></aw-include>
+        </aw-panel-section>
+        <aw-command-panel-section caption="i18n.attachmentsText" anchor="data.addObjectCommands"
+            exist-when="(!ctx.CreateChangePanel.isDerive && !conditions.isHostedComponent) || (ctx.CreateChangePanel.isDerive && ctx.CreateChangePanel.clientId != '')"
+            context="{activeView: subPanelContext.activeState, selectedObjects: data.dataProviders.getAttachments.selectedObjects}">
+            <aw-list dataprovider="data.dataProviders.getAttachments">
+                <aw-default-cell vmo="item"></aw-default-cell>
+            </aw-list>
+        </aw-command-panel-section>
+        <aw-command-panel-section caption="i18n.implementsText" exist-when="ctx.CreateChangePanel.isDerive "
+            context="data">
+            <aw-list dataprovider="data.dataProviders.getImplements">
+                <aw-default-cell vmo="item"></aw-default-cell>
+            </aw-list>
+        </aw-command-panel-section>
+        <!-- Symptom Defect Section gets added for CAPA Revision Object only-->
+        <aw-command-panel-section caption="i18n.symptomDefect" anchor="data.addSymptomDefectCommand"
+            exist-when="conditions.isCapaDerivingFromIssue" context="subPanelContext.activeState">
+            <aw-list dataprovider="data.dataProviders.getSymptomDefectProvider">
+                <aw-default-cell vmo="item"></aw-default-cell>
+            </aw-list>
+        </aw-command-panel-section>
+        <!-- Responsible User Tab gets added for Plant Problem Report only-->
+        <aw-command-panel-section caption="i18n.responsibleUser" anchor="data.addResponsibleUserCommand"
+            exist-when="conditions.isPlantPRTypeSelected" context="{activeView: subPanelContext.activeState, getAssignedResponsibleUserDataProvider: data.dataProviders.getAssignedResponsibleUser}">
+            <aw-list dataprovider="data.dataProviders.getAssignedResponsibleUser">
+                <aw-default-cell vmo="item"></aw-default-cell>
+            </aw-list>
+        </aw-command-panel-section>
+        <aw-panel-section caption="i18n.copyOptionsText" exist-when="data.showCopyOptions.dbValue == true"
+            collapsed="true">
+            <aw-include aw-repeat="relation : data.relationNames" name="cmDeriveRelationDirective"
+                sub-panel-context="relation"></aw-include>
+        </aw-panel-section>
+        <aw-panel-section caption="i18n.ownProjectSectionTitle"
+            visible-when="!conditions.isSimpleChangeObjectCreation && conditions.isEnableAssignProjects">
+            <aw-list dataprovider="data.dataProviders.getCmOwningProjectsProvider">
+                <aw-default-cell vmo="item"></aw-default-cell>
+            </aw-list>
+        </aw-panel-section>
+        <aw-command-panel-section caption="i18n.projectsSectionTitle" anchor="data.projectSectionCommands"
+            visible-when="!conditions.isSimpleChangeObjectCreation && conditions.isEnableAssignProjects"
+            context="subPanelContext.activeState">
+            <aw-list dataprovider="data.dataProviders.getAssignedProjectsProvider"
+                command-context="subPanelContext.projectState" has-floating-cell-commands="false">
+                <aw-default-cell vmo="item"></aw-default-cell>
+            </aw-list>
+        </aw-command-panel-section>
+    </aw-panel-body>
+</aw-form>
+<aw-panel-footer class="sw-column">
+    <div class="sw-row justify-top">
+        <div class="sw-column">
+            <aw-checkbox prop="data.openNewChange" exist-when="!subPanelContext.panelPinned && !conditions.isHostedComponent">
+            </aw-checkbox>
+            <aw-checkbox prop="data.setActiveChange" action="setCurrentUserAsAnalyst" exist-when="conditions.isActiveChangeCheckboxVisible && !conditions.isHostedComponent">
+            </aw-checkbox>
+        </div>
+    </div>
+    <div class="mx-small sw-row justify-right aw-change-submitChangeButtons" enable-when="conditions.disableCreateButtonWhileProcessing  && formProp.attributes.valid">
+       <aw-button default="true" button-type="base" action="createChangeObject"
+       visible-when="conditions.showCreateButton && !ctx.CreateChangePanel.isDerive && !conditions.isHostedComponent">
+            <aw-i18n>i18n.CreateButtonTitle</aw-i18n>
+        </aw-button>
+        <aw-button default="true" button-type="base" action="createChangeObject"
+            visible-when="conditions.showCreateButton && ctx.CreateChangePanel.isDerive && !conditions.isHostedComponent && ctx.preferences.CM_show_concurrent_change_warning[0].toLowerCase() === 'false'">
+            <aw-i18n>i18n.DeriveButtonTitle</aw-i18n>
+        </aw-button>
+        <aw-button default="true" button-type="base" action="createChangeObjectWarn"
+            visible-when="conditions.showCreateButton && ctx.CreateChangePanel.isDerive && !conditions.isHostedComponent && ctx.preferences.CM_show_concurrent_change_warning[0].toLowerCase() === 'true'">
+            <aw-i18n>i18n.DeriveButtonTitle</aw-i18n>
+        </aw-button>
+        <aw-button default="true" action="submitChangeObject"
+            visible-when="conditions.showSubmitButton && !ctx.CreateChangePanel.isDerive"
+            enable-when="conditions.isTemplateSelected">
+            <aw-i18n>i18n.CreateSubmitButtonTitle</aw-i18n>
+        </aw-button>
+        <aw-button default="true" action="submitChangeObject"
+            visible-when="conditions.showSubmitButton && ctx.CreateChangePanel.isDerive && ctx.preferences.CM_show_concurrent_change_warning[0].toLowerCase() === 'false'">
+            <aw-i18n>i18n.DeriveSubmitButtonTitle</aw-i18n>
+        </aw-button>
+        <aw-button default="true" action="submitChangeObjectWarn"
+        visible-when="conditions.showSubmitButton && ctx.CreateChangePanel.isDerive && ctx.preferences.CM_show_concurrent_change_warning[0].toLowerCase() === 'true'">
+        <aw-i18n>i18n.DeriveSubmitButtonTitle</aw-i18n>
+    </div>
+</aw-panel-footer>

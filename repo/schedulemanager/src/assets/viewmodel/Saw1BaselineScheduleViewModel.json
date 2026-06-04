@@ -1,0 +1,235 @@
+{
+    "schemaVersion" : "1.0.0",
+    "actions":
+    {
+        "createBaseline":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2016-04-ScheduleManagement",
+            "method": "createNewBaselines",
+            "inputData":
+            {
+                "createBaselineContainer":
+                [
+                    {
+                        "name": "{{data.bsName.dbValue}}",
+                        "schedule":
+                        {
+                            "uid":"{{subPanelContext.selectionData.selected[0].uid}}",
+                            "type":"Schedule"
+                        },
+                        "isActive":"{{function:checkIsActiveChkboxVisibility}}",
+                        "includeNewTasks":true,
+                        "updateScheduleBaselineCost":true,
+                        "taskRebaseOption":0
+                    }
+                ],
+                "runInBackground" : false
+            },
+            "outputData": {
+                "newBaseline": ""
+            },
+            "events":
+            {
+                "success":
+                [
+                   {
+                        "name": "updateBaselineDescriptionEvent",
+                        "eventData":
+                        {
+                            "newBaselineUid": "{{data.newBaseline.created[0]}}"
+                        }
+                   },
+                   {
+                        "condition": "!subPanelContext.panelPinned",
+                        "name": "closeDialog"
+                    },
+                    {
+                        "condition": "subPanelContext.pageContext.primaryActiveTabId !== 'tc_xrt_ScheduleGantt'",
+                         "name": "cdm.relatedModified",
+                         "eventData":
+                         {
+                            "refreshLocationFlag": false,
+                            "relations": "",
+                            "relatedModified":
+                             [
+                                "{{commandContext.openedObject}}"
+                             ],
+                             "createdObjects": "{{data.createdMainObject.createdObjects}}"
+                          }
+                     }
+                ]
+            },
+            "actionMessages":
+             {
+                "success": [
+                    {
+                        "message": "baselineCreated"
+                    }
+                ],
+                 "failure":
+                 [
+                     {
+                         "message": "failedToCreateBaselineMessage"
+                     }
+                 ]
+             },
+            "deps": "js/Saw1BaselineScheduleService"
+        },
+        "updateBaselineDescriptionAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2012-02-ScheduleManagement",
+            "method": "updateSchedules",
+            "inputData":
+            {
+                "scheduleUpdates":
+                [
+                    {
+                        "object": {
+                            "uid": "{{data.eventData.newBaselineUid}}",
+                            "type": "Schedule"
+                        },
+                        "updates":
+                        [
+                            {
+                                "attrName": "object_desc",
+                                "attrValue": "{{data.description.dbValue}}",
+                                "attrType": 1
+                            }
+                        ]
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaErrorMessage"
+                    }
+                ]
+            }
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+
+    "functions": {
+        "checkIsActiveChkboxVisibility": {
+           "functionName": "checkIsActiveChkboxVisibility",
+           "parameters": [
+              "{{data}}"
+           ]
+        }
+    },
+
+
+   "data":
+    {
+        "bsName":
+        {
+            "displayName": "{{i18n.name}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP",
+            "dbValue" : "{{ctx.selected.props.object_name.dbValues[0]}}"
+        },
+
+        "description":
+        {
+            "displayName": "{{i18n.description}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "maxLength": 70,
+            "numberOfLines": 2,
+            "labelPosition": "PROPERTY_LABEL_AT_TOP"
+        },
+
+        "isActive":
+        {
+            "displayName": "{{i18n.isActive}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE",
+            "dbValue": false
+        }
+    },
+
+    "conditions":
+    {
+        "isValidToDisplay":
+        {
+            "expression": "(ctx.panelContext.selectedSchedule && ctx.panelContext.selectedSchedule.props && ctx.panelContext.selectedSchedule.props.activeschbaseline_tag && ctx.panelContext.selectedSchedule.props.activeschbaseline_tag.dbValues[ 0 ] !== '')"
+        },
+        "isValidToSubmit":
+        {
+           "expression": "(data.bsName.dbValue && data.bsName.dbValue!='')"
+        }
+
+    },
+
+    "onEvent": [
+            {
+                "eventId": "updateBaselineDescriptionEvent",
+                "cacheEventData": true,
+                "action": "updateBaselineDescriptionAction"
+            },
+            {
+                "eventId": "closeDialog",
+                "action": "closePanelDialog"
+            }
+    ],
+    "messages":
+    {
+        "failedToCreateBaselineMessage":
+        {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "soaErrorMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "baselineCreated": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.createBaselineMessage}}",
+            "messageTextParams": [
+                "{{data.bsName.dbValue}}"
+            ]
+        }
+    },
+    "i18n":
+    {
+        "name":
+        [
+            "ScheduleManagerMessages"
+        ],
+        "description":
+        [
+            "ScheduleManagerMessages"
+        ],
+        "isActive":
+        [
+            "ScheduleManagerMessages"
+        ],
+        "baselineSchedule":
+        [
+            "ScheduleManagerMessages"
+        ],
+        "create":
+        [
+            "ScheduleManagerMessages"
+        ],
+        "createBaselineMessage":
+        [
+            "ScheduleManagerMessages"
+        ]
+
+    }
+}
+

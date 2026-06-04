@@ -1,0 +1,403 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-popup2.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-label.directive",
+        "js/aw-checkbox.directive",
+        "js/aw-button.directive"
+    ],
+    "actions": {
+        "updateSolutionVariant": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "updateSVInForegroundMode",
+                        "condition": "data.runInBackground.dbValue === false"
+                    },
+                    {
+                        "name": "updateSVInBackgroundMode",
+                        "condition": "data.runInBackground.dbValue === true"
+                    }
+                ]
+            }
+        },
+        "createSolutionVariant": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "createSVInForegroundMode",
+                        "condition": "data.runInBackground.dbValue === false"
+                    },
+                    {
+                        "name": "createSVInBackgroundMode",
+                        "condition": "data.runInBackground.dbValue === true"
+                    }
+                ]
+            }
+        },
+        "actionForUpdatingSVInForeground": {
+            "actionType": "JSFunction",
+            "method": "updateReuseSolutionVariants",
+            "inputData": {
+                "selectedObjects": "{{subPanelContext.selectedObjects}}",
+                "occMgmtContext": "{{subPanelContext.occMgmtContext}}",
+                "runInBackground": "{{data.runInBackground.dbValue}}"
+            },
+            "outputData": {
+                "partialErrors": "ServiceData.partialErrors"
+            },
+            "deps": "js/solutionVariantTableService",
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "svUpdateSuccessful"
+                    }
+                ],
+                "failure": [
+                    {
+                        "condition": "(data.partialErrors[0].errorValues[0].code === 178028 || data.partialErrors[0].errorValues[0].code === 178041) && data.partialErrors[0].errorValues.length === 1",
+                        "message": "svUpdateSuccessful"
+                    },
+                    {
+                        "condition": "data.partialErrors[0].errorValues[0].code !== 178028 && data.partialErrors[0].errorValues[0].code !== 178041",
+                        "message": "svUpdateError"
+                    }
+                ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "SVBulkCommand.hidePopup"
+                    },
+                    {
+                        "name": "refreshSVTable"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "SVBulkCommand.hidePopup"
+                    },
+                    {
+                        "name": "refreshSVTable"
+                    }
+                ]
+            }
+        },
+        "actionForUpdatingSVInBackground": {
+            "actionType": "JSFunction",
+            "method": "updateReuseSolutionVariants",
+            "inputData": {
+                "selectedObjects": "{{subPanelContext.selectedObjects}}",
+                "occMgmtContext": "{{subPanelContext.occMgmtContext}}",
+                "runInBackground": "{{data.runInBackground.dbValue}}"
+            },
+            "outputData": {
+                "partialErrors": "partialErrors"
+            },
+            "deps": "js/solutionVariantTableService",
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "svUpdateProgressNotification"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "svUpdateError"
+                    }
+                ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "SVBulkCommand.hidePopup"
+
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "SVBulkCommand.hidePopup"
+                    }
+                ]
+            }
+        },
+        "actionForCreatingSVInForeground": {
+            "actionType": "JSFunction",
+            "method": "CreateMultilevelSolutionVariants",
+            "deps": "js/solutionVariantTableService",
+            "inputData": {
+                "selectedObjects": "{{subPanelContext.selectedObjects}}",
+                "rootElement": "{{subPanelContext.occMgmtContext.rootElement}}",
+                "pwaSelection": "{{subPanelContext.occMgmtContext.pwaSelection[0]}}",
+                "runInBackground": "{{data.runInBackground.dbValue}}"
+            },
+            "outputData": {
+                "partialErrors": "ServiceData.partialErrors"
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "bulkCreateSVSuccess"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "bulkCreateSVFailed"
+                    }
+                ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "SVBulkCommand.hidePopup"
+                    },
+                    {
+                        "name": "refreshSVTable"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "SVBulkCommand.hidePopup"
+                    }
+                ]
+            }
+        },
+        "actionForCreatingSVInBackground": {
+            "actionType": "JSFunction",
+            "method": "CreateMultilevelSolutionVariants",
+            "inputData": {
+                "selectedObjects": "{{subPanelContext.selectedObjects}}",
+                "rootElement": "{{subPanelContext.occMgmtContext.rootElement}}",
+                "pwaSelection": "{{subPanelContext.occMgmtContext.pwaSelection[0]}}",
+                "runInBackground": "{{data.runInBackground.dbValue}}"
+            },
+            "outputData": {
+                "partialErrors": "partialErrors"
+            },
+            "deps": "js/solutionVariantTableService",
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "bulkCreateAsyncMessage"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "bulkCreateSVFailed"
+                    }
+                ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "SVBulkCommand.hidePopup"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "SVBulkCommand.hidePopup"
+                    }
+                ]
+            }
+        },
+        "hidePopup": {
+            "actionType": "JSFunctionAsync",
+            "method": "hide",
+            "inputData": {
+                "popupEl": "{{data.popupId}}"
+            },
+            "deps": "js/popupService"
+        },
+        "cancelPreview": {
+            "actionType": "JSFunction",
+            "method": "goBack",
+            "deps": "js/locationNavigation.service"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "SVBulkCommand.hidePopup",
+            "action": "hidePopup"
+        },
+        {
+            "eventId": "updateSVInForegroundMode",
+            "action": "actionForUpdatingSVInForeground"
+        },
+        {
+            "eventId": "updateSVInBackgroundMode",
+            "action": "actionForUpdatingSVInBackground"
+        },
+        {
+            "eventId": "createSVInForegroundMode",
+            "action": "actionForCreatingSVInForeground"
+        },
+        {
+            "eventId": "createSVInBackgroundMode",
+            "action": "actionForCreatingSVInBackground"
+        }
+
+
+    ],
+    "data": {
+        "runInBackground": {
+            "displayName": "{{i18n.runInBackground}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": true,
+            "dispValue": "{{i18n.runInBackground}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "generateCreateSVMessage": {
+            "displayName": {
+                "text": "{{i18n.bulkCreateSVConfirmation}}",
+                "params": ["{{ctx.aceActiveContext.context.productTitle}}"]
+            },
+            "dbValue": "Test_Value",
+            "type": "STRING",
+            "dispValue": "{{i18n.bulkCreateSVConfirmation}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "generateUpdateSVMessage": {
+            "displayName": {
+                "text": "{{i18n.bulkUpdateSVConfirmation}}",
+                "params": ["{{ctx.aceActiveContext.context.productTitle}}"]
+            },
+            "dbValue": "Test_Value",
+            "type": "STRING",
+            "dispValue": "{{i18n.bulkUpdateSVConfirmation}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "generateSelectedUpdateSVMessage": {
+            "displayName": {
+                "text": "{{i18n.bulkUpdateSelectedSVConfirmation}}",
+                "params": ["{{ctx.aceActiveContext.context.productTitle}}"]
+            },
+            "dbValue": "Test_Value",
+            "type": "STRING",
+            "dispValue": "{{i18n.bulkUpdateSelectedSVConfirmation}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "generateSelectedCreateSVMessage": {
+            "displayName": {
+                "text": "{{i18n.bulkCreateSelectedSVConfirmation}}",
+                "params": ["{{ctx.aceActiveContext.context.productTitle}}"]
+            },
+            "dbValue": "Test_Value",
+            "type": "STRING",
+            "dispValue": "{{i18n.bulkCreateSelectedSVConfirmation}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        }
+    },
+    "conditions": {
+        "isUpdate": {
+            "expression": "subPanelContext.bulkCommand === 'update'"
+        },
+        "isObjectSelected": {
+            "expression": "subPanelContext.selectedObjects.length > 0"
+        },
+        "isCreate": {
+            "expression": "subPanelContext.bulkCommand === 'create'"
+        }
+    },
+    "messages": {
+        "svCreationProgressNotification": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.svCreationProgressNotification}}",
+            "messageTextParams": []
+        },
+        "svUpdateProgressNotification": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.updateSVProgressNotification}}",
+            "messageTextParams": []
+        },
+        "svUpdateSuccessful": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.updateSVSuccess}}",
+            "messageTextParams": []
+        },
+        "svUpdateError": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.updateSVError}}",
+            "messageTextParams": []
+        },
+        "svDisplayError": {
+            "messageType": "INFO",
+            "messageText": "{{data.partialErrors[0].errorValues[0].message}}",
+            "messageTextParams": []
+        },
+        "bulkCreateSVSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.bulkCreateSVSuccess}}",
+            "messageTextParams": []
+        },
+        "bulkCreateSVFailed": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.bulkCreateSVFailed}}",
+            "messageTextParams": []
+        },
+        "bulkCreateAsyncMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.bulkCreateAsyncMessage}}",
+            "messageTextParams": []
+        }
+    },
+    "i18n": {
+        "runInBackground": [
+            "SolutionVariantConstants"
+        ],
+        "cancelPreview": [
+            "SolutionVariantConstants"
+        ],
+        "bulkCreateSVConfirmation": [
+            "SolutionVariantMessages"
+        ],
+        "bulkUpdateSVConfirmation": [
+            "SolutionVariantMessages"
+        ],
+        "bulkUpdateSelectedSVConfirmation": [
+            "SolutionVariantMessages"
+        ],
+        "svCreationProgressNotification": [
+            "SolutionVariantMessages"
+        ],
+        "updateSVProgressNotification": [
+            "SolutionVariantMessages"
+        ],
+        "updateSVSuccess": [
+            "SolutionVariantMessages"
+        ],
+        "updateSVError": [
+            "SolutionVariantMessages"
+        ],
+        "updateSolutionVariant": [
+            "SolutionVariantConstants"
+        ],
+        "createSolutionVariant": [
+            "SolutionVariantConstants"
+        ],
+        "actionContinueYes": [
+            "SolutionVariantConstants"
+        ],
+        "actionContinueNo": [
+            "SolutionVariantConstants"
+        ],
+        "bulkCreateSelectedSVConfirmation":[
+            "SolutionVariantMessages"
+        ],
+        "bulkCreateSVSuccess":[
+            "SolutionVariantMessages"
+        ],
+        "bulkCreateSVFailed":[
+            "SolutionVariantMessages"
+        ],
+        "bulkCreateAsyncMessage":[
+            "SolutionVariantMessages"
+        ]
+    }
+}

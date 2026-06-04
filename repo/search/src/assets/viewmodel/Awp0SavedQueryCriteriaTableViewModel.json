@@ -1,0 +1,474 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "loadData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Query-2014-10-SavedQuery",
+            "method": "describeSavedQueryDefinitions3",
+            "inputData": {
+                "requestedQueries": [
+                    {
+                        "query": {
+                            "uid": "{{subPanelContext.selected.uid}}"
+                        },
+                        "substituteKeyword": false
+                    }
+                ]
+            },
+            "outputData": {
+                "loadDataOutput": "{{function:loadTableData}}"
+            },
+            "deps": "js/AwSavedQueryCriteriaTableService"
+        },
+        "loadTableDataBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadData",
+                    "condition": "conditions.isLoadQueryClausesReady"
+                },
+                {
+                    "action": "clearSelections",
+                    "condition": "conditions.isLoadQueryClausesReady"
+                },
+                {
+                    "action": "updateContextWithInitialVMOs",
+                    "condition": "conditions.isLoadQueryClausesReady"
+                }
+            ]
+
+        },
+        "plTableClientRefresh": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "Awcriteriagridview.plTable.clientRefresh"
+                    }
+                ]
+            }
+        },
+        "handleVMCollectionUpdate": {
+            "actionType": "JSFunction",
+            "method": "handleHtmlPanelVMCollection",
+            "deps": "js/xrtUtilities",
+            "inputData": {
+                "callback": "{{subPanelContext.callback.updateVMCollectionCallback}}",
+                "response": {
+                    "dataProvider": "{{data.dataProviders.criteriaGridDataProvider}}"
+                }
+            }
+        },
+        "clearSelections": {
+            "actionType": "JSFunction",
+            "method": "clearSelections",
+            "inputData": {
+                "selectionData": "{{subPanelContext.selectionData}}"
+            },
+            "deps": "js/AwSavedQueryCriteriaTableService"
+        },
+        "reloadInitialVMOs": {
+            "actionType": "JSFunction",
+            "method": "reloadInitialVMOs",
+            "inputData": {
+                "initialVMOs": "{{props.subPanelContext.context.searchState.initialClauseVMOs}}",
+                "dataProvider": "{{data.dataProviders.criteriaGridDataProvider}}"
+            },
+            "deps": "js/AwSavedQueryCriteriaTableService"
+        },
+        "updateContextWithInitialVMOs": {
+            "actionType": "JSFunction",
+            "method": "updateContextWithInitialVMOs",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.context.searchState}}",
+                "initialVMOs": "{{data.loadDataOutput}}"
+            },
+            "deps": "js/AwSavedQueryCriteriaTableService"
+        },
+        "summaryXrtToEdit": {
+            "actionType": "JSFunctionAsync",
+            "method": "execute",
+            "deps": "js/startEditGroupCommandService",
+            "inputData": {
+                "handleContext": "",
+                "view": "{{ctx.ViewModeContext.ViewModeContext}}"
+            }
+        },
+        "updateIsEditingXrtToFalse" : {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.context.searchState}}",
+                "value": {
+                    "isEditingXrt": false
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "summaryXrtToEditBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "summaryXrtToEdit",
+                    "condition": "props.subPanelContext.context.searchState.isEditingXrt === true"
+                },
+                {
+                    "action": "updateIsEditingXrtToFalse",
+                    "condition": "props.subPanelContext.context.searchState.isEditingXrt === true"
+                }
+            ]
+        },
+        "setEditModeOnVMOs": {
+            "actionType": "JSFunction",
+            "method": "setEditModeOnVMOs",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.criteriaGridDataProvider}}",
+                "isEditable": "{{data.isEditMode}}"
+            },
+            "deps": "js/AwSavedQueryCriteriaTableService"
+        },
+        "startEditAction": {
+            "actionType": "dataProvider",
+            "method": "criteriaGridDataProvider",
+            "inputData": {
+                "action": "startEdit"
+            }
+        },
+        "startEditActionBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setEditModeValueTrue"
+                },
+                {
+                    "action": "startEditAction"
+                },
+                {
+                    "action": "plTableClientRefresh"
+                }
+            ]
+        },
+        "setEditModeValueTrue": {
+            "actionType": "JSFunction",
+            "method": "updateEditModeValue",
+            "inputData": {
+                "isEditMode": true
+            },
+            "outputData": {
+                "isEditMode": ""
+            },
+            "deps": "js/AwSavedQueryCriteriaTableService"
+        },
+        "setEditModeValueFalse": {
+            "actionType": "JSFunction",
+            "method": "updateEditModeValue",
+            "inputData": {
+                "isEditMode": false
+            },
+            "outputData": {
+                "isEditMode": ""
+            },
+            "deps": "js/AwSavedQueryCriteriaTableService"
+        },
+        "splmTableSaveEdit": {
+            "actionType": "JSFunction",
+            "method": "saveCriteriaTableEdits",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.context.searchState}}",
+                "dataProvider": "{{data.dataProviders.criteriaGridDataProvider}}"
+            },
+            "deps": "js/AwSavedQueryCriteriaTableService"
+        },
+        "saveEditAction": {
+            "actionType": "dataProvider",
+            "method": "criteriaGridDataProvider",
+            "inputData": {
+                "action": "saveEdits"
+            }
+        },
+        "saveEditActionBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setEditModeValueFalse"
+                },
+                {
+                    "action": "setEditModeOnVMOs"
+                },
+                {
+                    "action": "splmTableSaveEdit"
+                },
+                {
+                    "action": "saveEditAction"
+                },
+                {
+                    "action": "plTableClientRefresh"
+                }
+            ]
+        },
+        "cancelEditAction": {
+            "actionType": "dataProvider",
+            "method": "criteriaGridDataProvider",
+            "inputData": {
+                "action": "cancelEdits"
+            }
+        },
+        "cancelEditActionBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setEditModeValueFalse"
+                },
+                {
+                    "action": "reloadInitialVMOs"
+                },
+                {
+                    "action": "setEditModeOnVMOs"
+                },
+                {
+                    "action": "cancelEditAction"
+                },
+                {
+                    "action": "plTableClientRefresh"
+                }
+            ]
+        },
+        "updateUserEntryName": {
+            "actionType": "JSFunction",
+            "method": "updateUserEntryName",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.criteriaGridDataProvider}}"
+            },
+            "deps": "js/AwSavedQueryCriteriaTableService"
+        },
+        "updateDefaultValueEditable": {
+            "actionType": "JSFunction",
+            "method": "updateDefaultValueEditable",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.criteriaGridDataProvider}}"
+            },
+            "deps": "js/AwSavedQueryCriteriaTableService"
+        },
+        "updateDefaultValueBoolean": {
+            "actionType": "JSFunction",
+            "method": "updateDefaultValueBoolean",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.criteriaGridDataProvider}}"
+            },
+            "deps": "js/AwSavedQueryCriteriaTableService"
+        },
+        "clearCriteriaTable": {
+            "actionType": "JSFunction",
+            "method": "clearCriteriaTable",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.criteriaGridDataProvider}}"
+            },
+            "deps": "js/AwSavedQueryCriteriaTableService"
+        },
+        "editingChangeBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "startEditActionBatchJob",
+                    "condition":"props.subPanelContext.context.searchState.editing === 'startEdit'"
+                },
+                {
+                    "action": "saveEditActionBatchJob",
+                    "condition":"props.subPanelContext.context.searchState.editing === 'save'"
+                }
+            ]
+        },
+        "updateSearchStateDataProvider": {
+            "actionType": "JSFunction",
+            "method": "updateSearchStateDataProvider",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.context.searchState}}",
+                "dataProvider": "{{data.dataProviders.criteriaGridDataProvider}}"
+            },
+            "deps": "js/AwSavedQueryCriteriaTableService"
+        },
+        "clearGetQueryClausesFlag": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.context.searchState}}",
+                "value": {
+                    "getQueryClausesFlag": null
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "dataProviderLoadData": {
+            "actionType": "dataProvider",
+            "method": "criteriaGridDataProvider"
+        }
+    },
+    "selectionModels": {
+        "clauseSelectionModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "dataProviders": {
+        "criteriaGridDataProvider": {
+            "action": "loadTableDataBatchJob",
+            "response": "{{data.loadDataOutput}}",
+            "totalFound": "{{data.loadDataOutput.length}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "selectionData": "{{subPanelContext.selectionData}}"
+            },
+            "editConfig": {
+                "startEditAction": "setEditModeOnVMOs",
+                "identifier": "uid"
+            }
+        }
+    },
+    "columnProviders": {
+        "clientScopeUI": {
+            "columns": [
+                {
+                    "name": "LogicalOperator",
+                    "width": 70,
+                    "displayName": "{{i18n.logicalOperatorName}}",
+                    "enableColumnHiding": false,
+                    "renderingHint": "AwSavedQueryCriteriaTableLov"
+                },
+                {
+                    "name": "Attribute",
+                    "width": 260,
+                    "displayName": "{{i18n.propertyInternalName}}",
+                    "enableColumnHiding": false
+                },
+                {
+                    "name": "UserEntryKey",
+                    "width": 200,
+                    "displayName": "{{i18n.localizationKey}}",
+                    "enableColumnHiding": false,
+                    "renderingHint": "AwSavedQueryCriteriaTableLocalizationLov"
+                },
+                {
+                    "name": "UserEntryName",
+                    "width": 200,
+                    "displayName": "{{i18n.displayAs}}",
+                    "enableColumnHiding": false
+                },
+                {
+                    "name": "Operator",
+                    "width": 90,
+                    "displayName": "{{i18n.Operator}}",
+                    "enableColumnHiding": false,
+                    "renderingHint": "AwSavedQueryCriteriaTableLov"
+                },
+                {
+                    "name": "DefaultValue",
+                    "width": 160,
+                    "displayName": "{{i18n.Default Value}}",
+                    "enableColumnHiding": false,
+                    "renderingHint": "AwSavedQueryCriteriaTableDefaultValue"
+                }
+            ]
+
+        }
+    },
+    "grids": {
+        "Awcriteriagridview": {
+            "dataProvider": "criteriaGridDataProvider",
+            "columnProvider": "clientScopeUI",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableGridMenu": true,
+                "enablePinning": false,
+                "isFilteringEnabled": false,
+                "enableSorting": false,
+                "flexLastColumn": true
+            }
+        }
+    },
+    "data": {
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "isEditMode": false
+    },
+    "functions": {
+        "loadTableData": {
+            "functionName": "loadTableData",
+            "parameters": []
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "summaryXrtToEditBatchJob",
+        "onUnmount": "clearGetQueryClausesFlag",
+        "onUpdate": [
+            {
+                "action": "editingChangeBatchJob",
+                "observers": [ "props.subPanelContext.context.searchState.editing" ]
+            },
+            {
+                "action": "clearCriteriaTable",
+                "observers": [ "props.subPanelContext.queryState.currentSearchType" ]
+            },
+            {
+                "action": "updateSearchStateDataProvider",
+                "observers": [ "viewModel.dataProviders.criteriaGridDataProvider.viewModelCollection.loadedVMObjects" ]
+            },
+            {
+                "action": "dataProviderLoadData",
+                "observers": [ "props.subPanelContext.context.searchState.getQueryClausesFlag" ]
+            }
+        ]
+    },
+    "onEvent": [
+        {
+            "eventId": "Awp0SavedQueryCriteriaTable.refreshTable",
+            "action": "plTableClientRefresh"
+        },
+        {
+            "eventId": "primaryWorkarea.multiSelectAction",
+            "action": "plTableClientRefresh"
+        },
+        {
+            "eventId": "Awp0SavedQueryCriteriaTable.cancelEdit",
+            "action": "cancelEditActionBatchJob"
+        },
+        {
+            "eventId": "Awp0SavedQueryCriteriaTable.userEntryKeyCellUpdate",
+            "action": "updateUserEntryName"
+        },
+        {
+            "eventId": "criteriaGridDataProvider.modelObjectsUpdated",
+            "cacheEventData": true,
+            "action": "handleVMCollectionUpdate"
+        },
+        {
+            "action": "updateDefaultValueEditable",
+            "eventId": "mathOperatorProvider.selectionChangeEvent"
+        },
+        {
+            "action": "updateDefaultValueBoolean",
+            "eventId": "booleanProvider.selectionChangeEvent"
+        }
+    ],
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "conditions": {
+        "isLoadQueryClausesReady": {
+            "expression": "props.subPanelContext.context.searchState.getQueryClausesFlag === true"
+        }
+    },
+    "i18n": {
+        "logicalOperatorName": [ "SearchMessages" ],
+        "propertyInternalName": [ "SearchMessages" ],
+        "localizationKey":[ "SearchMessages" ],
+        "displayAs":[ "SearchMessages" ],
+        "Default Value":[ "SearchMessages" ],
+        "searchCriteria": [ "SearchMessages" ],
+        "Operator":[ "SearchMessages" ]
+    }
+}

@@ -1,0 +1,1109 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-panel-body.directive",
+        "js/aw-column.directive",
+        "js/aw-checkbox.directive",
+        "js/aw-command-panel-section.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-radiobutton.directive",
+        "js/aw-numeric.directive",
+        "js/aw-flex-row.directive",
+        "js/aw-flex-column.directive",
+        "js/visible-when.directive",
+        "js/enable-when.directive"
+    ],
+    "actions": {
+        "populateProfileData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2018-05-Workflow",
+            "method": "getWorkflowTaskViewModel",
+            "inputData":
+            {
+                "input":
+                [
+                    {
+                        "selection": "{{props.subPanelContext.workflowDgmState.selectedObject}}",
+                        "typeToPropertiesMap":
+                        {
+                            "Signoff":
+                            [
+                                "REF(group_member,GroupMember).group",
+                                "REF(group_member,GroupMember).role",
+                                "REF(group_member,GroupMember).user",
+                                "REF(resource_pool,ResourcePool).group",
+                                "REF(resource_pool,ResourcePool).role",
+                                "resource_pool",
+                                "group_member"
+                            ],
+                            "GroupMember":
+                            [
+                                "group",
+                                "role"
+                            ],
+                            "EPMSignoffProfile":
+                            [
+                                "REF(group,Group).object_full_name",
+                                "REF(role,Role).role_name",
+                                "number_of_signoffs",
+                                "allow_subgroups",
+                                "group",
+                                "role"
+                            ],
+                            "EPMTaskTemplate":
+                            [
+                                "action_handlers"
+                            ]
+
+                        }
+                    }
+                ]
+            },
+            "outputData":
+            {
+                "reviewProfiles": "output[0].taskJSONStrings.EPMSelectSignoffTaskTemplate_profiles",
+                "ackReviewProfiles": "output[0].taskJSONStrings.EPMAcknowledgeTask_profiles",
+                "taskTemplateQuorumValue": "output[0].additionalData.review_task_quorum[0]"
+            },
+            "policy":
+            {
+                "types":
+                [
+                    {
+                        "name": "EPMSignoffProfile",
+                        "properties":
+                        [
+                            {
+                                "name": "number_of_signoffs"
+                            },
+                            {
+                                "name": "allow_subgroups"
+                            },
+                            {
+                                "name": "group",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "role",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Role",
+                        "properties": [ {
+                            "name": "role_name"
+                        } ]
+                    },
+                    {
+                        "name": "Group",
+                        "properties": [ {
+                            "name": "object_full_name"
+                        } ]
+                    },
+                    {
+                        "name": "GroupMember",
+                        "properties":
+                        [
+                            {
+                                "name": "group"
+                            },
+                            {
+                                "name": "role"
+                            }
+
+                        ]
+                    },
+                    {
+                        "name": "Signoff",
+                        "properties":
+                        [
+                            {
+                                "name": "group_member"
+                            },
+                            {
+                                "name": "resource_pool"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "object_desc"
+                            },
+                            {
+                                "name": "fnd0Instructions"
+                            },
+                            {
+                                "name": "action_handlers",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                             }
+
+                        ]
+                    },
+                    {
+                        "name": "EPMHandler",
+                        "properties":
+                        [
+                           {
+                              "name": "arguments"
+                           }
+                        ]
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "epmTaskTemplate.assignmentPropertiesLoaded"
+                    }
+                ]
+            }
+        },
+        "loadProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": "{{function:getTemplateObjectsToLoad}}",
+                "attributes": [
+                    "template_name",
+                    "action_handlers"
+                ]
+            },
+            "policy": {
+                "types": [ {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "object_desc"
+                            },
+                            {
+                                "name": "fnd0Instructions"
+                            },
+                            {
+                                "name": "action_handlers",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                             }
+
+                        ]
+                    },
+                    {
+                        "name": "EPMHandler",
+                        "properties":
+                        [
+                           {
+                              "name": "arguments"
+                           }
+                        ]
+                    },
+                    {
+                        "name": "EPMSignoffProfile",
+                        "properties":
+                        [
+                            {
+                                "name": "number_of_signoffs"
+                            },
+                            {
+                                "name": "allow_subgroups"
+                            },
+                            {
+                                "name": "group",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "role",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Role",
+                        "properties": [ {
+                            "name": "role_name"
+                        } ]
+                    },
+                    {
+                        "name": "Group",
+                        "properties": [ {
+                            "name": "object_full_name"
+                        } ]
+                    },
+                    {
+                        "name": "EPMSelectSignoffTaskTemplate",
+                        "properties":
+                        [
+                           {
+                              "name": "wait_for_all_reviewers"
+                           }
+                        ]
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "epmTaskTemplate.populateProfiles"
+                    },
+                    {
+                        "name": "epmTaskTemplate.assignmentPropertiesLoadedForRoot"
+                    }
+                ]
+            },
+            "deps": "js/Awp0WorkflowTemplateAssignmentService"
+        },
+        "populateAssignmentTableData": {
+            "actionType": "JSFunction",
+            "method": "populateAssignmentTableData",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "selection": "{{props.subPanelContext.workflowDgmState.selectedObject}}",
+                "dataProvider": "{{data.dataProviders.assignmentDataProvider}}",
+                "handlers": ["EPM-auto-assign", "EPM-adhoc-signoffs", "EPM-fill-in-reviewers"],
+                "dynamicParticipants": "{{data.allParticipantTypeResults}}",
+                "assignmentHandlerContext":"{{data.assignmentHandlerContext}}",
+                "subPanelContext":"{{props.subPanelContext}}",
+                "fields": "{{fields}}"
+            },
+            "outputData": {
+                "isReviewACKRouteTaskSelected":"isReviewACKRouteTaskSelected",
+                "isAutoCompleteOptionPresent":"isAutoCompleteOptionPresent",
+                "autoCompleteSignoffOption":"autoCompleteSignoffOption",
+                "isAssignmentTabEditMode":"isPanelEditable",
+                "profileObjects":"profileObjects",
+                "numberOfReviewersCount":"numberOfReviewersCount",
+                "adjustedQuorumValue":"adjustedQuorumValue",
+                "waitForReviewers":"waitForReviewers",
+                "vmo":"vmo",
+                "columns":"columns",
+                "tableResult":"tableResult",
+                "assignmentHandlerContext":"assignmentHandlerContext",
+                "adhocSignoffHandlers": "adhocSignoffHandlers"
+            },
+            "deps": "js/Awp0WorkflowTemplateAssignmentService"
+        },
+        "revealPariticipantTypes": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput":
+                    {
+                        "maxToLoad": -1,
+                        "maxToReturn": -1,
+                        "providerName": "Awp0ResourceProvider",
+                        "searchCriteria": {
+                            "searchString": "",
+                            "resourceProviderContentType": "ParticipantType"
+                        },
+                        "cursor": {
+                            "startIndex": 0
+                        },
+                        "searchFilterFieldSortType": "Alphabetical",
+                        "searchFilterMap6": {},
+                        "searchSortCriteria": []
+                    }
+                }
+            },
+            "outputData":{
+              "allParticipantTypeResults": "searchFilterCategories"
+            }
+        },
+        "reloadPanel" : {
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action": "populateProfileData",
+                    "condition": "conditions.isReviewAckRouteTaskTemplateSelected"
+                },
+                {
+                    "action": "populateAssignmentTableData",
+                    "condition": "conditions.isNonReviewAckRouteTaskTemplateSelected"
+                }
+            ]
+        },
+        "deleteHandlerObject": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "deleteObjects",
+            "inputData": {
+                "objects": [
+                    "{{data.eventMap['workflowDesigner.deleteHandler'].handlerObject}}"
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "workflowDesigner.tabReload"
+                    }
+                ]
+            }
+        },
+        "updateHandlerObject": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2019-06-Workflow",
+            "method": "createOrUpdateHandler",
+            "inputData": {
+                "input": [
+                    {
+                        "clientID": "updateHandler",
+                        "handlerToUpdate": "{{data.eventMap['workflowDesigner.updateHandler'].handlerObject.uid}}",
+                        "additionalData": {
+                            "-assignee": "{{data.eventMap['workflowDesigner.updateHandler'].validAssignee}}"
+                        }
+                    }
+                ]
+            },
+            "policy": {
+                "types": [ {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "action_handlers",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                             }
+
+                        ]
+                    },
+                    {
+                        "name": "EPMHandler",
+                        "properties":
+                        [
+                           {
+                              "name": "arguments"
+                           },
+                           {
+                                "name": "parent_action_type"
+                           }
+                        ]
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "workflowDesigner.tabReload"
+                    }
+                ]
+            },
+            "deps": "js/Awp0WorkflowTemplateAssignmentService"
+        },
+        "assignmentHandlerRowSelectionAction": {
+            "actionType": "JSFunction",
+            "method": "assignmentHandlerRowSelection",
+            "inputData": {
+                "ctx": "{{ctx}}",
+                "selection": "{{data.dataProviders.assignmentDataProvider.selectedObjects}}",
+                "assignmentHandlerContext" : "{{data.assignmentHandlerContext}}"
+             },
+             "outputData": {
+                 "assignmentHandlerContext": ""
+             },
+            "deps": "js/Awp0WorkflowTemplateAssignmentService"
+        },
+        "loadAssignmentTableColumns": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadAssignmentTableColumns",
+            "inputData": {
+                "data": "{{data}}",
+                "dataProvider": "{{data.dataProviders.assignmentDataProvider}}",
+                "selection": "{{props.subPanelContext.workflowDgmState.selectedObject}}"
+            },
+            "deps": "js/Awp0WorkflowTemplateAssignmentService"
+        },
+        "updateAdhocSignoffHandlers": {
+            "actionType": "JSFunction",
+            "method": "autoCompleteSignoffOptions",
+            "inputData": {
+                "data": "{{data}}",
+                "dataProvider": "{{data.dataProviders.assignmentDataProvider}}",
+                "selection": "{{props.subPanelContext.workflowDgmState.selectedObject}}"
+            },
+            "outputData":{
+                "assignmentHandlerContext":""
+            },
+            "deps": "js/Awp0WorkflowTemplateAssignmentService"
+        },
+        "updateSignoffHandlers": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2019-06-Workflow",
+            "method": "createOrUpdateHandler",
+            "inputData": {
+                "input": "{{data.eventMap['workflowDesigner.updateSignoffHandlers'].updateHandlersInput}}"
+            },
+            "policy": {
+                "types": [ {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "action_handlers",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                             }
+
+                        ]
+                    },
+                    {
+                        "name": "EPMHandler",
+                        "properties":
+                        [
+                           {
+                              "name": "arguments"
+                           },
+                           {
+                                "name": "parent_action_type"
+                           }
+                        ]
+                    }
+                ]
+            }
+        },
+        "resetAssignementTableEditMode" : {
+            "actionType": "JSFunction",
+            "method": "resetAssignementTableEditMode",
+            "inputData": {
+                "data":"{{data}}",
+                "isAutoCompleteOptionPresent": "{{data.isAutoCompleteOptionPresent}}",
+                "autoCompleteSignoffOption": "{{data.autoCompleteSignoffOption}}",
+                "rootTaskTemplateObject":"{{props.subPanelContext.selected}}"
+            },
+            "outputData": {
+                "isAssignmentTabEditMode":"isAssignmentTabEditMode",
+                "autoCompleteSignoffOption":"autoCompleteSignoffOption"
+            },
+            "deps": "js/Awp0WorkflowTemplateAssignmentService"
+        },
+        "initilaizeAssignmentTab" : {
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action": "loadAssignmentTableColumns"
+                },
+                {
+                    "action": "getValidTemplateVMOObject"
+                },
+                {
+                    "action":"revealPariticipantTypes",
+                    "condition" : "!data.allParticipantTypeResults"
+                },
+                {
+                    "action": "loadProperties",
+                    "condition": "props.subPanelContext.workflowDgmState.selectedObject"
+                }
+            ]
+        },
+        "getValidTemplateVMOObject": {
+            "actionType": "JSFunction",
+            "method": "getValidTemplateVMOObject",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "workflowDgmEditCtx": "{{props.subPanelContext.workflowDgmEditCtx}}"
+            },
+            "outputData": {
+                "rootTaskTemplateObject": "rootTaskTemplateObject",
+                "selectedTemplateObject": "selectedTemplateObject",
+                "isTemplateEditable": "isTemplateEditable"
+            },
+            "deps": "js/Awp0WorkflowDesignerUtils"
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "workflow.closeOpenedPanel"
+                } ]
+            }
+        },
+        "updateDataSource": {
+            "actionType": "JSFunction",
+            "method": "addHtmlPanelPropertiesInDataSource",
+            "inputData": {
+                "updatedProperties": [
+                        "{{data.waitForReviewers}}",
+                        "{{data.numericQuorumValue}}",
+                        "{{data.percentQuorumValue}}",
+                        "{{data.quorumOptions}}"
+                ],
+                "type": "TEMPLATE_PARTICIPATION_EDIT"
+            },
+            "deps": "js/xrtUtilities"
+        }
+    },
+    "functions": {
+        "getTemplateObjectsToLoad": {
+            "functionName": "getTemplateObjectsToLoad",
+            "parameters":
+            [
+                "{{props.subPanelContext.workflowDgmState.selectedObject}}"
+            ]
+        }
+    },
+    "columnProviders": {
+        "tableColumnProvider" : {
+            "soaEnabled": false,
+            "sortCriteria": [],
+            "columns": [
+                {
+                    "name": "assignedBy",
+                    "displayName": "{{i18n.assignedBy}}",
+                    "width": 180,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100
+                },
+                {
+                    "name": "allowReassignOutsideGroupRole",
+                    "displayName": "{{i18n.allowReassignOutsideGroupRole}}",
+                    "width": 200,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100
+                },
+                {
+                    "name": "fnd0Assigner",
+                    "displayName": "{{i18n.Assigner}}",
+                    "width": 180,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100
+                },
+                {
+                    "name": "fnd0Assignee",
+                    "displayName": "{{i18n.assignee}}",
+                    "width": 180,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100
+                },
+                {
+                    "name": "awp0Reviewers",
+                    "displayName": "{{i18n.reviewers}}",
+                    "width": 280,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100
+                },
+                {
+                    "name": "awp0Acknowledgers",
+                    "displayName": "{{i18n.Acknowledgers}}",
+                    "width": 280,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100
+                },
+                {
+                    "name": "awp0Notifyees",
+                    "displayName": "{{i18n.Notifyees}}",
+                    "width": 280,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100
+                },
+                {
+                    "name": "isReviewersSignoffMust",
+                    "displayName": "{{i18n.reviewersSignoffMust}}",
+                    "width": 200,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100
+                }
+            ]
+        },
+        "assignmentTableColumnProvider": {
+            "columns": "{{data.columns}}",
+            "soaEnabled": false,
+            "sortCriteria": []
+        }
+    },
+    "dataProviders": {
+        "assignmentDataProvider": {
+            "response": "{{data.tableResult.searchResults}}",
+            "totalFound": "{{data.tableResult.totalFound}}",
+            "searchIndex": "{{data.searchIndex}}",
+            "inputData": {
+                "selectionData": "{{fields.selectionData}}"
+            }
+        }
+    },
+
+    "grids": {
+        "assignmentsHandlerTable": {
+            "columnProvider": "assignmentTableColumnProvider",
+            "dataProvider": "assignmentDataProvider",
+            "enableArrangeMenu": false,
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableGridMenu": false,
+                "enablePinning": false,
+                "enableSorting": false
+            }
+        }
+    },
+    "data": {
+        "assignmentHandlerContext": {},
+        "actionsLabel":{
+            "displayName":"{{i18n.actions}}",
+            "type": "STRING"
+        },
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "autoCompleteSignoffOption": {
+            "displayName": "{{i18n.autoCompleteSignoffOption}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "",
+            "dispValue": "{{i18n.autoCompleteSignoffOption}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "actionsAssignemntsAnchor" : "aw_workflowAssignmentAnchor",
+        "EPM-auto-assign" : {
+            "projectMembers" : [ "PROJECT_ADMINISTRATOR", "PROJECT_TEAM_ADMINISTRATOR", "PROJECT_AUTHOR", "PROJECT_MEMBER" ],
+            "workflowMembers" : [ "USER", "PROCESS_OWNER", "TARGET_OWNER" ]
+        },
+        "EPM-adhoc-signoffs" : {
+            "projectMembers" : [ "PROJECT_ADMINISTRATOR", "PROJECT_TEAM_ADMINISTRATOR", "PROJECT_AUTHOR", "PROJECT_MEMBER" ],
+            "workflowMembers" : [ "USER", "PROCESS_OWNER", "TARGET_OWNER" ]
+        },
+        "EPM-fill-in-reviewers" : {
+            "projectMembers" : [ "PROJECT_ADMINISTRATOR", "PROJECT_TEAM_ADMINISTRATOR", "PROJECT_AUTHOR", "PROJECT_MEMBER" ],
+            "workflowMembers" : [ "USER", "PROCESS_OWNER", "TARGET_OWNER" ]
+        },
+        "assignmentAnchor": "aw_workflowAssignmentsAnchor",
+        "reviewTaskTemplateColumns": [
+            {
+                "name": "assignedBy",
+                "displayName": "{{i18n.assignedBy}}",
+                "width": 200,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            },
+            {
+                "name": "allowReassignOutsideGroupRole",
+                "displayName": "{{i18n.allowReassignOutsideGroupRole}}",
+                "width": 250,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            },
+            {
+                "name": "fnd0Assigner",
+                "displayName": "{{i18n.Assigner}}",
+                "width": 300,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            },
+            {
+                "name": "awp0Reviewers",
+                "displayName": "{{i18n.reviewers}}",
+                "width": 350,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            },
+            {
+                "name": "isReviewersSignoffMust",
+                "displayName": "{{i18n.reviewersSignoffMust}}",
+                "width": 290,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            }
+        ],
+        "acknowledgeTaskTemplateColumns": [
+            {
+                "name": "assignedBy",
+                "displayName": "{{i18n.assignedBy}}",
+                "width": 200,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            },
+            {
+                "name": "allowReassignOutsideGroupRole",
+                "displayName": "{{i18n.allowReassignOutsideGroupRole}}",
+                "width": 250,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            },
+            {
+                "name": "fnd0Assigner",
+                "displayName": "{{i18n.Assigner}}",
+                "width": 300,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            },
+            {
+                "name": "awp0Acknowledgers",
+                "displayName": "{{i18n.Acknowledgers}}",
+                "width": 350,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            },
+            {
+                "name": "isReviewersSignoffMust",
+                "displayName": "{{i18n.reviewersSignoffMust}}",
+                "width": 290,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            }
+        ],
+        "routeTaskTemplateColumns": [
+            {
+                "name": "assignedBy",
+                "displayName": "{{i18n.assignedBy}}",
+                "width": 180,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            },
+            {
+                "name": "allowReassignOutsideGroupRole",
+                "displayName": "{{i18n.allowReassignOutsideGroupRole}}",
+                "width": 225,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            },
+            {
+                "name": "fnd0Assigner",
+                "displayName": "{{i18n.Assigner}}",
+                "width": 180,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            },
+            {
+                "name": "awp0Reviewers",
+                "displayName": "{{i18n.reviewers}}",
+                "width": 280,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            },
+            {
+                "name": "awp0Acknowledgers",
+                "displayName": "{{i18n.Acknowledgers}}",
+                "width": 280,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            },
+            {
+                "name": "awp0Notifyees",
+                "displayName": "{{i18n.Notifyees}}",
+                "width": 280,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            },
+            {
+                "name": "isReviewersSignoffMust",
+                "displayName": "{{i18n.reviewersSignoffMust}}",
+                "width": 200,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            }
+        ],
+        "singleUserTaskTemplateColumns": [
+            {
+                "name": "assignedBy",
+                "displayName": "{{i18n.assignedBy}}",
+                "width": 200,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            },
+            {
+                "name": "fnd0Assignee",
+                "displayName": "{{i18n.assignee}}",
+                "width": 400,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 100,
+                "enableColumnHiding": false
+            }
+        ],
+        "quorumOptions": {
+            "displayName": "{{i18n.approvalQuorumLabel}}",
+            "type": "BOOLEAN",
+            "propertyRadioFalseText": "{{i18n.numeric}}",
+            "propertyRadioTrueText": "{{i18n.percent}}",
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE",
+            "dbValue": true
+        },
+        "waitForReviewers":
+        {
+            "displayName": "{{i18n.requireFullParticipation}}",
+            "type": "BOOLEAN",
+            "isEditable": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "percentQuorumValue": {
+            "displayName": "{{i18n.percent}}",
+            "type": "INTEGER",
+            "dbValue": "",
+            "isEditable": "true",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "numericQuorumValue": {
+            "displayName": "{{i18n.numeric}}",
+            "type": "INTEGER",
+            "dbValue": "",
+            "isEditable": "true",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate":[
+            {
+                "action": "closePanel",
+                "observers": [
+                    "props.subPanelContext.workflowDgmState.selectedObject"
+                ]
+            },
+            {
+                "action": "initilaizeAssignmentTab",
+                "observers": [
+                    "props.subPanelContext.workflowDgmState.selectedObject"
+                ]
+            },
+            {
+                "action": "updateDataSource",
+                "observers": [
+                    "viewModel.data.waitForReviewers",
+                    "viewModel.data.numericQuorumValue",
+                    "viewModel.data.percentQuorumValue",
+                    "viewModel.data.quorumOptions"
+                ]
+            },
+            {
+                "action": "assignmentHandlerRowSelectionAction",
+                "observers": [ "viewModel.atomicData.selectionData.selected" ]
+            }
+        ]
+    },
+    "ctx": {
+        "preferences": null,
+        "activeToolsAndInfoCommand.commandId": null
+    },
+    "onEvent": [
+        {
+            "eventId": "epmTaskTemplate.assignmentPropertiesLoaded",
+            "action": "populateAssignmentTableData"
+        },
+        {
+            "eventId": "epmTaskTemplate.assignmentPropertiesLoadedForRoot",
+            "condition" : "props.subPanelContext.workflowDgmState.selectedObject && (props.subPanelContext.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMReviewTaskTemplate' ) === -1 && props.subPanelContext.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMAcknowledgeTaskTemplate' ) === -1 && props.subPanelContext.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMRouteTaskTemplate' ) === -1 )",
+            "action": "populateAssignmentTableData"
+        },
+        {
+            "eventId": "epmTaskTemplate.populateProfiles",
+            "condition" : "props.subPanelContext.workflowDgmState.selectedObject && (props.subPanelContext.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMReviewTaskTemplate' ) > -1 || props.subPanelContext.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMAcknowledgeTaskTemplate' ) > -1 || props.subPanelContext.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMRouteTaskTemplate' ) > -1 )",
+            "action": "populateProfileData"
+        },
+        {
+            "eventId": "workflowDesigner.tabReload",
+            "action": "reloadPanel"
+        },
+        {
+            "eventId": "workflowDesigner.deleteHandler",
+            "action": "deleteHandlerObject",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "workflowDesigner.updateHandler",
+            "action": "updateHandlerObject",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "workflowDesigner.updateSignoffHandlers",
+            "action": "updateSignoffHandlers",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "workflowDesigner.saveEdit",
+            "action": "resetAssignementTableEditMode"
+        }
+    ],
+    "messages": {
+        "invalidNumericQuorumMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.invalidNumericQuorumValue}}",
+            "messageTextParams": [
+                "{{data.vmo.props.numericQuorumValue.dbValue}}",
+                "{{data.numberOfReviewersCount}}"
+            ]
+        },
+        "invalidQuorumMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.invalidQuorumValue}}"
+        },
+        "invalidSignoffQuorumDeletion": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.invalidSignoffQuorumDeletion}}",
+            "messageTextParams": [
+                "{{data.adjustedQuorumValue}}"
+            ]
+        }
+    },
+    "preferences":
+    [
+        "EPM_ARG_target_user_group_list_separator"
+    ],
+    "conditions":
+    {
+        "isReviewAckRouteTaskTemplateSelected" : {
+            "expression":  "props.subPanelContext.workflowDgmState.selectedObject && (props.subPanelContext.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMReviewTaskTemplate' ) > -1 || props.subPanelContext.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMAcknowledgeTaskTemplate' ) > -1 || props.subPanelContext.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMRouteTaskTemplate' ) > -1 )"
+        },
+        "isNonReviewAckRouteTaskTemplateSelected" : {
+            "expression":  "props.subPanelContext.workflowDgmState.selectedObject && props.subPanelContext.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMTaskTemplate' ) > -1  && (props.subPanelContext.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMReviewTaskTemplate' ) <= -1 && props.subPanelContext.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMAcknowledgeTaskTemplate' ) <= -1 && props.subPanelContext.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMRouteTaskTemplate' ) <= -1 )"
+        },
+        "isAutoCompleteSignoffOption" : {
+            "expression":  "data.isAutoCompleteOptionPresent && props.subPanelContext.workflowDgmState.selectedObject && (props.subPanelContext.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMReviewTaskTemplate' ) > -1 || props.subPanelContext.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMAcknowledgeTaskTemplate' ) > -1 || props.subPanelContext.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMRouteTaskTemplate' ) > -1 )"
+        },
+        "isNumericQuorum":
+        {
+            "expression": "data.quorumOptions.dbValue == false"
+        },
+        "isPercentQuorum":
+        {
+            "expression": "data.quorumOptions.dbValue == true"
+        },
+        "isACKTaskTemplateSelected" : {
+            "expression":  "props.subPanelContext.workflowDgmState.selectedObject && props.subPanelContext.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMAcknowledgeTaskTemplate' ) > -1"
+        },
+        "isTemplateInEditMode" : {
+            "expression": "props.subPanelContext.selected && ctx.workflowDgmEditCtx.editObjectUids && ctx.workflowDgmEditCtx.editObjectUids.indexOf( props.subPanelContext.selected.uid ) > -1"
+        }
+    },
+    "i18n": {
+        "assignmentType" : ["WorkflowDesignerMessages"],
+        "assignmentValue" : ["WorkflowDesignerMessages"],
+        "assignments": ["WorkflowDesignerMessages"],
+        "reviewerLabel" : ["WorkflowDesignerMessages"],
+        "recipientLabel" : ["WorkflowDesignerMessages"],
+        "assignWhen": [ "WorkflowDesignerMessages" ],
+        "assignedBy": [ "WorkflowDesignerMessages" ],
+        "allowReassignOutsideGroupRole": [ "WorkflowDesignerMessages" ],
+        "PROJECT_ADMINISTRATOR": [ "WorkflowDesignerMessages" ],
+        "PROJECT_TEAM_ADMINISTRATOR": [ "WorkflowDesignerMessages" ],
+        "PROJECT_AUTHOR": [ "WorkflowDesignerMessages" ],
+        "PROJECT_MEMBER": [ "WorkflowDesignerMessages" ],
+        "TARGET_OWNER": [ "WorkflowDesignerMessages" ],
+        "PROCESS_OWNER": [ "WorkflowDesignerMessages" ],
+        "USER": [ "WorkflowDesignerMessages" ],
+        "OWNER": [ "WorkflowDesignerMessages" ],
+        "REVIEWERS": [ "WorkflowDesignerMessages" ],
+        "UNDECIDED": [ "WorkflowDesignerMessages" ],
+        "RESPONSIBLE_PARTY": [ "WorkflowDesignerMessages"],
+        "taskStarted": [ "WorkflowDesignerMessages" ],
+        "assigner": [ "WorkflowDesignerMessages" ],
+        "assigneeClaimed": [ "WorkflowDesignerMessages" ],
+        "assigneeAutomated": [ "WorkflowDesignerMessages" ],
+        "yes": [ "InboxMessages" ],
+        "no": [ "InboxMessages" ],
+        "assignee": [ "WorkflowCommandPanelsMessages" ],
+        "Assigner": [ "WorkflowCommandPanelsMessages" ],
+        "Notifyees": [ "WorkflowCommandPanelsMessages" ],
+        "reviewers": [ "InboxMessages" ],
+        "Acknowledgers": [ "WorkflowCommandPanelsMessages" ],
+        "autoCompleteSignoffOption": [ "WorkflowDesignerMessages" ],
+        "minimumParticipation": [ "InboxMessages" ],
+        "numeric": [ "InboxMessages" ],
+        "percent": [ "InboxMessages" ],
+        "requireFullParticipation": [ "InboxMessages" ],
+        "participation": ["WorkflowDesignerMessages"],
+        "invalidNumericQuorumValue": [ "WorkflowDesignerMessages" ],
+        "invalidQuorumValue": [ "WorkflowDesignerMessages" ],
+        "invalidSignoffQuorumDeletion": [ "WorkflowDesignerMessages" ],
+        "approvalQuorumLabel": [ "WorkflowDesignerMessages" ],
+        "reviewersSignoffMust": [ "WorkflowDesignerMessages" ]
+    }
+}

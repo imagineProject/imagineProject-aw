@@ -1,0 +1,481 @@
+{
+    "schemaVersion": "1.0.0",
+        "actions": {
+        "loadVariantRulesData": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadVariantRulesData",
+            "inputData": {
+                "data": "{{data}}",
+                "fscState": "{{props.fscstate}}",
+                "variantRuleData": "{{props.variant}}",
+                "configCtx":"{{props.configCtx}}"
+            },
+            "deps": "js/Pca0VariantConfigurationGridService"
+        },
+        "doVariantConfigurationGridDataProvider": {
+            "actionType": "dataProvider",
+            "method": "treeDataProvider"
+        },
+        "doVariantConfigurationGridDataProviderBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "doFetchDefaultActiveSettingsEvent",
+                    "condition": "conditions.areMultipleSVRs"
+                },
+                {
+                    "action": "doFetchActiveSettingsEvent",
+                    "condition": "conditions.isSingleSVR"
+                },
+                {
+                    "action": "doVariantConfigurationGridDataProvider"
+                }
+            ]
+        },
+        "initializeAndLoadTreeProviderData": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "initializeDisplayMode"
+                },
+                {
+                    "action": "loadTreeProviderData"
+
+                }
+            ]
+        },
+        "initializeDisplayMode": {
+            "actionType": "JSFunction",
+            "method": "initializeDisplayMode",
+            "deps": "js/Pca0VariantConfigurationGridService"
+        },
+        "loadTreeProviderData": {
+            "actionType": "JSFunction",
+            "method": "loadTreeProviderData",
+            "inputData": {
+                "data": "{{data}}",
+                "viewModelAction": "loadVariantRulesData",
+                "contextKey":"fscContext",
+                "fscState": "{{props.fscstate}}",
+                "variantRuleData": "{{props.variant}}",
+                "userSelectionsPickAndChooseGrid":"",
+                "consumerData": {
+                    "configCtx":"{{props.configCtx}}",
+                    "isHostedPcaMode":"{{props.isHostedPcaMode}}"
+                }
+            },
+            "outputData": {
+                "treeLoadResult": "result.treeLoadResult",
+                "dataProviders.treeDataProvider.columnConfig": "result.columnConfig",
+                "treeMaps": "result.treeMaps",
+                "variabilityProps": "result.variabilityProps"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0Configurator.PerformSOAPostProcessing",
+                    "eventData": {
+                        "gridID": "variantConfigurationGrid",
+                        "soaResponse": "{{data.atomicDataRef.variabilityProps.soaResponse}}"
+                    }
+                } ]
+            },
+            "deps": "js/Pca0VariabilityTreeDisplayService"
+        },
+        "updateCachedVariabilityData": {
+            "actionType": "JSFunction",
+            "method": "updateCachedVariabilityData",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "variabilityProps": "result.variabilityProps",
+                "dataProviders.treeDataProvider.columnConfig": "result.columnConfig",
+                "treeMaps": "result.treeMaps"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0VariantConfigurationGrid.refreshContent",
+                    "condition": "conditions.isVariantRulesLoaded"
+                } ]
+            },
+            "deps": "js/Pca0VariantConfigurationGridService"
+        },
+        "checkIfSingleVariantRuleAndNotDirtyBatchJob": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "checkIfSingleVariantRuleAndNotDirty"
+                },
+                {
+                    "action": "createCustomRuleServerCall",
+                    "condition": "data.shouldCreateCustomRule"
+                },
+                {
+                    "action": "configureContent",
+                    "condition": "!data.shouldCreateCustomRule"
+                }
+            ]
+        },
+        "configureContent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0FullScreenConfiguration.configureContent",
+                    "excludeLocalDataCtx": true,
+                    "eventData": {
+                        "variantRules": [ "{{data.variantRuleForApplyConfiguration}}" ]
+                    }
+                } ]
+            }
+        },
+        "checkIfSingleVariantRuleAndNotDirty": {
+            "actionType": "JSFunction",
+            "method": "checkIfSingleVariantRuleAndNotDirty",
+            "inputData": {
+                "treeDataProvider": "{{dataProviders.treeDataProvider}}",
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}"
+            },
+            "outputData": {
+                "shouldCreateCustomRule" : "result.shouldCreateCustomRule",
+                "variantRuleForApplyConfiguration": "result.variantRuleForApplyConfiguration"
+            },
+            "deps": "js/Pca0VariantConfigurationGridService"
+        },
+        "createCustomRuleServerCall": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{function:getConfigPerspective}}",
+                    "selectedExpressions": "{{function:getJsonStringActiveSelectedExpressions}}",
+                    "requestInfo": {
+                        "requestType": [ "createRule" ],
+                        "configurationControlMode": [ "manual" ],
+                        "profileSettings": [ "{{function:getProfileSettingsForFsc}}" ],
+                        "viewType": [ "Tree" ]
+                    }
+                }
+            },
+            "outputData": {
+                "ctx.fscContext.customVariantRule": "{{function:getCreatedVariantRule}}",
+                "ServiceData": "ServiceData"
+            },
+            "deps": "js/configuratorUtils",
+            "events": {
+                "success": [ {
+                    "name": "Pca0FullScreenConfiguration.configureContent",
+                    "excludeLocalDataCtx": true,
+                    "eventData": {
+                        "variantRules": [ "{{ctx.fscContext.customVariantRule.uid}}" ]
+                    }
+                } ],
+                "failure": [ {
+                    "name": "Pca0FullScreenConfiguration.processPartialError",
+                    "eventData": {
+                        "ServiceData": "{{data.ServiceData}}"
+                    }
+
+                } ]
+            }
+        },
+        "populateUserEdits": {
+            "actionType": "JSFunction",
+            "method": "populateUserEdits",
+            "inputData": {
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "eventData": "{{data.eventMap['Pca0GridAuthoring.populateUserEdits']}}"
+            },
+           "outputData": {
+                "variabilityProps": ""
+            },
+            "deps": "js/pca0GridAuthoringService",
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0GridAuthoring.selectionMapChanged",
+                        "eventData": {
+                            "gridId": "variantConfigurationGrid"
+                        }
+                    }
+                ]
+            }
+        },
+        "postProcessUserEdits": {
+            "actionType": "JSFunction",
+            "method": "postProcessUserEdits",
+            "inputData": {
+                "treeDataProvider": "{{dataProviders.treeDataProvider}}",
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "fscState": "{{props.fscstate}}"
+            },
+            "deps": "js/Pca0VariantConfigurationGridService"
+        },
+        "resetEdits": {
+            "actionType": "JSFunction",
+            "method": "resetEdits",
+            "inputData": {
+                "treeDataProvider": "{{dataProviders.treeDataProvider}}",
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "fscState": "{{props.fscstate}}"
+            },
+            "outputData": {
+                "variabilityProps": ""
+            },
+            "deps": "js/Pca0VariantConfigurationGridService"
+        },
+        "postProcessLoadVariantRulesData": {
+            "actionType": "JSFunction",
+            "method": "postProcessLoadVariantRulesData",
+            "inputData": {
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "variantRuleData": "{{props.variant}}"
+            },
+            "outputData": {
+                "variabilityProps": ""
+            },
+            "deps": "js/Pca0VariantConfigurationGridService"
+        },
+        "doFetchDefaultActiveSettingsEvent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0FullScreenConfiguration.fetchDefaultActiveSettings"
+                } ]
+            }
+        },
+        "doFetchActiveSettingsEvent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0FullScreenConfiguration.fetchActiveSettings"
+                } ]
+            }
+        },
+        "closeDialog": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "deps": "js/popupService"
+        }
+    },
+    "ctx": {
+        "fscContext": {
+            "type": "Object"
+        }
+    },
+    "data": {
+        "variabilityPropertiesToDisplay": [],
+        "contextKey": "fscContext",
+        "treeMaps": {},
+        "gridSelectionState": {
+            "initialValues": {
+                "selectionInfo": {},
+                "isFreeFormOptionValueSelected": false
+            },
+            "meta": {
+                "selectionInfo": {
+                    "type": "OBJECT",
+                    "field": "true"
+                },
+                "isFreeFormOptionValueSelected": {
+                    "type": "BOOELAN",
+                    "field": "true"
+                }
+            }
+        },
+        "variabilityProps": {
+            "initialValues": {
+                "expandAll": true,
+                "resetColumnProperties": true,
+                "businessObjectToSelectionMap": {},
+                "backupOfBusinessObjectToSelectionMap": {}
+            },
+            "meta": {
+                "activeFilter": {
+                    "type": "OBJECT",
+                    "field": "true"
+                },
+                "expandAll": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                },
+                "expansionMap": {
+                    "type": "OBJECT",
+                    "field": "true"
+                },
+                "filterApplied": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                },
+                "useCachedData": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                },
+                "soaResponse": {
+                    "type": "OBJECT",
+                    "field": "true"
+                },
+                "businessObjectToSelectionMap": {
+                    "type": "OBJECT",
+                    "field": "true"
+                },
+                "backupOfBusinessObjectToSelectionMap": {
+                    "type": "OBJECT",
+                    "field": "true"
+                }
+            }
+        }
+    },
+    "dataProviders": {
+        "treeDataProvider": {
+            "action": "loadTreeProviderData",
+            "columnMenuCommandsAnchor": "aw_variantConfigurationGridColumnCommandBar",
+            "initializeAction": "initializeAndLoadTreeProviderData",
+            "nextAction": "loadTreeProviderData",
+            "previousAction": "loadTreeProviderData",
+            "focusAction": "loadTreeProviderData",
+            "treeLoadResult": "action.result.treeLoadResult",
+            "gridId": "variantConfigurationGrid",
+            "minEditLevelNdx": 1,
+            "inputData": {
+                "accessMode": "tree",
+                "topNodeUid": "variabilityTreeData"
+            }
+        }
+    },
+    "columnProviders": {
+        "treeColumnProvider": {
+            "columns": "{{data.columns}}"
+        }
+    },
+    "grids": {
+        "variantConfigurationGrid": {
+            "dataProvider": "treeDataProvider",
+            "columnProvider": "treeColumnProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableSorting": false,
+                "enableGridMenu": false,
+                "headerHeight": "150",
+                "isFilteringEnabled": true,
+                "enableExpansionStateCaching": false,
+                "enableExpandAndPaginationInEdit": true,
+                "enablePinning": false,
+                "enableHeaderResizing": true
+            }
+        }
+    },
+    "props": {
+        "fscstate": {
+            "type": "object"
+        },
+        "variant": {
+            "type": "object"
+        },
+        "context":{
+            "type": "object"
+        },
+        "config-ctx": {
+            "type": "object"
+        }
+    },
+    "lifecycleHooks": {
+        "onUnmount": "closeDialog"
+    },
+    "i18n": {
+        "defaultGridEditModeMessage": [ "FullScreenConfigurationMessages" ],
+        "reset": [ "FullScreenConfigurationMessages" ]
+    },
+    "messages": {
+        "defaultGridEditModeMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.defaultGridEditModeMessage}}"
+        }
+    },
+    "functions": {
+        "getJsonStringActiveSelectedExpressions": {
+            "functionName": "getJsonStringActiveSelectedExpressions",
+            "parameters": [
+                "{{data.variabilityProps}}"
+            ]
+        },
+        "getProfileSettingsForFsc": {
+            "functionName": "getProfileSettingsForFsc"
+        },
+        "getCreatedVariantRule": {
+            "functionName": "getCreatedVariantRule"
+        },
+        "getConfigPerspective": {
+            "functionName": "getFscConfigPerspective",
+            "parameters": [ "{{props.variant}}" ]
+        }
+    },
+    "onEvent": [ {
+            "eventId": "Pca0VariantConfigurationGrid.loadOrAppendSVRs",
+            "action": "doVariantConfigurationGridDataProviderBatch"
+        },
+        {
+            "eventId": "Pca0VariantConfigurationGrid.applyConfiguration2",
+            "criteria": {
+                "conditionFlag": "false"
+            },
+            "action": "checkIfSingleVariantRuleAndNotDirtyBatchJob"
+        },
+        {
+            "eventId": "Pca0VariantConfigurationGrid.svrUnloaded",
+            "cacheEventData": true,
+            "action": "updateCachedVariabilityData"
+        },
+        {
+            "eventId": "Pca0VariantConfigurationGrid.refreshContent",
+            "action": "doVariantConfigurationGridDataProvider"
+        },
+        {
+            "eventId": "Pca0GridAuthoring.populateUserEdits",
+            "action": "populateUserEdits",
+            "cacheEventData": true,
+            "criteria": {
+                "gridId": "variantConfigurationGrid"
+            }
+        },
+        {
+            "eventId": "Pca0GridAuthoring.selectionMapChanged",
+            "action": "postProcessUserEdits",
+            "cacheEventData": true,
+            "criteria": {
+                "gridId": "variantConfigurationGrid"
+            }
+        },
+        {
+            "eventId": "Pca0Settings.applySettings",
+            "action": "doVariantConfigurationGridDataProvider"
+        },
+        {
+            "eventId": "Pca0Configurator.PerformSOAPostProcessing",
+            "action": "postProcessLoadVariantRulesData",
+            "cacheEventData": true,
+            "criteria": {
+                "gridID": "variantConfigurationGrid"
+            }
+        }
+    ],
+    "conditions": {
+        "areNotCachedDefaultSettings": {
+            "expression": "props.variant.useDefaultConfigPerspective && props.variant.defaultConfigPerspective.uid === undefined"
+        },
+        "areMultipleSVRs": {
+            "expression": "props.variant.variantRulesToLoad &&  props.variant.variantRulesToLoad.length > 1"
+        },
+        "isSingleSVR": {
+            "expression": "props.variant.variantRulesToLoad && props.variant.variantRulesToLoad.length === 1"
+        },
+        "isVariantRulesLoaded": {
+            "expression": "props.variant.variantRulesToLoad && props.variant.variantRulesToLoad.length > 0"
+        },
+        "shouldFetchDefaultAppliedSettings": {
+            "expression": "ctx.fscContext.appliedSettings === undefined || Object.keys( ctx.fscContext.appliedSettings ).length == 0 || conditions.areMultipleSVRs && conditions.areNotCachedDefaultSettings"
+        }
+    }
+
+}

@@ -1,0 +1,304 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "actions": {
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0" : {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "fnd0Change"
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Cm1MyChangesProvider",
+                        "searchCriteria": {
+                            "changesProviderContentType": "Dashboard",
+                            "searchString": "{{subPanelContext.searchState.criteria.searchString}}"
+                        },
+                        "columnFilters": "{{data.columnProviders.changesDashboardTableColumnProvider.columnFilters}}",
+                        "searchFilterFieldSortType": "Priority",
+                        "searchSortCriteria": "{{data.columnProviders.changesDashboardTableColumnProvider.sortCriteria}}",
+                        "searchFilterMap6": "{{function:getDashboardFilterMap}}",
+                        "startIndex": "{{data.dataProviders.changesDashboardTableDataProvider.startIndex}}"
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "dataProviders.changesDashboardTableDataProvider.columnConfig": "columnConfig",
+                "output": "{{function:processOutput}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "updatePieChart",
+                        "eventData": {
+                            "searchState": "{{props.subPanelContext.searchState}}"
+                        },
+                        "condition": "subPanelContext.searchState.appliedFilters.length>0"
+                    }
+                ]
+            }
+        },
+        "initSearch": {
+            "actionType": "JSFunction",
+            "method": "initSearch",
+            "inputData": {
+                "data": "{{data.actions}}",
+                "actionName": "doGridDataProvider",
+                "tableLoaded": "{{data.tableLoaded}}"
+            },
+            "deps": "js/awSearchService"
+        },
+        "searchBasedOnFilters": {
+            "actionType": "JSFunction",
+            "method": "searchBasedOnFilters",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.searchState}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "isChartRefilter": "isChartRefilter"
+            },
+            "deps": "js/Cm1ChangeDashboardService"
+        },
+        "setFilters": {
+            "actionType": "JSFunction",
+            "method": "setFilters",
+            "inputData": {
+                "filterParams": "{{data.eventMap['setFilters'].filterParams}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "isChartRefilter": "isChartRefilter"
+            },
+            "deps": "js/Cm1ChangeDashboardService"
+        },
+        "doGridDataProvider": {
+            "actionType": "dataProvider",
+            "method": "changesDashboardTableDataProvider"
+        },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "fnd0Change"
+                    },
+                    "saveColumnConfigData": {
+                        "clientScopeURI": "fnd0Change",
+                        "columnConfigId": "{{data.dataProviders.changesDashboardTableDataProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.changesDashboardTableDataProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Cm1MyChangesProvider",
+                        "searchCriteria": {
+                            "changesProviderContentType": "Dashboard"
+                        },
+                        "columnFilters": "{{data.columnProviders.changesDashboardTableColumnProvider.columnFilters}}",
+                        "searchFilterFieldSortType": "Priority",
+                        "searchSortCriteria": "{{data.columnProviders.changesDashboardTableColumnProvider.sortCriteria}}",
+                        "searchFilterMap6": "{{subPanelContext.searchState.activeFilterMap}}",
+                        "startIndex": "{{data.dataProviders.changesDashboardTableDataProvider.startIndex}}"
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "dataProviders.changesDashboardTableDataProvider.columnConfig": "columnConfig",
+                "output": "{{function:processOutput}}"
+            }
+        },
+        "resetColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [
+                        {
+                            "scope": "LoginUser",
+                            "scopeName": "",
+                            "clientName": "AWClient",
+                            "resetColumnConfig": true,
+                            "columnConfigQueryInfos": [
+                                {
+                                    "clientScopeURI": "fnd0Change",
+                                    "operationType": "configured",
+                                    "columnsToExclude": []
+                                }
+                            ],
+                            "businessObjects": [
+                                {}
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "dataProviders.changesDashboardTableDataProvider.columnConfig": "columnConfigurations[0].columnConfigurations[0]"
+            }
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "getFilterFacets": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2019-12-Finder",
+            "method": "getFilterValues",
+            "inputData": {
+                "filterFacetInput": {
+                    "columnFilters": "{{filterFacetInput.columnFilters}}",
+                    "columnName": "{{filterFacetInput.column.field}}",
+                    "maxToReturn": "{{filterFacetInput.maxToReturn}}",
+                    "providerName": "Cm1MyChangesProvider",
+                    "searchCriteria": {
+                        "changesProviderContentType": "Dashboard"
+                    },
+                    "searchFilterMap": "{{subPanelContext.searchState.activeFilterMap}}",
+                    "startIndex": "{{filterFacetInput.startIndex}}"
+                }
+            },
+            "outputData": {
+                "filterFacetResults": "{{json:facetValues}}"
+            }
+        },
+        "clearAllFilters": {
+            "actionType": "JSFunction",
+            "method": "clearAllFilters",
+            "inputData": {
+                "activeFilters": "{{props.subPanelContext.searchState.appliedFilters}}",
+                "resetFilter":"{{data.eventMap['clearAllFilters'].resetFilter}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "setFilters",
+                        "eventData": {
+                            "filterParams": "{{data.filterParams}}"
+                        }
+                    }
+                ]
+            },
+            "outputData": {
+                "filterParams": "filterParams",
+                "resetFilter":"resetFilter"
+            },
+            "deps": "js/Cm1ChangeDashboardService"
+        },
+        "clearAndInitializePieCharts": {
+            "actionType": "JSFunction",
+            "method": "clearAndInitializePieCharts",
+            "inputData": {},
+            "outputData": {},
+            "deps": "js/Cm1ChangeDashboardService"
+        }
+    },
+    "functions": {
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.searchState}}"
+            ],
+            "deps": "js/Cm1ChangeDashboardService"
+        },
+        "getDashboardFilterMap": {
+            "functionName": "getDashboardFilterMap",
+            "parameters": [
+                "{{subPanelContext.searchState.activeFilterMap}}",
+                "{{data}}"
+            ],
+            "deps": "js/Cm1ChangeDashboardService"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "searchBasedOnFilters",
+                "observers": [
+                    "props.subPanelContext.searchState.filterString"
+                ]
+            }
+        ]
+    },
+    "data": {
+        "isChartRefilter": {
+            "type": "BOOLEAN",
+            "dbValue": true
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent"
+        },
+        {
+            "eventId": "setFilters",
+            "cacheEventData": true,
+            "action": "setFilters"
+        },
+        {
+            "eventId": "clearAllFilters",
+            "cacheEventData": true,
+            "action": "clearAllFilters"
+        },
+        {
+            "eventId": "initSearch",
+            "action": "initSearch"
+        }
+    ],
+    "dataProviders": {
+        "changesDashboardTableDataProvider": {
+            "action": "loadData",
+            "editContext": "TABLE_CONTEXT",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple",
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands",
+            "filterFacetAction": "getFilterFacets",
+            "filterFacetResults": "{{data.filterFacetResults}}"
+        }
+    },
+    "columnProviders": {
+        "changesDashboardTableColumnProvider": {
+            "saveColumnAndLoadAction": "saveColumnConfigLoadData",
+            "resetColumnAction": "resetColumnConfig",
+            "sortCriteria": []
+        }
+    },
+    "grids": {
+        "changesDashboardTableGrid": {
+            "dataProvider": "changesDashboardTableDataProvider",
+            "columnProvider": "changesDashboardTableColumnProvider",
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "enablePinning": true,
+                "isFilteringEnabled": true
+            }
+        }
+    }
+}

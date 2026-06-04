@@ -1,0 +1,568 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "render": {
+            "method": "addRelationPoupupRenderFunction",
+            "options": {
+                "elementRefList": [ "addRelationDialogTreeStyle", "addRelationDialogTableStyle" ]
+            },
+            "deps": "js/AddRelationDialogService"
+        },
+        "callSoaForSelectedRelationsAndExpandSource": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "performSearchForSelectedRelations",
+                "condition": "conditions.editRelationCommand"
+            },{
+                "action": "expandSourceAndGetRelationalTableData"
+            },{
+                "action": "findAndSelectNextRelation",
+                "condition": "fields.selectedNode.getValue().node.children.length > 0"
+            } ]
+        },
+        "findAndSelectNextRelation":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "findNextRelation"
+            },{
+                "action": "selectRelation",
+                "condition": "data.nextRelations.length > 0"
+            } ]
+        },
+        "selectRelation":{
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.gridDataProvider.selectionModel}}",
+                "newSelection": "{{data.nextRelations}}"
+            },
+            "deps": "js/selectionModelFactory"
+        },
+        "findNextRelation": {
+            "actionType": "JSFunction",
+            "method": "findNextRelation",
+            "inputData": {
+                "expectedNodeValue": "{{fields.selectedNode.getValue().node.children[0].label}}",
+                "relations": "{{data.relationData}}"
+            },
+            "outputData":{
+                "nextRelations": ""
+            },
+            "deps": "js/AddRelationDialogService"
+        },
+        "performSearchForSelectedRelations":{
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "",
+                        "columnsToExclude": [],
+                        "hostingClientName": ""
+                    },
+                    "saveColumnConfigData": {
+                        "columnConfigId": "",
+                        "clientScopeURI": "",
+                        "columns": [],
+                        "scope": "",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "searchSortCriteria": "",
+                        "attributesToInflate": [],
+                        "internalPropertyName": "",
+                        "maxToLoad": -1,
+                        "maxToReturn": -1,
+                        "providerName": "Rb0ReportsDataProvider",
+                        "searchCriteria": "{{function:getSearchCriteriaForSelectedNode}}",
+                        "startIndex": 0
+                    },
+                    "inflateProperties": false,
+                    "noServiceData": false
+                }
+            },
+            "outputData":{
+                "totalRelatedFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "conflictMsgVisible": "{{function:checkConflictMsgVisibleFalse}}",
+                "totalExpandRelationsFound": null,
+                "relationData": null
+            }
+        },
+        "expandSourceAndGetRelationalTableData":{
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "",
+                        "columnsToExclude": [],
+                        "hostingClientName": ""
+                    },
+                    "saveColumnConfigData": {
+                        "columnConfigId": "",
+                        "clientScopeURI": "",
+                        "columns": [],
+                        "scope": "",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "searchSortCriteria": "{{data.columnProviders.staticColumnProvider.sortCriteria}}",
+                        "attributesToInflate": [],
+                        "internalPropertyName": "",
+                        "maxToLoad": 20,
+                        "maxToReturn": 20,
+                        "providerName": "Rb0ReportsDataProvider",
+                        "searchCriteria": {
+                            "relationsPath": "{{function:getExpandSourcePath}}",
+                            "isFilterMapRequired": "false"
+                        },
+                        "startIndex": "{{data.dataProviders.gridDataProvider.startIndex}}"
+                    }
+                },
+                "1": {
+                    "types": [ {
+                        "name": "Rb0RelatedObjectsData",
+                        "properties": [ {
+                            "name": "rb0RelationTypeDisplayName"
+                        },{
+                            "name": "rb0RelatedObjectsCount"
+                        },{
+                            "name": "rb0RelationTypeInternalName"
+                        },{
+                            "name": "rb0PropertyOrRelationInternalName"
+                        },{
+                            "name": "rb0PropertyOrRelationDisplayName"
+                        },{
+                            "name": "rb0RelatedObjectTypeInternalName"
+                        },{
+                            "name": "rb0RelatedObjectTypeDisplayName"
+                        }]
+                    }]
+                }
+            },
+            "outputData":{
+                "totalExpandRelationsFound": "totalFound",
+                "relationData": "{{function:processOutput}}",
+                "totalRelatedFound": null,
+                "searchResults": null,
+                "nextRelations": null,
+                "conflictMsgVisible": "{{function:checkConflictMsgVisibleTrue}}"
+            }
+        },
+        "closePopup": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "inputData": {
+                "popupId": "{{props.subPanelContext.popupOptions.popupId}}",
+                "targetEvent": "{{$event}}"
+            },
+            "deps": "js/popupService"
+        },
+        "saveRelationAndClose": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "saveRelation"
+            },{
+                "action": "updateTreeNodeSelection"
+            },{
+                "action": "closePopup",
+                "condition": "!props.subPanelContext.panelPinned"
+            } ]
+        },
+        "updateTreeNodeSelection":{
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "awtree.updateSelection",
+                    "eventData": {
+                        "name": "segmentree",
+                        "selectionValue": "{{data.selectedNode.node.value}}",
+                        "match": "exact"
+                    }
+                } ]
+            }
+        },
+        "saveRelation":{
+            "actionType": "JSFunction",
+            "method": "saveRelation",
+            "inputData": {
+                "selectedObject": "{{data.dataProviders.gridDataProvider.selectedObjects}}",
+                "reportsState": "{{props.subPanelContext.reportsState}}",
+                "selectedNode": "{{fields.selectedNode}}"
+            },
+            "outputData":{
+                "segmentTree": "",
+                "enableSaveButton": false
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "relationTableGridView.plTable.reload",
+                        "condition": "props.subPanelContext.panelPinned && props.subPanelContext.reportsState.segmentTree[0].children.length === 1"
+                    }
+                ]
+            },
+            "deps": "js/AddRelationDialogService"
+        },
+        "checkSaveShouldBeEnabled":{
+            "actionType": "JSFunction",
+            "method": "checkSaveShouldBeEnabled",
+            "inputData": {
+                "selectedObjects": "{{data.dataProviders.gridDataProvider.selectedObjects}}",
+                "nextRelations": "{{data.nextRelations}}"
+            },
+            "outputData":{
+                "enableSaveButton": "enableSaveButton",
+                "falseMultipleSelectionMsg": "falseMultipleSelectionMsg"
+            },
+            "deps": "js/AddRelationDialogService"
+        },
+        "checkIsSoaCallRequired":{
+            "actionType": "JSFunction",
+            "method": "checkIsSoaCallRequired",
+            "inputData": {
+                "prevSelectedNodeValue": "{{fields.selectedNode.getValue().node.value}}",
+                "currSelectNodeValue": "{{parameters.node.value}}",
+                "isOnMountCall": "{{data.onMountSoaCall}}"
+            },
+            "outputData":{
+                "soaRequired": "",
+                "onMountSoaCall": false
+            },
+            "deps": "js/AddRelationDialogService"
+        },
+        "updateSelectedNodeAndCallSoa":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "checkIsSoaCallRequired"
+            },{
+                "action": "deselectAllNodesWithSelectValue"
+            },{
+                "action": "updateSegmentTreeOnly"
+            },{
+                "action": "updateSelectedNode"
+            },{
+                "action": "resetGridDataProvider",
+                "condition": "data.soaRequired"
+            }]
+        },
+        "deselectAllNodesWithSelectValue":{
+            "actionType": "JSFunction",
+            "method": "deselectAllNodes",
+            "inputData": {
+                "reportsState": "{{props.subPanelContext.reportsState}}",
+                "selectNodeValue": "{{parameters.node.value}}"
+            },
+            "outputData":{
+                "segmentTree": ""
+            },
+            "deps": "js/AddRelationDialogService"
+        },
+        "updateSelectedNode":{
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{fields.selectedNode}}",
+                "value": {
+                    "node": "{{parameters.node}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "resetGridDataProvider": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "relationTableGridView.plTable.reload"
+                } ]
+            }
+        },
+        "onUnmountAction": {
+            "actionType": "JSFunction",
+            "method": "cleanup",
+            "inputData": {
+                "reportsState": "{{props.subPanelContext.reportsState}}",
+                "activeView": "{{props.subPanelContext.activeState}}"
+            },
+            "deps": "js/AddRelationDialogService"
+        },
+        "deselectAllNodes": {
+            "actionType": "JSFunction",
+            "method": "deselectAllNodes",
+            "inputData": {
+                "reportsState": "{{props.subPanelContext.reportsState}}"
+            },
+            "outputData":{
+                "segmentTree": ""
+            },
+            "deps": "js/AddRelationDialogService"
+        },
+        "updateSegmentTreeOnly":{
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.reportsState}}",
+                "value": {
+                    "segmentTree": "{{data.segmentTree}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "onMountAction": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "setStyles"
+            },{
+                "action": "getLastSegmentNodeValue",
+                "condition": "props.subPanelContext.reportsState.segmentTree[0].children.length > 0"
+            }, {
+                "action": "callEventForSegmentTreeNodeUpdation",
+                "condition": "props.subPanelContext.reportsState.segmentTree[0].children.length > 0"
+            } ]
+        },
+        "setStyles": {
+            "actionType": "JSFunction",
+            "method": "setStyles",
+            "inputData": {
+                "elmRefList": "{{parameters.elementRefList}}",
+                "popupHeight": "{{subPanelContext.popupOptions.styleObj.height}}"
+            },
+            "deps": "js/AddRelationDialogService"
+        },
+        "getLastSegmentNodeValue":{
+            "actionType": "JSFunction",
+            "method": "getLastSegmentNodeValue",
+            "inputData": {
+                "reportsState": "{{props.subPanelContext.reportsState.segmentTree}}",
+                "activeState": "{{props.subPanelContext.activeState}}",
+                "selectedNode": "{{fields.selectedNode}}"
+            },
+            "outputData":{
+                "lastTreeNodeValue": "",
+                "onMountSoaCall": true
+            },
+            "deps": "js/AddRelationDialogService"
+        },
+        "callEventForSegmentTreeNodeUpdation":{
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "awtree.updateSelection",
+                    "eventData": {
+                        "name": "segmentree",
+                        "selectionValue": "{{data.lastTreeNodeValue}}",
+                        "match": "exact"
+                    }
+                } ]
+            }
+        }
+    },
+    "data": {
+        "chooseRelation":{
+            "displayName": "",
+            "dbValue": "chooseRelationText",
+            "type": "STRING",
+            "dispValue": "{{i18n.chooseRelationTitle}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "removeRelation":{
+            "displayName": "",
+            "dbValue": "removeRelationText",
+            "type": "STRING",
+            "dispValue": "{{i18n.removeRelationDesc}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "selectedNode": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "enableSaveButton": false,
+        "filterCommand": {
+            "action": "toggleFilterView",
+            "iconName": "cmdFilterActive",
+            "tooltip": "{{i18n.filters}}"
+        }
+    },
+    "dataProviders": {
+        "gridDataProvider": {
+            "action": "callSoaForSelectedRelationsAndExpandSource",
+            "initializeAction": "callSoaForSelectedRelationsAndExpandSource",
+            "nextAction": "expandSourceAndGetRelationalTableData",
+            "response": "{{data.relationData}}",
+            "totalFound": "{{data.totalExpandRelationsFound}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+    "columnProviders": {
+        "staticColumnProvider": {
+            "frozenColumnIndex": 0,
+            "columns": [
+                {
+                    "name": "relationsIcon",
+                    "displayName": "",
+                    "maxWidth": 35,
+                    "minWidth": 35,
+                    "width": 35,
+                    "enableColumnMenu": false,
+                    "enableSorting": false,
+                    "pinnedLeft": true,
+                    "enableColumnResizing": false
+                },
+                {
+                    "isFilteringEnabled": false,
+                    "maxWidth": 375,
+                    "minWidth": 200,
+                    "width": 250,
+                    "propertyName": "rb0PropertyOrRelationDisplayName",
+                    "displayName": "{{i18n.relationFullName}}"
+                },
+                {
+                    "isFilteringEnabled": false,
+                    "maxWidth": 375,
+                    "minWidth": 100,
+                    "width": 110,
+                    "propertyName": "rb0RelationTypeDisplayName",
+                    "displayName": "{{i18n.relationType}}"
+                },
+                {
+                    "isFilteringEnabled": false,
+                    "maxWidth": 375,
+                    "minWidth": 50,
+                    "width": 75,
+                    "propertyName": "rb0RelatedObjectsCount",
+                    "displayName": "{{i18n.relationCount}}"
+                }
+            ],
+            "sortCriteria": [{
+                "fieldName": "rb0RelatedObjectsCount",
+                "sortDirection": "DESC"
+            }]
+        }
+    },
+    "grids": {
+        "relationTableGridView": {
+            "dataProvider": "gridDataProvider",
+            "columnProvider": "staticColumnProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableSorting": true
+            }
+        }
+    },
+    "i18n": {
+        "addRelationFailureMsg": ["ReportChartMessages"],
+        "CancelButtonLabel":["FileVersionsMessages"],
+        "saveReport": ["ReportChartMessages"],
+        "relationFullName": ["ReportChartMessages"],
+        "relationType": ["ReportChartMessages"],
+        "relationCount": ["ReportChartMessages"],
+        "barChart": [ "ReportChartMessages" ],
+        "chooseRelationTitle": [ "ReportChartMessages" ],
+        "structureCount": [ "ReportChartMessages" ],
+        "relations": [ "ReportChartMessages" ],
+        "chooseRelation": [ "ReportChartMessages" ],
+        "addReport": ["ReportMessages"],
+        "noRelationsFoundMsg": ["ReportChartMessages"],
+        "falseMultipleSelectionMsg": ["ReportChartMessages"],
+        "conflictRelationMsg": ["ReportChartMessages"]
+    },
+    "functions": {
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": ["{{data.i18n.structureCount}}"],
+            "deps": "js/AddRelationDialogService"
+        },
+        "getExpandSourcePath":{
+            "functionName": "getExpandSourcePath",
+            "parameters": [
+                "{{props.subPanelContext.reportsState}}",
+                "{{data.searchResults}}"
+            ],
+            "deps": "js/AddRelationDialogService"
+        },
+        "getSearchCriteriaForSelectedNode":{
+            "functionName": "getSearchCriteriaForSelectedNode",
+            "parameters": [
+                "{{data.selectedNode.node}}",
+                "{{props.subPanelContext.reportsState}}"
+            ],
+            "deps": "js/AddRelationDialogService"
+        },
+        "callRepGetSearchCriteria":{
+            "functionName": "callRepGetSearchCriteria",
+            "parameters": [
+                "{{props.subPanelContext.reportsState}}",
+                "true"
+            ]
+        },
+        "checkConflictMsgVisibleFalse": {
+            "functionName": "checkConflictMsgVisible",
+            "parameters": [
+                "{{props.subPanelContext.searchState}}",
+                "false"
+            ],
+            "deps": "js/AddRelationDialogService"
+        },
+        "checkConflictMsgVisibleTrue": {
+            "functionName": "checkConflictMsgVisible",
+            "parameters": [
+                "{{props.subPanelContext.searchState}}",
+                "true"
+            ],
+            "deps": "js/AddRelationDialogService"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "segmentree.treeNodeSelected",
+            "action": "updateSelectedNodeAndCallSoa",
+            "inputArgs": {
+                "node": "{{eventData.node}}"
+            }
+        }
+    ],
+    "lifecycleHooks": {
+        "render": "render",
+        "onMount": "onMountAction",
+        "onUpdate": [ {
+            "action": "checkSaveShouldBeEnabled",
+            "observers": [ "viewModel.dataProviders.gridDataProvider.selectedObjects" ]
+        }],
+        "onUnmount": "onUnmountAction"
+    },
+    "conditions": {
+        "relationTableVisible":{
+            "expression": "data.totalRelatedFound !== 0"
+        },
+        "noRelationsAvailable":{
+            "expression": "data.totalRelatedFound === 0 || data.totalExpandRelationsFound === 0"
+        },
+        "editRelationCommand":{
+            "expression": "(data.segmentTree[0].children.length>0 || props.subPanelContext.reportsState.getValue().segmentTree[0].children.length>0) && props.subPanelContext.reportsState.getValue().reportParameters.ReportDefProps.ReportSearchInfo.SearchCriteria && props.subPanelContext.reportsState.getValue().segmentTree[0].value !== data.selectedNode.node.value"
+        }
+    },
+    "messages": {
+        "noRelationsFoundMsg": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.noRelationsFoundMsg}}"
+        },
+        "conflictRelationMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.conflictRelationMsg}}"
+        },
+        "falseMultipleSelectionMsg":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.falseMultipleSelectionMsg}}"
+        }
+    }
+}

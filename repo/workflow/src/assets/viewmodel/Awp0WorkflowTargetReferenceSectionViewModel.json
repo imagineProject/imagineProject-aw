@@ -1,0 +1,314 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-list.directive",
+        "js/aw-default-cell.directive",
+        "js/aw-panel.directive",
+        "js/aw-flex-row.directive",
+        "js/aw-command-panel-section.directive",
+        "js/aw-scrollpanel.directive"
+    ],
+    "actions": {
+
+        "removeAttachments":{
+            "actionType":"JSFunction",
+            "method":"removeWorkflowProcessTargets",
+            "inputData":{
+                "subPanelContext": "{{props.subPanelContext}}",
+                "selectedObjects": "{{data.eventData.selectedObjects}}",
+                "commandContextKey": "{{data.eventData.contextKey}}"
+            },
+            "deps":"js/Awp0WorkflowAttachmentTargetReferenceService"
+        },
+        "populateTargetsData": {
+            "actionType":"JSFunction",
+            "method":"populateTargetsData",
+            "inputData":{
+                "context": "{{data.targetContextString}}",
+                "sourceObjects": "{{props.targetObjects}}"
+            },
+            "outputData": {
+                "targetContextObject": ""
+            },
+            "deps":"js/Awp0WorkflowAttachmentTargetReferenceService"
+        },
+        "updateTargetSelection": {
+            "actionType":"JSFunction",
+            "method":"populateTargetsData",
+            "inputData":{
+                "context": "{{data.targetContextString}}",
+                "sourceObjects": "{{props.targetObjects}}",
+                "selectedObjects": "{{dataProviders.attachTargets.selectedObjects}}"
+            },
+            "outputData": {
+                "targetContextObject": ""
+            },
+            "deps":"js/Awp0WorkflowAttachmentTargetReferenceService"
+        },
+        "initTargetPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "initDataProvider"
+                },
+                {
+                    "action": "populateTargetsData"
+                },
+                {
+                    "action": "initReferenceDataProvider"
+                },
+                {
+                    "action": "populateReferencesData"
+                }
+            ]
+        },
+        "initDataProvider": {
+            "actionType": "dataProvider",
+            "method": "attachTargets"
+        },
+        "initReferenceDataProvider": {
+            "actionType": "dataProvider",
+            "method": "attachReferences"
+        },
+        "populateReferencesData": {
+            "actionType":"JSFunction",
+            "method":"populateTargetsData",
+            "inputData":{
+                "context": "{{data.referenceContextString}}",
+                "sourceObjects": "{{props.referenceObjects}}"
+            },
+            "outputData": {
+                "referenceContextObject": ""
+            },
+            "deps":"js/Awp0WorkflowAttachmentTargetReferenceService"
+        },
+        "updateReferenceSelection": {
+            "actionType":"JSFunction",
+            "method":"populateTargetsData",
+            "inputData":{
+                "context": "{{data.referenceContextString}}",
+                "sourceObjects": "{{props.referenceObjects}}",
+                "selectedObjects": "{{dataProviders.attachReferences.selectedObjects}}"
+            },
+            "outputData": {
+                "referenceContextObject": ""
+            },
+            "deps":"js/Awp0WorkflowAttachmentTargetReferenceService"
+        },
+        "updateContextAndOpenPanel": {
+            "actionType":"JSFunction",
+            "method":"updateAttachmentContext",
+            "inputData":{
+                "subPanelContext": "{{props.subPanelContext}}",
+                "addContextKey": "{{data.eventData.contextKey}}",
+                "submittableObjectTypes": "{{data.eventData.submittableObjectTypes}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "workflow.performNavigate",
+                        "eventData": {
+                            "destPanelId": "{{data.eventData.destPanelId}}"
+                        }
+                    }
+                ]
+            },
+            "deps":"js/Awp0WorkflowAttachmentTargetReferenceService"
+        },
+        "selectAllTargetAction": {
+            "actionType": "JSFunction",
+            "method": "selectAll",
+            "deps": "js/dataProviderFactory",
+            "inputData": {
+                "dataProvider": "{{dataProviders.attachTargets}}"
+            }
+        },
+        "selectAllReferencesAction": {
+            "actionType": "JSFunction",
+            "method": "selectAll",
+            "deps": "js/dataProviderFactory",
+            "inputData": {
+                "dataProvider": "{{dataProviders.attachReferences}}"
+            }
+        },
+        "selectAllWorkflowTargetAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "selectAllTargetAction",
+                    "condition": "data.eventData.attachmentContextKey ==='targetObjects'"
+                },
+                {
+                    "action": "selectAllReferencesAction",
+                    "condition": "data.eventData.attachmentContextKey ==='referenceObjects'"
+                }
+            ]
+        },
+        "selectNoneTargetAction": {
+            "actionType": "JSFunction",
+            "method": "selectNone",
+            "deps": "js/dataProviderFactory",
+            "inputData": {
+                "dataProvider": "{{dataProviders.attachTargets}}"
+            }
+        },
+        "selectNoneReferencesAction": {
+            "actionType": "JSFunction",
+            "method": "selectNone",
+            "deps": "js/dataProviderFactory",
+            "inputData": {
+                "dataProvider": "{{dataProviders.attachReferences}}"
+            }
+        },
+        "selectNoneWorkflowTargetAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "selectNoneTargetAction",
+                    "condition": "data.eventData.attachmentContextKey ==='targetObjects'"
+                },
+                {
+                    "action": "selectNoneReferencesAction",
+                    "condition": "data.eventData.attachmentContextKey ==='referenceObjects'"
+                }
+            ]
+        },
+        "updateTargetObjects": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "populateTargetsData"
+                },
+                {
+                    "action": "initDataProvider"
+                }
+            ]
+        },
+        "updateReferenceObjects": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "populateReferencesData"
+                },
+                {
+                    "action": "initReferenceDataProvider"
+                }
+            ]
+        }
+    },
+    "preferences": [
+    ],
+    "data": {
+        "addObjectCommands": "awp0_WorfklowAddTargetsCommands",
+        "isAddButtonVisible": true,
+        "processTargetAnchor": "workflow_process_attachment_anchor",
+        "processReferenceAnchor": "workflow_process_reference_anchor",
+        "targetContextString": "targetObjects",
+        "referenceContextString": "referenceObjects",
+        "targetsSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "referencesSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "dataProviders": {
+        "attachTargets": {
+            "response": "{{props.targetObjects}}",
+            "totalFound": "{{props.targetObjects.length}}",
+            "totalLoaded": "{{props.targetObjects.length}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionData": "{{fields.targetsSelectionData}}"
+            }
+        },
+        "attachReferences": {
+            "response": "{{props.referenceObjects}}",
+            "totalFound": "{{props.referenceObjects.length}}",
+            "totalLoaded": "{{props.referenceObjects.length}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionData": "{{fields.referencesSelectionData}}"
+            }
+        }
+    },
+
+
+    "messages": {
+    },
+    "functions": {
+    },
+    "onEvent": [
+        {
+            "eventId":"workflow.removeObjects",
+            "action":"removeAttachments",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "workflow.revealAttachmentPanel",
+            "action": "updateContextAndOpenPanel",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "workflow.selectAllObjects",
+            "action": "selectAllWorkflowTargetAction",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "workflow.selectNoneObjects",
+            "action": "selectNoneWorkflowTargetAction",
+            "cacheEventData": true
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "initTargetPanel",
+        "onUpdate": [
+            {
+                "action": "updateTargetObjects",
+                "observers": [ "props.targetObjects" ]
+            },
+            {
+                "action": "updateReferenceObjects",
+                "observers": [ "props.referenceObjects" ]
+            },
+            {
+                "action": "updateTargetSelection",
+                "observers": [ "viewModel.atomicData.targetsSelectionData.selected" ]
+            },
+            {
+                "action": "updateReferenceSelection",
+                "observers": [ "viewModel.atomicData.referencesSelectionData.selected" ]
+            }
+        ]
+    },
+    "conditions": {
+        "isTargetDataInit": {
+            "expression": "data.targetContextObject"
+        },
+        "isReferenceDataInit": {
+            "expression": "data.referenceContextObject"
+        },
+        "isHostedMode": {
+            "expression": "ctx.workflow_process_candidates && ctx.workflow_process_candidates.IsEmbeddedComponent"
+        }
+    },
+    "props": {
+        "sub-panel-context":{
+            "type":"object"
+        },
+        "target-objects": {
+            "type":"object"
+        },
+        "reference-objects": {
+            "type":"object"
+        }
+    },
+    "i18n": {
+        "targets": [ "WorkflowCommandPanelsMessages" ],
+        "references": [ "WorkflowDesignerMessages"]
+    }
+}

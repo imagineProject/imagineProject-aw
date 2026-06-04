@@ -1,0 +1,125 @@
+{
+    "schemaVersion": "1.0.0",
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "data": {
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "selectedVariability": {
+            "initialValues": {
+                "vmoSelected": [],
+                "featureSelected": [],
+                "modelsSelected": [],
+                "familiesNotExpanded": [],
+                "userSelectionsPickAndChooseGrid": []
+            },
+            "meta": {}
+        },
+        "runInBackground": {
+            "displayName": "{{i18n.Pca0RunInBackground}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "false",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+    "actions": {
+        "updateAdvancedReusePickerViewProp": {
+            "actionType": "JSFunction",
+            "method": "toggleReuseFlagInCtx",
+            "inputData": {
+                "flagName": "advancedReusePickerMode"
+            },
+            "deps": "js/pca0AdvancedReuseService"
+        },
+        "reuseAction": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name":"Pca0VariabilityExplorerTree.pca0AllocateAcrossTabs",
+                        "eventData": {
+                            "sourceObjects": "{{data.atomicData.selectedVariability.vmoSelected}}",
+                            "runInBackground": "{{data.runInBackground.dbValue}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "enableRunInBackGround": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "asyncMode": "{{parameters.eventData.asyncMode}}"
+            },
+            "outputData": {
+                "runInBackground.dbValue": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        }
+    },
+    "conditions": {
+        "isReuseDisabled" : {
+            "expression": {
+                "$or": [
+                    {
+                        "$source": "conditions.isEmptySelection",
+                        "$query": {
+                            "$eq": true
+                        }
+                    },
+                    {
+                        "$source": "conditions.isInvalidObjectSelected",
+                        "$query": {
+                            "$eq": true
+                        }
+                    }
+                ]
+            }
+        },
+        "isEmptySelection" : {
+            "expression": "data.atomicData.selectedVariability.vmoSelected === undefined || data.atomicData.selectedVariability.vmoSelected.length === 0"
+        },
+        "isInvalidObjectSelected": {
+            "expression": {
+                "$source": "data.atomicData.selectedVariability.vmoSelected",
+                "$query": {
+                    "$all": {
+                        "$source": "modelType.typeHierarchyArray",
+                        "$query": {
+                            "$notin": [
+                                "Cfg0AbsOptionValue",
+                                "Cfg0AbsFamilyGroup",
+                                "Cfg0AbsFamily"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "Pca0AdvancedReuse.toggleRunInBackGround",
+            "action": "enableRunInBackGround",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "updateAdvancedReusePickerViewProp",
+        "onUnmount": "updateAdvancedReusePickerViewProp"
+    },
+    "i18n": {
+        "reuseCmd": [ "ConfiguratorExplorerMessages" ],
+        "Pca0RunInBackground": [ "ConfiguratorExplorerMessages" ]
+    }
+}

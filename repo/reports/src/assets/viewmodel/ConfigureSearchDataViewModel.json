@@ -1,0 +1,265 @@
+{
+    "schemaVersion": "1.0.0",
+    "selectionModels": {
+        "searchSelectionModel": {
+            "selectionMode": "single"
+        }
+    },
+    "data": {
+        "searchFilterTabModels": {
+            "isArray": "true",
+            "dbValue": [
+                {
+                    "tabKey": "results",
+                    "pageId": "results",
+                    "name": "Results",
+                    "recreatePanel": true,
+                    "priority": 0
+                },
+                {
+                    "tabKey": "filters",
+                    "pageId": "filters",
+                    "name": "Filters",
+                    "recreatePanel": true,
+                    "priority": 1
+                }
+            ]
+        },
+        "addPanelState": {
+            "initialValues": {
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {
+                "sourceObjects": {
+                "field": "true",
+                "type": "OBJECTARRAY"
+                },
+                "selectedTab": {
+                "field": "true",
+                "type": "OBJECT"
+                }
+            }
+        },
+        "selectionMode": "single",
+        "typeFilter": {
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "searchState": {
+            "initialValues": {
+                "autoApplyFilters": true,
+                "provider": "Awp0FullTextSearchProvider",
+                "label" : {
+                    "source" : "/i18n/SearchMessages",
+                    "key": "resultsText"
+                }
+            },
+            "meta": {
+                "categories": [ {
+                    "filterValues": [ {
+                        "selected": {
+                            "field": "true",
+                            "type": "ViewModelProperty"
+                        }
+                    } ]
+                } ]
+            }
+        }
+    },
+    "actions": {
+        "initializeSearchState":{
+            "actionType": "JSFunction",
+            "deps": "js/AwConfigureReportViewerService",
+            "method": "initializeSearchState",
+            "inputData": {
+                "searchState": "{{fields.searchState}}",
+                "searchCriteria": "{{function:getConfigureSearchCriteria}}",
+                "filter": "{{function:getConfigureFilterString}}"
+            },
+            "outputData": {
+                "searchState": ""
+            }
+        },
+        "closePopup": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "saveCriteriaAndClose": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "saveConfiguredSearchAction"
+                },
+                {
+                    "action": "closePopup"
+                }
+            ]
+        },
+        "changeSourceObjConfirmation":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "performSearchForSelectedSourceObjWithAvailableRelations",
+                    "condition": "conditions.isRelationsPathAvailable"
+                },
+                {
+                    "action": "saveCriteriaAndClose",
+                    "condition": "!conditions.isRelationsPathAvailable || data.totalRelatedFound > 0"
+                }
+            ]
+        },
+        "performSearchForSelectedSourceObjWithAvailableRelations":{
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "",
+                        "columnsToExclude": [],
+                        "hostingClientName": ""
+                    },
+                    "saveColumnConfigData": {
+                        "columnConfigId": "",
+                        "clientScopeURI": "",
+                        "columns": [],
+                        "scope": "",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "searchSortCriteria": "",
+                        "attributesToInflate": [],
+                        "internalPropertyName": "",
+                        "maxToLoad": -1,
+                        "maxToReturn": -1,
+                        "providerName": "Rb0ReportsDataProvider",
+                        "searchCriteria": {
+                            "sourceObject": "{{fields.addPanelState.sourceObjects[0].uid}}",
+                            "relationsPath": "{{props.reportsState.reportParameters.ReportDefProps.ReportSearchInfo.SearchCriteria}}",
+                            "isFilterMapRequired": "false"
+                        },
+                        "startIndex": 0
+                    },
+                    "inflateProperties": false,
+                    "noServiceData": false
+                }
+            },
+            "outputData":{
+                "totalRelatedFound": "totalFound"
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "changeSourceObjConfirmationMsg"
+                }],
+                "success": [ {
+                    "message": "changeSourceObjConfirmationMsg",
+                    "condition": "data.totalRelatedFound === 0"
+                }]
+            }
+        },
+        "saveConfiguredSearchAction":{
+            "actionType": "JSFunction",
+            "deps": "js/AwConfigureReportViewerService",
+            "method": "saveConfiguredSearchAction",
+            "inputData": {
+                "searchState": "{{data.searchState}}",
+                "reportsState": "{{props.reportsState}}",
+                "selected": "{{fields.addPanelState.sourceObjects[0]}}",
+                "i18n": "{{i18n}}"
+            },
+            "events":{
+                "success":[
+                    {
+                        "name": "sourceObjectView.plTable.reload",
+                        "condition": "!conditions.isSummaryReport"
+                    }
+                ]
+            }
+        },
+        "updateTotalFound":{
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{fields.searchState}}",
+                "value": {
+                    "totalFound": "{{props.reportsState.reportParameters.totalFound}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "i18n": {
+        "CancelButtonLabel":["FileVersionsMessages"],
+        "saveReport": [ "ReportChartMessages" ],
+        "parentSource": [ "ReportChartMessages" ],
+        "select": ["ReportChartMessages"],
+        "changeSourceObjConfirmationMsg": ["ReportChartMessages"],
+        "continue": ["ReportChartMessages"],
+        "preview": ["ReportChartMessages"]
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeSearchState",
+        "onUpdate": [
+            {
+                "action": "updateTotalFound",
+                "observers": [ "props.reportsState.reportParameters.totalFound"]
+            }
+        ]
+    },
+    "conditions": {
+        "enableSaveButton": {
+            "expression": "(conditions.isSummaryReport && data.searchState.criteria.searchString.length>0 && data.searchState.totalFound>0)|| (!conditions.isSummaryReport && data.addPanelState.sourceObjects.length>0)"
+        },
+        "isSummaryReport":{
+            "expression": "ctx.state.params.reportType==='0'"
+        },
+        "isRelationsPathAvailable":{
+            "expression": "props.reportsState.reportParameters.ReportDefProps.ReportSearchInfo.SearchCriteria"
+        },
+        "totalFoundAvailable":{
+            "expression": "props.subPanelContext.reportsState.reportParameters.totalFound && props.subPanelContext.reportsState.searchTypeChip[0].labelInternalName === 'results'"
+        }
+    },
+    "functions": {
+        "getConfigureSearchCriteria": {
+            "functionName": "getConfigureSearchCriteria",
+            "parameters": [
+                "{{props.reportsState.reportParameters.ReportDefProps.ReportSearchInfo.SearchCriteria}}"
+            ]
+        },
+        "getConfigureFilterString": {
+            "functionName": "getConfigureFilterString",
+            "parameters": [
+                "{{props.reportsState.reportParameters.ReportDefProps.ReportSearchInfo.activeFilterMap}}"
+            ]
+        }
+    },
+    "messages": {
+        "changeSourceObjConfirmationMsg":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.changeSourceObjConfirmationMsg}}",
+            "messageTextParams": [
+                "{{fields.addPanelState.sourceObjects[0].props.object_name.dbValues[0]}}"
+            ],
+            "navigationOptions": [ {
+                "option": "CancelButtonLabel",
+                "text": "{{i18n.CancelButtonLabel}}"
+            }, {
+                "option": "proceedOption",
+                "text": "{{i18n.continue}}",
+                "action": "saveCriteriaAndClose"
+            } ]
+        }
+    }
+}

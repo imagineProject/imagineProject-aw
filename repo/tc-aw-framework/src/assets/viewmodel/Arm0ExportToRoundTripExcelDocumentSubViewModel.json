@@ -1,0 +1,559 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+    ],
+    "lifecycleHooks": {
+        "onMount": "validateSelectedObjectsForExportAsStructure",
+        "onUpdate": {
+            "action": "initializeExportOptions",
+            "observers": [ "props.subPanelContext.selectionData.selected" ]
+        }
+    },
+    "actions": {
+        "initializeExportOptions":{
+            "actionType": "JSFunction",
+            "method": "initializeExportOptions",
+            "inputData": {
+                "data":"{{data}}",
+                "subPanelContext":"{{subPanelContext}}"
+            },
+            "outputData":{
+                "exportToSingleSheet":"radioButtonData",
+                "exportAsStructure":"exportAsStructureData",
+                "levelsToExport":"levelsToExportData",
+                "exportLevelsCount":"exportLevelsCountData"
+            },
+            "deps": "js/ExcelExportToOfficeApp"
+        },
+        "resetLevelsExportOptions":{
+            "actionType": "JSFunction",
+            "method": "resetLevelsExportOptions",
+            "inputData": {
+                "data":"{{data}}"
+            },
+            "outputData":{
+                "levelsToExport":"levelsToExportData",
+                "exportLevelsCount":"exportLevelsCountData"
+            },
+            "deps": "js/ExcelExportToOfficeApp"
+        },
+        "revealAceColumnArrangePanel":{
+            "actionType": "JSFunction",
+            "method": "revealAceColumnArrangePanel",
+            "inputData": {
+                "data":"{{data}}"
+            },
+             "events": {
+                "success": [
+                    {
+                        "name": "exportToExcel.resetLevelsExportOptions"
+                    }
+                ]
+            },
+            "deps": "js/ExcelExportToOfficeApp"
+        },
+        "updateExportProperties":{
+            "actionType": "JSFunction",
+            "method": "updateExportProperties",
+            "inputData": {
+                "data":"{{data.eventData}}"
+            },
+            "outputData":{
+                "selectedColumns":"selectedColumns",
+                "existingColumnUpdated":"existingColumnUpdated",
+                "isSaveAsNewArrangementClicked":"isSaveAsNewArrangementClicked",
+                "isOrgConfigDefaultAndNewArrangementCreated":"isOrgConfigDefaultAndNewArrangementCreated",
+                "isOrgConfigDefaultAndExistingArrangementUpdated":"isOrgConfigDefaultAndExistingArrangementUpdated"
+            },
+            "deps": "js/ExcelExportToOfficeApp"
+        },
+        "setDefaultColumnArrangement":{
+            "actionType": "JSFunction",
+            "method": "setDefaultColumnArrangement",
+            "inputData": {
+                "arrangeData":"{{data.eventData}}",
+                "subPanelContext":"{{props.subPanelContext}}"
+            },
+            "deps": "js/ExcelExportToOfficeApp"
+        },
+        "updateCtxAndExportExcel":
+        {
+            "actionType": "JSFunction",
+            "method": "registerCtx",
+            "inputData": {
+                "name": "isExcelRoundTripExportEventProgressing",
+                "value": true
+            },
+            "events": {
+                "success": [
+                    {
+                        "condition":"conditions.exportVisibleCondition",
+                        "name": "exportExcel.eportDoc"
+                    },
+                    {
+                        "condition":"conditions.isExportWithNewArrangement",
+                        "name":"saveNewArrangementAndExport"
+                    },
+                    {
+                        "condition":"conditions.isExportWithArrangementUpdate",
+                        "name":"updateExisitingColumnArrangementWithExport"
+                    },
+                    {
+                        "condition":"data.isOrgConfigDefaultAndNewArrangementCreated",
+                        "name":"createNewArrangementAndResetOrgColumnConfig"
+                    },
+                    {
+                        "condition":"data.isOrgConfigDefaultAndExistingArrangementUpdated",
+                        "name":"updateExistingArrangementAndResetOrgColumnConfig"
+                    }
+                ]
+            },
+            "deps": "js/appCtxService"
+        },
+        "unregisterExportCmdContext": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "isExcelRoundTripExportEventProgressing"
+            }
+        },
+        "exportDoc": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2017-06-RequirementsManagement",
+            "method": "exportToApplication3",
+            "inputData": {
+                "input": [ {
+                    "templateName": "{{function:getTemplateName}}",
+                    "applicationFormat": "{{function:getApplicationFormat}}",
+                    "objectsToExport": "{{function:getInputObjects}}",
+                    "targetObjectsToExport": "{{function:getTargetObjectsToExport}}",
+                    "exportOptions": "{{function:getExportOptionValueForExcel}}",
+                    "attributesToExport": "{{function:getSelectedProperties}}",
+                    "recipeSourceObjects": [],
+                    "recipeTargetObjects": [],
+                    "objectTemplateInputs": [],
+                    "includeAttachments": false
+                } ]
+            },
+            "outputData": {
+                "fileTicket": "transientFileReadTickets[0]",
+                "exportedExcelFileExtension": "transientFileReadTickets[3]",
+                "partialErrors": "ServiceData.partialErrors"
+            },
+
+            "events": {
+                "success": [
+                    {
+                        "name":"exportExcel.unregisterExportCmdContext"
+                    },
+                    {
+                        "name":"exportExcel.unregisterExtraExportOptionsContext"
+                    },
+                    {
+                        "name":"closeDialog"
+                    },
+                    {
+                        "name": "exportToOfficeUtil.doExportDocumentEvent"
+                    }
+                ],
+
+                "failure": [
+                    {
+                        "condition":"errorCode.code===141810",
+                        "name": "closeDialog"
+                    },
+                    {
+                        "name":"exportExcel.unregisterExportCmdContext"
+                    },
+                    {
+                        "condition": "errorCode.code==223201",
+                        "name": "layout.showToolInfo",
+                        "eventData": {
+                            "visible": false
+                        }
+                    },
+                    {
+                        "name": "exportToOfficeUtil.doExportDocumentEvent"
+                    },
+                    {
+                        "condition": "errorCode.code==141365",
+                        "name": "closeDialog"
+                    }
+                ]
+            },
+            "actionMessages":
+            {
+                "failure":
+                [
+                    {
+                        "condition": "errorCode.code==223201",
+                        "message": "notificationForFlatListExportMsg"
+                    },
+                    {
+                        "condition": "errorCode.code===3104",
+                        "message": "dispatcherNotInstalledExportFailure"
+                    },
+                    {
+                        "condition": "errorCode.code===223036 || errorCode.code===141828",
+                        "message": "notificationForExportRoundTripWarningMsg"
+                    },
+                    {
+                        "condition": "errorCode.code===223039",
+                        "message": "notificationForExportRoundTripErrorMsg"
+                    },
+                    {
+                        "message": "exportFailWarningMsg",
+                        "condition": "errorCode.code===141365"
+                    }
+                ],
+                "success":
+                [
+                    {
+                        "condition": "data.runInBackgroundExcelExport.dbValue",
+                        "message": "notificationForExportRunInBackgroundMsg"
+                    }
+
+                ]
+            },
+
+            "deps": "js/ExcelExportToOfficeApp"
+        },
+        "generateAndOpenExcelExportFile": {
+            "actionType": "JSFunction",
+            "method": "generateAndOpenExcelExportFile",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/ExcelExportToOfficeApp"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "unregisterExtraExportOptionsContext":{
+            "actionType": "JSFunction",
+            "method": "unregisterExtraExportOptionsContext",
+            "deps": "js/ExcelExportToOfficeApp"
+        },
+        "validateSelectedObjectsForExportAsStructure":{
+            "actionType": "JSFunction",
+            "method": "validateSelectedObjectsForExportAsStructure",
+            "inputData": {
+                "data":"{{data}}",
+                "subPanelContext":"{{subPanelContext}}"
+            },
+            "outputData":{
+                "areSelectedObjectsValidForExport":"areSelectedObjectsValidForExport"
+            },
+            "deps": "js/ExcelExportToOfficeApp"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId":"exportExcel.unregisterExtraExportOptionsContext",
+            "action":"unregisterExtraExportOptionsContext"
+        },
+        {
+            "eventId": "exportToOfficeUtil.doExportDocumentEvent",
+            "action": "generateAndOpenExcelExportFile"
+        },
+        {
+            "eventId": "exportExcel.eportDoc",
+            "action": "exportDoc"
+        },
+        {
+            "eventId": "exportExcel.unregisterExportCmdContext",
+            "action": "unregisterExportCmdContext"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        },
+        {
+            "eventId":"exportToExcel.propertiesToExport",
+            "cacheEventData": true,
+            "action": "updateExportProperties"
+        },
+        {
+            "eventId":"primaryWorkArea.selectionChangeEvent",
+            "action":"validateSelectedObjectsForExportAsStructure"
+        },
+        {
+            "eventId":"exportToExcel.resetLevelsExportOptions",
+            "action":"resetLevelsExportOptions"
+        },
+        {
+            "eventId":"excelTemplates.lovValueChanged",
+            "action":"resetLevelsExportOptions"
+        }
+    ],
+    "data": {
+        "exportAsStructure": {
+            "displayName": "{{i18n.exportAsStructure}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dispValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": false
+        },
+        "levelsToExport": {
+            "displayName": "{{i18n.levelsToExportLabel}}",
+            "type": "BOOLEAN",
+            "dbValue": true,
+            "propertyRadioTrueText": "{{i18n.allLevelsOptionLabel}}",
+            "propertyRadioFalseText": "{{i18n.customLevelsOptionLabel}}",
+            "labelPosition": "PROPERTY_LABEL_AT_LEFT"
+        },
+        "exportLevelsCount": {
+           "type": "INTEGER",
+            "isRequired": "true",
+            "isEditable": "true",
+            "dbValue": 1,
+            "dispValue": 1,
+            "labelPosition": "PROPERTY_LABEL_AT_LEFT"
+        },
+        "exportToSingleSheet": {
+            "displayName": "{{i18n.excelSheet}}",
+            "type": "BOOLEAN",
+            "propertyRadioTrueText": "{{i18n.single}}",
+            "propertyRadioFalseText": "{{i18n.multiple}}",
+            "dbValue": true,
+            "vertical": false,
+            "labelPosition": "PROPERTY_LABEL_AT_LEFT"
+        },
+        "idHyperlink": {
+            "displayName": "{{i18n.idHyperlink}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dispValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": false
+        },
+        "excelTemplates": {
+
+            "displayName": "{{i18n.template}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": true
+        },
+        "runInBackgroundExcelExport":
+        {
+            "displayName": "{{i18n.runinBG}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+
+    "functions": {
+        "getApplicationFormat":{
+            "functionName":"getApplicationFormat",
+            "parameters":[
+                "{{props.subPanelContext.showObjectContext.activeTab.id}}"
+            ]
+        },
+        "getTemplateName": {
+            "functionName": "getTemplateNameForExport",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+
+        "getExportOptionValueForExcel": {
+            "functionName": "getExportOptionValueForExcel",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getSelectedProperties": {
+            "functionName": "getSelectedProperties",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getTargetObjectsToExport": {
+            "functionName": "getTargetObjectsToExportForExcel",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getInputObjects": {
+            "functionName": "getInputObjects",
+            "parameters": ["{{subPanelContext}}"]
+        }
+    },
+
+    "conditions": {
+        "exportLevelsEnableCondition":{
+            "expression":"conditions.isExportAsStructure || ( conditions.isAllowStructureVisibleCondition && !conditions.isOccmgmtChangeContentTabView )"
+        },
+        "exportLevelsVisibleCondition":{
+            "expression":"conditions.isNotTcXLiteWorkspace && ( conditions.exportAsStructureVisibleCondition || conditions.isAllowStructureVisibleCondition )"
+        },
+        "isExportAsStructure":{
+            "expression":"conditions.exportAsStructureVisibleCondition && data.exportAsStructure.dbValue === true"
+        },
+        "exportLevelNumericBoxVisibleCondition":{
+            "expression":"data.levelsToExport && data.levelsToExport.dbValue === false"
+        },
+        "isLevelsSelectionValid":{
+            "expression":"data.levelsToExport && ( data.levelsToExport.dbValue || conditions.isLevelsCountPositiveInteger )"
+        },
+        "isLevelsCountPositiveInteger": {
+            "expression": "data.exportLevelsCount && data.exportLevelsCount.dbValue > 0"
+        },
+        "exportToSingleSheetEnableCondition":{
+            "expression":"conditions.isExportAsStructure && props.subPanelContext.selectionData.selected.length > 1"
+        },
+        "isAllowStructureVisibleCondition":{
+            "expression":"conditions.isOccmgmtOrMBomContextView && ((props.subPanelContext.selectionData.selected && props.subPanelContext.selectionData.selected.length < 2) || props.subPanelContext.selectionData.selected === undefined)"
+        },
+        "isOccmgmtChangeContentTabView":{
+            "expression":"props.subPanelContext.pageContext && props.subPanelContext.pageContext.primaryActiveTabId === 'tc_xrt_ChangeContent'"
+        },
+        "isOccmgmtOrMBomContextView":{
+            "expression":"props.subPanelContext.contextKey === 'occmgmtContext' || (props.subPanelContext.occContext && props.subPanelContext.occContext.viewKey === 'mbomContext')"
+        },
+        "exportAsStructureVisibleCondition":{
+            "expression":"(!conditions.isOccmgmtOrMBomContextView || conditions.isOccmgmtChangeContentTabView) && conditions.isNotTcXLiteWorkspace && data.areSelectedObjectsValidForExport && props.subPanelContext.selectionData.selected && props.subPanelContext.selectionData.selected.length> 0"
+        },
+        "exportVisibleCondition":{
+            "expression": "(!data.isSaveAsNewArrangementClicked && !data.existingColumnUpdated && !data.isOrgConfigDefaultAndNewArrangementCreated && !data.isOrgConfigDefaultAndExistingArrangementUpdated) || !conditions.isCustomPropertySelected"
+        },
+        "exportEnableCondition":{
+            "expression":"conditions.isLevelsSelectionValid && (conditions.saveAndExportEnableCondition || !conditions.isCustomPropertySelected)"
+        },
+        "saveAndExportEnableCondition":{
+            "expression":"conditions.isLevelsSelectionValid && !ctx.isExcelRoundTripExportEventProgressing && data.excelTemplates.dbValue === i18n.customPropertyTitle && data.selectedColumns && data.selectedColumns.length >0"
+        },
+        "isExportWithNewArrangement":{
+            "expression":"data.isSaveAsNewArrangementClicked && !data.isOrgConfigDefaultAndNewArrangementCreated"
+        },
+        "isExportWithArrangementUpdate":{
+            "expression":"data.existingColumnUpdated && !data.isOrgConfigDefaultAndNewArrangementCreated && !data.isOrgConfigDefaultAndExistingArrangementUpdated"
+        },
+        "saveAndExportVisibleCondition":{
+            "expression": "!conditions.exportVisibleCondition && conditions.isCustomPropertySelected"
+        },
+        "isCustomPropertySelected":{
+            "expression": "data.excelTemplates.dbValue === i18n.customPropertyTitle"
+        },
+        "showSettingsSection": {
+            "expression": "!ctx.excelTemplateForExport || ctx.excelTemplateForExport.showSettingsSection"
+        },
+        "isNotTcXLiteWorkspace": {
+            "expression": "ctx.workspace.workspaceId !== 'TcXSimplifiedWorkspace'"
+        },
+        "runInBackgroundVisibilityCondition": {
+            "expression": "conditions.isNotTcXLiteWorkspace && ctx.preferences.DISPATCHER_CLIENT_INSTALLED && ctx.preferences.DISPATCHER_CLIENT_INSTALLED[0] !== 'false'"
+        }
+    },
+    "messages": {
+        "notificationForExportRunInBackgroundMsg":
+        {
+            "messageType": "INFO",
+            "messageText": "{{i18n.notificationForExportRInB}}",
+            "messageTextParams":
+            [
+                "{{ctx.mselected[0]}}"
+            ]
+        },
+        "dispatcherNotInstalledExportFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "notificationForExportRoundTripWarningMsg":{
+            "messageType": "WARNING",
+            "messageText": "{{partialErrors[0].errorValues[0].message}}"
+        },
+        "notificationForExportRoundTripErrorMsg":{
+            "messageType": "ERROR",
+            "messageText": "{{partialErrors[0].errorValues[0].message}}"
+        },
+        "exportFailWarningMsg": {
+            "messageType": "WARNING",
+            "messageText": "{{errorCode}}",
+            "navigationOptions": [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}",
+                    "action": ""
+                }
+            ]
+        }
+    },
+
+    "i18n": {
+        "exportPanelTitle": [
+            "ExcelRoundTripMessages"
+        ],
+        "customPropertyTitle":[
+            "ExcelRoundTripMessages"
+        ],
+        "advanceOpt": [
+            "ExcelRoundTripMessages"
+        ],
+        "template": [
+            "ExcelRoundTripMessages"
+        ],
+        "idHyperlink": [
+            "ExcelRoundTripMessages"
+        ],
+        "exportAsStructure": [
+            "ExcelRoundTripMessages"
+        ],
+        "export": [
+            "ExcelRoundTripMessages"
+        ],
+        "selectedcolmns": [
+            "ExcelRoundTripMessages"
+        ],
+        "selectExportProperties": [
+            "ExcelRoundTripMessages"
+        ],
+        "runinBG":[
+            "ExcelRoundTripMessages"
+        ],
+        "notificationForExportRInB":
+        [
+            "ExcelRoundTripMessages"
+        ],
+        "settingsLabel":
+        [
+            "ExcelRoundTripMessages"
+        ],
+        "saveAndExport":[
+            "ExcelRoundTripMessages"
+        ],
+        "excelSheet": [
+            "ExcelRoundTripMessages"
+        ],
+        "single": [
+            "ExcelRoundTripMessages"
+        ],
+        "multiple": [
+            "ExcelRoundTripMessages"
+        ],
+        "levelsToExportLabel": [
+            "ExcelRoundTripMessages"
+        ],
+        "allLevelsOptionLabel": [
+            "ExcelRoundTripMessages"
+        ],
+        "customLevelsOptionLabel": [
+            "ExcelRoundTripMessages"
+        ],
+        "cancel":
+        [
+            "ExcelRoundTripMessages"
+        ]
+    }
+}

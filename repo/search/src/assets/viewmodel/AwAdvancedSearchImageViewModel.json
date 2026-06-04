@@ -1,0 +1,172 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "showData": {
+            "actionType": "dataProvider",
+            "method": "imageDataProvider"
+        },
+        "loadAdvancedSearchDataBatchJob": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "loadAdvancedSearchData"
+                },
+                {
+                    "action": "selectFirstItem",
+                    "condition": "data.selectFirstObject"
+                }
+            ]
+        },
+        "loadAdvancedSearchData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "attributesToInflate": [],
+                        "maxToLoad": "{{function:getDefaultPageSize}}",
+                        "maxToReturn": "{{function:getDefaultPageSize}}",
+                        "providerName": "Awp0SavedQuerySearchProvider",
+                        "searchCriteria": "{{function:getSearchCriteria}}",
+                        "searchFilterFieldSortType": "Priority",
+                        "startIndex": "{{function:getAdvancedSearchStartIndex}}",
+                        "searchFilterMap6": "",
+                        "searchSortCriteria": "{{ctx.sublocation.sortCriteria}}"
+                    },
+                    "inflateProperties": false
+                },
+                "1": {
+                    "types": [ {
+                        "name": "BusinessObject",
+                        "properties": [ {
+                            "name": "awp0CellProperties"
+                        } ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "selectFirstObject": "{{function:processSelectionOfFirstObject}}",
+                "output": "{{function:processOutput}}"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "loadAdvancedSearchDataFailure"
+                    }
+                ]
+            }
+        },
+        "selectFirstItem": {
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.imageDataProvider.selectionModel}}",
+                "newSelection": "{{data.searchResults.objects[0].uid}}"
+            },
+            "deps": "js/selectionModelFactory"
+        },
+        "advancedSearchLinkCommand": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/command.service",
+            "method": "executeCommand",
+            "inputData": {
+                "0": "Awp0AdvancedSearch",
+                "1": "",
+                "2": "",
+                "3": "{{subPanelContext}}",
+                "4": "{{parameters.commandActionExecutor.runActionWithViewModel}}"
+            }
+        }
+    },
+
+    "functions": {
+        "processSelectionOfFirstObject": {
+            "functionName": "processSelectionOfFirstObject",
+            "parameters": [
+                "AWC_select_firstobject_inSearchLocation"
+            ],
+            "deps": "js/advancedSearchService"
+        },
+        "getDefaultPageSize":
+        {
+            "functionName": "getDefaultPageSize",
+            "parameters":
+            [
+                 "{{ctx.preferences.AWC_DefaultPageSize}}"
+            ],
+            "deps": "js/advancedSearchService"
+        },
+        "getSearchCriteria": {
+            "functionName": "getSearchCriteria",
+            "parameters": [
+                "{{data.dataProviders.imageDataProvider.startIndex}}",
+                "{{subPanelContext.searchState}}"
+            ],
+            "deps": "js/advancedSearchService"
+        },
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": [
+                "{{subPanelContext.searchState}}"
+            ],
+            "deps": "js/advancedSearchService"
+        },
+        "getAdvancedSearchStartIndex": {
+            "functionName": "getAdvancedSearchStartIndex",
+            "parameters": [
+                "{{subPanelContext.searchState.advancedSearchCriteria.lastEndIndex}}"
+            ],
+            "deps": "js/advancedSearchService"
+        }
+    },
+
+    "dataProviders": {
+        "imageDataProvider": {
+            "action": "loadAdvancedSearchDataBatchJob",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+    "conditions": {},
+    "onEvent": [],
+    "messages": {
+        "loadAdvancedSearchDataFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": {
+            "action": "showData",
+            "observers": [
+                "props.subPanelContext.searchState.advancedSearchJSONString"
+            ]
+        }
+    },
+    "i18n": {
+        "noFiltersFound": [
+            "SearchMessages"
+        ],
+        "advancedSearch": [
+            "SearchMessages"
+        ],
+        "nothingFound": [
+            "SearchMessages"
+        ],
+        "noResultsFound": [
+            "SearchMessages"
+        ],
+        "emptySearchAreaHint": [
+            "SearchMessages"
+        ],
+        "noResultsSearchAreaHint": [
+            "SearchMessages"
+        ]
+    }
+}

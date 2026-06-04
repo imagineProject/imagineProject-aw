@@ -1,0 +1,473 @@
+{
+
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-column.directive",
+        "js/aw-widget.directive",
+        "js/aw-panel-body.directive"
+    ],
+    "actions": {
+        "initializeView": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action":"initTableData"
+                },
+                {
+                    "action": "registerPropPolicy"
+                }
+            ]
+        },
+        "selectObjectAfterMoveAction": {
+            "actionType": "JSFunction",
+            "method": "selectObjectAfterMove",
+            "inputData": {
+                "objToSelect": "{{data.eventMap['workflowTreetable.reset']}}",
+                "dataProvider":"{{data.dataProviders.treeTasksTemplateDataProvider}}"
+            },
+            "deps": "js/Awp0TaskTable"
+        },
+        "initTableData": {
+            "actionType": "JSFunction",
+            "method": "initTableRenderOptions",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "selectedObject": "{{props.subPanelContext.selected}}"
+            },
+            "outputData": {
+                "treeOperationMode": "treeOperationMode",
+                "renderObject": "renderObject",
+                "isDataInit": "isDataInit"
+            },
+            "deps": "js/Awp0TaskTable"
+        },
+        "reloadDataProvider": {
+            "actionType": "dataProvider",
+            "method": "treeTasksTemplateDataProvider"
+        },
+        "loadTreeColumns": {
+            "actionType": "JSFunction",
+            "method": "loadTreeTableColumns",
+            "inputData": {
+                "data": "{{data}}",
+                "tableColumns": "{{data.assignmentTableColumns}}",
+                "narrowModeColumns": "{{data.assignmentTablePanelModeColumns}}",
+                "isNarrowMode": "{{subPanelContext.isPanelMode}}"
+            },
+            "outputData": {
+                "dataProviders.treeTasksTemplateDataProvider.columnConfig": "columnConfig"
+            },
+            "deps": "js/Awp0TaskTable"
+        },
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeTableData",
+            "inputData": {
+                "treeLoadInput": "request.treeLoadInput",
+                "data":"{{data}}",
+                "selected": "{{data.renderObject}}",
+                "operationMode": "{{data.treeOperationMode}}",
+                "targetObjects": "{{props.targetObject}}",
+                "sortCriteria": "{{columnProviders.treeTasksColumnProvider.sortCriteria}}",
+                "columnFilters": "{{columnProviders.treeTasksColumnProvider.columnFilters}}"
+            },
+            "outputData": {
+                "treeLoadResult": "treeLoadResult",
+                "validTaskObject": "validTaskObject",
+                "taskTemplateObject": "taskTemplateObject",
+                "requiredPropertiesLoaded": "requiredPropertiesLoaded",
+                "uids":"uids"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "selectObjectAfterMove"
+                    }
+                ]
+            },
+            "deps": "js/Awp0TaskTable"
+        },
+        "registerPropPolicy": {
+            "actionType": "JSFunction",
+            "method": "registerPropPolicy",
+            "inputData": {
+                "policy": "{{data.policy}}"
+            },
+            "deps": "js/Awp0TaskTable"
+        },
+        "unRegisterPropPolicy": {
+            "actionType": "JSFunction",
+            "method": "unRegisterPropPolicy",
+            "inputData": {},
+            "deps": "js/Awp0TaskTable"
+        },
+        "reloadTableInternal": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "taskTreeTable.plTable.reload"
+                    }
+                ]
+            }
+        },
+        "getFilterFacets": {
+            "actionType": "JSFunction",
+            "method": "getFilterFacetValues",
+            "inputData": {
+                "columnName": "{{filterFacetInput.column.field}}",
+                "objects": "{{data.dataProviders.treeTasksTemplateDataProvider.viewModelCollection.loadedVMObjects}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "filterFacetResults": ""
+            },
+            "deps": "js/Awp0WorkflowSortFilterService"
+        }
+    },
+    "data": {
+        "policy": {
+            "types": [
+                {
+                    "name": "EPMSignoffProfile",
+                    "properties": [ {
+                            "name": "number_of_signoffs"
+                        },
+                        {
+                            "name": "REF(group,Group).object_full_name"
+                        },
+                        {
+                            "name": "REF(role,Role).role_name"
+                        },
+                        {
+                            "name": "allow_subgroups"
+                        },
+                        {
+                            "name": "group",
+                            "modifiers":
+                            [
+                                {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "role",
+                            "modifiers":
+                            [
+                                {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Group",
+                    "properties": [ {
+                        "name": "object_full_name"
+                    } ]
+                },
+                {
+                    "name": "Role",
+                    "properties": [ {
+                        "name": "role_name"
+                    } ]
+                },
+                {
+                    "name": "User",
+                    "properties": [ {
+                            "name": "person",
+                            "modifiers": [ {
+                                "name": "withProperties",
+                                "Value": "true"
+                            } ]
+                        },
+                        {
+                            "name": "user_name"
+                        }
+                    ]
+                },
+                {
+
+                    "name": "EPMTaskTemplate",
+                    "properties": [ {
+                        "name": "assignment_lists",
+                        "modifiers": [ {
+                            "name": "withProperties",
+                            "Value": "true"
+                        } ]
+                    },
+                    {
+                        "name": "fnd0OptionalParticipants"
+                    },
+                    {
+                        "name":"wait_for_all_reviewers"
+                    },
+                    {
+                        "name": "fnd0RequiredParticipants"
+                    },
+                    {
+                        "name":"fnd0SiblingTaskOrder"
+                    } ]
+                },
+                {
+                    "name": "GroupMember",
+                    "properties": [ {
+                            "name": "group",
+                            "modifiers":
+                            [
+                                {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "role",
+                            "modifiers":
+                            [
+                                {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "userName"
+                        }
+                    ]
+                },
+                {
+                    "name": "POM_member",
+                    "properties":
+                    [
+                        {
+                            "name": "user",
+                            "modifiers":
+                            [
+                                {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "ImanType",
+                    "properties": [
+                        {
+                            "name": "fnd0InternalName"
+                        },
+                        {
+                            "name": "object_string"
+                        },
+                        {
+                           "name": "type_name"
+                       }
+                    ]
+                },
+                {
+                    "name": "Signoff",
+                    "properties": [ {
+                        "name": "fnd0ParentTask",
+                        "modifiers": [ {
+                            "name": "withProperties",
+                            "Value": "true"
+                        } ]
+                    } ]
+                },
+                {
+
+                    "name": "EPMTask",
+                    "properties": [ {
+                            "name": "parent_process",
+                            "modifiers": [ {
+                                "name": "withProperties",
+                                "Value": "true"
+                            } ]
+                        },
+                        {
+                            "name": "task_template",
+                            "modifiers": [ {
+                                "name": "withProperties",
+                                "Value": "true"
+                            } ]
+                        },
+                        {
+                            "name": "root_task",
+                            "modifiers": [ {
+                                "name": "withProperties",
+                                "Value": "true"
+                            } ]
+                        },
+                        {
+                            "name": "task_state"
+                        },
+                        {
+                            "name": "state"
+                        },
+                        {
+                            "name":"wait_for_all_reviewers"
+                        },
+                        {
+                            "name":"fnd0SiblingTaskOrder"
+                        }
+                    ]
+                },
+                {
+
+                    "name": "EPMJob",
+                    "properties": [ {
+                            "name": "process_template",
+                            "modifiers": [ {
+                                "name": "withProperties",
+                                "Value": "true"
+                            } ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "assignmentTablePanelModeColumns": [
+            {
+                "propName": "template_name",
+                "propDisplayName": "{{i18n.task}}",
+                "width": 200,
+                "isTreeNavigation": true,
+                "minWidth": 150,
+                "type": "String"
+            }
+        ],
+        "assignmentTableColumns": [
+            {
+                "propName": "template_name",
+                "propDisplayName": "{{i18n.task}}",
+                "width": 290,
+                "isTreeNavigation": true,
+                "minWidth": 150,
+                "type": "String"
+            }
+        ]
+    },
+    "dataProviders": {
+        "treeTasksTemplateDataProvider": {
+            "initializeAction": "loadData",
+            "nextAction": "loadData",
+            "previousAction": "loadData",
+            "treeLoadResult": "action.result.treeLoadResult",
+            "selectionModelMode": "multiple",
+            "editContext": "ASSIGNMENT_TABLE_CONTEXT",
+            "contextMenuCommandsAnchor": "aw_taskAssignmentTreeTableContextMenu",
+            "inputData": {
+                "accessMode": "tree",
+                "selectionData": "{{subPanelContext.selectionData}}",
+                "selectionModel": "{{data.selectionModels.assignmentTreeTableSelectionModel}}"
+            },
+            "filterFacetAction": "getFilterFacets",
+            "filterFacetResults": "{{data.filterFacetResults}}"
+        }
+    },
+    "columnProviders": {
+        "treeTasksColumnProvider": {
+            "loadColumnAction": "loadTreeColumns",
+            "columns": "{{data.columns}}",
+            "sortCriteria": "{{ctx.sublocation.sortCriteria}}",
+            "frozenColumnIndex": 0
+        }
+    },
+    "selectionModels": {
+        "assignmentTreeTableSelectionModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "grids": {
+        "taskTreeTable": {
+            "dataProvider": "treeTasksTemplateDataProvider",
+            "columnProvider": "treeTasksColumnProvider",
+            "enableArrangeMenu": true,
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableGridMenu": true,
+                "enableSorting": true,
+                "enableDynamicRowHeight": true,
+                "isFilteringEnabled": true,
+                "maxRowsToShow": 20,
+                "textBundle": {
+                    "TwistieTooltipCollapsed": "{{i18n.expand}}",
+                    "TwistieTooltipExpanded": "{{i18n.collapse}}"
+                },
+                "useStaticFirstCol": true
+            }
+
+        }
+    },
+
+    "functions":{
+        "getFilterValuesSearchCriteria": {
+            "functionName": "getFilterValuesSearchCriteria",
+            "parameters": [
+                "{{subPanelContext.searchState.criteria}}",
+                "{{filterFacetInput.column.field}}"
+            ]
+        }
+    },
+    "conditions": {
+
+    },
+
+    "lifecycleHooks": {
+        "onMount": "initializeView",
+        "onUnmount": "unRegisterPropPolicy",
+        "onUpdate": [
+
+        ]
+    },
+    "props": {
+        "workflow-data": {
+            "type": "object"
+        },
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "workflowTreetable.reset",
+            "action": "reloadDataProvider",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "workflow.taskNodeSelection",
+            "condition": "subPanelContext.isPanelMode",
+            "action": "taskNodeSelectAction"
+        },
+        {
+            "eventId": "treeTasksTemplateDataProvider.treeNodesLoaded",
+            "action": "taskNodeSelectBatchAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId":"selectObjectAfterMove",
+            "action": "selectObjectAfterMoveAction"
+        }
+
+    ],
+
+    "i18n": {
+        "collapse": [ "WorkflowCommandPanelsMessages" ],
+        "expand": [ "WorkflowCommandPanelsMessages" ],
+        "required": [ "InboxMessages" ],
+        "taskName": [ "WorkflowCommandPanelsMessages" ],
+        "none": [ "WorkflowCommandPanelsMessages" ],
+        "task": [ "WorkflowCommandPanelsMessages" ],
+        "status": [ "WorkflowCommandPanelsMessages" ]
+    }
+
+}

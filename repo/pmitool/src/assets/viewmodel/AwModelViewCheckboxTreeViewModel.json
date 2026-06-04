@@ -1,0 +1,83 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "modelViewEntryCheckedAction": {
+            "actionType": "JSFunction",
+            "method": "modelViewEntryChecked",
+            "inputData": {
+                "input": "{{props.node}}",
+                "pmiRawState": "{{props.pmiRawState}}",
+                "mvAtomic": "{{props.mvAtomic}}",
+                "viewerContextData": "{{props.subPanelContext.viewerContextData}}"
+            },
+            "outputData": {
+
+            },
+            "deps": "js/PmiToolService"
+        },
+
+        "typesEntryCheckedAction": {
+            "actionType": "JSFunction",
+            "method": "typesEntryChecked",
+            "inputData": {
+                "input": "{{props.node}}",
+                "pmiRawState": "{{props.pmiRawState}}",
+                "pmiAtomic": "{{props.pmiAtomic}}",
+                "mvAtomic": "{{props.mvAtomic}}",
+                "viewerContextData": "{{props.subPanelContext.viewerContextData}}"
+            },
+            "outputData": {
+
+            },
+            "deps": "js/PmiToolService"
+        },
+        "onUpdateMVCheckAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "modelViewEntryCheckedAction",
+                    "condition": "props.node.mvIndex === props.mvAtomic.modelViewNextPrevStateIndex"
+                }
+            ]
+        },
+        "onUpdatePMIEntityCheckAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "typesEntryCheckedAction",
+                    "condition": "props.node.index === props.pmiAtomic.pmiEntityNextPrevStateIndex"
+                }
+            ]
+        },
+        "render": {
+            "method": "awModelViewCheckboxRenderFunction",
+            "deps": "js/awpmiCheckboxTreeService"
+        }
+    },
+    "props": {
+        "node": {
+            "type": "object"
+        },
+        "pmi-raw-state":{
+            "type":"object"
+        },
+        "pmi-atomic":{
+            "type":"object"
+        },
+        "mv-atomic":{
+            "type":"object"
+        },
+        "sub-panel-context": {
+            "type":"object"
+        }
+
+    },
+    "lifecycleHooks": {
+        "render": "render",
+        "onUpdate": [{
+            "action": "onUpdateMVCheckAction",
+            "observers": [ "props.mvAtomic.modelViewNextPrevStateIndex" ]
+        }
+    ]
+    }
+}

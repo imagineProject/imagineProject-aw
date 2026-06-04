@@ -1,0 +1,209 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+    ],
+    "lifecycleHooks": {
+        "onMount": "onMountAddClausePanelBatchJob",
+        "onUpdate": [
+            {
+                "action": "getTypeSelectionPanelTitle",
+                "observers": [ "props.subPanelContext.context.searchState.selectTypeContext" ]
+            },
+            {
+                "action": "selectedClassificationAttributeQB",
+                "observers": [
+                    "viewModel.atomicData.activeState.selectedNode",
+                    "viewModel.atomicData.activeState.appClassData"
+                ]
+            }
+        ]
+    },
+    "actions": {
+        "closeDialogPanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "addClauseAction": {
+            "actionType": "JSFunction",
+            "method": "addClauseToTable",
+            "inputData": {
+                "selectedNode": "{{props.subPanelContext.context.searchState.selectedNode}}",
+                "dataProvider": "{{props.subPanelContext.dataProvider}}",
+                "searchState": "{{props.subPanelContext.context.searchState}}"
+            },
+            "deps": "js/AwSavedQueryCriteriaTableService"
+        },
+        "changeActiveViewToAddClause": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.context.searchState}}",
+                "value": {
+                    "activeView": "addClause"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "changeActiveViewToSelectType": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.context.searchState}}",
+                "value": {
+                    "activeView": "selectType"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "getTypeSelectionPanelTitle": {
+            "actionType": "JSFunction",
+            "method": "getTypeSelectionPanelTitle",
+            "inputData": {
+                "typeSelectionCaption": "{{i18n.typeSelectionCaption}}",
+                "propertyName": "{{props.subPanelContext.context.searchState.selectTypeContext.selectedNode.displayName}}",
+                "addReferenceForText": "{{i18n.addReferenceForText}}",
+                "subTypeSelectionText": "{{i18n.subTypeSelectionText}}",
+                "isReferencedBy": "{{props.subPanelContext.context.searchState.selectTypeContext.isReferencedBy}}",
+                "isSubTypeSelection": "{{props.subPanelContext.context.searchState.selectTypeContext.isSubTypeSelection}}"
+            },
+            "outputData": {
+                "selectTypeTitleName": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "getWorkspaceObjectTypeList": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Core-2017-11-Type",
+            "method": "getSubTypeHierarchicalTrees",
+            "inputData": {
+                "givenTypes": [
+                    {
+                        "typeInternalName": "WorkspaceObject",
+                        "clientId": ""
+                    }
+                ]
+            },
+            "outputData": {
+                "workspaceObjectSubTypes": "{{function:parseWorkspaceObjectSubTypes}}"
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "onMountAddClausePanelBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "changeActiveViewToAddClause"
+                },
+                {
+                    "action": "getWorkspaceObjectTypeList"
+                }
+            ]
+        },
+        "selectedClassificationAttributeQB": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.context.searchState}}",
+                "value": {
+                    "selectedNode": "{{data.activeState.selectedNode}}",
+                    "appClassData": "{{data.activeState.appClassData}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "data": {
+        "clauseType": {
+            "displayName": "",
+            "type": "STRING",
+            "isEditable": "true",
+            "dbValue": "standard"
+        },
+        "clauseTypeValues": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.standard}}",
+                    "propInternalValue": "standard"
+                },
+                {
+                    "propDisplayValue": "{{i18n.relations}}",
+                    "propInternalValue": "relations"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Classification}}",
+                    "propInternalValue": "classification"
+                }
+            ]
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "Sub0AddClassificationCritria"
+            },
+            "meta": {}
+        }
+    },
+    "functions": {
+        "parseWorkspaceObjectSubTypes": {
+            "functionName": "parseWorkspaceObjectSubTypes",
+            "parameters": []
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "condition.expressionValueChanged",
+            "action": "closeDialogPanel",
+            "criteria": {
+                "condition": "conditions.searchTypeChange"
+            }
+        },
+        {
+            "eventId": "condition.expressionValueChanged",
+            "action": "closeDialogPanel",
+            "criteria": {
+                "condition": "conditions.editingValueChange"
+            }
+        }
+    ],
+    "messages": {},
+    "conditions": {
+        "isClassification": {
+            "expression": "data.clauseType.dbValue === 'classification'"
+        },
+        "isClsStorageClass": {
+            "expression": "props.subPanelContext.context.searchState.selectedNode && props.subPanelContext.context.searchState.selectedNode.type === 'StorageClass'"
+        },
+        "isValidToAdd": {
+            "expression": "(!conditions.isClassification && props.subPanelContext.context.searchState.selectedNode && !props.subPanelContext.context.searchState.selectedNode.dummyChildProperty && props.subPanelContext.context.searchState.selectedNode.name !== props.subPanelContext.queryState.currentSearchType ) || (conditions.isClsStorageClass && props.subPanelContext.context.searchState.appClassData.selectedProp)"
+        },
+        "searchTypeChange": {
+            "expression": "props.subPanelContext.queryState.currentSearchType",
+            "trackValues": true
+        },
+        "editingValueChange": {
+            "expression": "props.subPanelContext.context.searchState.editing",
+            "trackValues": true
+        }
+    },
+    "i18n": {
+        "addCommandTitle": [ "SearchMessages" ],
+        "AddClause": [ "SearchMessages" ],
+        "typeSelectionCaption": [ "SearchMessages" ],
+        "propertySelectionCaption": [ "SearchMessages" ],
+        "standard": [ "SearchMessages" ],
+        "relations": [ "SearchMessages" ],
+        "addReferenceForText": [ "SearchMessages" ],
+        "subTypeSelectionText": [ "SearchMessages" ],
+        "Classification": [ "ClassificationPanelMessages" ]
+    }
+}

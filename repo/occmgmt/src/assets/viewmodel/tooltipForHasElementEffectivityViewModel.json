@@ -1,0 +1,337 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "selectAndLaunchEffPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getActiveToolsAndInfoCommandAction"
+                },
+                {
+                    "action": "activateViewForHoveredIcon"
+                },
+                {
+                    "action": "selectHoveredElement"
+                },
+                {
+                    "action": "getVisibleServerCommands"
+                },
+                {
+                    "action": "activateOccEffPanel"
+                }
+            ]
+        },
+        "selectAndLaunchExprEffPanel": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "activateViewForHoveredIcon"
+                },
+                {
+                    "action": "selectHoveredElement"
+                },
+                {
+                    "action": "activateExprEffPanel"
+                }
+            ]
+        },
+        "activateViewForHoveredIcon": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "ace.activateWindow",
+                    "eventData": {
+                        "key": "{{subPanelContext.vmoHovered.contextKey}}"
+                    }
+                } ]
+            }
+        },
+        "selectHoveredElement": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "aceElementsSelectionUpdatedEvent",
+                    "eventData": {
+                        "objectsToSelect": [ "{{subPanelContext.vmoHovered}}" ],
+                        "viewToReact": "{{subPanelContext.vmoHovered.contextKey}}"
+                    }
+                } ]
+            }
+        },
+        "getVisibleServerCommands": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2024-12-UiConfig",
+            "method": "getVisibleCommands2",
+            "inputData": {
+                "getVisibleCommands2Input": [ {
+                    "clientScopeURI": "Awb0OccurrenceManagement",
+                    "commandContextInfo": [
+                        {
+                            "contextName": "commandBarId",
+
+
+
+                            "contextValue": "awb0CommandBar"
+
+                        }
+                    ],
+                    "commands": [
+                        "Awb0OccurrenceEffectivity",
+                        "Awb0ViewElementEffectivity"
+                    ],
+                    "selectionInfo": [
+                        {
+                            "parentSelectionIndex": -1,
+                            "selectedObjects": [
+                                {
+                                    "uid": "{{subPanelContext.vmoHovered.uid}}",
+                                    "type": "{{subPanelContext.vmoHovered.type}}"
+                                }
+                            ]
+                        }
+                    ]
+                } ]
+            },
+            "outputData": {
+                "visibleCommands": ""
+            }
+        },
+        "activateOccEffPanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                        "name": "activateOccEffPanel",
+                        "condition": "!data.activeToolsAndInfoCommand || ( data.activeToolsAndInfoCommand && (data.activeToolsAndInfoCommand.commandId !== 'Awb0OccurrenceEffectivity' && data.activeToolsAndInfoCommand.commandId !== 'Awb0ViewOccurrenceEffectivity'))"
+                    },
+                    {
+                        "name": "navigateToDisplayandRemovePanelEvent"
+
+                    },
+                    {
+                        "name": "clearEffectivityFields"
+
+                    }
+                ]
+            }
+        },
+        "activateExprEffPanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                        "name": "activateExprEffPanel",
+                        "condition": "!data.activeToolsAndInfoCommand || ( data.activeToolsAndInfoCommand && data.activeToolsAndInfoCommand.commandId !== 'Awb0ExpressionEffectivity')"
+                    },
+                    {
+                        "name": "navigateToPs0DisplayandRemovePanelEvent"
+                    },
+                    {
+                        "name": "clearPs0EffectivityFields"
+                    }
+                ]
+            }
+        },
+        "launchEffPanelBatchJob" : {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "launchOccEffPanel",
+                    "condition": "data.visibleCommands.visibleCommandsInContext[0].commands.includes('Awb0OccurrenceEffectivity')"
+                },
+                {
+                    "action": "launchViewEffPanel",
+                    "condition": "data.visibleCommands.visibleCommandsInContext[0].commands.includes('Awb0ViewElementEffectivity')"
+                }
+            ]
+        },
+        "launchOccEffPanel": {
+            "actionType": "JSFunction",
+            "method": "launchCustomDialogPanel",
+            "deps": "js/occmgmtCustomDialogService",
+            "inputData": {
+                "customDialogAction": "{{subPanelContext.subPanelContext.customDialogAction}}",
+                "options": {
+                    "view": "Awb0OccurrenceEffectivity",
+                    "placement": "right",
+                    "parent": ".aw-layout-workarea",
+                    "width": "STANDARD",
+                    "height": "FULL",
+                    "subPanelContext": "{{subPanelContext.subPanelContext}}",
+                    "isCloseVisible": false,
+                    "push": false
+                }
+            }
+        },
+        "launchViewEffPanel": {
+            "actionType": "JSFunction",
+            "method": "activateCommandPanel",
+            "deps": "js/commandPanel.service",
+            "inputData": {
+                "commandId": "Awb0ViewOccurrenceEffectivity",
+                "location": "aw_toolsAndInfo"
+            }
+        },
+
+        "launchExprEffPanel": {
+            "actionType": "JSFunction",
+            "method": "activateCommandPanel",
+            "deps": "js/commandPanel.service",
+            "inputData": {
+                "commandId": "Awb0ExpressionEffectivity",
+                "location": "aw_toolsAndInfo"
+            }
+        },
+        "getInitialValues": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getActiveToolsAndInfoCommandAction"
+                },
+                {
+                    "action": "getBackingObjects"
+                }
+            ]
+        },
+        "getBackingObjects": {
+            "actionType": "JSFunctionAsync",
+            "method": "getBackingObjects",
+            "deps": "js/aceBackingObjectProviderService",
+            "inputData": {
+                "obj": [ "{{subPanelContext.vmoHovered}}" ]
+            },
+            "outputData": {
+                "backingObjects": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "getBackingObjects.success"
+                } ]
+            }
+        },
+        "getActiveToolsAndInfoCommandAction": {
+            "actionType": "JSFunction",
+            "method": "getActiveToolsAndInfoCommand",
+
+            "outputData": {
+                "activeToolsAndInfoCommand": "activeToolsAndInfoCommand"
+            },
+            "deps": "js/sharedEffectivityService"
+        },
+        "searchAppliedEffectivities": {
+            "actionType": "TcSoaService",
+            "serviceName": "StructureManagement-2021-06-Effectivity",
+            "method": "getEffectivities",
+            "inputData": {
+                "inputObjects": "{{data.backingObjects}}"
+            },
+            "outputData": {
+                "response": "",
+                "effectivityFound": "{{function:getEffectivitiesFromResponse}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "getEffectivities.totalFound"
+                } ]
+            },
+            "deps": "js/sharedEffectivityService"
+        },
+
+        "fireContentLoadedEvent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "balloonPopup.contentLoaded"
+                } ]
+            }
+        },
+        "getEffTotlFoundAction": {
+            "actionType": "JSFunction",
+            "method": "limitTotalFoundForTooltip",
+            "inputData": {
+                "response": "{{data.response}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "effectivityTooltipLabel.propertyDisplayName": "tooltipLabel",
+                "moreEffectivitiesLink.propertyDisplayName": "tooltipLink",
+                "enableMoreLink.dbValue": "enableMoreLinkVal"
+            },
+            "deps": "js/sharedEffectivityService"
+        }
+    },
+
+    "data": {
+        "effectivityTooltipLabel": {
+            "type": "STRING",
+            "dispValue": ""
+        },
+        "enableMoreLink": {
+            "type": "BOOLEAN",
+            "dbValue": false
+        },
+        "moreEffectivitiesLink": {
+            "type": "STRING",
+            "displayName": ""
+        },
+        "maxToLoad": {
+            "type": "INTEGER",
+            "dbValue": 4
+        }
+    },
+    "i18n": {
+        "elementEffectivityTooltipTitle": [ "OccurrenceManagementConstants" ],
+        "tooltipLinkText": [ "OccurrenceManagementConstants" ],
+        "endItemMessage": [ "OccurrenceManagementConstants" ],
+        "startDate": [ "PSConstants" ],
+        "endDate": [ "PSConstants" ],
+        "unitEffectivity": [ "PSConstants" ]
+    },
+    "onEvent": [ {
+            "eventId": "getBackingObjects.success",
+            "action": "searchAppliedEffectivities"
+        },
+        {
+            "eventId": "activateOccEffPanel",
+            "action": "launchEffPanelBatchJob"
+        },
+        {
+            "eventId": "activateExprEffPanel",
+            "action": "launchExprEffPanel"
+        },
+        {
+            "eventId": "effectivityDataProvider.modelObjectsUpdated",
+            "action": "fireContentLoadedEvent"
+        },
+        {
+            "eventId": "goBackToDisplayIfAddEffectivtiesActive",
+            "action": "goBackToDisplayIfAddEffectivtiesActive"
+        },
+        {
+            "eventId": "goBackToPs0DisplayEffectivities",
+            "action": "goBackToPs0DisplayEffectivities"
+        },
+        {
+            "eventId": "getEffectivities.totalFound",
+            "action": "getEffTotlFoundAction"
+        }
+
+    ],
+    "functions": {
+        "getEffectivitiesFromResponse": {
+            "functionName": "getEffectivitiesFromResponse",
+            "parameters": [
+                "{{data.maxToLoad}}", "{{response}}"
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "getInitialValues"
+    },
+    "conditions": {
+        "isExpressionEffectivity": {
+            "expression": " !data.effectivityFound.effectivityObject[0].uid"
+        }
+    }
+}

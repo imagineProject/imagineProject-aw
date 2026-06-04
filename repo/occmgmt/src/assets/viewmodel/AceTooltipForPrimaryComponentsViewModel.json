@@ -1,0 +1,63 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "showListOfSubstituteComponentsBatchJob": {
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action": "getPropertiesOfVmoHovered"
+                },
+                {
+                    "action": "showListOfSubstituteComponents"
+                }
+            ]
+        },
+        "getPropertiesOfVmoHovered": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": [
+                    "{{subPanelContext.vmoHovered}}"
+                ],
+                "attributes": [
+                    "awb0SubstituteList"
+                ]
+            }
+        },
+        "showListOfSubstituteComponents": {
+            "actionType": "JSFunction",
+            "method": "showListOfSubstituteComponents",
+            "inputData": {
+                "vmoHovered": "{{subPanelContext.vmoHovered}}",
+                "substitutesLabel": "{{i18n.substitutesLabel}}",
+                "tooltipLinkText": "{{i18n.tooltipLinkText}}"
+            },
+            "outputData": {
+                "substituteObjects": "tooltipObjects",
+                "enableMoreSubstitutes": "enableMoreObjects",
+                "moreSubstitutes": "moreObjects",
+                "substitutesLabel": "tooltipLabel"
+            },
+            "deps": "js/aceOccurrenceSubstituteGroupService"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "showListOfSubstituteComponentsBatchJob"
+    },
+    "conditions": {
+        "isAwb0SubstituteListUndefined": {
+            "expression": "!vmoHovered.props.awb0SubstituteList"
+        }
+    },
+    "data": {
+        "substitutesLabel": {
+            "displayName": "{{i18n.substitutesLabel}}",
+            "type": "STRING"
+        }
+    },
+    "i18n": {
+        "substitutesLabel": [ "OccurrenceManagementConstants" ],
+        "tooltipLinkText": [ "OccurrenceManagementConstants" ]
+    }
+}

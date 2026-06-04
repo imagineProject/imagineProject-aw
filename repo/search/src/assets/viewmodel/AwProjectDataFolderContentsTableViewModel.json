@@ -1,0 +1,185 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "updateSelectAll": {
+            "actionType": "JSFunction",
+            "method": "updateSelectAll",
+            "inputData": {
+                "searchFolder": "{{subPanelContext.searchFolder}}"
+            },
+            "deps": "js/Awp0SearchFolderOverviewService"
+        },
+        "updateMultiSelectEnabled": {
+            "actionType": "JSFunction",
+            "method": "updateMultiSelectEnabled",
+            "inputData": {
+                "searchFolder": "{{subPanelContext.searchFolder}}"
+            },
+            "deps": "js/Awp0SearchFolderOverviewService"
+        },
+        "updateMultiSelect": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "plTableClientRefresh"
+                },
+                {
+                    "action": "updateMultiSelectEnabled"
+                }
+            ]
+        },
+        "doGridDataProvider": {
+            "actionType": "dataProvider",
+            "method": "gridDataProvider"
+        },
+        "loadTableData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {},
+                    "searchInput":
+                    {
+                        "attributesToInflate": "{{ctx.search.tableViewProperties}}",
+                        "maxToLoad": "{{function:getDefaultPageSize}}",
+                        "maxToReturn": "{{function:getDefaultPageSize}}",
+                        "providerName": "{{subPanelContext.context.context.search.provider}}",
+                        "searchCriteria": {
+                            "parentUid": "{{data.uid}}"
+                        },
+                        "searchFilterFieldSortType" : "Alphabetical",
+                        "searchSortCriteria": "{{data.columnProviders.clientScopeUI.sortCriteria}}",
+                        "startIndex": "{{data.dataProviders.gridDataProvider.startIndex}}",
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.gridDataProvider.startIndex}}",
+                            "endIndex": "{{data.dataProviders.gridDataProvider.endIndex}}",
+                            "startReached": "{{data.dataProviders.gridDataProvider.startReached}}",
+                            "endReached": "{{data.dataProviders.gridDataProvider.endReached}}"
+                        }
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData":
+            {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "output": "{{function:processOutput}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "aw.tableDataLoaded"
+                    }
+                ]
+            }
+        },
+        "plTableClientRefresh": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "gridView.plTable.clientRefresh"
+                    }
+                ]
+            }
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "gridDataProvider.selectAll",
+            "action": "updateSelectAll"
+        },
+        {
+            "eventId": "gridDataProvider.selectNone",
+            "action": "updateSelectAll"
+        },
+        {
+            "eventId": "primaryWorkarea.multiSelectAction",
+            "action": "plTableClientRefresh"
+        },
+        {
+            "eventId": "AwProjectDataFolderContentsTable.refreshTable",
+            "action": "updateMultiSelect"
+        }
+    ],
+
+    "dataProviders": {
+        "gridDataProvider": {
+            "action": "loadTableData",
+            "editContext": "PROJECT_DATA_FOLDER_CONTENTS_TABLE_CONTEXT",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple",
+            "inputData":{
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "selectionData": "{{subPanelContext.selectionData}}"
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+    "columnProviders": {
+        "clientScopeUI": {
+            "columns": [
+                {
+                    "name": "object_name",
+                    "width": 160,
+                    "displayName": "{{i18n.projectName}}",
+                    "enableColumnHiding": false
+                },
+                {
+                    "name": "object_desc",
+                    "displayName": "{{i18n.projectId}}",
+                    "enableColumnHiding": false
+                }
+            ],
+            "sortCriteria": "{{ctx.sublocation.sortCriteria}}"
+        }
+    },
+    "grids": {
+        "gridView": {
+            "dataProvider": "gridDataProvider",
+            "columnProvider": "clientScopeUI",
+            "enableArrangeMenu": false,
+            "gridOptions": {
+                "enableGridMenu": false,
+                "enablePinning": false,
+                "isFilteringEnabled": false,
+                "enableSaveSortCriteria": false
+            }
+        }
+    },
+    "data": {
+        "uid": "{{subPanelContext.selected.uid}}"
+    },
+    "lifecycleHooks": {
+    },
+    "functions": {
+        "processOutput": {
+            "functionName": "processOutput1",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.searchFolder}}"
+            ],
+            "deps": "js/Awp0SearchFolderOverviewService"
+        },
+        "getDefaultPageSize": {
+            "functionName": "getDefaultPageSize",
+            "parameters": [
+                "{{ctx.preferences.AWC_DefaultPageSize}}"
+            ],
+            "deps": "js/Awp0SearchFolderOverviewService"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "i18n": {
+        "projectName": [ "SearchMessages" ],
+        "projectId": [ "SearchMessages" ]
+    }
+}

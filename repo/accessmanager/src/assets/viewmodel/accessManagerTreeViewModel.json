@@ -1,0 +1,865 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "loadData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2022-12-AwAccessManager",
+            "method": "getAMTree2",
+            "inputData": {
+                "parentNode": "{{function:getExpandedNodeData}}",
+                "focusNode": "",
+                "startIndex": "request.treeLoadInput.startChildNdx",
+                "maxToReturn": -1
+            },
+            "outputData": {
+                "treeLoadResult": "{{function:loadAMTreeTableData}}",
+                "output": "{{function:processOutput}}"
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "amRuleTreePropertyActionJS": {
+            "actionType": "JSFunction",
+            "method": "loadPropertiesJS",
+            "inputData": {
+                "dataProvider": "{{data}}",
+                "propertyLoadInput": "request.propertyLoadInput"
+            },
+            "outputData": {},
+            "deps": "js/accessMgmtService"
+        },
+        "addRuleInExpandedAndLeafNode": {
+            "actionType": "JSFunction",
+            "method": "addRuleInExpandedAndLeafNode",
+            "inputData": {
+                "eventData": "{{data.eventMap['accessManagerTreeView.addRuleInExpandedAndLeafNode']}}",
+                "dataProvider": "{{data.dataProviders.amRuleTreeDataProvider}}",
+                "treeLoadResult": "{{data.treeLoadResult}}"
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "addRuleInNotExpandedNode": {
+            "actionType": "JSFunction",
+            "method": "addRuleInNotExpandedNode",
+            "inputData": {
+                "eventData": "{{data.eventMap['accessManagerTreeView.addRuleInNotExpandedNode']}}",
+                "dataProvider": "{{data.dataProviders.amRuleTreeDataProvider}}"
+            },
+            "outputData": {
+                "isPinned": "isPinned",
+                "isNodeAdded": "isNodeAdded",
+                "ruleUid": "ruleUid"
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "setSelectionForAddNewRule": {
+            "actionType": "JSFunction",
+            "method": "setSelectionForAddNewRule",
+            "inputData": {
+                "data": "{{data}}",
+                "ruleUid": "{{data.ruleUid}}"
+            },
+            "outputData": {
+                "isNodeAdded": ""
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "setSelection":{
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "dataProvider":"{{data.dataProviders.amRuleTreeDataProvider}}",
+                "selectionModel": "{{props.subPanelContext.selectionModel}}",
+                "rootNode": "{{data.dataProviders.amRuleTreeDataProvider.viewModelCollection.loadedVMObjects[0]}}"
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "moveTreeNodeToTop": {
+            "actionType": "JSFunction",
+            "method": "moveTreeNodeToTop",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "dataProvider": "{{data.dataProviders.amRuleTreeDataProvider}}",
+                "selectionData": "{{commandContext.selectionData}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "accessManagerTreeView.rearrangeAMTreeBatchAction",
+                    "eventData": {
+                        "selectedNode": "{{data.eventData.selectedNode}}",
+                        "actionType": "MOVETOTOP",
+                        "searchState": "{{props.subPanelContext.searchState}}",
+                        "nodeInfo": "{{commandContext.searchState.nodeInfo}}"
+                    }
+                }
+             ]
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "Am0CollapseSelectedTreeNode": {
+            "actionType": "JSFunction",
+            "method": "collapseTreeNode",
+            "inputData": {
+                "selectedNode": "{{commandContext.selectionData.selected[0]}}"
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "Am0MoveTreeNodeToUp": {
+            "actionType": "JSFunction",
+            "method": "moveNodes",
+            "inputData": {
+                "dataProviders": "{{data.dataProviders.amRuleTreeDataProvider}}",
+                "selectedNode": "{{commandContext.selectionData.selected[0]}}",
+                "selectionData": "{{commandContext.selectionData}}",
+                "isMoveUp": true
+            },
+            "events": {
+                "success": [ {
+                    "name": "accessManagerTreeView.rearrangeAMTreeBatchAction",
+                    "eventData": {
+                        "selectedNode": "{{commandContext.selectionData.selected}}",
+                        "actionType": "MOVEUP",
+                        "searchState": "{{props.subPanelContext.searchState}}",
+                        "nodeInfo": "{{commandContext.searchState.nodeInfo}}"
+                    }
+                } ]
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "Am0MoveTreeNodeToDown": {
+            "actionType": "JSFunction",
+            "method": "moveNodes",
+            "inputData": {
+                "dataProviders": "{{data.dataProviders.amRuleTreeDataProvider}}",
+                "selectedNode": "{{commandContext.selectionData.selected[0]}}",
+                "selectionData": "{{commandContext.selectionData}}",
+                "isMoveUp": false
+            },
+            "events": {
+                "success": [ {
+                    "name": "accessManagerTreeView.rearrangeAMTreeBatchAction",
+                    "eventData": {
+                        "selectedNode": "{{commandContext.selectionData.selected}}",
+                        "actionType": "MOVEDOWN",
+                        "searchState": "{{props.subPanelContext.searchState}}",
+                        "nodeInfo": "{{commandContext.searchState.nodeInfo}}"
+                    }
+                } ]
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "Am0CollapseDestinationTreeNode": {
+            "actionType": "JSFunction",
+            "method": "collapseTreeNode",
+            "inputData": {
+                "selectedNode": "{{data.destinationNode}}"
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "getDestinationNodeForMoveUp": {
+            "actionType": "JSFunction",
+            "method": "getDestinationTreeNode",
+            "inputData": {
+                "dataProviders": "{{data.dataProviders.amRuleTreeDataProvider}}",
+                "selectedNode": "{{commandContext.selectionData.selected[0]}}",
+                "isMoveUp": true
+            },
+            "outputData": {
+                "destinationNode": ""
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "getDestinationNodeForMoveDown": {
+            "actionType": "JSFunction",
+            "method": "getDestinationTreeNode",
+            "inputData": {
+                "dataProviders": "{{data.dataProviders.amRuleTreeDataProvider}}",
+                "selectedNode": "{{commandContext.selectionData.selected[0]}}",
+                "isMoveUp": false
+            },
+            "outputData": {
+                "destinationNode": ""
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "Am0MoveTreeNodeToUpAction": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "Am0CollapseSelectedTreeNode",
+                    "condition": "commandContext.selectionData.selected[0].isExpanded === true"
+                },
+                {
+                    "action": "getDestinationNodeForMoveUp"
+                },
+                {
+                    "action": "Am0CollapseDestinationTreeNode",
+                    "condition": "data.destinationNode.isExpanded === true"
+                },
+                {
+                    "action": "Am0MoveTreeNodeToUp"
+                }
+            ]
+        },
+        "Am0MoveTreeNodeToDownAction": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "Am0CollapseSelectedTreeNode",
+                    "condition": "commandContext.selectionData.selected[0].isExpanded === true"
+                },
+                {
+                    "action": "getDestinationNodeForMoveDown"
+                },
+                {
+                    "action": "Am0CollapseDestinationTreeNode",
+                    "condition": "data.destinationNode.isExpanded === true"
+                },
+                {
+                    "action": "Am0MoveTreeNodeToDown"
+                }
+            ]
+        },
+        "rearrangeAMTreeBatchAction":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateNodeInfo"
+                },
+                {
+                    "action": "updateNodeAtomicData"
+                },
+                {
+                    "action": "setCtxRuleSelection"
+                },
+                {
+                    "action": "debounceRearrangeAMTree"
+                }
+            ]
+        },
+        "updateNodeInfo": {
+            "actionType": "JSFunction",
+            "method": "updateNodeInfo",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "actionType": "{{data.eventData.actionType}}",
+                "arrangeNodeStructure": "{{props.subPanelContext.searchState.nodeInfo}}"
+            },
+            "outputData": {
+                "newarrangeNodeStructure": ""
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "updateNodeAtomicData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "state": "{{props.subPanelContext.searchState}}",
+                "newValue": {
+                    "nodeInfo": "{{data.newarrangeNodeStructure}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "debounceRearrangeAMTree": {
+            "actionType": "JSFunction",
+            "method": "debounceRearrangeAMTree",
+            "inputData": {
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "rearrangeAMTree": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2022-06-AwAccessManager",
+            "method": "rearrangeAMTree",
+            "inputData": {
+                "nodeInfo": "{{eventData}}"
+            },
+            "outputData": {
+                "rearrangedTree": "",
+                "SaveEditsPartialErrors": "{{function:getRearrangeObjectsPartialErrors}}",
+                "isNodePasted": "{{function:setIsNodePastedFlagTrue}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "expandTreeNodeTreeEvent",
+                        "condition": "data.isNodePasted && !data.dataProviders.amRuleTreeDataProvider.selectedObjects[0].isExpanded"
+                    },
+                    {
+                        "name": "primaryWorkarea.reset",
+                        "condition": "data.isNodePasted"
+                    },
+                    {
+                        "name": "updateisAMTreeDirtyFlagEvent",
+                        "condition": "ctx.isAMTreeDirty !== true",
+                        "eventData" : {
+                            "isAMTreeDirty" : true
+                        }
+                    },
+                    {
+                        "name": "plTable.scrollToRow",
+                        "eventData": {
+                            "gridId": "accessRuleTree",
+                            "rowUids": [
+                                "{{data.dataProviders.amRuleTreeDataProvider.selectedObjects[0].uid}}"
+                            ]
+                        }
+                    }
+                ],
+                "failure": [ {
+                    "name": "primaryWorkarea.reset"
+                } ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "condition": "data.rearrangedTree.partialErrors[0].errorValues[0].code === 525088",
+                        "message": "AM0rearrangeTreeFailureMessageForInstanceLock"
+                    },
+                    {
+                        "condition": "data.rearrangedTree.partialErrors[0].errorValues[0].code !== 525088",
+                        "message": "AM0rearrangeTreeFailureMessage"
+                    }
+                ]
+            },
+
+            "deps": "js/accessMgmtService"
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "complete",
+                    "eventData": {
+                        "source": "toolAndInfoPanel"
+                    }
+                } ]
+            }
+        },
+        "cutContents": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "resetCutAction",
+                    "condition": "ctx.awClipBoardProvider.length > 0"
+                },
+                {
+                    "action": "setGreyOut"
+                },
+                {
+                    "action": "addToAwClipboard"
+                },
+                {
+                    "action": "showSuccessMessageAfterCut"
+                },
+                {
+                    "action": "setSelectionForCutNode"
+                }
+            ]
+        },
+        "resetCutAction": {
+            "actionType": "JSFunction",
+            "method": "resetCutAction",
+            "deps": "js/Am0RuleCutPasteService",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.amRuleTreeDataProvider}}"
+            }
+        },
+        "setGreyOut": {
+            "actionType": "JSFunction",
+            "method": "setGreyOut",
+            "deps": "js/Am0RuleCutPasteService",
+            "inputData": {
+                "selectionData": "{{commandContext.selectionData}}",
+                "dataProvider": "{{data.dataProviders.amRuleTreeDataProvider}}"
+            }
+        },
+        "addToAwClipboard": {
+            "actionType": "JSFunction",
+            "method": "setContents",
+            "deps": "js/tcClipboardService",
+            "inputData": {
+                "uid":
+                    "{{data.dataProviders.amRuleTreeDataProvider.selectedObjects}}"
+
+            }
+        },
+        "showSuccessMessageAfterCut": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "cutSingleAMTreeNodeSuccessfulEvent",
+                    "condition": "ctx.awClipBoardProvider.length === 1 && commandContext.selectionData.selected.length === 1"
+                },
+                {
+                    "name": "cutMultipleAMTreeNodeSuccessfulEvent",
+                    "condition": "commandContext.selectionData.selected.length > 1"
+                }
+            ]
+            }
+        },
+        "getDisplayParentNameForCutNode": {
+            "actionType": "JSFunction",
+            "method": "getDisplayParentNameForCutNode",
+            "deps": "js/Am0RuleCutPasteService",
+            "inputData": {
+                "selectionData": "{{commandContext.selectionData.selected[0]}}",
+                "dataProvider": "{{data.dataProviders.amRuleTreeDataProvider}}"
+            },
+            "outputData": {
+                "parentNodeName": ""
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "cutSingleAMTreeNodeSuccessfulMessage"
+                    }
+                ]
+            }
+        },
+        "setSelectionForCutNode": {
+            "actionType": "JSFunction",
+            "method": "setSelectionForCutNode",
+            "deps": "js/Am0RuleCutPasteService",
+            "inputData": {
+                "selectionData": "{{commandContext.selectionData}}",
+                "clipBoardContent": "{{ctx.awClipBoardProvider}}"
+            }
+        },
+        "loadColumns": {
+            "actionType": "JSFunction",
+            "method": "loadTreeColumns",
+            "outputData": {
+                "dataProviders.amRuleTreeDataProvider.columnConfig": ""
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "updateSelectionData": {
+            "actionType": "JSFunction",
+            "method": "updateSelectionData",
+            "inputData": {
+                "context": "{{subPanelContext}}",
+                "eventData": "{{data.eventMap['treeOverview.updateSelectionData']}}",
+                "dataProvider": "{{data.dataProviders.amRuleTreeDataProvider}}"
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "pasteCutNodes": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "accessManagerTreeView.rearrangeAMTreeBatchAction",
+                        "eventData": {
+                            "selectedNode": "{{ctx.awClipBoardProvider}}",
+                            "newParentNode": "{{commandContext.selectionData.selected[0]}}",
+                            "actionType": "PASTE",
+                            "searchState": "{{props.subPanelContext.searchState}}",
+                            "nodeInfo": "{{commandContext.searchState.nodeInfo}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "expandTreeNodeAction":{
+            "actionType": "JSFunction",
+            "method": "saveRowExpanded",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "gridId": "accessRuleTree",
+                "selectedObject": "{{data.dataProviders.amRuleTreeDataProvider.selectedObjects[0]}}"
+            },
+            "deps": "js/awTableStateService"
+        },
+        "setSelectionForPasteNode": {
+            "actionType": "JSFunction",
+            "method": "setSelectionForPasteNode",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.amRuleTreeDataProvider}}",
+                "isNodePasted": "{{data.isNodePasted}}"
+            },
+            "outputData": {
+                "isNodePasted": false
+            },
+            "deps": "js/Am0RuleCutPasteService"
+        },
+        "updateisAMTreeDirtyFlag": {
+            "actionType": "JSFunction",
+            "method": "updateisAMTreeDirtyFlag",
+            "inputData": {
+
+                "newValue": {
+                    "isAMTreeDirty": "{{data.eventMap['updateisAMTreeDirtyFlagEvent'].isAMTreeDirty}}"
+                }
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "getIsAMTreeDirtyFlagFromLocalStorage": {
+            "actionType": "JSFunction",
+            "method": "getIsAMTreeDirtyFlagFromLocalStorage",
+            "inputData": {
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "Am0SaveTreeAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2022-12-AwAccessManager",
+            "method": "saveAMTree",
+            "inputData": {},
+            "outputData": {
+                "errorMsgToSave": "{{function:processPartialErrors}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "treeOverview.resetOnCancelEdits"
+                    },
+                    {
+                        "name": "accessManagerTreeView.clearAMTreeSelection"
+                    },
+                    {
+                        "name": "updateisAMTreeDirtyFlagEvent",
+                        "eventData" : {
+                            "isAMTreeDirty" : false
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "AM0rearrangeTreeSuccessMessage"
+                } ],
+                "failure": [ {
+                    "message": "Am0SaveTreeFailureMessage"
+                } ]
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "initializeNodeInfoInSearchState": {
+            "actionType": "JSFunction",
+            "deps": "js/accessMgmtService",
+            "method": "initializeNodeInfoInSearchState",
+            "inputData": {
+                "searchState": "{{subPanelContext.searchState}}"
+            }
+        },
+        "clearAMTreeSelectionBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearAMTreeSelection"
+                },
+                {
+                    "action": "ResetPWA"
+                }
+            ]
+        },
+        "clearAMTreeSelection": {
+            "actionType": "JSFunction",
+            "method": "clearAMTreeSelection",
+            "inputData": {
+                "data": "{{data}}",
+                "selectionModel": "{{props.subPanelContext.selectionModel}}"
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "ResetPWA": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "primaryWorkarea.reset"
+                } ]
+            }
+        },
+        "preserveSelection": {
+            "actionType": "JSFunction",
+            "method": "preserveSelection",
+            "inputData": {
+                "data": "{{data}}",
+                "selectionModel": "{{props.subPanelContext.selectionModel}}"
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "batchActionForInitilizaAndGetInfo": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "initializeNodeInfoInSearchState"
+                },
+                {
+                    "action": "getIsAMTreeDirtyFlagFromLocalStorage"
+                }
+            ]
+        },
+        "setCtxRuleSelection": {
+            "actionType": "JSFunction",
+            "method": "setCtxRuleSelection",
+            "inputData": {
+                "selectedObjects": "{{data.dataProviders.amRuleTreeDataProvider.selectedObjects}}"
+            },
+            "deps": "js/accessMgmtService"
+        }
+    },
+    "dataProviders": {
+        "amRuleTreeDataProvider": {
+            "action": "loadData",
+            "initializeAction": "loadData",
+            "nextAction": "loadData",
+            "previousAction": "loadData",
+            "treeLoadResult": "{{data.treeLoadResult}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "accessMode": "tree",
+                "topNodeUid": "{{data.treeLoadResult.parentNode.uid}}"
+            }
+        },
+        "amRuleTreePropertyProvider": {
+            "action": "amRuleTreePropertyActionJS",
+            "propertyLoadResult": "action.result.propertyLoadResult"
+        }
+    },
+    "columnProviders": {
+        "amRuleTreeColumnProvider": {
+            "loadColumnAction": "loadColumns"
+        }
+    },
+    "grids": {
+        "accessRuleTree": {
+            "dataProvider": "amRuleTreeDataProvider",
+            "propertyProvider": "amRuleTreePropertyProvider",
+            "columnProvider": "amRuleTreeColumnProvider",
+            "enableArrangeMenu": false,
+            "addIconColumn": false,
+            "gridOptions": {
+                "isFilteringEnabled": false,
+                "enableGridMenu": false,
+                "enablePinning": false,
+                "enableSorting": false
+            }
+        }
+    },
+    "messages": {
+        "AM0rearrangeTreeSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.AM0rearrangeTreeSuccessMessage}}"
+        },
+        "AM0rearrangeTreeFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.AM0rearrangeTreeMultiFailureMessage}}",
+            "messageTextParams": [
+                "{{data.SaveEditsPartialErrors}}"
+            ]
+        },
+        "AM0rearrangeTreeFailureMessageForInstanceLock": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.AM0rearrangeTreeMultiFailureMessage}}",
+            "messageTextParams": [
+                "{{data.data.rearrangedTree.partialErrors[0].errorValues[0].message}}"
+            ]
+        },
+        "cutSingleAMTreeNodeSuccessfulMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.cutSingleAMRuleTreeNodesSuccessfulMsg}}",
+            "messageTextParams": [
+                "{{commandContext.selectionData.selected[0].displayName}}",
+                "{{data.parentNodeName}}"
+            ]
+        },
+        "cutMultipleAMTreeNodeSuccessfulMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.cutMultipleAMRuleTreeNodesSuccessfulMsg}}",
+            "messageTextParams": [
+                "{{commandContext.selectionData.selected.length}}"
+            ]
+        },
+        "Am0SaveTreeFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{data.errorMsgToSave}}"
+        }
+    },
+    "i18n": {
+        "condition": [
+            "AccessmgmtConstants"
+        ],
+        "value": [
+            "AccessmgmtConstants"
+        ],
+        "objectAclName": [
+            "AccessmgmtConstants"
+        ],
+        "AM0rearrangeTreeSuccessMessage": [
+            "AccessmgmtConstants"
+        ],
+        "AM0rearrangeTreeMultiFailureMessage": [
+            "AccessmgmtConstants"
+        ],
+        "cutSingleAMRuleTreeNodesSuccessfulMsg": [
+            "AccessmgmtConstants"
+        ],
+        "cutMultipleAMRuleTreeNodesSuccessfulMsg": [
+            "AccessmgmtConstants"
+        ]
+    },
+    "functions": {
+        "loadAMTreeTableData": {
+            "functionName": "loadAMTreeTableData",
+            "parameters": [
+                "{{data.treeLoadInput}}",
+                "{{data.dataProviders.amRuleTreeDataProvider}}"
+            ]
+        },
+        "getExpandedNodeData": {
+            "functionName": "getExpandedNodeData",
+            "parameters": [
+                "{{data.treeLoadInput}}"
+            ]
+        },
+        "getRearrangeObjectsPartialErrors": {
+            "functionName": "getRearrangeObjectsPartialErrors",
+            "parameters": [
+                "{{data.newarrangeNodeStructure}}",
+                "{{data.dataProviders.amRuleTreeDataProvider}}"
+            ]
+        },
+        "setIsNodePastedFlagTrue": {
+            "functionName": "setIsNodePastedFlagTrue",
+            "parameters": [
+                "{{data.newarrangeNodeStructure}}"
+            ]
+        },
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.searchState}}",
+                "{{subPanelContext}}"
+            ]
+        }
+    },
+    "onEvent": [ {
+            "eventId": "accessManagerTreeView.addRuleInExpandedAndLeafNode",
+            "cacheEventData": true,
+            "action": "addRuleInExpandedAndLeafNode"
+        },
+        {
+            "eventId": "accessManagerTreeView.addRuleInNotExpandedNode",
+            "cacheEventData": true,
+            "action": "addRuleInNotExpandedNode"
+        },
+        {
+            "eventId": "amRuleTreeDataProvider.treeNodesLoaded",
+            "cacheEventData": true,
+            "condition": "data.isNodeAdded === true",
+            "action": "setSelectionForAddNewRule"
+        },
+        {
+            "eventId": "amRuleTreeDataProvider.treeNodesLoaded",
+            "cacheEventData": true,
+            "action": "preserveSelection"
+        },
+        {
+            "eventId": "accessManagerTreeView.moveTreeNodeToTop",
+            "cacheEventData": true,
+            "action": "moveTreeNodeToTop"
+        },
+        {
+            "eventId": "accessManagerTreeView.collapseTreeNode",
+            "cacheEventData": true,
+            "action": "Am0CollapseSelectedTreeNode"
+        },
+        {
+            "eventId": "accessManagerTreeView.am0MoveTreeNodeToUp",
+            "cacheEventData": true,
+            "action": "Am0MoveTreeNodeToUpAction"
+        },
+        {
+            "eventId": "accessManagerTreeView.am0MoveTreeNodeToDown",
+            "cacheEventData": true,
+            "action": "Am0MoveTreeNodeToDownAction"
+        },
+        {
+            "eventId": "accessManagerTreeView.rearrangeAMTree",
+            "cacheEventData": true,
+            "action": "rearrangeAMTree"
+        },
+        {
+            "eventId": "accessManagerTreeView.rearrangeAMTreeBatchAction",
+            "cacheEventData": true,
+            "action": "rearrangeAMTreeBatchAction"
+        },
+        {
+            "eventId": "accessManagerTreeView.updateNodeAtomicData",
+            "action": "updateNodeAtomicData"
+        },
+        {
+            "eventId": "amRuleTreeDataProvider.am0CutContents",
+            "cacheEventData": true,
+            "action":  "cutContents"
+        },
+        {
+            "eventId": "cutSingleAMTreeNodeSuccessfulEvent",
+            "cacheEventData": true,
+            "action":  "getDisplayParentNameForCutNode"
+        },
+        {
+            "eventId": "cutMultipleAMTreeNodeSuccessfulEvent",
+            "message": "cutMultipleAMTreeNodeSuccessfulMessage"
+        },
+        {
+            "eventId": "treeOverview.updateSelectionData",
+            "cacheEventData": true,
+            "action": "updateSelectionData"
+        },
+        {
+            "eventId": "amRuleTreeDataProvider.am0PasteContents",
+            "cacheEventData": true,
+            "action": "pasteCutNodes"
+        },
+        {
+            "eventId": "expandTreeNodeTreeEvent",
+            "cacheEventData": true,
+            "action": "expandTreeNodeAction"
+        },
+        {
+            "eventId": "amRuleTreeDataProvider.treeNodesLoaded",
+            "cacheEventData": true,
+            "condition": "data.isNodePasted",
+            "action": "setSelectionForPasteNode"
+        },
+        {
+            "eventId":"updateisAMTreeDirtyFlagEvent",
+            "cacheEventData": true,
+            "action": "updateisAMTreeDirtyFlag"
+        },
+        {
+            "eventId":"accessManagerTreeView.clearAMTreeSelection",
+            "cacheEventData": true,
+            "action": "clearAMTreeSelectionBatchAction"
+        },
+        {
+            "eventId": "accessManagerTreeView.saveTreeEvent",
+            "cacheEventData": true,
+            "action": "Am0SaveTreeAction"
+        },
+        {
+            "eventId": "accessManagerTreeView.setRootNodeSelection",
+            "action": "setSelection"
+        }
+
+    ],
+    "data" : {
+        "isNodePasted" : false
+    },
+    "lifecycleHooks": {
+        "onMount": "batchActionForInitilizaAndGetInfo",
+        "onUpdate": [
+            {
+                "action": "closePanel",
+                "observers": [ "props.subPanelContext.selectionData.selected" ]
+            }
+        ]
+    }
+}

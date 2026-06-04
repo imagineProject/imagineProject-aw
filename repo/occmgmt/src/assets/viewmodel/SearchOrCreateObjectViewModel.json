@@ -1,0 +1,72 @@
+{
+    "schemaVersion": "1.0.0",
+       "actions": {
+        "getRefObjectsAction": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "performSolrSearchAction",
+                    "condition":"conditions.isValidSearchInput"
+                }
+            ]
+        },
+        "performSolrSearchAction": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0FullTextSearchProvider",
+                        "searchCriteria": {
+                            "searchString": "{{props.__vmprop__().filterString}}"
+                        },
+                        "searchFilterFieldSortType": "Priority",
+                        "startIndex": "{{data.dataProviders.getRefObjectsDataProvider.startIndex}}",
+                        "searchFilterMap6":"{{function:getFilterMap}}"
+                    },
+                    "inflateProperties": false
+                }
+            },
+            "outputData": {
+                "totalObjectsFound": "totalFound",
+                "refObjects": "{{function:convertSolrSearchResponseToLovEntries}}",
+                "endIndex": "endIndex"
+            }
+        },
+        "render": {
+            "method": "awSearchOrCreateObjectRenderFunction",
+            "deps": "js/SearchOrCreateObjectService"
+        }
+    },
+    "data": {},
+    "conditions":{
+        "isValidSearchInput":{
+            "expression":" props.__vmprop__().filterString!==null && props.__vmprop__().filterString!=='' &&  props.__vmprop__().filterString!==undefined"
+        }
+    },
+    "onEvent": [],
+    "dataProviders": {
+        "getRefObjectsDataProvider": {
+            "initializeAction": "getRefObjectsAction",
+            "response": "{{data.refObjects}}",
+            "totalFound": "{{data.totalObjectsFound}}"
+        }
+    },
+    "functions": {
+        "getFilterMap": {
+            "functionName": "getFilterMap",
+            "parameters": ["{{props}}"],
+            "deps": "js/aceInlineAuthoringUtils"
+        },
+        "convertSolrSearchResponseToLovEntries": {
+            "functionName": "convertSolrSearchResponseToLovEntries",
+            "parameters": [],
+            "deps": "js/aceInlineAuthoringUtils"
+        }
+    },
+    "lifecycleHooks": {
+        "render": "render"
+    }
+}

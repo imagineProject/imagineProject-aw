@@ -1,0 +1,136 @@
+{
+    "schemaVersion":"1.0.0",
+    "imports":
+    [
+        "js/aw-command-panel.directive",
+        "js/visible-when.directive",
+        "js/aw-command-sub-panel.directive"
+    ],
+
+    "actions":{
+        "setPanelInitialValues": {
+            "actionType": "JSFunction",
+            "method": "setPanelInitialValues",
+            "inputData": {
+                "targetObjects": "{{ctx.panelContext.targetObjects}}",
+                "submitPanelState": "{{data.submitPanelState}}"
+            },
+            "outputData": {
+                "isDataInit": "isDataInit",
+                "submitPanelState": "submitPanelState"
+            },
+            "deps": "js/Awp0NewWorkflowProcess"
+        },
+        "setActiveView": {
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{submitPanelState}}",
+                "destPanelId": "Awp0NewWorkflowProcessSub"
+            },
+            "outputData": {
+                "submitPanelState": ""
+            },
+            "deps": "js/Awp0NewWorkflowProcess"
+        },
+        "updateSideNavUserPanelStateBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateSideNavUserPanelState",
+                    "condition": "submitPanelState.activeView ==='Awp0NewWorkflowProcessSub'"
+                }
+            ]
+        },
+        "updateSideNavUserPanelState": {
+            "actionType": "JSFunction",
+            "method": "updateSideNavUserPanelState",
+            "inputData": {
+                "sideNavMode": "{{props.subPanelContext.sidenavMode}}",
+                "addUserPanelState": "{{fields.addUserPanelState}}"
+            },
+            "deps": "js/peoplePickerUtils"
+        }
+    },
+    "data": {
+        "submitPanelState": {
+            "initialValues": {
+                "activeView": "Awp0NewWorkflowProcessSub",
+                "prePanelId":"Awp0NewWorkflowProcessSub",
+                "processName": "",
+                "processTemplate": {},
+                "targetObjects": [],
+                "referenceObjects":[],
+                "isCreateWorkflowWithNoTarget": true
+            },
+            "meta": {
+                "activeView": {
+                    "field": "true",
+                    "type": "STRING"
+                }
+            }
+        },
+        "addUserPanelState": {
+            "initialValues": {
+                "provider": "Awp0PeoplePickerProvider",
+                "selectionModelMode": "multiple",
+                "criteria": {
+                    "providerContentType": "GroupMember,User,ResourcePool",
+                    "searchString": "*",
+                    "searchSubGroup": "true",
+                    "group": "",
+                    "role": "",
+                    "participantType": ""
+                },
+                "defaultCriteria": {
+                    "providerContentType": "GroupMember,User,ResourcePool",
+                    "searchSubGroup": "true",
+                    "group": "",
+                    "role": "",
+                    "participantType": ""
+                },
+                "preferenceCriteria": [
+                    "WRKFLW_user_panel_content_display",
+                    "WRKFLW_allow_resourcepool_assignments",
+                    "WRKFLW_show_user_assignment_options"
+                ],
+                "selectedUsers": "",
+                "isAddButtonNeeded": false,
+                "triggerUpdateSearchCriteria": false
+            },
+            "meta": {
+                "selectedUsers": {
+                    "field": "true",
+                    "type": "OBJECTARRAY"
+                }
+            }
+        },
+        "assignmentState": {
+            "initialValues": {
+            },
+            "meta": {
+            }
+        }
+    },
+
+    "onEvent":
+    [
+    ],
+    "lifecycleHooks": {
+        "onMount": "setPanelInitialValues",
+        "onUpdate": [
+            {
+                "action": "updateSideNavUserPanelStateBatchJob",
+                "observers": [ "props.subPanelContext.sidenavMode" ]
+            }
+        ]
+    },
+    "ctx": {
+        "panelContext.targetObjects": null
+    },
+    "i18n":
+    {
+        "createWorkflow": [ "WorkflowCommandPanelsMessages" ],
+        "Add_Title": [ "WorkflowCommandPanelsMessages" ]
+    }
+}

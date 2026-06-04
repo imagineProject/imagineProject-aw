@@ -1,0 +1,79 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports": [
+        "js/aw-link-with-popup.directive",
+        "js/aw-include.directive",
+        "js/aw-property-non-edit-val.directive"
+    ],
+
+    "actions":
+    {
+        "initializeClosureRuleConfigurationInfo":
+        {
+            "actionType": "JSFunction",
+            "method": "getInitialClosureRuleConfigurationData",
+            "inputData":
+            {
+                "data": "{{data.defaultClosureRule}}",
+                "subPanelContext":"{{subPanelContext}}"
+            },
+            "outputData":{
+                "currentClosureRule":"currentClosureRule"
+            },
+        "deps": "js/aceClosureRuleConfigurationService"
+        },
+        "updateCurrentClosureRules": {
+            "actionType": "JSFunction",
+            "method": "updateCurrentClosureRules",
+            "inputData": {
+                "data":"{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "outputData":{
+                "currentClosureRule":""
+            },
+            "deps":"js/aceClosureRuleConfigurationService"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeClosureRuleConfigurationInfo",
+        "onUpdate":
+        {
+            "action": "initializeClosureRuleConfigurationInfo",
+            "observers": [ "props.subPanelContext.occContext.productContextInfo" ]
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "awClosureRule.ValueChanged",
+            "cacheEventData": true,
+            "condition": "conditions.isUpdateApplicable",
+            "action": "updateCurrentClosureRules"
+        }
+    ],
+    "conditions": {
+        "isUpdateApplicable": {
+            "expression": "subPanelContext.contextKey === viewKey"
+        }
+    },
+    "messages": {},
+
+    "data": {
+        "defaultClosureRule":
+        {
+            "displayName": "{{i18n.defaultClosureRuleValue}}",
+            "uiValue": "{{i18n.defaultClosureRuleValue}}",
+            "type": "STRING"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "i18n":
+    {
+        "expansion": ["OccurrenceManagementConstants"],
+        "defaultClosureRuleValue": ["OccurrenceManagementConstants"]
+    }
+}

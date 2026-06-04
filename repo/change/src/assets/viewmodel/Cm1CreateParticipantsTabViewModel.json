@@ -1,0 +1,80 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "data": {},
+
+    "actions": {
+        "openPeoplePickerPanel": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "populateUserPanelCriteria"
+                },
+                {
+                    "action": "navigateToUserPanel"
+                }
+            ]
+        },
+        "populateUserPanelCriteria": {
+            "actionType": "JSFunction",
+            "method": "populateUserPanelCriteria",
+            "inputData": {
+                "commandContext": "{{commandContext}}",
+                "subPanelContext": "{{props.addUserPanelState}}",
+                "criteria" : "{{props.addUserPanelState.defaultCriteria}}"
+            },
+            "deps": "js/Cm1CreateParticipantsService"
+        },
+        "navigateToUserPanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "AwPeoplePicker"
+            }
+        },
+        "clearParticipantInfo": {
+            "actionType": "JSFunction",
+            "method": "updateChangeAtomicData",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.participantInfo}}",
+                "value": {}
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "removeParticipantObjects": {
+            "actionType": "JSFunction",
+            "method": "removeParticipantObjects",
+            "inputData": {
+                "propName": "{{commandContext.propName}}",
+                "selectedUsers": "{{commandContext.selectedObjects}}",
+                "participantInfo": "{{props.subPanelContext.participantInfo}}"
+            },
+            "deps": "js/Cm1CreateParticipantsService"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onUnmount": "clearParticipantInfo"
+    },
+
+    "onEvent": [
+        {
+            "eventId": "Cm1CreateChangePanel.openPeoplePickerPanel",
+            "action": "openPeoplePickerPanel"
+        },
+        {
+            "eventId": "Cm1CreateChangePanel.removeParticipantsFromCreatePanel",
+            "action": "removeParticipantObjects"
+        }
+    ],
+
+    "props": {
+        "active-state": {
+            "type": "object"
+        },
+        "add-user-panel-state": {
+            "type": "object"
+        }
+    }
+}

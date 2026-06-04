@@ -1,0 +1,70 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-link-with-popup.directive",
+        "js/aw-include.directive"
+    ],
+    "actions": {
+
+        "initializeArrangementConfigurationInfo": {
+            "actionType": "JSFunction",
+            "method": "initializeArrangementConfigurationInfo",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "outputData":{
+                "currentArrangement":"currentArrangement"
+            },
+            "deps": "js/aceArrangementsService"
+        },
+        "updateCurrentArrangement": {
+            "actionType": "JSFunction",
+            "method": "updateCurrentArrangement",
+            "inputData": {
+                "data": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "outputData":{
+                "currentArrangement":""
+            },
+            "deps": "js/aceArrangementsService"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeArrangementConfigurationInfo",
+        "onUpdate":{
+            "action": "initializeArrangementConfigurationInfo",
+            "observers": [ "props.subPanelContext.occContext.productContextInfo" ]
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "awArrangementPanel.arrangementChanged",
+            "cacheEventData": true,
+            "condition": "conditions.isUpdateApplicable",
+            "action": "updateCurrentArrangement"
+        }
+
+    ],
+    "conditions": {
+        "isUpdateApplicable": {
+            "expression": "props.subPanelContext.contextKey === viewKey"
+        }
+    },
+    "messages": {},
+
+    "data": {
+        "currentArrangement": {
+            "uiValue": "{{data.currentArrangement}}",
+            "type": "STRING"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "i18n": {
+        "arrangement": [ "OccurrenceManagementConstants" ]
+    }
+}

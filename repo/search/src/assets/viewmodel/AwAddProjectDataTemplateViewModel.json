@@ -1,0 +1,145 @@
+{
+    "schemaVersion" : "1.0.0",
+    "actions":
+    {
+        "saveBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "createProjectDataTemplate"
+                },
+                {
+                    "action": "setProperties",
+                    "condition": "!data.partialErrorsForCreateOperation && data.createdProjectDataTemplate"
+                }
+            ]
+        },
+        "closeDialogPanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "createProjectDataTemplate": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2008-06-DataManagement",
+            "method": "createObjects",
+            "inputData": {
+                "input": [
+                    {
+                        "clientId": "",
+                        "data": {
+                            "boName": "Awp0ProjectDataTemplate",
+                            "stringProps": {
+                                "object_name": "{{data.projectDataTemplateName.dbValue}}",
+                                "object_desc": "{{data.projectDataTemplateDesc.dbValue}}"
+                            }
+                        }
+                    }
+                ]
+            },
+            "outputData": {
+                "createdProjectDataTemplate": "output[0].objects[0]",
+                "infoInputForSetProperties": "{{function:getInputForSettingProjectDataTemplate}}",
+                "partialErrorsForCreateOperation": "ServiceData.partialErrors"
+            },
+            "deps": "js/projectFolderUtils"
+        },
+        "setProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-09-DataManagement",
+            "method": "setProperties",
+            "inputData": {
+                "info": "{{data.infoInputForSetProperties}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{ctx.xrtSummaryContextObject}}"
+                            ],
+                            "isPinnedFlag": "subPanelContext.panelPinned"
+                        }
+                    },
+                    {
+                        "name": "complete",
+                        "condition": "!subPanelContext.panelPinned",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog",
+                        "condition": "!subPanelContext.panelPinned"
+                    }
+                ]
+            }
+        }
+    },
+    "data":
+    {
+        "projectDataTemplateName":
+        {
+            "displayName": "{{i18n.Name}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "isEditable": "true",
+            "maxLength": 128,
+            "autofocus": true
+        },
+        "projectDataTemplateDesc":
+        {
+            "displayName": "{{i18n.Description}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "maxLength": 128
+        },
+        "isActiveTemplate": {
+            "type": "BOOLEAN",
+            "displayName": "{{i18n.activeTemplate}}",
+            "renderingHint": "checkbox",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": false,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+    "functions": {
+        "getInputForSettingProjectDataTemplate": {
+            "functionName": "getInputForSettingProjectDataTemplate",
+            "parameters": [
+                "{{data.isActiveTemplate}}"
+            ]
+        }
+    },
+    "messages": {},
+    "conditions":
+    {
+        "isValidToSave":
+        {
+            "expression": "data.projectDataTemplateName.dbValue && data.projectDataTemplateName.dbValue!=''"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "closeDialog",
+            "action": "closeDialogPanel"
+        }
+    ],
+    "i18n":
+    {
+        "Name":[ "SearchMessages" ],
+        "Description":[ "SearchMessages" ],
+        "addProjectDataTemplate": [ "SearchMessages" ],
+        "ADD_BUTTON_TITLE":[ "SearchMessages","BaseMessages" ],
+        "properties": [ "SearchMessages" ],
+        "activeTemplate": [ "SearchMessages" ]
+    }
+}

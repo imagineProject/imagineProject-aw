@@ -1,0 +1,502 @@
+{
+    "schemaVersion" : "1.0.0",
+    "data": {
+        "nameBox": {
+            "displayName": "{{i18n.name}}",
+            "type": "STRING",
+            "dbValue": "",
+            "uiValue": "",
+            "isRequired": "true",
+            "maxLength": 32
+        },
+        "startDateTime":
+        {
+            "dbValue": "",
+            "type": "DATETIME",
+            "isRequired": "true",
+            "displayName": "{{i18n.startDate}}",
+            "isEditable": "true"
+        },
+
+        "endDateTime":
+        {
+            "dbValue": "",
+            "type": "DATE",
+            "isRequired": "true",
+            "validationCriteria": [ {
+                "condition": "!conditions.isValidStartAndEndDate",
+                "value": "{{i18n.dateRangeInvalidMessage}}"
+            } ]
+        },
+        "endDateOptions":
+        {
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov":true,
+            "displayName": "{{i18n.endDate}}",
+            "isEditable": "true",
+            "dbValue": "",
+            "uiValue": ""
+        },
+        "endDateList":
+        {
+            "type": "STRING",
+            "dbValue":
+            [
+                {"propDisplayValue" :"{{i18n.dateEffectivity}}", "propInternalValue" : "Date"},
+                {"propDisplayValue" :"{{i18n.upText}}", "propInternalValue" : "UP"},
+                {"propDisplayValue" :"{{i18n.soText}}", "propInternalValue" : "SO"}
+            ]
+        },
+        "endItemLabel": {
+            "displayName": "{{i18n.endItemMessage}}",
+            "type": "STRING"
+        },
+        "endItemValForDateRange": {
+            "type": "STRING",
+            "uiValue": "",
+            "dbValue": "",
+            "isRequired": "true",
+            "displayName": "{{i18n.endItemMessage}}"
+        },
+        "navigateAddCommand": {
+            "action": "navigateToAddEndItemPanelBatchJob",
+            "iconName": "Add",
+            "tooltip": "{{i18n.addEndItem}}"
+        },
+        "navigateReplaceCommand": {
+            "action": "navigateToReplaceEndItemPanelBatchJob",
+            "iconName": "Replace",
+            "tooltip": "{{i18n.replaceEndItem}}"
+        },
+        "removeCommand": {
+            "action": "removeEndItem",
+            "iconName": "Remove",
+            "tooltip": "{{i18n.removeEndItem}}"
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AuthorDateGroupEffectivity",
+                "context": {}
+            },
+            "meta": { }
+        }
+    },
+    "actions":{
+        "createGroupEffectivity": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2016-09-DataManagement",
+            "method": "createAttachAndSubmitObjects",
+            "inputData":
+            {
+                "inputs": [
+                    {
+                    "clientId": "CreateObject",
+                    "createData": {
+                        "boName": "Fnd0EffectvtyGrp",
+                        "propertyNameValues": {
+                            "object_name": ["{{data.nameBox.dbValue}}"]
+                        }
+                    },
+                    "dataToBeRelated": {},
+                    "pasteProp": ""
+                   }
+                ]
+            },
+            "policy":
+            {
+                "types":
+                [
+                    {
+                        "name": "Item",
+                        "properties":
+                        [
+                            {
+                                "name": "revision_list"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData":
+            {
+                "groupRevision": "{{function:getEffectivityGroupRevision}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "createGroupEffectivity_done"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "createObjectFailureMessage"
+                    }
+                ]},
+            "deps": "js/effectivityGroupTableService"
+        },
+        "createOrUpdateEffectivites": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-StructureManagement-2021-12-EffectivitiesManagement",
+            "method": "createOrUpdateDateEffectivities",
+            "inputData":
+            {
+                "effectivitiesInfo": [{
+                    "clientId" : "createEffectivities",
+                    "effectivityComponent": {
+                        "type": "unknownType",
+                        "uid": "AAAAAAAAAAAAAA"
+                    },
+                    "endItemComponent": {
+                        "type": "Item",
+                        "uid": "{{data.endItemValForDateRange.dbValue}}"
+                    },
+                    "dateRange": "{{function:getDateRange}}",
+                    "openEndedStatus": "{{function:getOpenEndedStatus}}",
+                    "decision": 0
+                }],
+                "effectivityGroupRevision": {
+                    "type": "{{data.groupRevision.type}}",
+                    "uid": "{{data.groupRevision.uid}}"
+                }
+           },
+           "outputData": {
+                "effResp" : ""
+            },
+           "events":
+           {
+               "success":
+               [
+                   {
+                       "name": "createOrUpdateEffectivites_done"
+                   }
+               ]
+           },
+           "actionMessages": {
+            "failure": [
+                {
+                    "message": "addFailureMessage"
+                }
+            ]},
+           "deps": "js/effectivityGroupTableService"
+        },
+        "applyNewlyCreatedEffectivityGroup":
+        {
+            "actionType": "JSFunction",
+            "method": "applyConfiguration",
+            "inputData":{
+                "value": {
+                    "configContext": {
+                        "r_uid": "{{props.subPanelContext.occContext.productContextInfo.props.awb0CurrentRevRule.dbValues[0]}}",
+                        "eg_uids": "{{function:appendAndGetNewAndExistingEffGroup}}",
+                        "ue": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EffUnitNo.dbValues[0]}}",
+                        "ei_uid": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EffEndItem.dbValues[0]}}",
+                        "var_uids": "{{props.subPanelContext.occContext.productContextInfo.props.awb0VariantRules.dbValues}}",
+                        "iro_uid": "{{props.subPanelContext.occContext.productContextInfo.props.awb0VariantRuleOwningRev.dbValues[0]}}",
+                        "startDate": "{{props.subPanelContext.occContext.productContextInfo.props.awb0StartEffDates.dbValues[0]}}",
+                        "endDate": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EndEffDates.dbValues[0]}}",
+                        "startFreshNavigation": true
+                    },
+                    "transientRequestPref": {
+                        "jitterFreePropLoad" : true,
+                        "userGesture": "EFFECTIVITY_CHANGE"
+                    }
+                },
+                "occContext":"{{props.subPanelContext.occContext}}"
+            },
+            "events": {
+                "success": [{
+                    "name": "closePanel",
+                    "condition": "conditions.shouldClosePanel"
+                },{
+                    "name": "navigateToConfigPanel",
+                    "condition": "conditions.shouldNavigateToConfigPanel"
+                }]
+            },
+            "deps": "js/effectivityGroupTableService"
+        },
+        "navigateToConfigPanel":{
+            "actionType": "JSFunction",
+            "method": "goToPrevPanel",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}"
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "validateEndDateValue": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "onUpdateEndDate",
+                    "condition": "data.startDateTime.dbValue!== '' && data.endDateTime.dbValue!== ''"
+                }
+            ]
+        },
+        "onUpdateEndDate": {
+            "actionType": "JSFunction",
+            "method": "updateField",
+            "inputData": {
+                "fields": "{{fields}}",
+                "fieldNameToValidate": "endDateTime"
+            },
+            "deps": "js/occmgmtUtils"
+        },
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+         "navigateToAddEndItemPanelBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateFieldsOnState"
+                },
+                {
+                    "action": "navigateToAddEndItemPanelAction"
+                }
+            ]
+        },
+        "navigateToReplaceEndItemPanelBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateFieldsOnState"
+                },
+                {
+                    "action": "navigateToReplaceEndItemPanelAction"
+                }
+            ]
+        },
+        "updateFieldsOnState":{
+            "actionType": "JSFunction",
+            "method": "updateSubPanelContextOfView",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "key": "dateRangeState",
+                "value":
+                {
+                    "endItemValForDateRange":{
+                        "dbValue":"{{data.endItemValForDateRange.dbValue}}",
+                        "uiValue":"{{data.endItemValForDateRange.uiValue}}"
+                    },
+                    "nameBox":"{{data.nameBox.dbValue}}",
+                    "startDateTime":"{{data.startDateTime.dbValue}}",
+                    "endDateTime":"{{data.endDateTime.dbValue}}",
+                    "endDateOptions":{
+                        "dbValue":"{{data.endDateOptions.dbValue}}",
+                        "uiValue":"{{data.endDateOptions.uiValue}}"
+                    }
+                }
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+
+        "navigateToAddEndItemPanelAction": {
+            "actionType": "JSFunction",
+            "method": "navigateToView",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "view": {
+                    "panelId":"AddReferenceSub",
+                    "title": "{{data.navigateAddCommand.tooltip}}",
+                    "additionalSubPanelContext": {
+                        "activeState": "{{fields.activeState}}",
+                        "selectionMode": "single",
+                        "filterTypes": "ItemRevision"
+                    }
+                }
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "navigateToReplaceEndItemPanelAction": {
+            "actionType": "JSFunction",
+            "method": "navigateToView",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "view": {
+                    "panelId":"AddReferenceSub",
+                    "title": "{{data.navigateReplaceCommand.tooltip}}",
+                    "additionalSubPanelContext": {
+                        "activeState": "{{fields.activeState}}",
+                        "selectionMode": "single",
+                        "filterTypes": "ItemRevision"
+                    }
+                }
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "updateFieldValuesFromState": {
+            "actionType": "JSFunction",
+            "method": "updateFieldValuesFromState",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "i18n":"{{data.i18n}}"
+            },
+            "outputData":
+            {
+                "endItemValForDateRange.dbValue":"endItemValueDbValue",
+                "endItemValForDateRange.uiValue":"endItemValueUiValue",
+                "nameBox.dbValue": "nameBox",
+                "startDateTime.dbValue": "startDateTime",
+                "endDateTime.dbValue": "endDateTime",
+                "endDateOptions.dbValue": "endDateOptionsDbValue",
+                "endDateOptions.uiValue": "endDateOptionsUiValue"
+            },
+            "deps": "js/effectivityGroupTableService"
+        },
+        "updateEndItemAndNavigateToAuthorEGOPanel":
+        {
+            "actionType": "JSFunction",
+            "method": "updateEndItemForDateRange",
+            "inputData":
+            {
+                "eventData": "{{parameters.eventData}}",
+                "endItemValForDateRange": "{{data.endItemValForDateRange}}"
+            },
+            "outputData":
+            {
+                "endItemValForDateRange.dbValue":"endItemValuedbValue",
+                "endItemValForDateRange.uiValue":"endItemValueuiValue"
+            },
+            "deps": "js/effectivityGroupTableService"
+        },
+        "removeEndItem":
+        {
+            "actionType": "JSFunction",
+            "method": "removeEndItemValue",
+            "inputData": {
+
+            },
+            "outputData":
+            {
+                "endItemValForDateRange.dbValue":"endItemValueDbValue",
+                "endItemValForDateRange.uiValue":"endItemValueUiValue"
+            },
+            "deps": "js/effectivityGroupTableService"
+        }
+    },
+    "functions": {
+        "getEffectivityGroupRevision": {
+            "functionName": "getEffectivityGroupRevision",
+            "parameters":
+            [
+            ]
+        },
+        "appendAndGetNewAndExistingEffGroup": {
+            "functionName": "applyDateEffectivityGroups",
+            "parameters":
+            [
+                "{{data}}",
+                "{{data.groupRevision}}"
+            ]
+        },
+        "getDateRange": {
+            "functionName": "getDateRange",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getOpenEndedStatus": {
+            "functionName": "getOpenEndedStatus",
+            "parameters": [
+                "{{data}}"
+            ]
+        }
+    },
+    "i18n": {
+        "apply":["OccurrenceManagementConstants"],
+        "upText":["OccurrenceManagementConstants"],
+        "soText":["OccurrenceManagementConstants"],
+        "dateEffectivity":["OccurrenceManagementConstants"],
+        "name":["OccurrenceManagementConstants"],
+        "addEndItem":[ "OccurrenceManagementConstants" ],
+        "startDate":["OccurrenceManagementConstants"],
+        "endDate":["OccurrenceManagementConstants"],
+        "dateRangeInvalidMessage":["OccurrenceManagementMessages"],
+        "genericServerError":["OccurrenceManagementMessages"],
+        "endItemMessage": ["OccurrenceManagementConstants"],
+        "replaceEndItem": ["OccurrenceEffectivityConstants"],
+        "removeEndItem": ["OccurrenceEffectivityConstants"]
+    },
+    "conditions":
+    {
+        "isValidStartAndEndDate": {
+            "expression": "data.endDateTime.dateApi.dateValue === '' || data.startDateTime.dateApi.dateValue === ''  || data.endDateTime.dbValue > data.startDateTime.dbValue"
+        },
+        "isEndDateVisible" : {
+            "expression": "data.endDateOptions.dbValue !== 'UP' && data.endDateOptions.dbValue !== 'SO'"
+        },
+        "shouldClosePanel": {
+            "expression": "props.subPanelContext.shouldClosePanelOnApply"
+        },
+        "shouldNavigateToConfigPanel": {
+            "expression": "!props.subPanelContext.shouldClosePanelOnApply"
+        },
+        "isDateRangeValid": {
+            "expression": "(data.nameBox.dbValue !== '' && data.nameBox.dbValue !== undefined) && (data.startDateTime.dbValue !== '' && data.startDateTime.dbValue !== undefined ) && (data.endDateOptions.dbValue === 'UP' || data.endDateOptions.dbValue === 'SO' || data.endDateTime.dbValue > data.startDateTime.dbValue)"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount":"updateFieldValuesFromState",
+        "onUpdate": [ {
+            "action": "validateEndDateValue",
+            "observers": ["viewModel.data.startDateTime.dbValue","viewModel.data.endDateTime.dbValue"]
+        } ]
+    },
+    "onEvent": [
+        {
+            "eventId": "createGroupEffectivity_done",
+            "cacheEventData": true,
+            "action": "createOrUpdateEffectivites"
+        },
+        {
+            "eventId": "createOrUpdateEffectivites_done",
+            "action": "applyNewlyCreatedEffectivityGroup"
+        },
+        {
+            "eventId": "navigateToConfigPanel",
+            "action": "navigateToConfigPanel"
+        },
+         {
+            "eventId": "closePanel",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "updateStateOrCtxBeforeBack",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "updateEndItemAndNavigateToAuthorEGOPanel"
+        }
+    ],
+    "messages": {
+        "addFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.genericServerError}}",
+            "messageTextParams": [
+                "{{data.effResp.partialErrors[0].errorValues[0].message}}"
+            ]
+        },
+        "createObjectFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.genericServerError}}",
+            "messageTextParams": [
+                "{{data.groupRevision.ServiceData.partialErrors[0].errorValues[0].message}}"
+            ]
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+            }
+    }
+}

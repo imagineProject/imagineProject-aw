@@ -1,0 +1,243 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-list.directive",
+        "js/aw-include.directive",
+        "js/aw-i18n.directive",
+        "js/aw-widget.directive",
+        "js/exist-when.directive",
+        "js/aw-checkbox.directive",
+        "js/aw-listbox.directive"
+    ],
+
+    "actions": {
+        "initPanel": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "loadAllParticipantData"
+                },
+                {
+                    "action": "initializeSelectionModel"
+                },
+                {
+                    "action": "initDataProvider"
+                }
+            ]
+        },
+        "initDataProvider": {
+            "actionType": "dataProvider",
+            "methods": [ "keyRolesDataProvider" ]
+        },
+        "initializeSelectionModel": {
+            "actionType": "JSFunction",
+            "method": "initializeSelectionModel",
+            "inputData": {
+                "selectionMode": "{{props.subPanelContext.addUserPanelState.selectionModelMode}}",
+                "selectionModels": "{{selectionModels}}"
+            },
+            "outputData": {
+                "selectionModels": ""
+            },
+            "deps": "js/Awp0WorkflowKeyRoles"
+        },
+        "loadAllParticipantData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "maxToLoad": -1,
+                        "maxToReturn": -1,
+                        "providerName": "Awp0ResourceProvider",
+                        "searchCriteria": {
+                            "responseType": "",
+                            "searchString": "",
+                            "resourceProviderContentType": "ParticipantType",
+                            "ParticipantAllowMultipleAssignee": "{{function:getParticipantMultipleAssignee}}"
+                        },
+                        "searchFilterFieldSortType": "Alphabetical",
+                        "searchFilterMap6": {},
+                        "searchSortCriteria": [],
+                        "cursor": {
+                            "startIndex": 0
+                        }
+                    }
+                }
+            },
+            "outputData": {
+                "keyRoleObjects": "{{function:getAllKeyRoleObjects}}"
+            }
+        },
+        "keyRolesProviderBatchAction": {
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action": "showAvailableKeyRoles"
+                },
+                {
+                    "action": "buildCrumbTitle"
+                }
+            ]
+        },
+        "showAvailableKeyRoles": {
+            "actionType": "JSFunction",
+            "method": "showAvailableKeyRoles",
+            "inputData": {
+                "searchResults": "{{data.keyRoleObjects}}",
+                "filterString": "{{data.searchBox.dbValue}}"
+            },
+            "outputData": {
+                "searchResults": ""
+            },
+            "deps": "js/Awp0WorkflowKeyRoles"
+        },
+        "buildCrumbTitle": {
+            "actionType": "JSFunctionAsync",
+            "method": "buildCrumbTitle",
+            "inputData": {
+                "searchString": "{{data.searchBox.dbValue}}",
+                "totalFound": "{{data.searchResults.length}}",
+                "totalLoaded": "{{data.keyRoleObjects.length}}"
+            },
+            "outputData": {
+                "crumbTitle": ""
+            },
+            "deps": "js/Awp0WorkflowKeyRoles"
+        },
+        "filterKeyRoles": {
+            "actionType": "dataProvider",
+            "methods": [ "keyRolesDataProvider" ]
+        },
+        "addKeyRoles": {
+            "actionType": "JSFunction",
+            "method": "addUserObject",
+            "inputData": {
+                "multiSelectEnabled":"{{function:getMultiSelectMode}}",
+                "selection": "{{data.selectionData.selected}}",
+                "subPanelContext": "{{props.subPanelContext.addUserPanelState}}"
+            },
+            "deps": "js/Awp0WorkflowKeyRoles"
+        }
+    },
+    "data": {
+        "searchBox": {
+            "displayName": "",
+            "dbValue": "*",
+            "type": "STRING",
+            "requiredText": "Search"
+        },
+        "crumbTitle": null,
+        "projectMembers": [ {
+                "internalName": "$PROJECT_ADMINISTRATOR",
+                "displayName": "{{i18n.PROJECT_ADMINISTRATOR}}",
+                "typeName": "projectsSectionTitle"
+            },
+            {
+                "internalName": "$PROJECT_TEAM_ADMINISTRATOR",
+                "displayName": "{{i18n.PROJECT_TEAM_ADMINISTRATOR}}",
+                "typeName": "projectsSectionTitle"
+            },
+            {
+                "internalName": "$PROJECT_AUTHOR",
+                "displayName": "{{i18n.PROJECT_AUTHOR}}",
+                "typeName": "projectsSectionTitle"
+            },
+            {
+                "internalName": "$PROJECT_MEMBER",
+                "displayName": "{{i18n.PROJECT_MEMBER}}",
+                "typeName": "projectsSectionTitle"
+            }
+        ],
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+
+    "selectionModels": {
+        "keyRolesSelectionModel": {
+            "selectionMode": "{{props.subPanelContext.addUserPanelState.selectionModelMode}}"
+        }
+    },
+
+    "dataProviders": {
+        "keyRolesDataProvider": {
+            "action": "keyRolesProviderBatchAction",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.searchResults.totalFound}}",
+            "inputData": {
+                "selectionData": "{{fields.selectionData}}",
+                "selectionModel": "{{data.selectionModels.keyRolesSelectionModel}}"
+            },
+            "noResultsFound" : "{{i18n.noResultsFound}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initPanel"
+    },
+
+    "onEvent": [],
+    "messages": {},
+    "functions": {
+        "getAllKeyRoleObjects": {
+            "functionName": "getAllKeyRoleObjects",
+            "parameters": [
+                "{{props.subPanelContext.addUserPanelState.workflowKeyMembers}}",
+                "{{data.projectMembers}}",
+                "{{i18n.dynamicParticipants}}",
+                "{{i18n.Workflow}}",
+                "{{i18n.projectsSectionTitle}}"
+            ],
+            "deps": "js/Awp0WorkflowKeyRoles"
+        },
+        "getMultiSelectMode": {
+            "functionName": "getMultiSelectMode",
+            "parameters":
+            [
+                "{{props.subPanelContext.addUserPanelState.selectionModelMode}}"
+            ],
+            "deps": "js/Awp0WorkflowKeyRoles"
+        },
+        "getParticipantMultipleAssignee": {
+            "functionName": "getParticipantMultipleAssignee",
+            "parameters":
+            [
+                "{{props.subPanelContext.addUserPanelState.selectionModelMode}}"
+            ],
+            "deps": "js/Awp0WorkflowKeyRoles"
+        }
+    },
+    "conditions": {
+        "isValidToAdd": {
+            "expression": "data.selectionData != null && data.selectionData.selected && data.selectionData.selected.length > 0"
+        }
+    },
+
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+
+    "i18n": {
+        "projectsSectionTitle": [ "TCUICommandPanelsMessages" ],
+        "Add_Title": [ "WorkflowCommandPanelsMessages" ],
+        "Workflow": [ "WorkflowCommandPanelsMessages" ],
+        "dynamicParticipants": [ "WorkflowDesignerMessages" ],
+        "objectType": [ "WorkflowDesignerMessages" ],
+        "reassignOutsideGroupRoleQuestion": [ "WorkflowDesignerMessages" ],
+        "resultsText": [ "SearchMessages" ],
+        "PROJECT_ADMINISTRATOR": [ "WorkflowDesignerMessages" ],
+        "PROJECT_TEAM_ADMINISTRATOR": [ "WorkflowDesignerMessages" ],
+        "PROJECT_AUTHOR": [ "WorkflowDesignerMessages" ],
+        "PROJECT_MEMBER": [ "WorkflowDesignerMessages" ],
+        "addCommandTitle": [ "InboxMessages" ],
+        "noResultsFound": [ "InboxMessages"]
+    }
+
+}

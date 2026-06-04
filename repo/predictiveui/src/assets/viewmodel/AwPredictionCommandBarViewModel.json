@@ -1,0 +1,84 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "initialize": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/AwPredictionCommandBarService",
+            "method": "awPredictionCommandBarInitFunction",
+            "inputData": {
+                "widgetData": "{{props.widgetData}}"
+            },
+            "outputData": {
+                "commandList": ""
+            }
+        },
+        "refreshServerVisibility": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/AwPredictionCommandBarService",
+            "method": "refreshServerVisibility",
+            "inputData": {
+                "commandList": "{{data.commandList}}",
+                "visibilityLoader": "{{props.visibilityLoader}}"
+            },
+            "outputData": {
+                "visibleServerCommands": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "nxCommands.update",
+                    "condition": "ctx.aw_hosting_enabled && ctx.aw_host_type === 'NX'",
+                    "eventData": {
+                        "name": "visibleServerCommands",
+                        "data": ""
+                    }
+                } ]
+            }
+        },
+        "render": {
+            "method": "awPredicitonCommandBarRenderFn",
+            "deps": "js/AwPredictionCommandBarService"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initialize",
+        "render": "render",
+        "onUpdate": [ {
+            "action": "refreshServerVisibility",
+            "observers": [
+                "props.visibilityLoader",
+                "viewModel.data.commandList"
+            ]
+        }, {
+            "action": "initialize",
+            "observers": [
+                "props.widgetData"
+            ]
+        } ]
+    },
+    "props": {
+        "alignment": {
+            "type": "string"
+        },
+        "anchor": {
+            "type": "string"
+        },
+        "child-command-click-callback": {
+            "type": "object"
+        },
+        "visibility-loader": {
+            "type": "object"
+        },
+        "context": {
+            "type": "object"
+        },
+        "widget-data": {
+            "type": "string"
+        },
+        "prediction-commands": {
+            "type": "array"
+        },
+        "server-visiblility": {
+            "type": "boolean"
+        }
+    }
+}

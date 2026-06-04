@@ -1,0 +1,219 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "addElementState":{
+            "initialValues":{
+                "AddOccurrencePropertiesOnCreate" : false,
+                "parentElements" : [],
+                "parentToLoadAllowedTypes" : null,
+                "siblingElements" : [],
+                "elementCreateInput" : null,
+                "fetchPagedOccurrences" : null,
+                "isCopyButtonEnabled" : null,
+                "previousSelectionUid" : "",
+                "Awb0ElementCreateSubView" : false,
+                "numberOfElements" : 1,
+                "occurrenceTypeName": "PSOccurrence",
+                "isSubstituteElementAddPanel": true,
+                "fetchOccurrenceTypesFor": "substituteGroup"
+            },
+            "meta": {
+            }
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "numberOfElements": {
+            "dbValue": 1
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_SUBSTITUTE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions":
+    {
+        "updateAddElementStateForAceSiblingPanelAction":
+        {
+            "actionType": "JSFunction",
+            "method": "updateStateForAceAddSiblingPanel",
+            "inputData":
+            {
+                "selectedObjects": "{{subPanelContext.occContext.pwaSelection}}",
+                "addElementState": "{{data.addElementState}}"
+            },
+            "outputData": {
+                "addElementState" : ""
+            },
+
+            "deps": "js/aceAddElementService"
+        },
+        "addOneToOneSubstituteOccurrence": {
+            "actionType": "TcSoaService",
+            "serviceName": "StructureManagement-2024-12-Substitutes",
+            "method": "createSubstituteGroups",
+            "inputData": {
+                "createSubstituteGroupInputs":"{{function:getCreateOneToOneSubstituteOccurrenceInputs}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "reloadsubstituteGroupTable"
+                    },
+                    {
+                        "name": "closePanelAfterAddingSubstitutes"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "addComponentToSubstituteGroupFailure"
+                    }
+                ]
+            },
+           "deps": "js/aceOccurrenceSubstituteGroupService"
+        },
+        "closeDialogIfNotPinned": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "closeDialogPanel",
+                    "condition": "!subPanelContext.panelPinned"
+                }
+            ]
+        },
+        "closeDialogPanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "CREATE_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "setSubstituteElementTypeOnUpdate": {
+            "actionType": "JSFunction",
+            "method": "setSubstituteElementTypeOnUpdate",
+            "inputData": {
+                "addElementState": "{{data.addElementState}}"
+            },
+            "outputData": {
+                "addElementState": ""
+            },
+            "deps": "js/aceOccurrenceSubstituteGroupService"
+        },
+        "addPropertiesAndSetCreateInputContext": {
+            "actionType": "JSFunction",
+            "method": "buildElementCreateInputAndUpdateState",
+            "inputData": {
+                "value": "{{data}}",
+                "subPanelContext": {
+                    "addElementState": "{{fields.addElementState}}",
+                    "editHandler": "{{editHandlers.addPanelEditHandler}}"
+                }
+            },
+            "outputData": {},
+            "events": {
+                "success": [
+                    {
+                        "name": "setCreateInputContextSuccess",
+                        "excludeLocalDataCtx": true
+                    }
+                ]
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "closeDialogPanel",
+                    "condition": "conditions.isPwaSelectionChanged"
+                }
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "updateAddElementStateForAceSiblingPanelAction",
+        "onUpdate": [
+            {
+                "action": "setSubstituteElementTypeOnUpdate",
+                "observers": ["fields.addElementState.allowedPSOccurrenceTypes"]
+            }
+        ]
+    },
+    "onEvent": [
+        {
+            "eventId": "addElement.elementsAdded",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "addOneToOneSubstituteOccurrence"
+        },
+        {
+            "eventId": "addSubstituteElementsEvent",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "addOneToOneSubstituteOccurrence"
+        },
+        {
+            "eventId": "closePanelAfterAddingSubstitutes",
+            "action": "closeDialogIfNotPinned"
+        },
+        {
+            "eventId": "awb0Element.addElementProperties",
+            "action": "addPropertiesAndSetCreateInputContext",
+            "condition": "!conditions.isElementPropertiesSectionVisible"
+        }
+    ],
+    "messages": {
+        "addComponentToSubstituteGroupFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "functions": {
+        "getBOMLineForSelectedSWAElement": {
+            "functionName": "getBackingObjectsSync",
+            "parameters": [
+                "{{parameters.eventData.objectsToSelect}}"
+            ]
+        },
+        "getCreateOneToOneSubstituteOccurrenceInputs": {
+            "functionName": "getCreateOneToOneSubstituteOccurrenceInputs",
+            "parameters": [
+                "{{subPanelContext.occContext.pwaSelection}}",
+                "{{parameters.eventData.addElementResponse}}"
+            ]
+        }
+    },
+    "conditions": {
+        "isElementPropertiesSectionVisible":{
+            "expression": "data.addElementState.Awb0ElementCreateSubView"
+        },
+        "isPwaSelectionChanged": {
+            "expression": "(subPanelContext.occContext.pwaSelection !== undefined && addElementState.previousSelectionUid !== '' && addElementState.previousSelectionUid !== subPanelContext.occContext.pwaSelection[0].uid) || subPanelContext.occContext.pwaSelection.length > 1"
+        }
+    },
+    "i18n": {
+        "toTitle": [
+            "OccurrenceManagementConstants"
+        ],
+        "addSubstitute": [
+            "OccurrenceManagementConstants"
+        ]
+    }
+
+}

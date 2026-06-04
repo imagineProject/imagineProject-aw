@@ -1,0 +1,163 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "createConstraint": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Core-2012-10-DataManagement",
+            "method": "createRelateAndSubmitObjects",
+            "policy": {
+                "types": "{{function:getConstraintGridEditorPolicyTypes}}"
+            },
+            "inputData": {
+                "inputs": "{{function:getConstraintCreateInput}}"
+            },
+            "outputData": {
+                "constraintsData": "{{function:getCreatedConstraints}}",
+                "createConstraintResponse": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0ConstraintsGridEditor.generateNextValues"
+                    },
+                    {
+                        "name": "Pca0ConstraintsTable.validateAndAddCreatedConstraintsToPWA",
+                        "eventData": {
+                            "constraints": "{{data.constraintsData.createdConstraints}}",
+                            "canLoadInEditor": "{{data.constraintsData.canLoadInEditor}}"
+                        }
+                    },
+                    {
+                        "name": "Pca0ConstraintsGridEditor.addNewConstraintsInSelectedObjectsOfSessionStorage",
+                        "eventData": {
+                            "createdConstraintModelObjects": "{{data.createConstraintResponse.ServiceData.modelObjects}}"
+                        }
+                    },
+                    {
+                        "name": "Pca0ConstraintsGridEditorAdd.closeDialog"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "Pca0ConstraintsTableViewModel.processPartialErrors",
+                        "eventData": {
+                            "ServiceData": "{{data.createConstraintResponse.ServiceData}}"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/pca0ConstraintsGridService"
+        },
+        "processPartialErrors": {
+            "actionType": "JSFunction",
+            "method": "processPartialErrors",
+            "inputData": {
+                "eventData": "{{parameters.eventData.ServiceData}}"
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "generateNextValues": {
+            "actionType": "JSFunction",
+            "method": "autoAssignAllProperties",
+            "inputData": {
+                "data": "{{data}}",
+                "operationType": "CREATE",
+                "createType": "data.selectedConstraintType.dbValue",
+                "editHandler": "{{editHandlers.addPanelEditHandler}}"
+            },
+            "deps": "js/autoAssignService"
+        },
+        "closeDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "setActiveView": {
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "functions": {
+        "getConstraintCreateInput": {
+            "functionName": "getConstraintCreateInput",
+            "parameters": [
+                "{{data.data}}",
+                "{{props.subPanelContext}}",
+                "{{editHandlers.addPanelEditHandler}}",
+                "{{atomicData.xrtState.xrtTypeLoaded}}"
+            ]
+        },
+        "getConstraintGridEditorPolicyTypes": {
+            "functionName": "getConstraintGridEditorPolicyTypes",
+            "parameters": [
+                "{{atomicData.xrtState.xrtTypeLoaded}}",
+                "{{props.subPanelContext.variabilityTreeData}}"
+            ]
+        },
+        "getCreatedConstraints": {
+            "functionName": "getCreatedConstraints",
+            "parameters": [
+                "{{props.subPanelContext.isOpenedFromPWA}}",
+                "{{props.subPanelContext.pageContext.sublocationState.secondaryActiveTabId}}"
+            ]
+        }
+    },
+    "data": {
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub"
+            },
+            "meta": {}
+        },
+        "ruleTypes": ""
+    },
+    "i18n": {
+        "type": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "addCmd": [
+            "ConfiguratorExplorerMessages"
+        ]
+    },
+    "lifecycleHooks": { },
+    "onEvent": [{
+            "eventId": "Pca0ConstraintsGridEditor.generateNextValues",
+            "action": "generateNextValues",
+            "condition": "props.subPanelContext.panelPinned === true"
+        },
+        {
+            "eventId": "Pca0ConstraintsGridEditorAdd.closeDialog",
+            "action": "closeDialog",
+            "condition": "props.subPanelContext.panelPinned === false"
+        }
+    ]
+}

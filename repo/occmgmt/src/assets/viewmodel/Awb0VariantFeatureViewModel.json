@@ -1,0 +1,174 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "initSVROwningItems": {
+            "actionType": "JSFunction",
+            "method": "initSVROwningItems",
+            "inputData": {
+                "context": "{{props.subPanelContext.occContext}}",
+                "contextKey": "{{props.subPanelContext.contextKey}}",
+                "configSvrEndItem": "{{props.subPanelContext.configSvrEndItem}}"
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "revealSVROwningItems": {
+            "actionType": "dataProvider",
+            "method": "getConfiguredSVROwningItems"
+        },
+        "revealSVROwningItemsReadOnly": {
+            "actionType": "dataProvider",
+            "method": "getConfiguredSVROwningItemsReadOnly"
+        },
+        "checkTopLineForConfigContext": {
+            "actionType": "JSFunction",
+            "method": "checkTopLineForConfigContext",
+            "inputData": {
+                "context": "{{props.subPanelContext.occContext}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "topLineConfigContext": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "configPanel.revealSVROwningItems"
+                } ]
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "fetchSVROwningItems": {
+            "actionType": "JSFunction",
+            "method": "getSVROwningItems",
+            "inputData": {
+                "configSvrEndItem": "{{props.subPanelContext.configSvrEndItem}}"
+            },
+            "outputData": {
+                "svrOwningItems": ""
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "svrOwningItemSelected": {
+            "actionType": "JSFunction",
+            "method": "launchCustomDialogPanel",
+            "deps": "js/occmgmtCustomDialogService",
+            "inputData": {
+                "customDialogAction": "{{subPanelContext.customDialogAction}}",
+                "options": {
+                    "view": "SVROwningElementPanelWrapper",
+                    "placement": "left",
+                    "parent": ".aw-layout-workarea",
+                    "width": "STANDARD",
+                    "height": "FULL",
+                    "subPanelContext": "{{subPanelContext}}",
+                    "isCloseVisible": false,
+                    "push": true
+                }
+            }
+        },
+        "navigateToSVROwningElementPanel": {
+            "actionType": "JSFunction",
+            "method": "navigateToView",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "view": {
+                    "panelId": "SVROwningElementPanel",
+                    "title": "{{data.i18n.configPanelEffectiveVariantForTitle}}",
+                    "subPanelContext": "{{props.subPanelContext}}"
+                }
+            },
+            "events": {},
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "closePopupWindow": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "inputData": {
+                "popupId": "{{data.popupId}}"
+            },
+            "deps": "js/popupService"
+        }
+    },
+    "dataProviders": {
+        "getConfiguredSVROwningItems": {
+            "action": "fetchSVROwningItems",
+            "response": "{{data.svrOwningItems}}",
+            "uidInResponse": "dbValues[0]",
+            "selectionModelMode": "single"
+        },
+        "getConfiguredSVROwningItemsReadOnly": {
+            "action": "fetchSVROwningItems",
+            "response": "{{data.svrOwningItems}}",
+            "uidInResponse": "dbValues[0]",
+            "selectionModelMode": "none"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": {
+            "action": "initSVROwningItems",
+            "observers": [
+                "props.subPanelContext.occContext.productContextInfo"
+            ]
+        }
+    },
+    "onEvent": [{
+            "eventId": "configPanel.revealSVROwningItems",
+            "action": "revealSVROwningItems",
+            "condition":"conditions.isSvrEndItemWritable"
+        },
+        {
+            "eventId": "configPanel.revealSVROwningItems",
+            "action": "revealSVROwningItemsReadOnly",
+            "condition":"conditions.isSvrEndItemReadOnly"
+        },
+        {
+            "eventId": "configPanel.getTopLineCC",
+            "action": "checkTopLineForConfigContext"
+        },
+        {
+            "eventId": "getConfiguredSVROwningItems.selectionChangeEvent",
+            "condition": "!subPanelContext.nestedNavigationState",
+            "action": "svrOwningItemSelected"
+        },
+        {
+            "eventId": "getConfiguredSVROwningItems.selectionChangeEvent",
+            "condition": "subPanelContext.nestedNavigationState.views.length>=0",
+            "action": "navigateToSVROwningElementPanel"
+        }
+    ],
+    "messages": {},
+    "conditions": {
+        "isSvrEndItemReadOnly": {
+            "expression": "(ctx.sublocation.clientScopeURI === 'Awb0OccurrenceManagement' && ctx.sublocation.nameToken !== com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation && data.topLineConfigContext) || props.subPanelContext.occContext.readOnlyFeatures.Awb0VariantFeature"
+        },
+        "isSvrEndItemWritable": {
+            "expression": "(ctx.sublocation.clientScopeURI !== 'Awb0OccurrenceManagement' || ctx.sublocation.nameToken === com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation && !props.subPanelContext.occContext.readOnlyFeatures.Awb0VariantFeature) || !data.topLineConfigContext"
+        }
+
+    },
+    "data": {
+        "variantCommands": "awb0_variantCommands",
+        "savedVariant": {
+            "uiValue": "{{i18n.savedVariant}}",
+            "type": "STRING"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "i18n": {
+        "variant": [
+            "OccurrenceManagementConstants"
+        ],
+        "configPanelEffectiveVariantForTitle": [
+            "OccurrenceManagementConstants"
+        ],
+        "variantSectionTitle": [
+            "OccurrenceManagementConstants"
+        ],
+        "savedVariant": [
+            "OccurrenceManagementConstants"
+        ]
+    }
+}

@@ -1,0 +1,48 @@
+<div class="aw-layout-flexColumn" show-when="data.activeState.value.activeView==='AddObjectPrimarySub'">
+    <aw-panel-header-section header-section-label="i18n.toTitle"
+        header-section-element="{{data.headerSectionElement}}"
+        header-section-hide-separator ="{{props.addElementState.hideSeperator?props.addElementState.hideSeperator:data.hideSeperator}}"
+        header-section-element-array="{{props.subPanelContext.occContext.pwaSelection.length > 1 ? subPanelContext.occContext.pwaSelection : undefined}}">
+    </aw-panel-header-section>
+    <aw-include exist-when="conditions.isAdditionalComponentVisible"
+        name={{props.addElementState.additionalComponentName}}
+        sub-panel-context ="{currentState: props.subPanelContext.occContext.currentState, addElementState:props.addElementState, rootElement:props.subPanelContext.occContext.rootElement, extensionVMProps: data.extensionVMProps, addPanelState: fields.addPanelState}">
+    </aw-include>
+    <aw-form name="createInputsFormValidator" class="h-12" aw-form-validator="">
+        <aw-add include-types="{{data.allowedTypeInfo.objectTypeName}}"
+            type-filter="{{data.allowedTypeInfo.searchTypeName}}"
+            load-sub-types="true" max-recent-count="5"
+            exist-when="data.allowedTypeInfo"
+            visible-tabs="{{data.allowedTypeInfo.allowedTabs}}"
+            preferred-type="{{data.allowedTypeInfo.preferredType}}"
+            is-include-sub-types="{{data.isIncludeSubTypes}}"
+            add-panel-state="fields.addPanelState"
+            active-state="data.activeState"
+            xrt-state="data.xrtState"
+            project-state="data.projectState"
+            edit-handler="editHandlers.addPanelEditHandler"
+            sub-panel-context="{ ...subPanelContext, triggerCreate: data.triggerCreate, extensionVMProps: data.extensionVMProps }">
+        </aw-add>
+        <!-- Below Element Properties section is for palette and search tab of add panel.
+             For new tab, Element Properties section is coming from XRT html panel -->
+        <aw-command-panel-section
+            exist-when="conditions.isElementCreateSubVisible"
+            caption="{{data.occurrencePropertySectionName}}" collapsed="false">
+            <aw-command-sub-panel panel-id="Awb0ElementCreateSub" sub-panel-context="{...subPanelContext, addPanelState: fields.addPanelState, xrtState: data.xrtState}" isolate-mode="true"></aw-command-sub-panel>
+        </aw-command-panel-section>
+        <!-- When markup is enabled, we only want to show "Number of elements field" -->
+        <aw-widget prop="data.numberOfElementsOnly" visible-when="(!props.subPanelContext.addElementState.AddOccurrencePropertiesOnCreate || ctx.aceActiveContext.context.isMarkupEnabled ) && subPanelContext.occContext.supportedFeatures.Awb0BulkAddFeature && conditions.isSingleElementSelectedInPaletteOrSearchTab"></aw-widget>
+        <aw-panel-footer>
+            <aw-button action="createAndAddElement" enable-when="!ctx.addItemEventProgressing && formProp.attributes.valid && props.subPanelContext.addElementState.areNumberOfElementsInRange === true && conditions.isSourceParentValid" visible-when="conditions.isNewTabAddButtonVisible">
+                <aw-i18n>i18n.addElementBtn</aw-i18n>
+            </aw-button>
+            <aw-button button-type='base' action="getPropertiesToCopy" enable-when="props.subPanelContext.addElementState.areNumberOfElementsInRange === true && conditions.hasAnySelection && props.subPanelContext.addElementState.isCopyButtonEnabled && conditions.isSourceParentValid" visible-when="conditions.isPaletteTabSelected || conditions.isSearchTabSelected">
+                <aw-i18n>i18n.addElementCopyButtonText</aw-i18n>
+            </aw-button>
+            <aw-button action="addElements" enable-when="props.subPanelContext.addElementState.areNumberOfElementsInRange === true && conditions.hasAnySelection && conditions.isSourceParentValid && !props.subPanelContext.addElementState.disableAdd" visible-when="!conditions.isNewTabAddButtonVisible">
+                <aw-i18n>i18n.addElementBtn</aw-i18n>
+            </aw-button>
+        </aw-panel-footer>
+    </aw-form>
+</div>
+<aw-add-navigate active-state="data.activeState" project-state="data.projectState" action="actions.setActiveView"></aw-add-navigate>

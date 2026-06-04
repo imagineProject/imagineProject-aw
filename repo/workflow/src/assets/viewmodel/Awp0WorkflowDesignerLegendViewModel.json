@@ -1,0 +1,126 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-panel-body.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-panel.directive",
+        "js/aw-list.directive",
+        "js/aw-bpmn-cell.directive",
+        "js/aw-listbox.directive",
+        "js/extended-tooltip.directive",
+        "js/visible-when.directive"
+    ],
+    "data": {
+        "taskTypesToolTipWithOutView": {
+            "extendedTooltipContent": "{{data.taskTypesToolTip.uiValue}}"
+        },
+        "pathTypesToolTipWithOutView": {
+            "extendedTooltipContent": "{{data.pathTypesToolTip.uiValue}}"
+        },
+        "taskTypesToolTip": {
+            "uiValue": "{{i18n.taskTypesToolTip}}"
+        },
+        "pathTypesToolTip": {
+            "uiValue": "{{i18n.pathTypesToolTip}}"
+        }
+    },
+    "actions": {
+        "reveal": {
+            "actionType": "dataProvider",
+            "methods": [ "taskTypesProvider", "pathTypesProvider" ]
+        },
+        "populateTaskTemplateTypes": {
+            "actionType": "JSFunction",
+            "method": "populateTaskTemplateTypeCategories",
+            "inputData":
+            {
+                "objectTypeLegendData": "{{props.subPanelContext.legend.createTaskTemplateCategories}}"
+            },
+            "outputData": {
+                "taskTypes": ""
+            },
+            "deps": "js/Awp0WorkflowDesignerGraphLegendManager"
+        },
+        "populatePathTypes": {
+            "actionType": "JSFunction",
+            "method": "populatePathTypeCategories",
+            "deps": "js/Awp0WorkflowDesignerGraphLegendManager",
+            "inputData":
+            {
+                "objectTypeLegendData": "{{props.subPanelContext.legend.createPathCategories}}"
+            },
+            "outputData": {
+                "pathTypes": ""
+            }
+        },
+        "createConnectionPath": {
+            "actionType": "JSFunction",
+            "method": "createConnectionPath",
+            "deps": "js/Awp0WorkflowDesignerGraphEditHandler",
+            "inputData": {
+                "graphModel": "{{props.subPanelContext.graphModel}}",
+                "legendState" : "{{ctx.graph.legendState}}",
+                "selectedPath": "{{data.dataProviders.pathTypesProvider.selectedObjects[0]}}",
+                "taskDataProvider": "{{data.dataProviders.taskTypesProvider}}",
+                "pathDataProvider": "{{data.dataProviders.pathTypesProvider}}"
+            }
+        },
+        "resetConnectionMode": {
+            "actionType": "JSFunction",
+            "method": "resetConnectionMode",
+            "deps": "js/Awp0WorkflowDesignerGraphEditHandler",
+            "inputData": {
+                "graphModel": "{{props.subPanelContext.graphModel}}",
+                "pathDataProvider": "{{data.dataProviders.pathTypesProvider}}"
+            }
+        }
+    },
+    "dataProviders":
+    {
+        "taskTypesProvider":
+        {
+            "action": "populateTaskTemplateTypes",
+            "response": "{{data.taskTypes}}",
+            "totalFound": "{{data.taskTypes.length}}",
+            "totalLoaded": "{{data.taskTypes.length}}",
+            "selectionModelMode": "single"
+        },
+        "pathTypesProvider":
+        {
+            "action": "populatePathTypes",
+            "response": "{{data.pathTypes}}",
+            "totalFound": "{{data.pathTypes.length}}",
+            "totalLoaded": "{{data.pathTypes.length}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "taskTypesProvider.selectionChangeEvent",
+            "action": "resetConnectionMode"
+        },
+        {
+            "eventId": "pathTypesProvider.selectionChangeEvent",
+            "action": "createConnectionPath"
+        },
+        {
+            "eventId": "workflowDesigner.resetConnectionMode",
+            "action": "resetConnectionMode"
+        }
+    ],
+    "conditions": {
+
+    },
+    "props": {
+        "sub-panel-context":{
+            "type":"object"
+        }
+    },
+    "i18n": {
+        "taskTypes": [ "WorkflowDesignerMessages" ],
+        "pathTypes": [ "WorkflowDesignerMessages" ],
+        "taskPalette": [ "WorkflowDesignerMessages" ],
+        "taskTypesToolTip": [ "WorkflowDesignerMessages" ],
+        "pathTypesToolTip": [ "WorkflowDesignerMessages" ]
+    }
+}

@@ -1,0 +1,153 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "advancedFeatureSelectorLink": {
+            "displayName": "{{i18n.advancedFeatureSelector}}",
+            "type": "STRING",
+            "isRequired": "false"
+        },
+        "operationRadioProp": {
+            "displayName": "{{i18n.featureOperator}}",
+            "type": "STRING",
+            "isEditable": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP"
+        },
+        "operationRadioPropValues": {
+            "type": "STRING",
+            "dbValue": [ {
+                    "propDisplayValue": "{{i18n.orLabel}}",
+                    "propInternalValue": "or"
+                },
+                {
+                    "propDisplayValue": "{{i18n.andLabel}}",
+                    "propInternalValue": "and"
+                }
+            ]
+        },
+        "selectedFilters": {
+            "type": "STRING",
+            "displayName": "{{i18n.selectedFilters}}",
+            "dispValue": ""
+        }
+    },
+    "dataProviders": {
+        "featuresDataProvider": {
+            "response": "{{props.subPanelContext.searchState.featuresFilterCategory.featureFacetValues}}",
+            "moreValuesExist": false
+        }
+    },
+    "actions": {
+        "applyVariantsFilter": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0Variants.applyVariantsFilter",
+                    "eventData": {
+                        "selection": "{{props.subPanelContext.selection}}"
+                    }
+                } ]
+            }
+        },
+        "navigateToSubView": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "inputData": {
+                "subView": "Pca0VariantsFilter",
+                "searchState": "{{props.subPanelContext.searchState}}"
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "selectFeatureFacetsFromVariabilityPickerSubPanel": {
+            "actionType": "JSFunction",
+            "method": "selectFeatureFacetsFromVariabilityPickerSubPanel",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.searchState}}",
+                "eventData": "{{parameters.eventData}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0VariantsFilterView.navigateToSubView",
+                        "eventData": {
+                            "subView": "Pca0VariantsFilter"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "removeFeaturesFilter": {
+            "actionType": "JSFunction",
+            "method": "removeFeaturesFilter",
+            "inputData": {
+                "chipToRemove": "{{parameters.chip}}",
+                "searchState": "{{props.subPanelContext.searchState}}"
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "clearFilters": {
+            "actionType": "JSFunction",
+            "method": "clearFilters",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.searchState}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "pca0VariantRuleGrid.plTable.reload"
+                } ]
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "functions": {},
+    "lifecycleHooks": { },
+    "onEvent": [
+        {
+            "eventId": "Pca0VariantsFilterView.navigateToSubView",
+            "action": "navigateToSubView",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityFilterPanel.updateFeatureFacetsSelections",
+            "action": "selectFeatureFacetsFromVariabilityPickerSubPanel",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+    ],
+    "messages": {},
+    "conditions": {
+        "showFeaturesFilterCategory": {
+            "expression": "props.subPanelContext.searchState.featuresFilterCategory.filterValues.length > 0"
+        },
+        "showFeatureSelectorView": {
+            "expression": "props.subPanelContext.searchState.activeView === 'Pca0SelectFeaturesSubPanel'"
+        },
+        "showFeaturesFilterCategoryChip": {
+            "expression": "props.subPanelContext.searchState.featuresFilterChipData.labelDisplayName"
+        },
+        "showSelectedFilterChips": {
+            "expression": "!coditions.showFeatureSelectorView && conditions.showFeaturesFilterCategory"
+        },
+        "enableFilterApply": {
+            "expression": "props.subPanelContext.searchState.enableApplyFilter"
+        }
+    },
+    "i18n": {
+        "advancedFeatureSelector": [ "ConfiguratorExplorerMessages" ],
+        "clear": [ "ConfiguratorMessages" ],
+        "familiesAndFeatures": [ "ConfiguratorExplorerMessages" ],
+        "filters": [ "ConfiguratorExplorerMessages" ],
+        "filter": [ "ConfiguratorMessages" ],
+        "selectFeature": [ "ConfiguratorExplorerMessages" ],
+        "selectedFilters": [ "ConfiguratorExplorerMessages" ]
+    }
+}

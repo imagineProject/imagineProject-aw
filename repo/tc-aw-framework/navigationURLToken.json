@@ -1,0 +1,121 @@
+{
+  "$schema": "declarativeNavigationURLTokenSchema-1.0.0.json",
+  "navigationHandlers": {
+    "downloadFileHandler": {
+      "action": "downloadFile",
+      "activeWhen": {
+        "condition": "conditions.isDownloadFile"
+      }
+    },
+    "downloadFileHandlerInHostedMode": {
+      "action": "downloadFileInHostedMode",
+      "activeWhen": {
+        "condition": "conditions.isDownloadFileInHostedMode"
+      }
+    },
+    "schemaMapProjectHandler": {
+      "action": "schemaMapProject",
+      "activeWhen": {
+        "condition": "conditions.isSchemaMapProject"
+      }
+    },
+    "com_siemens_splm_clientfx_tcui_xrt_showObjectHandler": {
+      "action": "showObject",
+      "activeWhen": {
+        "condition": "conditions.isShowObjectNavigation"
+      }
+    }
+  },
+  "conditions": {
+    "isDownloadFile": {
+      "expression": {
+        "$source": "localContext.vmo.modelType.typeHierarchyArray",
+        "$query": {
+          "$in": [
+            "ImanFile"
+          ]
+        }
+      }
+    },
+    "isDownloadFileInHostedMode": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "ctx.aw_hosting_enabled",
+            "$query": {
+              "$eq": true
+            }
+          },
+          {
+            "$source": "localContext.vmo.modelType.typeHierarchyArray",
+            "$query": {
+              "$in": [
+                "ImanFile"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "isSchemaMapProject": {
+      "expression": {
+        "$source": "localContext.vmo.modelType.typeHierarchyArray",
+        "$query": {
+          "$in": [
+            "Tie0SchemaMap"
+          ]
+        }
+      }
+    },
+    "isShowObjectNavigation": {
+      "expression": "true"
+    }
+  },
+  "actions": {
+    "downloadFile": {
+      "actionType": "Navigate",
+      "navigateTo": "downloadFile",
+      "navigationParams": {
+        "uid": {
+          "$adapt": "{{localContext.vmo}}",
+          "path": "uid"
+        }
+      },
+      "navigateIn": "newTab"
+    },
+    "downloadFileInHostedMode": {
+      "actionType": "Navigate",
+      "navigateTo": "downloadFile",
+      "navigationParams": {
+        "uid": {
+          "$adapt": "{{localContext.vmo}}",
+          "path": "uid"
+        }
+      }
+    },
+    "schemaMapProject": {
+      "actionType": "Navigate",
+      "navigateTo": "schemaMapProject",
+      "navigationParams": {
+        "prj_uid": {
+          "$adapt": "{{localContext.vmo}}",
+          "path": "uid"
+        },
+        "prj_name": {
+          "$adapt": "{{localContext.vmo}}",
+          "path": "cellHeader1"
+        }
+      }
+    },
+    "showObject": {
+      "actionType": "Navigate",
+      "navigateTo": "com_siemens_splm_clientfx_tcui_xrt_showObject",
+      "navigationParams": {
+        "uid": {
+          "$adapt": "{{localContext.vmo}}",
+          "path": "uid"
+        }
+      }
+    }
+  }
+}

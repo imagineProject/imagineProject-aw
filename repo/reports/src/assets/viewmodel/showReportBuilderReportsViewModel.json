@@ -1,0 +1,125 @@
+{
+    "schemaVersion" : "1.0.0",
+    "selectionModels": {
+        "templateSelectionModel": {
+            "selectionMode": "single"
+        }
+    },
+    "data":{
+        "_provider": {
+            "breadcrumbConfig": {
+                "type" : "search",
+                "vm" : "AwSearchBreadcrumb",
+                "overflowIndex": 0
+            },
+            "priority": 2,
+            "label": {
+                "source": "/i18n/ReportsConstants",
+                "key": "reportBuilderSubLocation"
+            },
+            "clientScopeURI": "Awp0ReportBuilder",
+            "nameToken": "com.siemens.splm.reports:showReportBuilderReports",
+            "selectionMode": "single",
+            "context": {
+                "search": {
+                    "showLoadingText": true
+                }
+            },
+            "viewBase": "showReportBuilderReports"
+        },
+        "searchBox": {
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "true",
+            "dbValue": "{{ctx.awp0SummaryReports.reportFilter}}",
+            "dispValue": "{{ctx.awp0SummaryReports.reportFilter}}"
+        },
+        "searchState": {
+            "initialValues": { },
+            "meta": { }
+        },
+        "dashboardLocation": ["Reports"]
+    },
+    "actions": {
+        "initialize":{
+            "actionType": "batchJob",
+            "steps": [{
+                "action": "loadDashboardTabs",
+                "condition": "!ctx.dashboardObjects"
+            }]
+        },
+        "loadDashboardTabs":{
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "attributesToInflate": ["owning_user", "Fnd0Applicable_Assignment"],
+                        "maxToLoad": -1,
+                        "maxToReturn": -1,
+                        "providerName": "Rb0ReportsDataProvider",
+                        "searchCriteria": {
+                            "isFilterMapRequired": "False",
+                            "sourceObject": "",
+                            "relationsPath": "{{function:getRelationsPathForDashboardTabsLoading}}"
+                        },
+                        "searchFilterFieldSortType": "",
+                        "startIndex": "",
+                        "searchFilterMap6": "",
+                        "searchSortCriteria": ""
+                    },
+                    "inflateProperties": true,
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Awp0ReportBuilder"
+                    }
+                },
+                "1": {
+                    "types": [ {
+                        "name": "Rb0ReportsDashboard",
+                        "properties": [
+                            {
+                                "name": "rb0DashboardName"
+                            },
+                            {
+                                "name": "rb0SourceDashboard"
+                            },
+                            {
+                                "name": "rb0DashboardDescription"
+                            },
+                            {
+                                "name": "rb0DashboardLocation"
+                            },
+                            {
+                                "name": "rb0DashboardId"
+                            },
+                            {
+                                "name": "rb0DashboardTemplatesList"
+                            },
+                            {
+                                "name": "owning_user"
+                            },
+                            {
+                                "name": "Fnd0Applicable_Assignment"
+                            }
+                        ]
+                    } ]
+                }
+            },
+            "outputData":{
+                "ctx.dashboardObjects": "{{json:searchResultsJSON}}"
+            }
+        }
+    },
+    "lifecycleHooks": {
+        "onMount" : "initialize"
+    },
+    "functions": {
+        "getRelationsPathForDashboardTabsLoading":{
+            "functionName": "getRelationsPathForDashboardTabsLoading",
+            "parameters": ["{{data.dashboardLocation}}"],
+            "deps": "js/showMyDashboardService"
+        }
+    }
+}

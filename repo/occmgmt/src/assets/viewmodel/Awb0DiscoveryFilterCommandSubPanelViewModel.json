@@ -1,0 +1,641 @@
+{
+    "schemaVersion" : "1.0.0",
+    "actions":
+    {
+        "updateSearchStateOnPanelLoad":
+        {
+            "actionType": "JSFunction",
+            "method": "updateSearchStateOnPanelLoad",
+            "inputData": {
+                "searchState": "{{data.searchState}}",
+                "recipeState":"{{data.recipeState}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "occContext": "{{props.subPanelContext.occContext}}"
+            },
+            "outputData": {
+                "searchState": "searchState",
+                "recipeState": "recipeState"
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "updateSearchStateAfterFilterAction": {
+            "actionType": "JSFunction",
+            "method": "updateSearchStateAfterFilterAction",
+            "inputData": {
+                "filter": "{{data.appliedFilter.appliedFilterValue}}",
+                "category": "{{data.appliedFilter.appliedFilterCategory}}",
+                "updateAtomicData": "{{data.updateAtomicData}}",
+                "searchState": "{{data.searchState}}",
+                "recipeState":"{{data.recipeState}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "occContext": "{{props.subPanelContext.occContext}}",
+                "wildcardOperator": "{{data.appliedFilter.wildcardOperator}}",
+                "wildcardChanged": "{{data.appliedFilter.wildcardChanged}}",
+                "isNumericCategory": "{{data.appliedFilter.isNumericCategory}}"
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "initialize":
+        {
+            "actionType": "JSFunction",
+            "method": "initialize",
+            "inputData": {
+               "sharedData": "{{props.subPanelContext.sharedData}}"
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "initializeAndReveal": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "initialize"
+                },
+                {
+                    "action": "updateSearchStateOnPanelLoad"
+                }
+            ]
+        },
+        "processRecipeOnUpdate":{
+            "actionType": "JSFunction",
+            "method": "processRecipeOnUpdate",
+            "inputData": {
+                "updatedRecipes": "{{parameters.eventData.updatedRecipe.updatedRecipes}}",
+                "deletedRecipe": "{{parameters.eventData.updatedRecipe.deletedRecipe}}",
+                "modifiedGroupIndex": "{{parameters.eventData.updatedRecipe.groupIndex}}",
+                "updateAtomicData": "{{data.updateAtomicData}}",
+                "searchState": "{{data.searchState}}",
+                "recipeState":"{{fields.recipeState}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "occContext": "{{props.subPanelContext.occContext}}"
+            },
+            "deps": "js/discoveryFilterService"
+       },
+       "toggleCategoryLogic":{
+        "actionType": "JSFunction",
+        "method": "toggleCategoryLogic",
+        "inputData": {
+            "toggleCategory": "{{data.toggleCategoryInput.excludeCategory}}",
+            "excludeCategoryToggleValue": "{{data.toggleCategoryInput.excludeCategoryToggleValue}}",
+            "updateAtomicData": "{{data.updateAtomicData}}",
+            "searchState": "{{data.searchState}}",
+            "recipeState":"{{data.recipeState}}",
+            "sharedData": "{{props.subPanelContext.sharedData}}",
+            "occContext": "{{props.subPanelContext.occContext}}"
+        },
+        "deps": "js/discoveryFilterService"
+       },
+        "updatePartitionSchemeFacet": {
+            "actionType": "JSFunction",
+            "method": "updatePartitionSchemeFacet",
+            "inputData": {
+                "searchState":"{{data.searchState}}",
+                "searchStateUpdater":"{{data.updateAtomicData}}",
+                "categoryForFacetSearchInput":"{{data.facetCategoryInput.categorySearchInput}}",
+                "category":"{{data.facetCategoryInput.facetCategory}}",
+                "pciUid": "{{props.subPanelContext.occContext.productContextInfo.uid}}"
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "performFacetSearch": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2018-05-Finder",
+            "method": "performFacetSearch",
+            "inputData": {
+                "facetSearchInput": {
+                    "maxToReturn": 100,
+                    "providerName": "Awb0FullTextSearchProvider",
+                    "searchCriteria": {
+                        "categoryForFacetSearch": "{{data.facetCategoryInput.categorySearchInput.name}}",
+                        "facetSearchString": "{{data.facetCategoryInput.categorySearchInput.facetSearchString}}",
+                        "forceThreshhold": false,
+                        "searchString": "$DefaultSearchProvider_STD$*",
+                        "productContextUids": "{{props.subPanelContext.occContext.productContextInfo.uid}}",
+                        "isRangeSearch": "{{data.facetCategoryInput.isRangeSearch}}"
+                    },
+                    "searchFilterMap": "{{function:populateActiveGroupSearchFilterMap}}",
+                    "startIndex": "{{data.facetCategoryInput.categorySearchInput.startIndex}}"
+                }
+            },
+            "outputData": {
+                "categories": "{{function:updateCategoriesAfterFacetSearch}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "updateFilterPanel"
+                }]
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "applyFilter": {
+            "actionType": "JSFunction",
+            "method": "applyFilterInBulkMode",
+            "inputData": {
+                "updateAtomicData": "{{data.updateAtomicData}}",
+                "occContext": "{{props.subPanelContext.occContext}}",
+                "searchState":"{{data.searchState}}"
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "applyFilterForHostedPanel": {
+            "actionType": "JSFunction",
+            "method": "applyFilterForHosted",
+            "inputData": {
+                "updateAtomicData": "{{data.updateAtomicData}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "occContext": "{{props.subPanelContext.occContext}}"
+            },
+            "deps": "js/hostedDiscoveryFilterService"
+        },
+        "preInitializationAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getFilterSettingsPreferences",
+                    "condition": "!props.subPanelContext.sharedData.autoApplyPrefSet"
+                },
+                {
+                    "action": "initialize"
+                },
+                {
+                    "action": "updateSearchStateOnPanelLoad",
+                    "condition": "conditions.isIncludeExcludeFilterOperation",
+                    "outputArg": ["searchState", "recipeState"]
+                },
+                {
+                    "action": "setActiveIncludeGroupWhenPanelIsClosed",
+                    "condition": "conditions.validToSetIncludeActiveGroup",
+                    "inputArg": {
+                        "recipeState": "{{actionData.recipeState}}",
+                        "searchState": "{{actionData.searchState}}"
+                    }
+                },
+                {
+                    "action": "setActiveGroupIndexToZero",
+                    "condition": "conditions.validToSetActiveGroupIndexToZero"
+                },
+                {
+                    "action": "addIncludeExcludeFilterTerm",
+                    "condition": "conditions.isIncludeExcludeFilterOperation"
+                },
+                {
+                    "action": "updateSearchStateOnPanelLoad"
+                }
+            ]
+        },
+        "addIncludeExcludeFilterTerm": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "includeExcludeSelectedWhenPanelIsClosed"
+                },
+                {
+                    "action": "updateSharedDataWithSelectedTerm"
+
+                }
+            ]
+        },
+        "getFilterSettingsPreferences":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Administration-2012-09-PreferenceManagement",
+            "method": "getPreferences",
+            "inputData":
+            {
+                "preferenceNames": [ "AWC_Discovery_Delayed_Filter_Apply", "AWS_SelectElement_IncludeChildren" ],
+                "includePreferenceDescriptions": false
+            },
+            "outputData":
+            {
+                "preference":"{{function:processInitialFilterSettingsPreferences}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "filterPanel.initializeAndReveal"
+                } ]
+            },
+            "deps":"js/discoveryFilterService"
+        },
+        "clearRecipeAll": {
+            "actionType": "JSFunction",
+            "method": "clearRecipe",
+            "inputData": {
+                "searchState": "{{data.searchState}}",
+                "recipeState": "{{data.recipeState}}",
+                "searchStateUpdater" : "{{data.updateAtomicData}}",
+                "occContext":"{{props.subPanelContext.occContext}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}"
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "performIncludeExcludeOperationWhenPanelIsOpen": {
+            "actionType": "batchJob",
+            "steps": [
+            {
+                "action": "includeSelectedBatch",
+                "condition": "parameters.eventData.operation === 'Include'"
+            },
+            {
+                "action": "filterSelectedBatch",
+                "condition": "parameters.eventData.operation === 'Filter'"
+            },
+            {
+                "action": "excludeSelectedBatch",
+                "condition": "parameters.eventData.operation === 'Exclude'"
+            },
+            {
+                "action": "updateSharedDataWithSelectedTerm"
+
+            },
+            {
+                "action": "updateSearchStateOnPanelLoad"
+
+            }
+            ]
+        },
+        "filterSelected":{
+            "actionType": "JSFunction",
+            "method": "applySelectedElementFilterInRecipe",
+            "inputData": {
+                "occContext": "{{props.subPanelContext.occContext}}",
+                "operationType": "Filter",
+                "customDialogAction": "{{props.subPanelContext.customDialogAction}}"
+            },
+            "outputData":{
+                "selectedTermToAdd":""
+            },
+            "deps":"js/includeExcludeFilterService"
+        },
+        "excludeSelected":{
+            "actionType": "JSFunction",
+            "method": "applySelectedElementFilterInRecipe",
+            "inputData": {
+                "occContext": "{{props.subPanelContext.occContext}}",
+                "operationType": "Exclude",
+                "customDialogAction": "{{props.subPanelContext.customDialogAction}}"
+            },
+            "outputData":{
+                "selectedTermToAdd":""
+            },
+            "deps":"js/includeExcludeFilterService"
+        },
+        "excludeSelectedBatch":{
+            "actionType":"batchJob",
+            "steps": [ {
+                "action": "setActiveGroupIndexToZero",
+                "condition": "!conditions.isAdvFilterEnabled"
+            },
+            {
+                "action": "excludeSelected"
+            }
+        ]
+        },
+        "filterSelectedBatch":{
+            "actionType":"batchJob",
+            "steps": [ {
+                "action": "setActiveGroupIndexToZero",
+                "condition": "!conditions.isAdvFilterEnabled"
+            },
+            {
+                "action": "filterSelected"
+            }
+        ]
+        },
+        "includeSelectedBatch":{
+            "actionType":"batchJob",
+            "steps": [ {
+                "action": "setActiveIncludeGroupWhenPanelIsOpen",
+                "condition": "!conditions.isAdvFilterEnabled"
+            },
+            {
+                "action": "filterSelected"
+            }
+        ]
+        },
+        "includeExcludeSelectedWhenPanelIsClosed":{
+            "actionType": "JSFunction",
+            "method": "applySelectedElementFilterInRecipe",
+            "inputData": {
+                "occContext": "{{props.subPanelContext.occContext}}",
+                "operationType": "{{props.subPanelContext.operation}}",
+                "customDialogAction": "{{props.subPanelContext.customDialogAction}}"
+            },
+            "outputData":{
+                "selectedTermToAdd":""
+            },
+            "deps":"js/includeExcludeFilterService"
+        },
+        "updateSharedDataWithSelectedTerm": {
+            "actionType": "JSFunction",
+            "method": "updateSharedDataWithRecipeBeforeNavigate",
+            "inputData": {
+                "activeViewSharedData": "{{props.subPanelContext.activeViewSharedData}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "recipeTerm": "{{data.selectedTermToAdd}}"
+            },
+            "deps": "js/occmgmtSubsetUtils"
+        },
+        "modifySearchStateWithUpdatedFilters": {
+            "actionType": "JSFunction",
+            "method": "modifySearchStateWithUpdatedFilters",
+            "inputData": {
+                "searchState" : "{{data.searchState}}",
+                "recipeState" : "{{data.recipeState}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "occContext":"{{props.subPanelContext.occContext}}",
+                "updateAtomicData": "{{data.updateAtomicData}}"
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "setActiveGroup": {
+            "actionType": "JSFunction",
+            "method": "setActiveGroup",
+            "inputData": {
+                "searchState": "{{data.searchState}}",
+                "recipeState": "{{data.recipeState}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "occContext":"{{props.subPanelContext.occContext}}",
+                "updateAtomicData": "{{data.updateAtomicData}}"
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "setActiveGroupIndexToZero": {
+            "actionType": "JSFunction",
+            "method": "setActiveGroupIndexToZero",
+            "inputData": {
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "subPanelNavigateBack": true
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "setActiveIncludeGroupWhenPanelIsClosed": {
+            "actionType": "JSFunction",
+            "method": "setActiveIncludeGroup",
+            "inputData": {
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "recipeState": "{{parameters.recipeState}}",
+                "searchState": "{{parameters.searchState}}",
+                "occContext": "{{props.subPanelContext.occContext}}",
+                "updateAtomicData": "{{data.updateAtomicData}}",
+                "criteriaOperatorType": "{{props.subPanelContext.operation}}",
+                "subPanelNavigateBack": true
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "setActiveIncludeGroupWhenPanelIsOpen": {
+            "actionType": "JSFunction",
+            "method": "setActiveIncludeGroup",
+            "inputData": {
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "recipeState": "{{data.recipeState}}",
+                "searchState": "{{data.searchState}}",
+                "occContext": "{{props.subPanelContext.occContext}}",
+                "updateAtomicData": "{{data.updateAtomicData}}",
+                "criteriaOperatorType": "{{parameters.eventData.operation}}"
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "isNotGroupActive": {
+            "actionType": "JSFunction",
+            "method": "isNotGroupActive",
+            "inputData": {
+                "recipeState": "{{data.recipeState}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}"
+             },
+            "deps": "js/discoveryFilterService"
+        },
+        "activeGroupChanged": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "setActiveGroup"
+                },
+                {
+                    "action": "isNotGroupActive"
+                }
+            ]
+        },
+        "updateActiveGroupOnState": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "activeGroupChanged",
+                    "condition":"props.subPanelContext.sharedData.shouldUpdateActiveGroupOnState === true"
+                }
+            ]
+        },
+        "restoreOnFailedConcurrentSave": {
+            "actionType": "JSFunction",
+            "method": "restoreCategoriesAfterFailedConcurrentSave",
+            "inputData": {
+                "searchState" : "{{data.searchState}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "occContext": "{{props.subPanelContext.occContext}}"
+            },
+            "outputData": {
+                "searchState": ""
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "updateDiscoverySharedDataForPanelNavigation": {
+            "actionType": "JSFunction",
+            "method": "updateSharedDataWithRecipeBeforeNavigate",
+            "inputData": {
+                "activeViewSharedData": "{{props.subPanelContext.activeViewSharedData}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "recipeTerm": "{{parameters.eventData.recipeTerm}}",
+                "spatialRecipeIndexToUpdate": "{{parameters.eventData.spatialRecipeIndexToUpdate}}",
+                "nextActiveView": "{{parameters.eventData.nextActiveView}}",
+                "recipeOperator": "{{parameters.eventData.recipeOperator}}",
+                "selectedObj" : "{{parameters.eventData.selectedObj}}",
+                "newActiveGroupIndex": "{{parameters.eventData.newActiveGroupIndex}}"
+            },
+            "deps": "js/occmgmtSubsetUtils"
+        },
+        "addNewGroup": {
+            "actionType": "JSFunction",
+            "method": "addNewGroup",
+            "inputData": {
+                "recipeState": "{{data.recipeState}}",
+                "searchState": "{{data.searchState}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "occContext": "{{props.subPanelContext.occContext}}",
+                "updateAtomicData": "{{data.updateAtomicData}}",
+                "criteriaOperatorType": "{{parameters.eventData.criteriaOperatorType}}"
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "render":{
+            "method": "awDiscoveryFilterPanelRenderFunction",
+            "deps": "js/AwDiscoveryFilterPanelService"
+        }
+    },
+    "functions": {
+        "populateActiveGroupSearchFilterMap": {
+            "functionName": "populateActiveGroupSearchFilterMap",
+            "parameters": [
+                "{{data.searchState.searchFilterMap}}",
+                "{{data.recipeState}}",
+                "{{props.subPanelContext.sharedData.activeGroupIndex}}"
+            ]
+        },
+        "updateCategoriesAfterFacetSearch": {
+            "functionName": "updateCategoriesAfterFacetSearch",
+            "parameters": [
+                "{{data.searchState}}",
+                "{{data.updateAtomicData}}",
+                "{{data.facetCategoryInput.categorySearchInput}}",
+                "{{data.facetCategoryInput.facetCategory}}",
+                "{{props.subPanelContext.occContext.productContextInfo.uid}}",
+                "{{props.subPanelContext.sharedData}}",
+                "{{data.recipeState}}"
+            ]
+        },
+        "processInitialFilterSettingsPreferences": {
+            "functionName": "processInitialFilterSettingsPreferences",
+            "parameters": [
+                "{{props.subPanelContext.activeViewSharedData}}", "{{props.subPanelContext.sharedData}}", "{{response}}"]
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "occmgmt.recipeUpdated",
+            "action": "processRecipeOnUpdate",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "awDiscovery.performIncludeExclude",
+            "action": "performIncludeExcludeOperationWhenPanelIsOpen",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "awDiscovery.recipeUpdateFailOnConcurrentSave",
+            "action":  "restoreOnFailedConcurrentSave"
+        },
+        {
+            "eventId": "awDiscovery.addNewRecipeGroup",
+            "action": "addNewGroup",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "awDiscovery.clearRecipeAll",
+            "action": "clearRecipeAll"
+        },
+        {
+            "eventId": "productContextChangedEvent",
+            "action": "updateSearchStateOnPanelLoad" ,
+            "condition": "dataProviderActionType === 'productChangedOnSelectionChange'"
+        },
+        {
+            "eventId": "awb0.updateDiscoverySharedDataForPanelNavigation",
+            "action": "updateDiscoverySharedDataForPanelNavigation",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+    ],
+    "conditions": {
+        "isSmartDiscovery": {
+            "expression": "(props.subPanelContext.occContext.supportedFeatures.Awb0EnableSmartDiscoveryFeature === true)"
+        },
+        "shouldShowFilterCategories":{
+            "expression": "!props.subPanelContext.occContext.readOnlyFeatures.Awb0StructureFilterFeature"
+        },
+        "isAdvFilterEnabled": {
+            "expression": "ctx.preferences.AW_Discovery_Advanced_Filter[0] === 'true'"
+        },
+        "isIncludeExcludeFilterOperation": {
+            "expression": "(props.subPanelContext.operation === 'Include' || props.subPanelContext.operation === 'Exclude' || props.subPanelContext.operation === 'Filter')"
+        },
+        "validToSetActiveGroupIndexToZero": {
+            "expression": "(ctx.preferences.AW_Discovery_Advanced_Filter[0] === 'false' && ( props.subPanelContext.operation === 'Exclude' || props.subPanelContext.operation === 'Filter'))"
+        },
+        "validToSetIncludeActiveGroup": {
+            "expression": "(props.subPanelContext.operation === 'Include')"
+        }
+    },
+    "data":
+    {
+        "searchState": {
+            "initialValues": {
+                "hideBulkModeActionCommand": true
+            },
+            "meta": {
+                "categories": [ {
+                    "filterValues": [ {
+                        "selected": {
+                            "field": "true",
+                            "type": "ViewModelProperty"
+                        }
+                    } ]
+                } ]
+            }
+        },
+        "excludeByFilteringTooltip": {
+            "view": "extendedTooltipDefault"
+        },
+        "excludeByFilteringTooltipContext": {
+            "title": "{{i18n.exclude}}",
+            "description": "{{i18n.excludeByFilteringDesc}}"
+        },
+        "recipeState" :
+        {
+            "meta": {
+                "recipe": {
+                    "type": "OBJECTARRAY"
+                },
+                "recipeGroup": {
+                    "type": "OBJECTARRAY"
+                }
+            },
+            "initialValues": {
+                "recipeGroup": []
+            }
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "ctx":{
+        "panelContext":{
+            "type":"object"
+        },
+        "sidenavCommandId":{
+            "type":"string"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "preInitializationAction",
+        "render": "render",
+        "onUpdate": [
+            {
+                "action": "modifySearchStateWithUpdatedFilters",
+                "observers": [ "props.subPanelContext.occContext.searchFilterMap" ]
+            },
+            {
+                "action": "activeGroupChanged",
+                "observers": [ "props.subPanelContext.sharedData.activeGroupIndex" ]
+            },
+            {
+                "action": "updateActiveGroupOnState",
+                "observers": [ "props.subPanelContext.sharedData.shouldUpdateActiveGroupOnState" ]
+            }
+        ]
+    },
+    "i18n":
+    {
+          "subset" :        ["OccurrenceManagementConstants"],
+          "MORE_LINK_TEXT": [ "BaseMessages" ],
+          "LESS_LINK_TEXT": [ "BaseMessages" ],
+          "filterButtonTitle": ["OccurrenceManagementSubsetConstants"],
+          "exclude":["OccurrenceManagementSubsetConstants"],
+          "excludeByFilteringDesc":["OccurrenceManagementSubsetConstants"],
+          "filtersDisabledMessage":["OccurrenceManagementSubsetConstants"],
+          "noResultsFound": ["SearchMessages"],
+          "noFacetsFoundMessage": ["OccurrenceManagementSubsetConstants"]
+    }
+}

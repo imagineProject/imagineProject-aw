@@ -1,0 +1,194 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub"
+            },
+            "meta": {}
+        },
+        "ruleTypes": "Cfg0AbsConfigurationModule",
+        "preferredType": "Cfg0ConfigurationModule",
+        "toLabelProp": {
+            "displayName": "{{i18n.toLabel}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "dbValue": "",
+            "dispValue": ""
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions":{
+        "addModuleBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getModuleCreateInput"
+                },
+                {
+                    "action": "addModule"
+                }
+            ]
+        },
+        "getModuleCreateInput": {
+            "actionType": "JSFunction",
+            "method": "getModuleCreateInput",
+            "inputData": {
+                "data": "{{data.data}}",
+                "editHandler": "{{editHandlers.addPanelEditHandler}}",
+                "loadedXrtType": "{{atomicData.xrtState.xrtTypeLoaded.type}}"
+            },
+            "outputData": {
+                "moduleCreateInput": ""
+            },
+            "deps": "js/pca0ConfigurationModulesService"
+        },
+        "addModule": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "Pca0ConfigurationModuleTree.createModule",
+                        "eventData": {
+                            "moduleCreateInput": "{{data.moduleCreateInput}}",
+                            "isSibling": "{{subPanelContext.isSibling}}",
+                            "isPanelPinned": "{{subPanelContext.panelPinned}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "populateParentContext": {
+            "actionType": "JSFunction",
+            "method": "populateParentContext",
+            "inputData": {
+                "fields": "{{fields.xrtState}}",
+                "toolbarSelection": "{{subPanelContext.selection}}",
+                "contextMenuSelection": "{{subPanelContext.selected}}",
+                "isSibling": "{{subPanelContext.isSibling}}"
+            },
+            "deps": "js/pca0ConfigurationModulesService"
+        },
+        "populateToLabelProp": {
+            "actionType": "JSFunction",
+            "method": "populateToLabelProp",
+            "inputData": {
+                "toolbarSelection": "{{subPanelContext.selection}}",
+                "contextMenuSelection": "{{subPanelContext.selected}}",
+                "toLabelProp": "{{data.toLabelProp}}",
+                "parentVmoOfSelected": "{{subPanelContext.parentVmoOfSelected}}",
+                "isSibling": "{{subPanelContext.isSibling}}"
+            },
+            "outputData": {
+                "toLabelProp": ""
+            },
+            "deps": "js/pca0ConfigurationModulesService"
+        },
+        "closeDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "resetPropertiesOfAddModuleDialog": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "generateNextValues"
+                },
+                {
+                    "action": "resetProperties"
+                }
+            ]
+        },
+        "generateNextValues": {
+            "actionType": "JSFunction",
+            "method": "autoAssignAllProperties",
+            "inputData": {
+                "data": "",
+                "operationType": "CREATE",
+                "createType": "",
+                "editHandler": "{{editHandlers.addPanelEditHandler}}"
+            },
+            "deps": "js/autoAssignService"
+        },
+        "resetProperties": {
+            "actionType": "JSFunction",
+            "method": "resetPropertiesOfAddModuleDialog",
+            "inputData": {
+                "xrtState": "{{fields.xrtState}}"
+            },
+            "deps": "js/pca0ConfigurationModulesService"
+        },
+        "setActiveView": {
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "functions": {},
+    "onEvent": [
+        {
+            "eventId": "Pca0AddConfigurationModuleView.closeDialog",
+            "action": "closeDialog"
+        },
+        {
+            "eventId": "Pca0AddConfigurationModuleView.generateNextValues",
+            "action": "resetPropertiesOfAddModuleDialog"
+        },
+        {
+            "eventId": "treeDataProvider.selectionChangeEvent",
+            "action": "closeDialog"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount":"populateToLabelProp",
+        "onUpdate": [
+            {
+                "action": "populateParentContext",
+                "observers": [
+                    "viewModel.atomicData.xrtState.xrtTypeLoaded"
+                ]
+            }
+        ]
+    },
+
+    "i18n": {
+        "Pca0AddModuleTitle": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "addCmd": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "toLabel": [
+            "ConfiguratorExplorerMessages"
+        ]
+    }
+}

@@ -1,0 +1,326 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "removeCondition": {
+            "actionType": "JSFunction",
+            "method": "removeCondition",
+            "inputData": {
+                "dataProviders": "{{data.dataProviders.getProgramViewConditions}}",
+                "deletedVMO": "{{data.eventMap['Saw1ProgramViewFilterSub.removeCondition']}}",
+                "programViewFiltersConditions": "{{props.programViewFiltersConditions}}",
+                "genericWidget": "{{data.genericWidget}}",
+                "genericEndWidget": "{{data.genericEndWidget}}"
+            },
+            "deps": "js/Saw1ProgramViewFilterService"
+        },
+        "searchProgramViewConditions": {
+            "actionType": "JSFunction",
+            "method": "getProgramViewConditions",
+            "inputData": {
+                "panelContext":"{{subPanelContext}}",
+                "dataProvider": "{{data.dataProviders.getProgramViewConditions}}",
+                "ctx": "{{ctx}}",
+                "data": "{{data}}",
+                "programViewFiltersConditions": "{{props.programViewFiltersConditions}}",
+                "props": "{{props}}"
+            },
+            "deps": "js/Saw1ProgramViewFilterService"
+        },
+        "applyFilters1":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProjectManagementAw-2019-12-ScheduleManagementAw",
+            "method": "manageProgramView",
+            "inputData": {
+                "programViewInfo": {
+                    "programView": "{{function:getProgramViewObject}}",
+                    "operationType": "saveAndLoadUsingInputConfig",
+                    "contextNodeId" : "{{function:getParentTaskUid}}",
+                    "referenceNodeId": "{{function:getReferenceTaskUid}}",
+                    "inputOptions" : [ {
+                            "name" : "returnProgramViewConfig",
+                            "stringValue" : "true"
+                        }
+                    ],
+                    "programViewConfiguration": "{{function:getProgramViewConfiguration}}"
+                }
+            },
+            "outputData": {
+                "searchResults": "{{function:parseProgramViewSOAResponse}}"
+            },
+            "events": {
+                "success":[
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/Saw1ProgramViewFilterService"
+        },
+        "applyFilters": {
+            "actionType": "JSFunction",
+            "method": "getProgramViewConfiguration",
+            "inputData": {
+                "selectedFilters": "{{props.programViewFiltersConditions.filtersData}}"
+            },
+            "outputData": {
+                "filterSets": ""
+            },
+            "events": {
+                "success":[
+                    {
+                        "name": "saw1Prg.updateFiltersConfig"
+                    }
+                ]
+            },
+            "deps": "js/Saw1ProgramViewFilterService"
+        },
+        "updateFiltersConfig": {
+            "actionType": "JSFunction",
+            "method": "updateProgramViewConfigurationsState",
+            "inputData": {
+                "configurations":"{{subPanelContext.programViewConfigurations}}",
+                "sharedData":"",
+                "filterSets": "{{data.filterSets}}"
+            },
+            "deps": "js/Saw1CreateProgramViewDatasetService",
+            "events": {
+                "success": [{
+                    "name": "closeDialog"
+                }],
+                "failure": [
+                    {
+                        "name": "closeDialog"
+                    }
+                  ]
+            }
+        },
+        "cleanUp": {
+            "actionType": "JSFunction",
+            "method": "cleanUpEdit",
+            "inputData": {
+                "ctx": "{{ctx}}",
+                "data": "{{data}}"
+            },
+            "deps": "js/Saw1ProgramViewFilterService"
+        },
+        "openAddFiltersPanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "Saw1ProgramAddFilters"
+            }
+        },
+        "closePanelDialog":{
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "props": {
+        "program-view-filters": {
+            "type": "object"
+        }
+    },
+    "data": {
+        "programViewAddFiltersCommand": "saw1_programViewAddFiltersCommand",
+
+        "conditionSection": {
+            "type": "STRING",
+            "dbValue": "Condition"
+        },
+        "typeSection": {
+            "type": "STRING",
+            "dbValue": "Type",
+            "uiValue": "{{i18n.typeSection}}"
+        },
+        "propertySection": {
+            "type": "STRING",
+            "dbValue": "Property",
+            "uiValue": "{{i18n.propertySection}}"
+        },
+        "operatorSection": {
+            "type": "STRING",
+            "dbValue": "Operator",
+            "uiValue": "{{i18n.operatorSection}}"
+        },
+        "ValueSection": {
+            "type": "STRING",
+            "dbValue": "Value",
+            "uiValue": "{{i18n.ValueSection}}"
+        }
+    },
+    "dataProviders": {
+        "getProgramViewConditions": {
+            "action": "searchProgramViewConditions",
+            "commandsAnchor": "aw_ProgramViewCellCommand",
+            "selectionModelMode": "single",
+            "response": "{{data.dataProviders.getProgramViewConditions.viewModelCollection.loadedVMObjects}}"
+        }
+    },
+    "conditions": {
+        "showApplyButton": {
+            "expression": "data.dataProviders.getProgramViewConditions.viewModelCollection.loadedVMObjects.length >= 0"
+        }
+    },
+
+    "functions": {
+        "parseProgramViewSOAResponse" : {
+            "functionName": "parseProgramViewSOAResponse",
+            "parameters":
+            [
+                "{{ctx}}",
+                "{{data}}"
+            ]
+        },
+        "getReferenceTaskUid": {
+            "functionName": "getReferenceTaskUid",
+            "parameters": [
+                "{{data.eventData}}"
+            ]
+        },
+        "getParentTaskUid": {
+            "functionName": "getParentTaskUid",
+            "parameters": [
+                "{{data.eventData}}",
+                "{{ctx}}"
+            ]
+        },
+        "getProgramViewObject": {
+            "functionName": "getProgramViewObject",
+            "parameters": [
+                "{{ctx}}"
+            ]
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "searchProgramViewConditions"
+    },
+
+    "onEvent": [
+        {
+            "eventId": "searchProgramViewConditionsEvent",
+            "action": "searchProgramViewConditions"
+        },
+        {
+            "eventId": "Saw1ProgramViewFilterSub.removeCondition",
+            "cacheEventData": true,
+            "action": "removeCondition"
+        },
+        {
+            "eventId": "Saw1ProgramViewFilterSub.editCondition",
+            "action": "openAddFiltersPanel"
+        },
+        {
+            "eventId": "Saw1ProgramViewFilterSub.contentLoaded",
+            "action": "cleanUp"
+        },
+        {
+            "eventId": "awPanel.navigate",
+            "criteria": {
+                "destPanelId": "Saw1ProgramViewFilterSub"
+            },
+            "action": "cleanUp"
+        },
+        {
+            "eventId": "saw1AddFilter.openAddFiltersPanel",
+            "action": "openAddFiltersPanel"
+        },
+        {
+            "eventId": "saw1Prg.updateFiltersConfig",
+            "action": "updateFiltersConfig"
+        },
+        {
+            "eventId":"closeDialog",
+            "action":"closePanelDialog"
+        }
+    ],
+    "messages": {
+        "soaFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n": {
+        "filters": [
+            "ScheduleManagerMessages"
+        ],
+        "addFilter": [
+            "ScheduleManagerMessages"
+        ],
+        "assigned": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1Unassigned": [
+            "ScheduleManagerMessages"
+        ],
+        "addButtonText": [
+            "ScheduleManagerMessages"
+        ],
+        "applyButtonTxt": [
+            "ScheduleManagerMessages"
+        ],
+        "conditionSection": [
+            "ScheduleManagerMessages"
+        ],
+        "typeSection": [
+            "ScheduleManagerMessages"
+        ],
+        "propertySection": [
+            "ScheduleManagerMessages"
+        ],
+        "operatorSection": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1EqualTo": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1NotEqualTo": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1LessThan": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1GreaterThan": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1LessThanOrEqTo": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1GreaterThanOrEqTo": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1Between": [
+            "ScheduleManagerMessages"
+        ],
+        "ValueSection": [
+            "ScheduleManagerMessages"
+        ],
+        "and": [
+            "ScheduleManagerMessages"
+        ],
+        "or": [
+            "ScheduleManagerMessages"
+        ],
+        "from": [
+            "ScheduleManagerMessages"
+        ],
+        "to": [
+            "ScheduleManagerMessages"
+        ]
+    }
+}

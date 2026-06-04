@@ -1,0 +1,213 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "setIsProjectAssignableConstant": {
+            "actionType": "JSFunctionAsync",
+            "method": "setIsProjectAssignableConstantReviseAS",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData":
+            {
+                "isEnableAssignProjects" : ""
+            },
+            "deps": "js/Awp0ShowSaveAsService"
+        },
+        "handleTabChange": {
+            "actionType": "JSFunction",
+            "method": "handleTabChange",
+            "inputData": {
+                "tabs": "{{data.tabModels}}",
+                "pageId": "{{data.eventData.pageId}}",
+                "tabTitle": "{{data.eventData.tabTitle}}"
+            },
+            "outputData": {
+                "activeTab": "activeTab"
+            },
+            "deps": "js/Awp0ShowSaveAsService"
+        },
+        "navigateToSaveAsNewTabPage": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "awPanel.navigate",
+                    "eventData": {
+                        "destPanelId": "SaveAsNew"
+                    }
+                } ]
+            }
+        },
+        "navigateToReviseTabPage": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "awPanel.navigate",
+                    "eventData": {
+                        "destPanelId": "SaveAsRevision"
+                    }
+                } ]
+            }
+        },
+        "loadUserProjects": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadObjects",
+            "inputData": {
+                "data": [
+                    "{{ctx.userSession.props.project.dbValues[0]}}"
+                ]
+            },
+            "events": {
+                "success": [ {
+                    "name": "getOwningProj.event"
+                } ]
+            },
+            "deps": "soa/dataManagementService"
+        },
+        "setActiveView": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "activeView": ""
+            },
+            "deps": "js/Awp0ShowSaveAsService"
+        },
+        "updateActiveView":{
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "Awp0ShowRevision"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "dataParseDefinitions": {
+        "convertRevisedObject": {
+            "outputFormatType": "ViewModelObject",
+            "dataInput": "reviseTrees[0].objectCopy.uid",
+            "operationType": "CREATE"
+        },
+        "convertSavedAsObject": {
+            "outputFormatType": "ViewModelObject",
+            "dataInput": "saveAsTrees[0].objectCopy.uid",
+            "operationType": "CREATE"
+        }
+    },
+    "functions": {
+    },
+    "data": {
+        "widgetProjectSectionCommands": "uiwidget_projectSectionCommands",
+        "isEnableAssignProjects" : true,
+        "activeState": {
+            "initialValues": {
+                "activeView": "Awp0ShowRevision",
+                "context": {}
+            },
+            "meta": {
+                "activeView": {
+                    "field": "true",
+                    "type": "STRING"
+                },
+                "context": {
+                    "field": "true",
+                    "type": "OBJECT"
+                }
+            }
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {
+                "selectedProjects": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "triggerAssign": {
+                    "field": "true",
+                    "type": "BOOLEAN"
+                }
+            }
+        }
+    },
+    "props": {
+        "sub-panel-context":{
+            "type":"object"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "awPanel.reveal",
+            "action": "loadUserProjects"
+        },
+        {
+            "eventId": "userProjects.assignProjects",
+            "action": "getAssignedProjectsProvider"
+        },
+        {
+            "eventId": "userProjects.assignProjects",
+            "condition": "data.activeTab.panelId === 'SaveAsNew'",
+            "action": "navigateToSaveAsNewTabPage"
+        },
+        {
+            "eventId": "userProjects.assignProjects",
+            "condition": "data.activeTab.panelId === 'SaveAsRevision'",
+            "action": "navigateToReviseTabPage"
+        },
+        {
+            "eventId": "getOwningProj.event",
+            "action": "getOwningProjectsProvider"
+        },
+        {
+            "eventId": "awTab.selected",
+            "action": "setActiveView"
+        },
+        {
+            "eventId": "saveAsObject.tabChange",
+            "action": "handleTabChange",
+            "cacheEventData": true
+        }
+    ],
+    "messages": {},
+    "dataProviders": {},
+    "conditions": {
+    },
+    "lifecycleHooks": {
+        "onMount": "setIsProjectAssignableConstant"
+    },
+    "i18n": {
+        "saveas": [
+            "TCUICommandPanelsMessages"
+        ],
+        "revise": [
+            "TCUICommandPanelsMessages"
+        ],
+        "reviseOperationFailed": [
+            "TCUICommandPanelsMessages"
+        ],
+        "revision": [
+            "TCUICommandPanelsMessages"
+        ],
+        "newTabTitle": [
+            "awAddDirectiveMessages"
+        ],
+        "projectsSectionTitle": [
+            "awAddDirectiveMessages"
+        ],
+        "ownProjectSectionTitle": [
+            "awAddDirectiveMessages"
+        ],
+        "BACK_BUTTON_TITLE": [
+            "BaseMessages"
+        ]
+    }
+}

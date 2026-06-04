@@ -1,0 +1,182 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-flex-row.directive",
+        "js/aw-panel.directive",
+        "js/aw-break.directive",
+        "js/aw-property-label.directive",
+        "js/aw-include.directive"
+    ],
+    "actions": {
+        "initViewDataSettingsBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "initViewDataSettings"
+                },
+                {
+                    "action": "initializeProductHierarchyDepth",
+                    "condition": "conditions.isAppliedSettings"
+                }
+            ]
+        },
+        "initViewDataSettings": {
+            "actionType": "JSFunction",
+            "method": "initViewDataSettings",
+            "inputData": {
+                "subPanelContextInfo": "{{subPanelContext}}"
+            },
+            "deps": "js/Pca0FilterCriteriaSettingsService"
+        },
+        "initializeProductHierarchyDepth": {
+            "actionType": "JSFunction",
+            "method": "initializeProductHierarchyDepth",
+            "inputData": {
+                "contextKey":"fscContext"
+            },
+            "outputData":{
+                "productHierarchyDepthProperties": "result.productHierarchyDepthProperties",
+                "productHierarchyDepth.dbValue": "result.productHierarchyDepthValue.propInternalValue",
+                "productHierarchyDepth.uiValue": "result.productHierarchyDepthValue.propDisplayValue"
+            },
+            "deps": "js/Pca0FilterCriteriaSettingsService"
+        },
+        "intentSelectionChange": {
+            "actionType": "JSFunction",
+            "method": "handleIntentSelectionChange",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/Pca0FilterCriteriaSettingsService"
+        },
+        "displayIntentsLOV": {
+            "actionType": "JSFunction",
+            "method": "getIntentList",
+            "inputData": {
+                "data": "{{ctx.fscContext.settingsMO.pca0IntentsLOV}}"
+            },
+            "outputData": {
+                "intentVmList": ""
+            },
+            "deps": "js/Pca0FilterCriteriaSettingsService"
+        },
+        "modifyFilterCriteria": {
+            "actionType": "JSFunction",
+            "method": "filterCriteriaModified",
+            "deps": "js/Pca0FilterCriteriaSettingsService"
+        },
+        "toggleFilterCriteriaSettingsState": {
+            "actionType": "JSFunction",
+            "method": "toggleFilterCriteriaSettingsState",
+            "inputData": {
+                "subPanelContextInfo": "{{subPanelContext}}",
+                "eventMap": "{{data.eventMap}}"
+            },
+            "outputData": {
+                "subPanelContext": "updatedSubPanelContext"
+            },
+            "deps": "js/Pca0FilterCriteriaSettingsService"
+        },
+        "productHierarchyDepthChanged": {
+            "actionType": "JSFunction",
+            "method": "handleProductHierarchyDepthChange",
+            "inputData": {
+                "productHierarchyDepth": "{{data.productHierarchyDepth}}"
+            },
+            "deps": "js/Pca0FilterCriteriaSettingsService"
+        }
+    },
+    "dataProviders": {
+        "productHierarchyDepthDataProvider": {
+            "response": "{{data.productHierarchyDepthProperties}}"
+        }
+    },
+    "data": {
+        "productHierarchyDepthProperties":[],
+        "productHierarchyDepth": {
+            "displayName": "{{i18n.productHierarchyDepth}}",
+            "name": "productHierarchyDepth",
+            "type": "STRING",
+            "emptyLOVEntry": false,
+            "isRequired": "false",
+            "dataProvider": "productHierarchyDepthDataProvider",
+            "dbValue": "",
+            "uiValue": ""
+
+        },
+        "revisionRule": {
+            "type": "STRING",
+            "hasLov": true,
+            "dbValue": "",
+            "displayName": "{{i18n.revisionRule}}"
+        },
+        "effectivity": {
+            "type": "STRING",
+            "hasLov": true,
+            "dbValue": "",
+            "displayName": "{{i18n.effectivity}}"
+        },
+        "ruleDate": {
+            "type": "STRING",
+            "hasLov": true,
+            "dbValue": "",
+            "displayName": "{{i18n.ruleDate}}"
+        },
+        "currentEffectivity": {
+            "uiValue": "{{data.currentEffectivity}}",
+            "type": "STRING"
+        }
+    },
+    "i18n": {
+        "revisionRule": [ "FullScreenConfigurationMessages" ],
+        "ruleDate": [ "FullScreenConfigurationMessages" ],
+        "effectivity": [ "FullScreenConfigurationMessages" ],
+        "intent": [ "FullScreenConfigurationMessages" ],
+        "errorInGettingPreferredConfigInfo": [ "FullScreenConfigurationMessages" ],
+        "productHierarchyDepth": [ "FullScreenConfigurationMessages" ]
+    },
+    "messages": {
+        "errorInGettingPreferredConfigInfo": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.errorInGettingPreferredConfigInfo}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initViewDataSettingsBatch"
+    },
+    "conditions": {
+        "isFSCGridViewSelected": {
+            "expression": "props.subPanelContext.treeDisplayMode"
+        },
+        "disableProductHierarchyDepth":{
+            "expression": "subPanelContext.selection.modelType.typeHierarchyArray.includes('Fgf0ApplicationModel')"
+        },
+        "showProductHierarchyDepth": {
+            "expression": "ctx.fscContext.appliedSettings.configSettings.props.pca0ProductHierarchyDepth !== undefined && !conditions.disableProductHierarchyDepth"
+        },
+       "isAppliedSettings": {
+            "expression": "ctx.fscContext !== undefined && ctx.fscContext.appliedSettings !== undefined && ctx.fscContext.appliedSettings.configSettings !== undefined"
+        },
+        "rootModuleHasChildren": {
+            "expression": "props.subPanelContext.rootModuleHasChildren"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "Pca0Settings.refreshLOVs",
+            "action": "displayIntentsLOV"
+        },
+        {
+            "eventId": "Pca0FilterCriteriaSettings.refreshRevisionRuleContent",
+            "action": "modifyFilterCriteria"
+        },
+        {
+            "eventId": "Pca0FilterCriteriaSettings.refreshRevisionRuleContentOnFsc",
+            "action": "modifyFilterCriteria"
+        },
+        {
+            "eventId": "Pca0Settings.toggleFilterCriteriaSettingsState",
+            "action": "toggleFilterCriteriaSettingsState",
+            "cacheEventData": true
+        }
+    ]
+}

@@ -1,0 +1,183 @@
+{
+    "schemaVersion": "1.0.0",
+    "data":
+    {
+        "triggerCreate": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        },
+        "isIncludeSubTypes": "false",
+        "addPanelState": {
+            "initialValues": {
+                "creationType": "",
+                "createdObject": "",
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {}
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub",
+                "context": {}
+            },
+            "meta": {}
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {
+                "selectedProjects": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "triggerAssign": {
+                    "field": "true",
+                    "type": "BOOLEAN"
+                }
+            }
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions":
+    {
+        "setActiveView":{
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "createAndAddObjectToSubtituteGroupSet": {
+            "actionType": "JSFunction",
+            "method": "updateCreateTrigger",
+            "inputData": {
+                "triggerCreate": "{{data.triggerCreate}}",
+                "value": true
+            },
+            "outputData": {
+                "triggerCreate": "triggerCreate"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "getInfoForAddElementActionForChildType": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2024-06-OccurrenceManagement",
+            "method": "getInfoForAddElement5",
+            "inputData": {
+                "getInfoForElementIn": {
+                    "fetchAllowedUsageRevTypes": false,
+                    "parentElement": "{{props.subPanelContext.addElementState.parentToLoadAllowedTypes}}",
+                    "fetchAllowedPSOccurrenceTypesFor": "{{props.subPanelContext.addElementState.fetchOccurrenceTypesFor}}",
+                    "requestPrefMap": "{{function:getRequestPrefValue}}"
+                }
+            },
+            "outputData": {
+                "allowedTypeInfo": "{{function:extractAllowedTypesInfoFromResponse}}",
+                "allowedPSOccurrenceTypes": "{{function:updateResponseOnAddElementState}}"
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "newElementCreatedPostProcessing": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                        "name": "addSubstituteComponent.created",
+                        "condition": "conditions.isObjectCreated",
+                        "eventData":{
+                            "createdObject": "{{fields.addPanelState.createdObject}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "addObjectToSubtituteGroupSet": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                        "name": "addSubstituteComponent.created",
+                        "eventData":{
+                            "createdObject": "{{fields.addPanelState.sourceObjects}}"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "getInfoForAddElementActionForChildType",
+        "onUpdate": {
+            "action": "newElementCreatedPostProcessing",
+            "observers": [ "viewModel.atomicData.addPanelState.createdObject" ]
+        }
+    },
+    "functions":
+    {
+        "extractAllowedTypesInfoFromResponse": {
+            "functionName": "extractAllowedTypesInfoFromResponse",
+            "parameters": ["{{subPanelContext.addElementState}}"]
+        },
+        "updateResponseOnAddElementState":{
+            "functionName": "updateResponseOnAddElementState",
+            "parameters": ["{{subPanelContext.addElementState}}"]
+        },
+        "getRequestPrefValue": {
+            "functionName": "getRequestPrefValue",
+            "parameters": [
+                "{{props.subPanelContext.occContext}}",
+                "",
+                "{{props.subPanelContext.addElementState.value.sourceParent}}"
+            ]
+        }
+    },
+
+    "conditions":
+    {
+        "isNewTabButtonVisible": {
+            "expression": "addPanelState.selectedTab.view==='NewTabPageSub' && addPanelState.creationType"
+        },
+        "hasAnySelection": {
+            "expression": "addPanelState.sourceObjects && addPanelState.sourceObjects.length > 0"
+        },
+        "isObjectCreated": {
+            "expression": "addPanelState.createdObject"
+        }
+    },
+    "i18n":
+    {
+        "addElementBtn":
+        [
+            "OccurrenceManagementConstants"
+        ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

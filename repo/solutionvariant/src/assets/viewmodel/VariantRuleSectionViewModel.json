@@ -1,0 +1,166 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-panel-body.directive",
+        "js/aw-panel.directive",
+        "js/aw-command-panel-section.directive",
+        "js/aw-include.directive"
+    ],
+    "actions": {
+        "initializeConsumerAppsData": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getBomLineObject"
+                },
+                {
+                    "action": "getConfigPerspective"
+                }
+            ]
+        },
+
+        "getBomLineObject": {
+            "actionType": "JSFunctionAsync",
+            "method": "getBackingObjects",
+            "inputData": {
+                "viewModelObjects": [
+                    "{{ctx.occmgmtContext.rootElement}}"
+                ]
+            },
+            "outputData": {
+                "selectedBomlines": ""
+            },
+            "deps": "js/aceBackingObjectProviderService"
+        },
+        "getConfigPerspective": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": ""
+                    },
+                    "searchInput": {
+                        "maxToLoad": 25,
+                        "maxToReturn": 25,
+                        "providerName": "Smc0CfgPerspectiveProvider",
+                        "searchCriteria": {
+                            "parentUid": "{{data.selectedBomlines[0].uid}}"
+                        },
+                        "startIndex": 0
+                    }
+                }
+            },
+            "outputData": {
+                "configPerspectiveFromConsumerApps": "{{function:getCfgPerspective}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "consumerAppsDataInitialized.fetchVariantRules"
+                    } ]
+            }
+        },
+        "fetchExistingVariantRules": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getSVRsAndSolVar"
+                },
+                {
+                    "action": "getVariantRulesFromSOAOutput"
+                }
+            ]
+        },
+        "getSVRsAndSolVar": {
+            "actionType": "JSFunction",
+            "method": "getVariantRulesAndSolVariants",
+            "inputData":{
+                "sortCriteria": "",
+                "filterInfo": "",
+                "rootElement": "{{ctx.occmgmtContext.rootElement}}",
+                "selection": "{{ctx.occmgmtContext.pwaSelection[0]}}",
+                "spageID": "{{ctx.occmgmtContext.currentState.spageId}}"
+            },
+            "outputData": {
+                "soaResponse": ""
+            },
+            "deps": "js/solutionVariantTableService"
+        },
+        "getVariantRulesFromSOAOutput": {
+            "actionType": "JSFunction",
+            "method": "getVariantRulesFromSOAOutput",
+            "inputData":{
+                "soaResponse": "{{data.soaResponse}}"
+            },
+            "outputData": {
+                "associatedVariantRules": ""
+            },
+            "deps": "js/solutionVariantTableService"
+        },
+        "setVariantContext": {
+            "actionType": "JSFunction",
+            "method": "updateCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "variantConditionContext",
+                "value": {
+                    "allowConsumerAppsToLoadData": true,
+                    "selectedObjectsFromConsumerApps": "{{data.associatedVariantRules}}",
+                    "configPerspectiveFromConsumerApps": "{{data.configPerspectiveFromConsumerApps}}",
+                    "isVariantContextForSolutionVariant": true
+                }
+            }
+        },
+        "unregisterVariantContext": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "variantConditionContext"
+            },
+            "outputData":{
+                "associatedVariantRules" : null
+            }
+        }
+    },
+    "functions": {
+        "getCfgPerspective": {
+            "functionName": "getCfgPerspective",
+            "parameters": [],
+            "deps": "js/solutionVariantService"
+        }
+    },
+    "lifecycleHooks": {
+        "onInit": "initializeConsumerAppsData"
+    },
+    "onEvent": [ {
+            "eventId": "configuratorVcaTable.gridUnloaded",
+            "action": "unregisterVariantContext"
+        },
+        {
+            "eventId": "consumerAppsDataInitialized.fetchVariantRules",
+            "action": "fetchExistingVariantRules"
+        },
+        {
+            "eventId": "configuratorVcaTable.gridLoaded",
+            "action": "setVariantContext",
+            "condition" : "data.associatedVariantRules !== null"
+        }
+    ],
+    "messages": {
+        "soaOperationFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "data": {
+        "filterCriteriaSettings": {
+            "hideFilterSettings": true
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

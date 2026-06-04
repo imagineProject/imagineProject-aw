@@ -1,0 +1,98 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "activeView": "Awp0ReportsSummaryExecution"
+    },
+    "actions":{
+        "revealAction": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "loadReportDefintion"
+            }, {
+                "action": "getReportDefnObject"
+            }]
+        },
+        "loadReportDefintion": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": [
+                    "{{props.subPanelContext.selectionData.selected[0]}}"
+                ],
+                "attributes": [
+                    "rd_style_sheets",
+                    "rd_parameters",
+                    "rd_param_values",
+                    "rd_query_source",
+                    "fnd0IsAsync"
+                ]
+            },
+            "policy": {
+                "types": [ {
+                    "name": "ReportDefinition",
+                    "properties": [ {
+                            "name": "rd_style_sheets",
+                            "modifiers": [ {
+                                "name": "withProperties",
+                                "Value": "true"
+                            } ]
+                        },
+                        {
+                            "name": "rd_source"
+                        },
+                        {
+                            "name": "rd_name"
+                        },
+                        {
+                            "name": "rd_type"
+                        },
+                        {
+                            "name": "rd_id"
+                        },
+                        {
+                            "name": "rd_parameters"
+                        },
+                        {
+                            "name": "rd_param_values"
+                        },
+                        {
+                            "name": "fnd0IsAsync"
+                        },
+                        {
+                            "name": "owning_user"
+                        },
+                        {
+                            "name": "creation_date"
+                        }
+                    ]
+                } ]
+            }
+        },
+        "getReportDefnObject": {
+            "actionType": "JSFunction",
+            "method": "getObject",
+            "inputData": {
+                "uid": "{{props.subPanelContext.selectionData.selected[0].uid}}"
+            },
+            "outputData": {
+                "reportDefnObject": ""
+            },
+            "deps": "soa/kernel/clientDataModel"
+        }
+    },
+    "i18n": {
+        "inContextReportPanelTitle": [
+            "ReportMessages"
+        ]
+    },
+    "lifecycleHooks": {
+        "onMount" : "revealAction",
+        "onUpdate": [ {
+            "action": "revealAction",
+            "observers": [
+                "props.subPanelContext.selectionData.selected[0].uid"
+            ]
+        }]
+    }
+}

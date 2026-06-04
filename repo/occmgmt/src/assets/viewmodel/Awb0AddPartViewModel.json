@@ -1,0 +1,761 @@
+{
+    "schemaVersion": "1.0.0",
+    "i18n": {
+        "addUsageProperties": [
+            "OccmgmtRevOccConstants"
+        ],
+        "addElementBtn": [
+            "OccmgmtRevOccConstants"
+        ],
+        "toTitle": [
+            "OccmgmtRevOccConstants"
+        ],
+        "elementAddSuccessful": [
+            "OccurrenceManagementMessages"
+        ],
+        "multipleElementAddSuccessful": [
+            "OccurrenceManagementMessages"
+        ],
+        "singleElementAddToMultipleSelectionSuccessful":[
+            "OccurrenceManagementMessages"
+        ],
+        "multipleElementAddToMultipleSelectionSuccessful":[
+            "OccurrenceManagementMessages"
+        ],
+        "selectedElementsToHeaderTitle":
+        [
+            "OccurrenceManagementConstants"
+        ],
+        "partiallyMultipleElementAddToMultipleSelection":[
+            "OccurrenceManagementMessages"
+        ],
+        "partiallySingleElementAddToMultipleSelection":[
+            "OccurrenceManagementMessages"
+        ],
+         "elementAddSuccessfulWithWarning": [
+            "OccurrenceManagementMessages"
+        ],
+        "multipleElementAddSuccessfulWithWarning": [
+            "OccurrenceManagementMessages"
+        ],
+        "singleElementAddToMultipleSelectionSuccessfulWithWarning":[
+            "OccurrenceManagementMessages"
+        ],
+         "multipleElementAddToMultipleSelectionSuccessfulWithWarning":[
+            "OccurrenceManagementMessages"
+        ]
+    },
+    "data": {
+        "addElementState":{
+            "initialValues":{
+                "AddOccurrencePropertiesOnCreate" : false,
+                "parentElements" : [],
+                "parentToLoadAllowedTypes" : null,
+                "siblingElements" : [],
+                "elementCreateInput" : null,
+                "createData" : null,
+                "fetchPagedOccurrences" : null,
+                "previousSelectionUid" : "",
+                "Awb0ElementCreateSubView" : false,
+                "numberOfElements" : 1
+            },
+            "meta": {
+            }
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub",
+                "context": {}
+            },
+            "meta": {}
+        },
+        "triggerCreate": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        },
+        "addPanelState": {
+            "initialValues": {
+                "creationType": "",
+                "createdObject": "",
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {}
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {}
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions": {
+        "initialize": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getInfoForAddElementAction"
+                },
+                {
+                    "action": "getAddPanelToWidgetElementName"
+                }
+            ]
+        },
+        "getAddPanelToWidgetElementName":{
+            "actionType": "JSFunction",
+            "method": "getHeaderSectionTitle",
+            "inputData": {
+                "headerSectionSelectedElementString": "{{data.i18n.selectedElementsToHeaderTitle}}",
+                "selectedObjects" : "{{props.subPanelContext.addElementState.parentElements}}"
+            },
+            "outputData": {
+                "headerSectionElement": ""
+            },
+            "deps": "js/awPanelHeaderSectionService"
+        },
+        "closeDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "clearCreatedElementField": {
+            "actionType": "JSFunction",
+            "method": "clearCreatedElementField",
+            "inputData": {},
+            "outputData": {
+                "addPanelState.createdObject" : "createdObject"
+            },
+            "events": {
+                "success": [ {
+                    "name": "addElement.closeDialog"
+                } ]
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "getInfoForAddElementAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2021-06-OccurrenceManagement",
+            "method": "getInfoForAddElement4",
+            "inputData": {
+                "getInfoForElementIn": {
+                    "parentElement": "{{props.subPanelContext.addElementState.parentToLoadAllowedTypes}}",
+                    "fetchAllowedOccRevTypes": false
+                }
+            },
+            "outputData": {
+                "allowedPartTypesInfo": "{{function:extractAllowedTypesInfoFromResponse}}"
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "createAndAddElement": {
+            "actionType": "JSFunction",
+            "method": "updateCreateTrigger",
+            "inputData": {
+                "triggerCreate": "{{data.triggerCreate}}",
+                "value": true
+            },
+            "outputData": {
+                "triggerCreate": "triggerCreate"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "addExistingRevision": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "addObject.revisionCreated",
+                        "eventData": {
+                            "createdObject": "",
+                            "sourceObjects": "{{addPanelState.sourceObjects}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "addElementsWithCreateInput": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2025-06-OccurrenceManagement",
+            "method": "addObject5",
+            "inputData": {
+                "input": {
+                    "addObjectParentChildrenList":"{{function:prepareAddObjectInput}}",
+                    "addObjectIntent": "",
+                    "numberOfElements": 1,
+                    "fetchPagedOccurrences": true,
+                    "sortCriteria": {
+                        "propertyName": "{{ctx.aceActiveContext.context.sortCriteria[0].fieldName}}",
+                        "sortingOrder": "{{ctx.aceActiveContext.context.sortCriteria[0].sortDirection}}"
+                    },
+                    "requestPrefMap": {
+                        "displayMode": [ "{{function:getDisplayMode}}" ]
+                    }
+                }
+            },
+            "outputData": {
+                "addElementResponse": "{{function:getAddElementResponse}}",
+                "totalObjectsAdded": "{{function:getTotalNumberOfChildrenAdded}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "addElement.elementsAdded",
+                        "eventData": {
+                            "objectsToSelect": "{{data.addElementResponse.newlyAddedChildElements}}",
+                            "addElementResponse": "{{data.addElementResponse}}",
+                            "viewToReact": "{{props.subPanelContext.provider.contextKey}}",
+                            "updatedParentElement" : "{{props.subPanelContext.occContext.openedElement}}"
+                        },
+                        "condition": "conditions.areNewElementsAdded"
+                    },
+                    {
+                        "name": "aceElementsSelectionUpdatedEvent",
+                        "eventData": {
+                            "objectsToSelect": "{{data.addElementResponse.newlyAddedChildElements}}",
+                            "viewToReact": "{{props.subPanelContext.provider.contextKey}}"
+                        },
+                        "condition": "conditions.isSelectionUpdateEventApplicable"
+                    },
+                    {
+                        "name": "addElement.clearCreatedElementField"
+                    },
+                    {
+                        "name": "addElement.usageCreated",
+                        "condition": "conditions.isPanelPinned && conditions.areNewElementsAdded"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "addElement.elementsAdded",
+                        "eventData": {
+                            "objectsToSelect": "{{data.addElementResponse.newlyAddedChildElements}}",
+                            "addElementResponse": "{{data.addElementResponse}}",
+                            "viewToReact": "{{props.subPanelContext.provider.contextKey}}",
+                            "updatedParentElement" : "{{props.subPanelContext.occContext.openedElement}}"
+                        },
+                        "condition": "conditions.areNewElementsAdded"
+                    },
+                    {
+                        "name": "aceElementsSelectionUpdatedEvent",
+                        "eventData": {
+                            "objectsToSelect": "{{data.addElementResponse.newlyAddedChildElements}}",
+                            "viewToReact": "{{props.subPanelContext.provider.contextKey}}"
+                        },
+                        "condition": "conditions.isSelectionUpdateEventApplicable"
+                    },
+                    {
+                        "name": "addElement.usageCreated",
+                        "condition": "conditions.isPanelPinned && conditions.areNewElementsAdded"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "newElementAddToSingleSelectionSuccessMessage",
+                        "condition": "addPanelState.createdObject && addPanelState.createdObject.props && props.subPanelContext.occContext.pwaSelection.length === 1"
+                    },
+                    {
+                        "message": "oneCopiedElementAddToSingleSelectionSuccessMessage",
+                        "condition": "addPanelState.createdObject && addPanelState.createdObject.length === 1 && props.subPanelContext.occContext.pwaSelection.length === 1"
+                    },
+                    {
+                        "message": "existingSingleElementAddToSingleSelectionSuccesMessage",
+                        "condition": "addPanelState.sourceObjects.length === 1 && !addPanelState.createdObject && props.subPanelContext.occContext.pwaSelection.length === 1"
+                    },
+                    {
+                        "message":"existingMultipleElementAddToSingleSelectionSuccessMessage",
+                        "condition":"addPanelState.sourceObjects.length > 1 && !addPanelState.createdObject && props.subPanelContext.occContext.pwaSelection.length === 1 && conditions.isElementAddedSuccessfully"
+                    },
+                    {
+                        "message": "singleElementAddToMultipleSelectionSuccessMessage",
+                        "condition": "addPanelState.createdObject && addPanelState.createdObject.props && props.subPanelContext.occContext.pwaSelection.length > 1 && conditions.isElementAddedSuccessfully"
+                    },
+                    {
+                        "message": "oneCopiedElementAddToMultipleSelectionSuccessMessage",
+                        "condition": "addPanelState.createdObject && addPanelState.createdObject.length === 1 && props.subPanelContext.occContext.pwaSelection.length > 1 && conditions.isElementAddedSuccessfully"
+                    },
+                    {
+                        "message": "existingSingleElementAddToMultipleSelectionSuccessMessage",
+                        "condition": "addPanelState.sourceObjects.length === 1 && props.subPanelContext.occContext.pwaSelection.length > 1 && conditions.isElementAddedSuccessfully"
+                    },
+                    {
+                        "message": "existingMultipleElementAddToMultipleSelectionSuccessMessage",
+                        "condition": "addPanelState.sourceObjects.length > 1 && props.subPanelContext.occContext.pwaSelection.length > 1 && conditions.isElementAddedSuccessfully"
+                    },
+                    {
+                        "message": "partiallySingleElementAddToMultipleSelectionMessage",
+                        "condition":"addPanelState.createdObject && addPanelState.createdObject.props && props.subPanelContext.occContext.pwaSelection.length > 1 && !conditions.isElementAddedSuccessfully"
+                    },
+                    {
+                        "message":"partiallyExistingSingleElementAddToMultipleSelectionMessage",
+                        "condition":"addPanelState.sourceObjects.length === 1  && props.subPanelContext.occContext.pwaSelection.length > 1 && !conditions.isElementAddedSuccessfully"
+                    },
+                    {
+                        "message": "partiallyExistingMultipleElementAddToMultipleSelectionMessage",
+                        "condition":"addPanelState.sourceObjects.length > 1  && props.subPanelContext.occContext.pwaSelection.length > 1 && !conditions.isElementAddedSuccessfully"
+                    }
+                ],
+                "failure":
+                [
+                    {
+                        "message": "newElementAddToSingleSelectionSuccessWithWarningMessage",
+                        "condition":"addPanelState.createdObject && addPanelState.createdObject.props && props.subPanelContext.occContext.pwaSelection.length === 1 && !conditions.isErrorPresentInAddResponse"
+                    },
+                    {
+                        "message": "oneCopiedElementAddToSingleSelectionSuccessWithWarningMessage",
+                        "condition":"addPanelState.createdObject && addPanelState.createdObject.length === 1 && props.subPanelContext.occContext.pwaSelection.length === 1 && !conditions.isErrorPresentInAddResponse"
+                    },
+                    {
+                        "message": "existingSingleElementAddToSingleSelectionSuccessWithWarningMessage",
+                        "condition":"addPanelState.sourceObjects.length === 1 && !addPanelState.createdObject && props.subPanelContext.occContext.pwaSelection.length === 1 && !conditions.isErrorPresentInAddResponse"
+                    },
+                    {
+                        "message": "existingMultipleElementAddToSingleSelectionSuccessWithWarningMessage",
+                        "condition":"addPanelState.sourceObjects.length > 1 && !addPanelState.createdObject && props.subPanelContext.occContext.pwaSelection.length === 1 && !conditions.isErrorPresentInAddResponse"
+                    },
+                    {
+                        "message": "singleElementAddToMultipleSelectionSuccessWithWarningMessage",
+                        "condition":"addPanelState.createdObject && addPanelState.createdObject.props && props.subPanelContext.occContext.pwaSelection.length > 1 && !conditions.isErrorPresentInAddResponse"
+                    },
+                    {
+                        "message": "oneCopiedElementAddToMultipleSelectionSuccessWithWarningMessage",
+                        "condition":"addPanelState.createdObject && addPanelState.createdObject.length === 1 && props.subPanelContext.occContext.pwaSelection.length > 1 && !conditions.isErrorPresentInAddResponse"
+                    },
+                    {
+                        "message": "existingSingleElementAddToMultipleSelectionSuccessWithWarningMessage",
+                        "condition":"addPanelState.sourceObjects.length === 1 && props.subPanelContext.occContext.pwaSelection.length > 1 &&  !conditions.isErrorPresentInAddResponse"
+                    },
+                    {
+                        "message": "existingMultipleElementAddToMultipleSelectionSuccessWithWarningMessage",
+                        "condition":"addPanelState.sourceObjects.length > 1 && props.subPanelContext.occContext.pwaSelection.length > 1 && !conditions.isErrorPresentInAddResponse"
+                    },
+                    {
+                        "message": "partiallyExistingMultipleElementAddToMultipleSelectionMessage",
+                        "condition":"addPanelState.sourceObjects.length > 1  && props.subPanelContext.occContext.pwaSelection.length > 1 && conditions.isErrorPresentInAddResponse && conditions.areNewElementsAdded"
+                    },
+                    {
+                        "message": "partiallyExistingMultipleElementAddToSingleSelectionMessage",
+                        "condition":"addPanelState.sourceObjects.length > 1  && props.subPanelContext.occContext.pwaSelection.length ==1 && conditions.isErrorPresentInAddResponse && conditions.areNewElementsAdded"
+                    },
+                    {
+                        "message": "partiallySingleElementAddToMultipleSelectionMessage",
+                        "condition":"addPanelState.createdObject && addPanelState.createdObject.props && props.subPanelContext.occContext.pwaSelection.length > 1 && conditions.isErrorPresentInAddResponse && conditions.areNewElementsAdded"
+                    },
+                    {
+                        "message":"partiallyExistingSingleElementAddToMultipleSelectionMessage",
+                        "condition":"addPanelState.sourceObjects.length === 1  && props.subPanelContext.occContext.pwaSelection.length > 1 && conditions.isErrorPresentInAddResponse && conditions.areNewElementsAdded"
+                    },
+                    {
+                        "message": "addElementsFailureMessage",
+                        "condition": "conditions.areNewElementsAdded === false"
+                    }
+                ]
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "performPostProcessingAfterCreate": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "addRevOccElementProperties",
+                    "condition": "addPanelState.createdObject"
+                },
+                {
+                    "action": "newElementCreatedPostProcessing"
+                }
+            ]
+        },
+        "newElementCreatedPostProcessing": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "awPanel.loadNextValues",
+                        "condition": "conditions.isPanelPinned"
+                    }
+                ]
+            }
+        },
+        "addRevOccElementProperties": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "awb0Element.addRevOccElementProperties",
+                    "excludeLocalDataCtx": true
+                    }
+                ]
+            }
+        },
+        "setActiveView":{
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "addUsageProperties": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "awb0Element.addUsageProperties",
+                    "eventData": {
+                        "createdObject": "",
+                        "sourceObjects": "{{addPanelState.sourceObjects}}"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "messages": {
+         "newElementAddToSingleSelectionSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.elementAddSuccessful}}",
+            "messageTextParams": [
+                "{{addPanelState.createdObject.props.object_string.uiValues[0]}}",
+                "{{props.subPanelContext.addElementState.parents[0].props.object_string.dbValues[0]}}"
+            ]
+        },
+
+        "oneCopiedElementAddToSingleSelectionSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.elementAddSuccessful}}",
+            "messageTextParams": [
+                "{{addPanelState.sourceObjects[0].props.object_string.uiValues[0]}}",
+                "{{props.subPanelContext.addElementState.parents[0].props.object_string.dbValues[0]}}"
+            ]
+        },
+
+        "existingSingleElementAddToSingleSelectionSuccesMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.elementAddSuccessful}}",
+            "messageTextParams": [
+                "{{addPanelState.sourceObjects[0].props.object_string.uiValues[0]}}",
+                "{{props.subPanelContext.addElementState.parents[0].props.object_string.dbValues[0]}}"
+            ]
+        },
+        "existingMultipleElementAddToSingleSelectionSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.multipleElementAddSuccessful}}",
+            "messageTextParams": [
+               "{{addPanelState.sourceObjects.length}}",
+                "{{props.subPanelContext.addElementState.parents[0].props.object_string.dbValues[0]}}"
+            ]
+        },
+        "elementsPartiallyAddedMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.multipleElementAddSuccessful}}",
+            "messageTextParams": [
+                "{{data.totalObjectsAdded}}",
+                "{{props.subPanelContext.addElementState.parents[0].props.object_string.dbValues[0]}}"
+            ]
+        },
+        "singleElementAddToMultipleSelectionSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.singleElementAddToMultipleSelectionSuccessful}}",
+            "messageTextParams": [
+                "{{addPanelState.createdObject.props.object_string.uiValues[0]}}",
+                "{{props.subPanelContext.occContext.pwaSelection.length}}"
+            ]
+        },
+        "oneCopiedElementAddToMultipleSelectionSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.singleElementAddToMultipleSelectionSuccessful}}",
+            "messageTextParams": [
+                "{{addPanelState.sourceObjects[0].props.object_string.uiValues[0]}}",
+                "{{props.subPanelContext.occContext.pwaSelection.length}}"
+            ]
+        },
+        "existingSingleElementAddToMultipleSelectionSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.singleElementAddToMultipleSelectionSuccessful}}",
+            "messageTextParams": [
+                "{{addPanelState.sourceObjects[0].props.object_string.uiValues[0}}",
+                "{{props.subPanelContext.occContext.pwaSelection.length}}"
+            ]
+        },
+        "existingMultipleElementAddToMultipleSelectionSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.multipleElementAddToMultipleSelectionSuccessful}}",
+            "messageTextParams": [
+                "{{addPanelState.sourceObjects.length}}",
+                "{{props.subPanelContext.occContext.pwaSelection.length}}"
+            ]
+        },
+        "partiallySingleElementAddToMultipleSelectionMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.partiallySingleElementAddToMultipleSelection}}",
+            "messageTextParams": [
+                "{{addPanelState.createdObject.props.object_string.uiValues[0]}}",
+                "{{data.addElementResponse.numUpdatedParents}}",
+                "{{subPanelContext.occContext.pwaSelection.length}}"
+            ]
+        },
+        "partiallyExistingSingleElementAddToMultipleSelectionMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.partiallySingleElementAddToMultipleSelection}}",
+            "messageTextParams": [
+                "{{addPanelState.sourceObjects[0].props.object_string.uiValues[0}}",
+                "{{data.addElementResponse.numUpdatedParents}}",
+                "{{subPanelContext.occContext.pwaSelection.length}}"
+            ]
+        },
+        "partiallyExistingMultipleElementAddToMultipleSelectionMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.partiallyMultipleElementAddToMultipleSelection}}",
+            "messageTextParams": [
+                "{{addPanelState.sourceObjects.length}}",
+                "{{data.addElementResponse.numUpdatedParents}}",
+                "{{props.subPanelContext.occContext.pwaSelection.length}}"
+            ]
+        },
+        "partiallyExistingMultipleElementAddToSingleSelectionMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.partiallyMultipleElementAddToSingleSelection}}",
+            "messageTextParams": [
+                "{{data.totalObjectsAdded}}",
+                "{{addPanelState.sourceObjects.length}}",
+                "{{props.subPanelContext.addElementState.parentElements[0].props.object_string.dbValues[0]}}",
+                "{{errorCode}}"
+            ]
+        },
+        "newElementAddToSingleSelectionSuccessWithWarningMessage":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.elementAddSuccessfulWithWarning}}",
+            "messageTextParams": [
+                "{{addPanelState.createdObject.props.object_string.uiValues[0]}}",
+                "{{props.subPanelContext.addElementState.parents[0].props.object_string.dbValues[0]}}",
+                "{{errorCode}}"
+            ]
+        },
+        "oneCopiedElementAddToSingleSelectionSuccessWithWarningMessage":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.elementAddSuccessfulWithWarning}}",
+            "messageTextParams": [
+                "{{addPanelState.sourceObjects[0].props.object_string.uiValues[0]}}",
+                "{{props.subPanelContext.addElementState.parents[0].props.object_string.dbValues[0]}}",
+                "{{errorCode}}"
+            ]
+        },
+        "existingSingleElementAddToSingleSelectionSuccessWithWarningMessage":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.elementAddSuccessfulWithWarning}}",
+            "messageTextParams": [
+                "{{addPanelState.sourceObjects[0].props.object_string.uiValues[0]}}",
+                "{{props.subPanelContext.addElementState.parents[0].props.object_string.dbValues[0]}}",
+                "{{errorCode}}"
+            ]
+        },
+        "existingMultipleElementAddToSingleSelectionSuccessWithWarningMessage":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.multipleElementAddSuccessfulWithWarning}}",
+            "messageTextParams": [
+                "{{addPanelState.sourceObjects.length}}",
+                "{{props.subPanelContext.addElementState.parents[0].props.object_string.dbValues[0]}}",
+                "{{errorCode}}"
+            ]
+        },
+        "singleElementAddToMultipleSelectionSuccessWithWarningMessage":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.singleElementAddToMultipleSelectionSuccessfulWithWarning}}",
+            "messageTextParams": [
+                "{{addPanelState.createdObject.props.object_string.uiValues[0]}}",
+                "{{props.subPanelContext.occContext.pwaSelection.length}}",
+                "{{errorCode}}"
+            ]
+        },
+        "oneCopiedElementAddToMultipleSelectionSuccessWithWarningMessage":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.singleElementAddToMultipleSelectionSuccessfulWithWarning}}",
+            "messageTextParams": [
+                "{{addPanelState.sourceObjects[0].props.object_string.uiValues[0]}}",
+                "{{props.subPanelContext.occContext.pwaSelection.length}}",
+                "{{errorCode}}"
+            ]
+        },
+        "existingSingleElementAddToMultipleSelectionSuccessWithWarningMessage":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.singleElementAddToMultipleSelectionSuccessfulWithWarning}}",
+            "messageTextParams": [
+                "{{addPanelState.sourceObjects[0].props.object_string.uiValues[0}}",
+                "{{props.subPanelContext.occContext.pwaSelection.length}}",
+                "{{errorCode}}"
+            ]
+        },
+        "existingMultipleElementAddToMultipleSelectionSuccessWithWarningMessage":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.multipleElementAddToMultipleSelectionSuccessfulWithWarning}}",
+            "messageTextParams": [
+                "{{addPanelState.sourceObjects.length}}",
+                "{{props.subPanelContext.occContext.pwaSelection.length}}",
+                "{{errorCode}}"
+            ]
+        },
+        "addElementsFailureMessage":{
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "functions": {
+        "getElementsToAdd": {
+            "functionName": "getElementsToAdd",
+            "parameters": [
+                "",
+                "{{addPanelState.createdObject}}",
+                "{{addPanelState.sourceObjects}}"
+            ]
+        },
+        "getAddElementResponse": {
+            "functionName": "getAddElementResponse",
+            "parameters": ["{{props.subPanelContext.addElementState.parentElements}}" ]
+        },
+        "prepareAddObjectInput": {
+            "functionName": "prepareAddObjectInput",
+            "parameters": [
+                "{{props.subPanelContext.addElementState}}",
+                "{{addPanelState}}",
+                "{{props.subPanelContext.occContext}}",
+                "true"
+            ]
+        },
+        "extractAllowedTypesInfoFromResponse": {
+            "functionName": "extractAllowedTypesInfoFromResponse",
+            "parameters": []
+        },
+        "getDisplayMode": {
+            "functionName": "getDisplayMode",
+            "parameters": []
+        },
+        "getTotalNumberOfChildrenAdded": {
+            "functionName": "getTotalNumberOfChildrenAdded",
+            "parameters": [ "{{props.subPanelContext.addElementState.parentElements}}" ]
+        },
+        "getExpandedValue": {
+            "functionName": "getExpandedValue",
+            "parameters": [
+                "{{props.subPanelContext.occContext}}"
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onMount":"initialize",
+        "onUpdate": [{
+            "action": "performPostProcessingAfterCreate",
+            "observers": [ "viewModel.atomicData.addPanelState.createdObject" ]
+        },
+        {
+            "action": "getAddPanelToWidgetElementName",
+            "observers": [ "props.subPanelContext.addElementState.parentElements" ]
+        }
+    ]
+    },
+    "conditions": {
+        "isPaletteTabVisible": {
+            "expression": "addPanelState.selectedTab.view==='PaletteTabPageSub' && addPanelState.sourceObjects.length >= 1"
+        },
+        "isSearchTabVisible": {
+            "expression": "addPanelState.selectedTab.view==='SearchTabPageSub' && addPanelState.sourceObjects.length >= 1"
+        },
+        "isClassificationTabVisible": {
+            "expression": "addPanelState.selectedTab.view==='ClassificationTabPageSub' && addPanelState.sourceObjects.length >= 1"
+        },
+        "isNewTabVisible": {
+            "expression": "addPanelState.selectedTab.view==='NewTabPageSub' && addPanelState.creationType"
+        },
+        "areNewElementsAdded": {
+            "expression": "data.totalObjectsAdded>0"
+        },
+        "isTreeMode": {
+            "expression": "ctx.ViewModeContext && (ctx.ViewModeContext.ViewModeContext === 'TreeView' || ctx.ViewModeContext.ViewModeContext === 'TreeSummaryView')"
+        },
+        "isPanelPinned": {
+            "expression": "subPanelContext.panelPinned"
+        },
+        "isPwaSelectionChanged": {
+            "expression": "(subPanelContext.selectionData.selected !== undefined && subPanelContext.addElementState.previousSelectionUid !== subPanelContext.selectionData.selected[0].uid) || subPanelContext.selectionData.selected.length > 1"
+        },
+        "isUsagePropertiesSectionVisible" : {
+            "expression": "(conditions.isPaletteTabVisible || conditions.isSearchTabVisible || conditions.isNewTabVisible || conditions.isClassificationTabVisible)"
+        },
+        "isSelectionUpdateEventApplicable": {
+            "expression": {
+                "$and": [
+                    {
+                        "$source": "data.totalObjectsAdded",
+                        "$query": {
+                            "$gt": 0
+                        }
+                    },
+                    {
+                        "$source": "subPanelContext.panelPinned",
+                        "$query": {
+                            "$ne": true
+                        }
+                    }
+                ]
+            }
+        },
+        "isElementAddedSuccessfully":{
+            "expression":"props.subPanelContext.occContext.pwaSelection.length === data.addElementResponse.numUpdatedParents"
+        },
+        "isErrorPresentInAddResponse":{
+            "expression": "data.addElementResponse.hasErrorPresentInPartialErrors"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "appCtx.register",
+            "condition": "name === 'mselected'",
+            "action": "closeDialog"
+        },
+        {
+            "eventId": "addElement.closeDialog",
+            "condition": "!data.isDestroyed() && (!conditions.isPanelPinned || conditions.isPwaSelectionChanged)",
+            "action": "closeDialog"
+        },
+        {
+            "eventId": "addObject.revisionCreated",
+            "action": "addUsageProperties"
+        },
+        {
+            "eventId": "addElement.clearCreatedElementField",
+            "action": "clearCreatedElementField"
+        },
+        {
+            "eventId": "revOcc.setElementCreateInputComplete",
+            "action": "addElementsWithCreateInput"
+        }
+    ]
+}

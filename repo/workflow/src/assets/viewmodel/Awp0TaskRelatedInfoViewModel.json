@@ -1,0 +1,235 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "updateWorkflowGraph" : {
+            "actionType": "JSFunction",
+            "method": "updateWorkflowGraph",
+            "deps": "js/Awp0TemplateProperties"
+        },
+        "updateTabURL": {
+            "actionType": "JSFunction",
+            "method": "updateTabOnURL",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "_selectedTabId": ""
+            },
+            "deps": "js/Awp0TaskRelatedInfoPanel"
+        },
+        "setSelectedTab": {
+            "actionType": "JSFunction",
+            "method": "setSelectedTab",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "tabToSelect": "{{data.selectedTab.id}}"
+            },
+            "deps": "js/Awp0TaskRelatedInfoPanel"
+        }
+    },
+    "props": {
+        "sub-panel-context":{
+            "type":"object"
+        },
+        "workflow-dgm-state":{
+            "type":"object"
+        }
+    },
+    "ctx":{
+        "graph":{
+            "type": "object"
+        },
+        "state.params.ttab_name":null,
+        "state.params.sc_uid":null,
+        "state.params.source_uid":null,
+        "state.params.target_uid":null,
+        "workflowDgmEditCtx":{
+            "type":"object"
+        }
+    },
+    "data":
+    {
+        "tabsModel":
+            [
+                {
+                    "id": "Awp0TaskPropertiesTab",
+                    "name": "{{i18n.Properties}}",
+                    "recreatePanel": true,
+                    "selectedTab": false,
+                    "visibleWhen": {
+                        "condition": "conditions.showOthertabs"
+                    }
+                },
+                {
+                    "id": "Awp0TaskAccessibilityTab",
+                    "name": "{{i18n.accessibility}}",
+                    "recreatePanel": true,
+                    "selectedTab": false,
+                    "visibleWhen": {
+                        "condition": "conditions.showOthertabs"
+                    }
+                },
+                {
+                    "id": "Awp0HandlersTab",
+                    "name": "{{i18n.handlers}}",
+                    "recreatePanel": true,
+                    "selectedTab": false,
+                    "visibleWhen": {
+                        "condition": "conditions.showOthertabs"
+                    }
+                },
+                {
+                    "id": "Awp0TaskNotificationsTab",
+                    "name": "{{i18n.notifications}}",
+                    "selectedTab": false,
+                    "recreatePanel": true,
+                    "visibleWhen": {
+                        "condition": "conditions.showOthertabs"
+                    }
+                },
+                {
+                    "id": "Awp0TaskFormsTab",
+                    "name": "{{i18n.forms}}",
+                    "recreatePanel": true,
+                    "selectedTab": false,
+                    "visibleWhen": {
+                        "condition": "conditions.showFormsTab"
+                    }
+                },
+                {
+                    "id": "Awp0TaskAssignmentTab",
+                    "name": "{{i18n.assignments}}",
+                    "recreatePanel": true,
+                    "selectedTab": false,
+                    "visibleWhen": {
+                        "condition": "conditions.showAssignmentTab1"
+                    }
+                },
+                {
+                    "id": "Awp0EdgeInfoProperties",
+                    "name": "{{i18n.Properties}}",
+                    "recreatePanel": true,
+                    "selectedTab": false,
+                    "visibleWhen": {
+                        "condition": "conditions.showEdgePropertytab"
+                    }
+                },
+                {
+                    "id": "Awp0TasksTab",
+                    "name": "{{i18n.listArrangements}}",
+                    "recreatePanel": true,
+                    "selectedTab": false,
+                    "visibleWhen": {
+                        "condition": "conditions.showTasksLists"
+                    }
+                }
+            ]
+    },
+    "conditions":
+    {
+        "isSSTTaskTemplateSelected":
+        {
+            "expression": "ctx.selected.modelType.typeHierarchyArray.indexOf( 'EPMSelectSignoffTaskTemplate' ) > -1"
+        },
+        "isPSTaskTemplateSelected":
+        {
+            "expression": "ctx.selected.modelType.typeHierarchyArray.indexOf( 'EPMPerformSignoffTaskTemplate' ) > -1"
+        },
+        "showFormsTab": {
+            "expression": "props.workflowDgmState.selectedObject && props.workflowDgmState.selectedObject.type === 'EPMTaskTemplate' && props.workflowDgmState.selectedObject.props.subtask_template.dbValues.length === 0 && props.workflowDgmState.selectedObject.props.template_classification.dbValues[0] !== '0' && props.workflowDgmState.selectedEdges.length === 0"
+        },
+        "showAssignmentTab1": {
+            "expression": "props.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMSelectSignoffTaskTemplate' ) <= -1 && props.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMPerformSignoffTaskTemplate' ) <= -1 && props.workflowDgmState.selectedObject.modelType.typeHierarchyArray.indexOf( 'EPMNotifyTaskTemplate' ) <= -1 && !props.workflowDgmState.isInvalidSelectionAssignmentTab && props.workflowDgmState.selectedEdges.length === 0"
+        },
+        "showEdgePropertytab":{
+            "expression":"props.workflowDgmState.selectedEdges.length > 0"
+        },
+        "showOthertabs":{
+            "expression":"props.workflowDgmState.selectedEdges.length === 0"
+        },
+        "showTasksLists": {
+            "expression": "conditions.showOthertabs"
+        },
+        "isIndependentReviewTaskSelected" : {
+            "expression": {
+                "$and": [ {
+                    "$source": "ctx.selected",
+                    "$query": {
+                        "$source": "modelType.typeHierarchyArray",
+                        "$query": {
+                            "$in": [
+                                "EPMReviewTaskTemplate"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "$source": {
+                        "$adapt": "ctx.selected"
+                    },
+                    "$query": {
+                        "$and": [
+                            {
+                                "$source": "props.parent_task_template.dbValues.0",
+                                "$query": {
+                                    "$ne": "{{ctx.xrtSummaryContextObject.uid}}"
+                                }
+                            }
+                        ]
+                    }
+                }
+                ]
+
+            }
+        },
+        "isIndependentAcknowledgeTaskSelected" : {
+            "expression": {
+                "$and": [ {
+                    "$source": "ctx.selected",
+                    "$query": {
+                        "$source": "modelType.typeHierarchyArray",
+                        "$query": {
+                            "$in": [
+                                "EPMAcknowledgeTaskTemplate"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "$source": {
+                        "$adapt": "ctx.selected"
+                    },
+                    "$query": {
+                        "$and": [
+                            {
+                                "$source": "props.parent_task_template.dbValues.0",
+                                "$query": {
+                                    "$ne": "{{ctx.xrtSummaryContextObject.uid}}"
+                                }
+                            }
+                        ]
+                    }
+                }
+                ]
+
+            }
+        }
+    },
+    "lifecycleHooks": {
+        "onMount":"setSelectedTab"
+    },
+    "onEvent": [
+
+    ],
+    "i18n":
+    {
+        "Properties" : [ "NameValuePanelsMessages" ],
+        "handlers" : [ "WorkflowDesignerMessages" ],
+        "assignments" : [ "WorkflowDesignerMessages" ],
+        "notifications" : [ "WorkflowDesignerMessages" ],
+        "forms":[ "WorkflowDesignerMessages" ],
+        "accessibility": [ "WorkflowDesignerMessages" ],
+        "listArrangements":["WorkflowDesignerMessages"]
+    }
+}

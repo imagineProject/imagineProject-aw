@@ -1,0 +1,182 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "activeState": {
+            "initialValues": {
+                "activeView": "Cm1CreateChangeSub",
+                "context": {}
+            },
+            "meta": {
+                "activeView": {
+                    "field": "true",
+                    "type": "STRING"
+                },
+                "context": {
+                    "field": "true",
+                    "type": "OBJECT"
+                }
+            }
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {
+                "selectedProjects": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "triggerAssign": {
+                    "field": "true",
+                    "type": "BOOLEAN"
+                }
+            }
+        },
+        "attachmentsState": {
+            "initialValues": {
+                "addAttachments": [],
+                "updateAttachmentsSection": false
+            },
+            "meta": {
+                "addAttachments": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "updateAttachmentsSection": {
+                    "field": "true",
+                    "type": "BOOLEAN"
+                }
+            }
+        },
+        "addUserPanelState": {
+            "initialValues": {
+                "provider": "Awp0PeoplePickerProvider",
+                "selectionModelMode": "single",
+                "criteria": {
+                    "providerContentType": "GroupMember",
+                    "searchString": "*",
+                    "selectedObject": "",
+                    "searchSubGroup": "true",
+                    "group": "",
+                    "role": "",
+                    "participantType": ""
+                },
+                "defaultCriteria": {
+                    "providerContentType": "User",
+                    "searchSubGroup": "true",
+                    "group": "",
+                    "role": "",
+                    "participantType": ""
+                },
+                "preferenceCriteria": [
+                    "WRKFLW_user_panel_content_display",
+                    "WRKFLW_allow_resourcepool_assignments",
+                    "WRKFLW_show_user_assignment_options"
+                ],
+                "selectedUsers": "",
+                "isAddButtonNeeded": true,
+                "triggerUpdateSearchCriteria": false
+            },
+            "meta": {
+                "selectedUsers": {
+                    "field": "true",
+                    "type": "OBJECTARRAY"
+                }
+            }
+        }
+    },
+    "actions": {
+        "closePanel":
+        {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData":
+            {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "updateActiveView":{
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "inputData": {
+                "stateName": "{{fields.activeState}}",
+                "destPanelId": "Cm1CreateChangeSub"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cacheInitialSelection",
+                    "condition": "!data.initialSelection && conditions.isFoldersLoc"
+                },
+                {
+                    "action": "closePanelInFolderLocation",
+                    "condition": "conditions.isFoldersLoc"
+                }
+            ]
+        },
+        "cacheInitialSelection": {
+            "actionType": "JSFunction",
+            "method": "cacheSelection",
+            "inputData": {
+                "selectedUidSD": "{{props.subPanelContext.selectionData}}",
+                "selectedUidPWAS": "{{props.subPanelContext.searchState.pwaSelection}}",
+                "selectedUidBS": "{{props.subPanelContext.searchState.baseSelection}}"
+            },
+            "outputData": {
+                "initialSelection": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "closePanelInFolderLocation": {
+            "actionType": "JSFunction",
+            "method": "closePanel",
+            "inputData": {
+                "selectedUidSD": "{{props.subPanelContext.selectionData}}",
+                "selectedUidPWAS": "{{props.subPanelContext.searchState.pwaSelection}}",
+                "selectedUidBS": "{{props.subPanelContext.searchState.baseSelection}}",
+                "initialSelection": "{{data.initialSelection}}",
+                "dialogOptions": "{{props.subPanelContext.popupOptions}}"
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "onEvent": [ {
+        "eventId": "primaryWorkArea.selectionChangeEvent",
+        "action": "closePanel",
+        "condition": "!conditions.isFoldersLoc"
+
+    } ],
+    "lifecycleHooks": {
+        "onUpdate": [ {
+            "action": "closePanelOnSelectionChange",
+            "observers": [ "props.subPanelContext.selectionData.selected[0].uid", "props.subPanelContext.searchState.pwaSelection[0].uid", "props.subPanelContext.searchState.baseSelection.uid" ]
+        }]
+    },
+    "conditions": {
+        "isFoldersLoc": {
+            "expression": "ctx.locationContext['ActiveWorkspace:Location'] === 'com.siemens.splm.clientfx.tcui.xrt.showObjectLocation'"
+        },
+        "isHostedComponent": {
+            "expression": "ctx.plcomponent_site || ctx.aw_hosting_state.currentHostedComponentId === 'com.siemens.splm.client.change.CreateChangeComponent'"
+        }
+    },
+    "i18n": {
+        "CreateChange": [ "CreateChangeMessages" ],
+        "DeriveChange": [ "CreateChangeMessages" ],
+        "BACK_BUTTON_TITLE": ["BaseMessages"]
+    },
+    "props": {
+        "sub-panel-context":{
+            "type":"object"
+        }
+    },
+    "ctx": {
+        "plcomponent_site": null
+    }
+}

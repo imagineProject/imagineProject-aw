@@ -1,0 +1,1170 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "InlineDependencyCreate": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2012-02-ScheduleManagement",
+            "method": "createDependencies",
+            "inputData": {
+                "schedule": "{{data.eventMap.InlineDependencyCreate.schedule}}",
+                "newDependencies": "{{data.eventMap.InlineDependencyCreate.newDependencies}}"
+            },
+            "outputData": {
+                "partialErorrs": "ServiceData.partialErrors",
+                "createDependencyResponse": ""
+            },
+            "policy": {
+                "types": [ {
+
+                    "name": "TaskDependency",
+                    "properties": [ {
+
+                            "name": "primary_object"
+                        },
+                        {
+                            "name": "secondary_object"
+                        },
+                        {
+                            "name": "dependency_type"
+                        },
+                        {
+                            "name": "lag_time"
+                        },
+                        {
+                            "name": "fnd0ref"
+                        }
+                    ]
+                } ]
+
+            },
+            "events": {
+                "success": [ {
+                    "name": "InlineDependencyCreateSuccess"
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "soaFailureMessage"
+                } ]
+            }
+        },
+        "InlineDependencyDelete": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2012-02-ScheduleManagement",
+            "method": "deleteDependencies",
+            "inputData": {
+                "schedule": "{{data.eventMap.InlineDependencyDelete.depDeleteInput.schedule}}",
+                "dependencyDeletes": "{{data.eventMap.InlineDependencyDelete.depDeleteInput.dependencyDeletes}}"
+            },
+            "outputData": {
+                "deleteDependencyResponse": ""
+            },
+            "policy": {
+                "types": [ {
+
+                    "name": "TaskDependency",
+                    "properties": [ {
+
+                            "name": "primary_object"
+                        },
+                        {
+                            "name": "secondary_object"
+                        },
+                        {
+                            "name": "dependency_type"
+                        },
+                        {
+                            "name": "lag_time"
+                        }
+                    ]
+                } ]
+
+            },
+            "events": {
+                "success": [ {
+                    "name": "InlineDependencyDeleteSuccess"
+                },
+                {
+                    "name": "InlineDepedencyCreateAfterDelete",
+                    "condition": "data.eventMap.InlineDependencyDelete.depAddInput",
+                    "eventData": {
+                        "schedule": "{{data.eventMap.InlineDependencyDelete.depAddInput.schedule}}",
+                        "newDependencies": "{{data.eventMap.InlineDependencyDelete.depAddInput.newDependencies}}"
+                    }
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "soaFailureMessage"
+                } ]
+            }
+        },
+        "InlineDepedencyCreateAfterDelete":{
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2012-02-ScheduleManagement",
+            "method": "createDependencies",
+            "inputData": {
+                "schedule": "{{data.eventData.schedule}}",
+                "newDependencies": "{{data.eventData.newDependencies}}"
+            },
+            "outputData": {
+                "partialErorrs": "ServiceData.partialErrors",
+                "createDependencyResponse": ""
+            },
+            "policy": {
+                "types": [ {
+
+                    "name": "TaskDependency",
+                    "properties": [ {
+
+                            "name": "primary_object"
+                        },
+                        {
+                            "name": "secondary_object"
+                        },
+                        {
+                            "name": "dependency_type"
+                        },
+                        {
+                            "name": "lag_time"
+                        },
+                        {
+                            "name": "fnd0ref"
+                        }
+                    ]
+                }]
+
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "InlineDependencyCreateSuccess"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            }
+        },
+        "updateDependencyValues": {
+            "actionType": "JSFunction",
+            "method": "updateDependencyValues",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "scheduleNavigationTree.plTable.clientRefresh"
+                } ]
+            },
+            "deps": "js/scheduleNavigationTreeRowService"
+        },
+        "updateSelectedTaskSchedule": {
+            "actionType": "JSFunction",
+            "method": "updateSelectedTaskSchedule",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.scheduleNavigationTreeDataProvider}}"
+            },
+            "deps": "js/scheduleNavigationTreeSelectionService"
+        },
+        "onObjectsCreatedAction": {
+            "actionType": "JSFunction",
+            "method": "addCreatedObjects",
+            "inputData": {
+                "data": "{{data}}",
+                "eventMap": "{{data.eventMap}}"
+            },
+            "deps": "js/scheduleNavigationTreeEditService"
+        },
+        "onObjectsDeletedAction": {
+            "actionType": "JSFunction",
+            "method": "removeDeletedObjects",
+            "inputData": {
+                "data": "{{data}}",
+                "eventMap": "{{data.eventMap}}"
+            },
+            "deps": "js/scheduleNavigationTreeEditService"
+        },
+        "handleScheduleNavigationStateParamsChange": {
+            "actionType": "JSFunction",
+            "method": "handleScheduleNavigationStateParamsChange",
+            "inputData": {
+                "scheduleNavigationContext": "{{subPanelContext.provider.scheduleNavigationContext}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/scheduleNavigationService"
+        },
+        "onColumnFilterApplied": {
+            "actionType": "JSFunction",
+            "method": "onColumnFilterApplied",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "scheduleNavigationContext": "{{subPanelContext.provider.scheduleNavigationContext}}"
+            },
+            "deps": "js/scheduleNavigationTreeService"
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumnsScheduleTree",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/scheduleNavigationTreeArrangeService"
+        },
+        "loadTreeColumns": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeTableColumns",
+            "inputData": {
+                "columnProvider": "{{data.columnProviders.scheduleNavigationTreeColumnProvider}}"
+            },
+            "outputData": {
+                "dataProviders.scheduleNavigationTreeDataProvider.columnConfig": "columnConfig"
+            },
+            "deps": "js/scheduleNavigationTreeService"
+        },
+        "saveColumnConfigData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI": "{{subPanelContext.provider.clientScopeURI}}",
+                        "columnConfigId": "{{data.dataProviders.scheduleNavigationTreeDataProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.scheduleNavigationTreeDataProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "events": {
+                "success": [{
+                    "name": "scheduleNavigationTree.ColumnConfigSaved"
+                }]
+            },
+            "outputData": {}
+        },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI": "{{subPanelContext.provider.clientScopeURI}}",
+                        "columnConfigId": "{{data.dataProviders.scheduleNavigationTreeDataProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.scheduleNavigationTreeDataProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "outputData": {},
+            "events": {
+                "success": [ {
+                    "name": "scheduleNavigationTree.ColumnConfigSaved"
+                },
+                {
+                    "name": "scheduleNavigationTree.plTable.reload"
+                } ]
+            }
+        },
+        "resetColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [ {
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos": [ {
+                            "clientScopeURI": "{{subPanelContext.provider.clientScopeURI}}",
+                            "operationType": "union",
+                            "typeNames": "{{function:getTypeNames}}",
+                            "columnsToExclude": []
+                        } ],
+                        "businessObjects": [
+                            {}
+                        ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "dataProviders.scheduleNavigationTreeDataProvider.columnConfig": "columnConfigurations[0].columnConfigurations[0]",
+                "dataProviders.scheduleNavigationTreeDataProvider.columnConfig.typesForArrange": "{{function:getTypeNames}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "scheduleNavigationTree.plTable.reload"
+                } ]
+            }
+        },
+        "loadDataForSavedColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "getTableViewModelProperties",
+            "deps": "js/tcViewModelObjectService",
+            "inputData": {
+                "vmNodes": "{{data.dataProviders.scheduleNavigationTreeDataProvider.viewModelCollection.loadedVMObjects}}",
+                "context": {
+                    "clientName": "AWClient",
+                    "clientScopeURI": "{{subPanelContext.provider.clientScopeURI}}",
+                    "typesForArrange": "{{data.dataProviders.scheduleNavigationTreeDataProvider.columnConfig.typesForArrange}}",
+                    "columnsToExclude": [],
+                    "operationType": "{{eventData.operationType}}",
+                    "addedColumnNames": "{{data.dataProviders.scheduleNavigationTreeDataProvider.addedColumnNames}}"
+                }
+            },
+            "outputData": {
+                "newColumnConfig": "result.output.columnConfig",
+                "dataProviders.scheduleNavigationTreeDataProvider.addedColumnNames": []
+            },
+            "events": {
+                "success": [ {
+                    "name": "scheduleNavigationTree.updateTreeTableColumns"
+                } ]
+            }
+        },
+        "updateSchNavTreeTableColumns": {
+            "actionType": "JSFunction",
+            "method": "updateSchNavTreeTableColumns",
+            "inputData": {
+                "data": "{{data}}",
+                "dataProvider": "{{data.dataProviders.scheduleNavigationTreeDataProvider}}"
+            },
+            "outputData": {
+                "newColumnConfig": "result.newColumnConfig",
+                "dataProviders.scheduleNavigationTreeDataProvider.columnConfig": "result.columnConfig"
+            },
+            "deps": "js/scheduleNavigationTreeService"
+        },
+        "loadInitialDataForTree": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeTableData",
+            "inputData": {
+                "methodArgument": {
+                    "treeLoadInput": "request.treeLoadInput",
+                    "dataProvider": "{{data.dataProviders.scheduleNavigationTreeDataProvider}}",
+                    "declViewModel": "{{data}}",
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "{{subPanelContext.provider.clientScopeURI}}",
+                        "operationType": "{{data.dataProviders.scheduleNavigationTreeDataProvider.columnConfig.operationType}}"
+                    },
+                    "columnProvider": "{{data.columnProviders.scheduleNavigationTreeColumnProvider}}",
+                    "subPanelContext": "{{subPanelContext}}",
+                    "actionType": "initalizeAction",
+                    "columnFilters": "{{data.columnProviders.scheduleNavigationTreeColumnProvider.columnFilters}}"
+                }
+            },
+            "outputData": {
+                "tableLoaded": true,
+                "totalFound": "result.treeLoadResult.totalChildCount",
+                "searchResults": "result.treeLoadResult.searchResults",
+                "treeLoadResult": "result.treeLoadResult.childNodes",
+                "metaDataForGanttChart": "result.metaDataForGanttChart",
+                "isTreeNodesLoaded": "result.isTreeNodesLoaded"
+            },
+            "deps": "js/scheduleNavigationTreeService",
+            "events": {
+                "success": [
+                    {
+                        "name": "scheduleNavigationTree.parseCalendarAndDepInfo",
+                        "condition": "data.isTreeNodesLoaded"
+                    }
+                ]
+            }
+        },
+        "parseCalendarAndDepInfo": {
+            "actionType": "JSFunction",
+            "method": "parseLoadScheduleResponse",
+            "inputData": {
+                "scheduleTreeResponse": "{{data.metaDataForGanttChart}}"
+            },
+            "outputData": {
+                "loadScheduleResponse": ""
+            },
+            "deps": "js/scheduleNavigationTreeService",
+            "events": {
+                "success": [
+                    {
+                        "name": "scheduleNavigationTree.calendarInfoLoaded",
+                        "condition": "data.loadScheduleResponse.calendarInfo",
+                        "eventData": {
+                            "calendarInfo": "{{data.loadScheduleResponse.calendarInfo}}"
+                        }
+                    },
+                    {
+                        "name": "scheduleNavigationTree.dependenciesLoaded",
+                        "eventData": {
+                            "loadedDependencies": "{{data.loadScheduleResponse.loadedDependencies}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "loadDataForTree": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeTableData",
+            "inputData": {
+                "methodArgument": {
+                    "treeLoadInput": "request.treeLoadInput",
+                    "dataProvider": "{{data.dataProviders.scheduleNavigationTreeDataProvider}}",
+                    "declViewModel": "{{data}}",
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "{{subPanelContext.provider.clientScopeURI}}",
+                        "operationType": "{{data.dataProviders.scheduleNavigationTreeDataProvider.columnConfig.operationType}}"
+                    },
+                    "columnProvider": "{{data.columnProviders.scheduleNavigationTreeColumnProvider}}",
+                    "subPanelContext": "{{subPanelContext}}"
+                }
+            },
+            "outputData": {
+                "totalFound": "result.treeLoadResult.totalChildCount",
+                "searchResults": "result.treeLoadResult.searchResults",
+                "treeLoadResult": "result.treeLoadResult.childNodes"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "scheduleNavigationTree.parseCalendarAndDepInfo",
+                        "condition": "data.isTreeNodesLoaded"
+                    }
+                ]
+            },
+            "deps": "js/scheduleNavigationTreeService"
+        },
+        "loadTreeTablePropertiesOnInitialLoad": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeTablePropertiesOnInitialLoad",
+            "deps": "js/scheduleNavigationTreeService",
+            "inputData": {
+                "vmNodes": "{{data.dataProviders.scheduleNavigationTreeDataProvider.viewModelCollection.loadedVMObjects}}",
+                "declViewModel": "{{data}}",
+                "uwDataProvider": "{{data.dataProviders.scheduleNavigationTreeDataProvider}}",
+                "context": {
+                    "clientName": "AWClient",
+                    "clientScopeURI": "{{subPanelContext.provider.clientScopeURI}}",
+                    "typesForArrange": "{{data.dataProviders.scheduleNavigationTreeDataProvider.columnConfig.typesForArrange}}"
+                },
+                "contextKey": "search"
+            },
+            "outputData": {
+                "dataProviders.scheduleNavigationTreeDataProvider.columnConfig": "result.propertyLoadResult.columnConfig"
+            }
+        },
+        "loadTreeProperties": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeTableProperties",
+            "inputData": {
+                "methodArgument": {
+                    "propertyLoadInput": "request.propertyLoadInput",
+                    "propertyLoadContext": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "{{subPanelContext.provider.clientScopeURI}}",
+                        "typesForArrange": "{{data.dataProviders.scheduleNavigationTreeDataProvider.columnConfig.typesForArrange}}"
+                    },
+                    "contextKey": "search",
+                    "declViewModel": "{{data}}",
+                    "uwDataProvider": "{{data.dataProviders.scheduleNavigationTreeDataProvider}}"
+                }
+            },
+            "outputData": {
+                "dataProviders.scheduleNavigationTreeDataProvider.columnConfig": "result.propertyLoadResult.columnConfig"
+            },
+            "deps": "js/scheduleNavigationTreeService"
+        },
+        "onTreeNodesLoaded": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadTreeTablePropertiesOnInitialLoad",
+                    "condition": "!data.dataProviders.scheduleNavigationTreeDataProvider.columnConfigLoadingInProgress"
+                },
+                {
+                    "action": "loadCalendarInfo",
+                    "condition": "subPanelContext.provider.scheduleNavigationContext.value.isStructureEditSupported !== true && !subPanelContext.provider.scheduleNavigationContext.value.calendarInfo && !data.isTreeNodesLoaded"
+                },
+                {
+                    "action": "loadDependencies",
+                    "condition": "subPanelContext.provider.scheduleNavigationContext.value.isStructureEditSupported === true && !data.isTreeNodesLoaded"
+                }
+            ]
+        },
+        "loadCalendarInfo": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagementAw-2018-12-ScheduleManagementAw",
+            "method": "loadSchedule2",
+            "inputData": {
+                "loadScheduleInfo": {
+                    "schedule": "{{subPanelContext.sourceSchedule}}",
+                    "loadOptions": {
+                        "fetchCalendarsOnly": "true"
+                    }
+                }
+            },
+            "outputData": {
+                "loadScheduleResponse": "{{function:parseLoadScheduleResponse}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "scheduleNavigationTree.calendarInfoLoaded",
+                        "condition": "data.loadScheduleResponse.calendarInfo",
+                        "eventData": {
+                            "calendarInfo": "{{data.loadScheduleResponse.calendarInfo}}"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/scheduleNavigationTreeService"
+        },
+        "loadDependencies": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagementAw-2018-12-ScheduleManagementAw",
+            "method": "loadSchedule2",
+            "inputData": {
+                "loadScheduleInfo": {
+                    "schedule": "{{subPanelContext.sourceSchedule}}",
+                    "loadOptions": {
+                        "isScheduleNavigationContext": "true",
+                        "parentTaskUid": "{{data.loadScheduleInput.parentTaskUid}}",
+                        "startTaskUid": "{{data.loadScheduleInput.startTaskUid}}",
+                        "endTaskUid": "{{data.loadScheduleInput.endTaskUid}}",
+                        "loadCalendarInfo": "{{data.loadScheduleInput.loadCalendarInfo}}",
+                        "prevLoadedTasks": "{{data.loadScheduleInput.prevLoadedTasks}}",
+                        "prevLoadedTaskDepenedencies":"{{data.loadScheduleInput.loadedDependenciesInfo}}"
+                    }
+                }
+            },
+            "policy": {
+                "types": [ {
+                        "name": "TaskDependency",
+                        "properties": [ {
+                                "name": "primary_object"
+                            },
+                            {
+                                "name": "secondary_object"
+                            },
+                            {
+                                "name": "dependency_type"
+                            },
+                            {
+                                "name": "lag_time"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "ScheduleTask",
+                        "properties": [ {
+                                "name": "task_type"
+                            },
+                            {
+                                "name": "start_date"
+                            },
+                            {
+                                "name": "finish_date"
+                            },
+                            {
+                                "name": "duration"
+                            },
+                            {
+                                "name": "work_estimate"
+                            },
+                            {
+                                "name": "work_complete"
+                            },
+                            {
+                                "name": "complete_percent"
+                            },
+                            {
+                                "name": "fnd0status"
+                            },
+                            {
+                                "name": "fnd0ParentTask"
+                            },
+                            {
+                                "name": "schedule_tag"
+                            },
+                            {
+                                "name": "ResourceAssignment"
+                            },
+                            {
+                                "name": "fnd0WhatIfMode"
+                            },
+                            {
+                                "name": "fnd0WhatIfData"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "loadScheduleResponse": "{{function:parseLoadScheduleResponse}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "scheduleNavigationTree.calendarInfoLoaded",
+                        "condition": "data.loadScheduleResponse.calendarInfo",
+                        "eventData": {
+                            "calendarInfo": "{{data.loadScheduleResponse.calendarInfo}}"
+                        }
+                    },
+                    {
+                        "name": "scheduleNavigationTree.dependenciesLoaded",
+                        "eventData": {
+                            "loadedDependencies": "{{data.loadScheduleResponse.loadedDependencies}}"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/scheduleNavigationTreeService"
+        },
+        "updateContextWithCalendarInfo": {
+            "actionType": "JSFunction",
+            "method": "updateContextWithCalendarInfo",
+            "inputData": {
+                "calendarInfo": "{{data.eventMap['scheduleNavigationTree.calendarInfoLoaded'].calendarInfo}}",
+                "scheduleNavigationContext": "{{subPanelContext.provider.scheduleNavigationContext}}"
+            },
+            "deps": "js/scheduleNavigationTreeService"
+        },
+        "updateContextWithDependencyInfo": {
+            "actionType": "JSFunction",
+            "method": "updateContextWithDependencyInfo",
+            "inputData": {
+                "loadedDependencies": "{{data.eventMap['scheduleNavigationTree.dependenciesLoaded'].loadedDependencies}}",
+                "scheduleNavigationContext": "{{subPanelContext.provider.scheduleNavigationContext}}"
+            },
+            "deps": "js/scheduleNavigationTreeService"
+        },
+        "publishClientRefreshEventForPlTable": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "scheduleNavigationTree.plTable.clientRefresh"
+                } ]
+            }
+        },
+        "updateDisplayNames": {
+            "actionType": "JSFunction",
+            "method": "updateDisplayNames",
+            "inputData": {
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/scheduleNavigationTreeService"
+        },
+        "updateStateOnDelete": {
+            "actionType": "JSFunction",
+            "method": "updateScheduleTreeStateOnDelete",
+            "inputData": {
+                "declViewModel": "{{data}}"
+            },
+            "deps": "js/scheduleNavigationTreeService"
+        },
+        "startEditForNewVmos": {
+            "actionType": "JSFunction",
+            "method": "startEditForNewVmos",
+            "inputData": {
+                "editContext": "{{data.dataProviders.scheduleNavigationTreeDataProvider.json.editContext}}"
+            },
+            "deps": "js/editEventsService"
+        },
+        "invokeSaveEditsCommand": {
+            "actionType": "Command",
+            "inputData": {
+                "commandId": "Awp0SaveEditsPWA"
+            }
+        },
+        "expandBelowAction": {
+            "actionType": "JSFunction",
+            "method": "performExpandBelow",
+            "inputData": {
+                "treeNode": "{{data.eventMap['scheduleNavigationTree.expandBelow'].node}}",
+                "declViewModel": "{{data}}",
+                "dataProvider": "{{data.dataProviders.scheduleNavigationTreeDataProvider}}",
+                "topSchedule": "{{subPanelContext.sourceSchedule}}"
+            },
+            "deps": "js/scheduleNavigationExpandService"
+        },
+        "collapseBelowAction": {
+            "actionType": "JSFunction",
+            "method": "performCollapseBelow",
+            "inputData": {
+                "treeNode": "{{data.eventMap['scheduleNavigationTree.collapseBelow'].node}}",
+                "dataProvider": "{{data.dataProviders.scheduleNavigationTreeDataProvider}}",
+                "declViewModel": "{{data}}"
+            },
+            "deps": "js/scheduleNavigationExpandService"
+        },
+        "moveTasksAction": {
+            "actionType": "JSFunction",
+            "method": "moveTasks",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.scheduleNavigationTreeDataProvider}}",
+                "parentChildMap": "{{data.eventMap['scheduleNavigationTreeDataProvider.moveTasks']}}"
+            },
+            "deps": "js/scheduleNavigationTreeEditService"
+        },
+        "moveTaskdActionForDnd": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2012-02-ScheduleManagement",
+            "method": "moveTasks",
+            "inputData": {
+                "schedule": "{{data.eventMap['ScheduleNavigationTree.SchTaskReorderEvent'].schedule}}",
+                "moveRequests": "{{data.eventMap['ScheduleNavigationTree.SchTaskReorderEvent'].moveRequests}}"
+            },
+            "policy": {
+                "types": [ {
+                    "name": "ScheduleTask",
+                    "properties": [ {
+                        "name": "child_task_taglist",
+                        "modifiers": [ {
+                            "name": "withProperties",
+                            "Value": "false"
+                        } ]
+                    } ]
+                } ]
+            },
+            "events": {
+                "success": [ {
+                    "name": "reorderTaskTreeNodePositionEvent"
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "soaFailureMessage"
+                } ]
+            }
+        },
+        "reorderTaskTreeNodePositionAction": {
+            "actionType": "JSFunction",
+            "method": "updateTaskTreeNodePosition",
+            "inputData": {
+                "moveRequests": "{{data.eventMap['ScheduleNavigationTree.SchTaskReorderEvent'].moveRequests}}"
+            },
+            "deps": "js/scheduleNavigationTreeEditService"
+        },
+        "moveTaskMasterSubAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2012-02-ScheduleManagement",
+            "method": "moveTasks",
+            "inputData": {
+                "schedule": "{{data.eventMap['ScheduleNavigationTree.warningMsgForMoveTaskAcrossSchedules'].schedule}}",
+                "moveRequests": "{{data.eventMap['ScheduleNavigationTree.warningMsgForMoveTaskAcrossSchedules'].moveRequests}}"
+            },
+            "policy": {
+                "types": [ {
+                    "name": "ScheduleTask",
+                    "properties": [ {
+                        "name": "child_task_taglist",
+                        "modifiers": [ {
+                            "name": "withProperties",
+                            "Value": "false"
+                        } ]
+                    } ]
+                } ]
+            },
+            "events": {
+                "success": [ {
+                    "name": "reorderTaskTreeNodePositionAcrossSchedulesEvent"
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "soaFailureMessage"
+                } ]
+            }
+        },
+        "reorderTaskTreeNodePositionAcrossSchedulesAction": {
+            "actionType": "JSFunction",
+            "method": "updateTaskTreeNodePosition",
+            "inputData": {
+                "moveRequests": "{{data.eventMap['ScheduleNavigationTree.warningMsgForMoveTaskAcrossSchedules'].moveRequests}}"
+            },
+            "deps": "js/scheduleNavigationTreeEditService"
+        },
+        "updateWhatIfPropertiesAction": {
+            "actionType": "JSFunction",
+            "method": "updateWhatIfProperties",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.scheduleNavigationTreeDataProvider}}"
+            },
+            "deps": "js/scheduleNavigationTreeCellRenderingService"
+        },
+        "updateViewModel": {
+            "actionType": "JSFunction",
+            "method": "updateViewModel",
+            "inputData": {
+                "data": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/scheduleNavigationTreeRowService"
+        },
+        "getFilterFacets": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2019-12-Finder",
+            "method": "getFilterValues",
+            "inputData": {
+                "filterFacetInput": {
+                    "columnFilters": "{{filterFacetInput.columnFilters}}",
+                    "columnName": "{{filterFacetInput.column.field}}",
+                    "maxToReturn": "{{filterFacetInput.maxToReturn}}",
+                    "providerName": "Saw1TaskSearchProvider",
+                    "searchCriteria": {
+                        "sublocationToken": "ScheduleGantt",
+                        "searchContentType": "ScheduleTask",
+                        "includeProxies": "true",
+                        "topScheduleUid": "{{subPanelContext.sourceSchedule.uid}}"
+                    },
+                    "searchFilterMap": "{{subPanelContext.searchState.activeFilterMap}}",
+                    "startIndex": "{{filterFacetInput.startIndex}}"
+                }
+            },
+            "outputData": {
+                "filterFacetResults": "{{json:facetValues}}"
+            }
+        },
+        "initSearch": {
+            "actionType": "JSFunction",
+            "method": "initSearch",
+            "inputData": {
+                "data": "{{data.actions}}",
+                "actionName": "initializeDataProvider",
+                "tableLoaded": "{{data.tableLoaded}}"
+            },
+            "deps": "js/awSearchService"
+        },
+        "initializeDataProvider": {
+            "actionType": "dataProvider",
+            "method": "scheduleNavigationTreeDataProvider"
+        },
+        "updateTableRowHeight": {
+            "actionType": "JSFunction",
+            "method": "updateTableRowHeight",
+            "inputData": {
+                "scheduleNavigationTree": "{{data.grids.scheduleNavigationTree}}",
+                "scheduleNavigationContext": "{{subPanelContext.provider.scheduleNavigationContext}}"
+            },
+            "deps": "js/Saw1ScheduleGanttLayoutService"
+        }
+    },
+    "dataProviders": {
+        "scheduleNavigationTreeDataProvider": {
+            "initializeAction": "loadInitialDataForTree",
+            "nextAction": "loadDataForTree",
+            "previousAction": "loadDataForTree",
+            "focusAction": "loadDataForTree",
+            "editContext": "TABLE_CONTEXT",
+            "treeLoadResult": "action.result.treeLoadResult",
+            "selectionModelMode": "multiple",
+            "preselection": true,
+            "treePageSize": 50,
+            "cacheCollapse": true,
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "selectionData": "{{subPanelContext.selectionData}}",
+                "accessMode": "tree",
+                "topNodeUid": "{{subPanelContext.sourceSchedule.uid}}"
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands",
+            "filterFacetAction": "getFilterFacets",
+            "filterFacetResults": "{{data.filterFacetResults}}"
+        },
+        "scheduleNavigationTreePropertyProvider": {
+            "action": "loadTreeProperties",
+            "propertyLoadResult": "action.result.propertyLoadResult"
+        }
+    },
+    "data": {
+        "tableLoaded": false,
+        "sourceScheduleUid": "{{subPanelContext.sourceSchedule.uid}}",
+        "uid": "{{ctx.search.criteria.parentUid}}",
+        "clientColumns": [],
+        "loadScheduleInput": {}
+    },
+    "columnProviders": {
+        "scheduleNavigationTreeColumnProvider": {
+            "loadColumnAction": "loadTreeColumns",
+            "columns": "{{scheduleNavigationTreeDataProvider.columnConfig.columns}}",
+            "clientColumns": "{{data.clientColumns}}",
+            "saveColumnAction": "saveColumnConfigData",
+            "saveColumnAndLoadAction": "saveColumnConfigLoadData",
+            "resetColumnAction": "resetColumnConfig"
+        }
+    },
+    "grids": {
+        "scheduleNavigationTree": {
+            "dataProvider": "scheduleNavigationTreeDataProvider",
+            "propertyProvider": "scheduleNavigationTreePropertyProvider",
+            "columnProvider": "scheduleNavigationTreeColumnProvider",
+            "enableArrangeMenu": true,
+            "addIconColumn": false,
+            "gridOptions": {
+                "useStaticFirstCol": true,
+                "enableGridMenu": true,
+                "enableExpandAndPaginationInEdit": true,
+                "enableDragAndDrop": true,
+                "headerHeight": "XLARGE",
+                "enableSorting": false,
+                "enableExpansionStateCaching": true,
+                "isFilteringEnabled": true
+            }
+        }
+    },
+    "functions": {
+        "getTypeNames": {
+            "functionName": "getTypeNames",
+            "parameters": [
+                "{{subPanelContext.searchState.searchFilterMap}}"
+            ],
+            "deps": "js/tcarrange.service"
+        },
+        "getDefaultPageSize": {
+            "functionName": "getDefaultPageSize",
+            "parameters": [
+                "{{ctx.preferences.AWC_DefaultPageSize}}"
+            ]
+        },
+        "parseLoadScheduleResponse": {
+            "functionName": "parseLoadScheduleResponse",
+            "parameters": []
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [ {
+                "action": "initSearch",
+                "observers": [
+                    "props.subPanelContext.searchState.criteria.searchString",
+                    "props.subPanelContext.searchState.filterString"
+                ]
+            },
+            {
+                "action": "updateTableRowHeight",
+                "observers": [ "props.subPanelContext.provider.scheduleNavigationContext.baselineUids" ]
+            }
+        ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "InlineDependencyCreate",
+            "cacheEventData": true,
+            "action": "InlineDependencyCreate"
+        },
+        {
+            "eventId": "refreshSchedulePWA",
+            "action": "initializeDataProvider"
+        },
+        {
+            "eventId": "InlineDependencyDelete",
+            "cacheEventData": true,
+            "action": "InlineDependencyDelete"
+        },
+        {
+            "eventId": "InlineDepedencyCreateAfterDelete",
+            "cacheEventData": true,
+            "action": "InlineDepedencyCreateAfterDelete"
+        },
+        {
+            "eventId": "$locationChangeSuccess",
+            "cacheEventData": true,
+            "action": "handleScheduleNavigationStateParamsChange"
+        },
+        {
+            "eventId": "pltable.columnFilterApplied",
+            "cacheEventData": true,
+            "action": "onColumnFilterApplied"
+        },
+        {
+            "eventId": "scheduleNavigationTreeDataProvider.treeNodesLoaded",
+            "cacheEventData": true,
+            "action": "onTreeNodesLoaded"
+        },
+        {
+            "eventId": "scheduleNavigationTree.parseCalendarAndDepInfo",
+            "action": "parseCalendarAndDepInfo"
+        },
+        {
+            "eventId": "scheduleNavigationTree.calendarInfoLoaded",
+            "cacheEventData": true,
+            "action": "updateContextWithCalendarInfo"
+        },
+        {
+            "eventId": "scheduleNavigationTree.dependenciesLoaded",
+            "cacheEventData": true,
+            "action": "updateContextWithDependencyInfo"
+        },
+        {
+            "eventId": "primaryWorkArea.selectionChangeEvent",
+            "cacheEventData": true,
+            "action": "updateSelectedTaskSchedule"
+        },
+        {
+            "eventId": "cdm.created",
+            "cacheEventData": true,
+            "action": "onObjectsCreatedAction"
+        },
+        {
+            "eventId": "cdm.deleted",
+            "cacheEventData": true,
+            "action": "onObjectsDeletedAction"
+        },
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent"
+        },
+        {
+            "eventId": "primaryWorkarea.multiSelectAction",
+            "action": "publishClientRefreshEventForPlTable"
+        },
+        {
+            "eventId": "scheduleNavigationTreeDataProvider.modelObjectsUpdated",
+            "cacheEventData": true,
+            "action": "updateDisplayNames"
+        },
+        {
+            "eventId": "vmc.modified.scheduleNavigationTreeDataProvider",
+            "cacheEventData": true,
+            "action": "updateDisplayNames"
+        },
+        {
+            "eventId": "updateTaskStateOnDelete",
+            "cacheEventData": true,
+            "action": "updateStateOnDelete"
+        },
+        {
+            "eventId": "scheduleNavigationTree.ColumnConfigSaved",
+            "cacheEventData": true,
+            "action": "loadDataForSavedColumnConfig",
+            "condition": "!ctx.editInProgress"
+        },
+        {
+            "eventId": "scheduleNavigationTree.updateTreeTableColumns",
+            "action": "updateSchNavTreeTableColumns"
+        },
+        {
+            "eventId": "scheduleNavigationTree.expandBelow",
+            "cacheEventData": true,
+            "action": "expandBelowAction"
+        },
+        {
+            "eventId": "scheduleNavigationTree.collapseBelow",
+            "cacheEventData": true,
+            "action": "collapseBelowAction"
+        },
+        {
+            "eventId": "scheduleNavigationTreeDataProvider.startEditForNewVmosRequested",
+            "action": "startEditForNewVmos"
+        },
+        {
+            "eventId": "saveEditsRequested",
+            "action": "invokeSaveEditsCommand"
+        },
+        {
+            "eventId": "scheduleNavigationTreeDataProvider.moveTasks",
+            "cacheEventData": true,
+            "action": "moveTasksAction"
+        },
+        {
+            "eventId": "ScheduleNavigationTree.SchTaskReorderEvent",
+            "cacheEventData": true,
+            "action": "moveTaskdActionForDnd"
+        },
+        {
+            "eventId": "ScheduleNavigationTree.warningMsgForMoveTaskAcrossSchedules",
+            "cacheEventData": true,
+            "message": "moveTaskAcrossScheduleForDnd"
+        },
+        {
+            "eventId": "reorderTaskTreeNodePositionEvent",
+            "cacheEventData": true,
+            "action": "reorderTaskTreeNodePositionAction"
+        },
+        {
+            "eventId": "reorderTaskTreeNodePositionAcrossSchedulesEvent",
+            "cacheEventData": true,
+            "action": "reorderTaskTreeNodePositionAcrossSchedulesAction"
+        },
+        {
+            "eventId": "ScheduleNavigationTree.errMsgForSchSummaryTask",
+            "message": "errMsgForSchSummaryTask"
+        },
+        {
+            "eventId": "scheduleNavigationTree.updateWhatIfProperties",
+            "cacheEventData": true,
+            "action": "updateWhatIfPropertiesAction"
+        },
+        {
+            "eventId": "viewModelObject.propsUpdated",
+            "cacheEventData": true,
+            "action": "updateViewModel"
+        },
+        {
+            "eventId": "LayoutChangeEvent",
+            "action": "updateTableRowHeight",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "appCtx.update",
+            "criteria": {
+                "name": "preferences",
+                "target": "AW_SubLocation_ScheduleNavigationSubLocation_ShowGanttChart"
+            },
+            "action": "updateTableRowHeight"
+        }
+    ],
+    "messages": {
+        "moveTaskAcrossScheduleForDnd": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.moveTaskAcrossSchedulesMessageConfirmation}}",
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.CancelText}}",
+                    "action": ""
+                },
+                {
+                    "option": "Move",
+                    "text": "{{i18n.move}}",
+                    "action": "moveTaskMasterSubAction"
+                }
+            ]
+        },
+        "soaFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "errMsgForSchSummaryTask": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.errMsgForSchSummaryTask}}"
+        }
+    },
+    "i18n": {
+        "CancelText": [
+            "ScheduleManagerMessages"
+        ],
+        "moveTaskAcrossSchedulesMessageConfirmation": [
+            "ScheduleManagerMessages"
+        ],
+        "move": [
+            "ScheduleManagerMessages"
+        ],
+        "errMsgForSchSummaryTask": [
+            "ScheduleManagerMessages"
+        ]
+    }
+}

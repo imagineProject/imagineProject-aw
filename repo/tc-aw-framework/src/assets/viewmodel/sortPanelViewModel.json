@@ -1,0 +1,135 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "initializeSortPanel": {
+            "actionType": "JSFunction",
+            "method": "initializeSortPanel",
+            "inputData": {
+                "columns": "{{props.tableColumnDataProvider.viewModelCollection.loadedVMObjects}}",
+                "fields": "{{fields}}",
+                "i18n": "{{i18n}}"
+            },
+            "outputData": {
+                "columnsForLov": ""
+            },
+            "deps": "js/tableConfigsService"
+        },
+        "updateStateAndClosePanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateSortDirection"
+                },
+                {
+                    "action": "closeDialog"
+                }
+            ]
+        },
+        "updateSortDirection": {
+            "actionType": "JSFunction",
+            "method": "updateSortDirection",
+            "inputData": {
+                "columnPropertySortState": "{{props.columnPropertySortState}}",
+                "sortDirection": "{{data.sortDirection.dbValue}}",
+                "propertyName": "{{data.sortBy.dbValue}}"
+            },
+            "outputData": {
+                "loadedColumns": "loadedColumns",
+                "loadedColumnsTotalFound": "loadedColumnsTotalFound"
+            },
+            "deps": "js/tableConfigsService"
+        },
+        "closeDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "clearSortBy": {
+            "actionType": "JSFunction",
+            "method": "clearSortByLov",
+            "inputData": {
+                "clearSortBy": "{{fields.sortBy}}",
+                "sortDirection": "{{data.sortDirection.dbValue}}",
+                "i18n": "{{i18n}}"
+            },
+            "deps": "js/tableConfigsService"
+        },
+        "setSortDirection": {
+            "actionType": "JSFunction",
+            "method": "setSortDirectionInLov",
+            "inputData": {
+                "sortDirection": "{{fields.sortDirection}}",
+                "sortColumn": "{{data.sortBy.dbValue}}",
+                "i18n": "{{i18n}}"
+            },
+            "deps": "js/tableConfigsService"
+        }
+    },
+    "data": {
+        "sortBy": {
+            "displayName": "{{i18n.sortByTitle}}",
+            "type": "STRING",
+            "dataProvider": "sortByDataProvider",
+            "uiValue": "",
+            "dbValue": "",
+            "isSelectOnly": true
+        },
+        "sortDirection": {
+            "displayName": "{{i18n.sortDirectionTitle}}",
+            "type": "STRING",
+            "dataProvider": "sortDirectionDataprovider",
+            "uiValue": "",
+            "dbValue": "",
+            "isSelectOnly": true,
+            "emptyLOVEntry": false
+        },
+        "sortDirectionValues": [
+            {
+                "propDisplayValue": "{{i18n.noSorting}}",
+                "propInternalValue": "NoSorting"
+            },
+            {
+                "propDisplayValue": "{{i18n.ascending}}",
+                "propInternalValue": "Ascending"
+            },
+            {
+                "propDisplayValue": "{{i18n.descending}}",
+                "propInternalValue": "Descending"
+            }
+        ]
+    },
+    "dataProviders": {
+        "sortDirectionDataprovider": {
+            "response": "{{data.sortDirectionValues}}",
+            "moreValuesExist": false
+        },
+        "sortByDataProvider": {
+            "response": "{{data.columnsForLov}}"
+        }
+    },
+    "conditions": {
+        "enableSortDirection": {
+            "expression": "data.sortBy.dbValue !== ''"
+        }
+    },
+    "functions": {},
+    "onEvent": [ {
+        "eventId": "primaryWorkArea.selectionChangeEvent",
+        "action": "closeDialog"
+    } ],
+    "lifecycleHooks": {
+        "onMount": "initializeSortPanel"
+    },
+    "i18n": {
+        "apply": ["tableConfigsMessages"],
+        "sortByTitle": ["tableConfigsMessages"],
+        "sortDirectionTitle": ["tableConfigsMessages"],
+        "ascending": ["tableConfigsMessages"],
+        "descending": ["tableConfigsMessages"],
+        "noSorting": ["tableConfigsMessages"]
+    }
+}

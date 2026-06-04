@@ -1,0 +1,201 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+    },
+    "props":{
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "actions": {
+        "buildCrumbs": {
+            "actionType": "JSFunction",
+            "method": "buildNavigateBreadcrumb",
+            "inputData": {
+                "selectedObject" : "{{data.adaptedObjects[0]}}",
+                "xrtState": "{{props.subPanelContext.xrtState}}"
+            },
+            "outputData": {
+                "crumbs": "crumbs"
+            },
+            "deps": "js/Awp0WorkflowBreadcrumbPanel"
+        },
+        "updateNavigateBreadcrumbData": {
+            "actionType": "JSFunctionAsync",
+            "method": "updateNavigateBreadcrumbData",
+            "inputData": {
+                "selectedProcess": "{{data.eventMap['workflow.updateBreadcrumbData'].selection}}",
+                "selectedObject" : "{{data.adaptedObjects[0]}}",
+                "crumbs" : "{{data.crumbs}}",
+                "xrtState": "{{props.subPanelContext.xrtState}}"
+            },
+            "outputData": {
+                "crumbs": "crumbs"
+            },
+            "deps": "js/Awp0WorkflowBreadcrumbPanel"
+        },
+        "initBreadCrumbPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getSelectedObjects"
+                },
+                {
+                    "action": "registerPropertyPolicy",
+                    "condition": "!conditions.isSelectedEPMTaskOrSignOffTask"
+                },
+                {
+                    "action": "loadProperties",
+                    "condition": "data.policyId && !conditions.isSelectedEPMTaskOrSignOffTask"
+                }
+            ]
+        },
+        "getSelectedObjects": {
+            "actionType": "JSFunctionAsync",
+            "method": "getAdaptedObjects",
+            "inputData": {
+                "sourceObjects": [
+                    "{{props.subPanelContext.selected}}"
+                ]
+            },
+            "outputData": {
+                "adaptedObjects": ""
+            },
+            "deps": "js/adapterService"
+        },
+        "registerPropertyPolicy": {
+            "actionType": "JSFunction",
+            "method": "registerPropertyPolicy",
+            "inputData": {
+                "objects":"{{data.adaptedObjects}}"
+            },
+            "outputData": {
+                "policyId": ""
+            },
+            "deps": "js/Awp0WorkflowBreadcrumbPanel"
+        },
+        "unregisterPropertyPolicy" : {
+            "actionType": "JSFunction",
+            "method": "unregisterPropertyPolicy",
+            "outputData": {
+                "policyId": ""
+            },
+            "deps": "js/Awp0WorkflowBreadcrumbPanel"
+        },
+        "loadProperties1": {
+            "actionType": "JSFunction",
+            "method": "getBreadcrumbProperties",
+            "inputData":
+            {
+                "objects":"{{data.adaptedObjects}}",
+                "attributes": [
+                    "fnd0AllWorkflows",
+                    "fnd0MyWorkflowTasks",
+                    "object_string"
+                ],
+                "policy": "{{data.policyId}}"
+            },
+            "outputData": {
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "workflowBreadCrumb.PropertiesLoaded"
+                    },
+                    {
+                        "name": "workflowBreadCrumb.unregisterPropertyPolicy"
+                    }
+                ]
+            },
+            "deps": "js/Awp0WorkflowBreadcrumbPanel"
+        },
+        "loadProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData":
+            {
+                "objects":"{{data.adaptedObjects}}",
+                "attributes": [
+                    "fnd0AllWorkflows",
+                    "fnd0MyWorkflowTasks",
+                    "object_string"
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "workflowBreadCrumb.PropertiesLoaded"
+                    },
+                    {
+                        "name": "workflowBreadCrumb.unregisterPropertyPolicy"
+                    }
+                ]
+            },
+            "deps": "js/Awp0WorkflowBreadcrumbPanel"
+        },
+        "handleCdmRelatedModifiedEventBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "isRefreshLocationNeeded",
+                    "condition": "parameters.eventData.refreshLocationFlag"
+                },
+                {
+                    "action": "registerPropertyPolicy",
+                    "condition": "!conditions.isSelectedEPMTaskOrSignOffTask && data.isRefreshLocation"
+                },
+                {
+                    "action": "loadProperties",
+                    "condition": "data.policyId && parameters.eventData.refreshLocationFlag && data.isRefreshLocation"
+                }
+            ]
+        },
+        "isRefreshLocationNeeded": {
+            "actionType": "JSFunction",
+            "method": "isRefreshLocationNeeded",
+            "deps": "js/Awp0WorkflowUtils",
+            "inputData": {
+                "eventdata": "{{parameters.eventData}}",
+                "selection": [ "{{data.adaptedObjects[0]}}" ]
+            },
+            "outputData": {
+                "isRefreshLocation": ""
+            }
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initBreadCrumbPanel"
+    },
+    "onEvent":[
+        {
+            "eventId": "workflowBreadCrumb.PropertiesLoaded",
+            "action": "buildCrumbs"
+        },
+        {
+            "eventId": "workflow.updateBreadcrumbData",
+            "action": "updateNavigateBreadcrumbData",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "cdm.relatedModified",
+            "action": "handleCdmRelatedModifiedEventBatchAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "workflowBreadCrumb.unregisterPropertyPolicy",
+            "action": "unregisterPropertyPolicy"
+        }
+    ],
+    "conditions": {
+        "isSelectedEPMTaskOrSignOffTask": {
+          "expression":"props.subPanelContext.selected.modelType.typeHierarchyArray.indexOf('Signoff') > -1 || props.subPanelContext.selected.modelType.typeHierarchyArray.indexOf('EPMTask') > -1"
+        }
+    }
+}

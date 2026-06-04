@@ -1,0 +1,246 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-command-panel-section.directive",
+        "js/aw-flex-row.directive",
+        "js/aw-toolbar.directive"
+    ],
+
+    "actions": {
+        "getChangeGenealogyData": {
+            "actionType": "JSFunctionAsync",
+            "method": "getChangeSummaryData",
+            "inputData": {
+                "treeLoadInput": "request.treeLoadInput",
+                "dataProvider": "{{data.dataProviders.getChangeGenealogyDataProvider}}",
+                "genealogy": true
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "getChangeGenealogyData.loaded"
+                    }
+                ]
+            },
+            "outputData": {
+                "dataProviders.getChangeGenealogyDataProvider.columnConfig": "columnConfig",
+                "treeLoadResult":"treeLoadResult"
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+
+        "handleModelObjectUpdated": {
+            "actionType": "JSFunction",
+            "method": "handleModelObjectUpdated",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.getChangeGenealogyDataProvider}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "setArrangeEventAction": {
+            "actionType": "JSFunction",
+            "method": "selectArrangeEventAction",
+            "inputData": {
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "saveColumnConfig": {
+            "actionType": "JSFunction",
+            "method": "saveColumnConfig",
+            "deps": "js/Cm1ChangeSummaryService",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.getChangeGenealogyDataProvider}}",
+                "columns": "{{data.dataProviders.getChangeGenealogyDataProvider.newColumns}}"
+            }
+        },
+        "resetColumnConfig": {
+            "actionType": "JSFunction",
+            "method": "resetColumnConfig",
+            "deps": "js/Cm1ChangeSummaryService",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.getChangeGenealogyDataProvider}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "resetChangeGenealogyTable"
+                    }
+                ]
+            }
+        },
+        "handleSelectionInChangeGenealogyTable": {
+            "actionType": "JSFunction",
+            "method": "handleSelectionInChangeSummaryTable",
+            "inputData": {
+                "selectedObjectFromChangeGenealogy": "{{data.dataProviders.getChangeGenealogyDataProvider.selectedObjects}}"
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "setViewerContext": {
+            "actionType": "JSFunction",
+            "method": "setViewerContext",
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "setChangeGenealogyTableWidth": {
+             "actionType": "JSFunction",
+            "method": "setChangeSummaryTableToolTipWidth",
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "registerContext": {
+            "actionType": "JSFunction",
+            "method": "registerCtx",
+            "inputData": {
+                "name": "Cm1ChangeGenealogyContext",
+                "value": "{{data.dataProviders}}"
+            },
+            "deps": "js/appCtxService"
+        },
+        "unregisterContext": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "Cm1ChangeGenealogyContext"
+            }
+        },
+        "resetChangeGenealogyTable": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "resetDataProviderStartIndexEvent"
+                    },
+                    {
+                        "name": "changeGenealogyGrid.plTable.reload"
+                    }
+                ]
+            }
+        },
+        "resetDataProviderStartIndexAction": {
+            "actionType": "JSFunction",
+            "method": "resetDataProviderStartIndex",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.getChangeGenealogyDataProvider}}"
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        }
+    },
+    "functions": {
+        "getSaveUIColumns": {
+            "functionName": "getSaveUIColumns",
+            "parameters": [
+                "{{arrangeEvent.columns}}"
+            ]
+        },
+        "getModelObjectsFromUID": {
+            "functionName": "getModelObjectsFromUID",
+            "parameters": [
+                "{{data.dataProviders.getChangeGenealogyDataProvider.selectedObjects}}"
+            ]
+        }
+    },
+    "columnProviders": {
+        "getChangeGenealogyColumnProvider": {
+            "saveColumnAndLoadAction": "saveColumnConfig",
+            "resetColumnAction": "resetColumnConfig"
+        }
+    },
+    "dataProviders": {
+        "getChangeGenealogyDataProvider": {
+            "initializeAction": "getChangeGenealogyData",
+            "nextAction": "getChangeGenealogyData",
+            "previousAction": "getChangeGenealogyData",
+            "treeLoadResult": "action.result.treeLoadResult",
+            "inputData": {
+                "accessMode": "tree",
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "selectionData":"{{subPanelContext.selectionData}}"
+            },
+            "selectionModelMode": "single",
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+    "grids": {
+        "changeGenealogyGrid": {
+            "dataProvider": "getChangeGenealogyDataProvider",
+            "columnProvider": "getChangeGenealogyColumnProvider",
+            "enableArrangeMenu": true,
+            "addIconColumn": false,
+            "gridOptions": {
+                "useStaticFirstCol": true,
+                "enableSorting": false,
+                "maxRowsToShow": 10
+            }
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "resetDataProviderStartIndexEvent",
+            "action": "resetDataProviderStartIndexAction"
+        },
+        {
+            "eventId": "resetChangeGenealogyTable",
+            "action": "resetChangeGenealogyTable"
+        },
+        {
+            "eventId": "cdm.updated",
+            "action": "handleModelObjectUpdated",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "setArrangeEventAction"
+        },
+        {
+            "eventId": "getChangeGenealogyDataProvider.selectionChangeEvent",
+            "action": "handleSelectionInChangeGenealogyTable"
+        },
+        {
+            "eventId": "Cm1ChangeGenealogy.contentLoaded",
+            "action": "setViewerContext"
+        },
+        {
+            "eventId": "Cm1ChangeGenealogyTooltip.contentLoaded",
+            "action": "setChangeGenealogyTableWidth"
+        },
+        {
+            "eventId": "doArrangeEvent",
+            "action": "doArrangeEvent"
+        },
+        {
+            "eventId": "Cm1ChangeGenealogy.contentLoaded",
+            "action": "registerContext"
+        },
+        {
+            "eventId": "Cm1ChangeGenealogy.contentUnloaded",
+            "action": "unregisterContext"
+        }
+    ],
+    "conditions": {
+        "hasChangeGenealogyTableContainsData": {
+            "expression": "ctx.selected.modelType.typeHierarchyArray.indexOf('Awb0Element') > -1"
+        }},
+    "data": {
+        "tableTooltip": {
+            "view": "Cm1ChangeGenealogyTooltip"
+        }
+    },
+    "i18n" : {
+        "aw_changeGenealogy": [
+            "ChangeMessages"
+        ]
+    }
+}

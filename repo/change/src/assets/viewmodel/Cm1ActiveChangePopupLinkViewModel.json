@@ -1,0 +1,259 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {
+        "onMount": "revealChangeContextLinkLOV"
+    },
+    "data":
+    {
+        "filterBox": {
+            "displayName": "{{i18n.activeChangeFilterDisplay}}",
+            "type": "STRING",
+            "dbValue": "",
+            "requiredText":"{{i18n.activeChangefilter}}"
+        }
+    },
+    "actions":
+    {
+        "closePopups": {
+            "actionType": "JSFunctionAsync",
+            "method": "hide",
+            "inputData": {
+                "popupEl": "allPopups"
+            },
+            "deps": "js/popupService"
+        },
+        "revealChangeContextLinkLOV": {
+            "actionType": "dataProvider",
+            "method": "changeContextLinkLOV"
+        },
+        "getInitialLOVEntries":
+        {
+            "actionType": "JSFunctionAsync",
+            "method": "generateChangeContextList",
+            "inputData":
+            {
+                "data":"{{data}}",
+                "isInitialCall": true
+            },
+            "outputData": {
+                "listofEcns": "listofEcns",
+                "lovDataInfo": "lovDataInfo",
+                "moreValuesExist": "moreValuesExist"
+            },
+            "deps": "js/changeMgmtUtils"
+        },
+        "getNextLOVEntries":
+        {
+            "actionType": "JSFunctionAsync",
+            "method": "generateChangeContextList",
+            "inputData":
+            {
+                "data":"{{data}}"
+            },
+            "outputData": {
+                "listofEcns": "listofEcns",
+                "lovDataInfo": "lovDataInfo",
+                "moreValuesExist": "moreValuesExist"
+            },
+            "deps": "js/changeMgmtUtils"
+        },
+        "changeContextLOVAction":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setChangeContext",
+                    "condition":"(parameters.eventData.selectedObjects[0] && parameters.eventData.selectedObjects[0].propInternalValue !== ctx.userSession.props.cm0GlobalChangeContext.value) && !(conditions.performSelectionChangeCondition)"
+                }
+
+            ]
+        },
+        "setChangeContext":{
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-09-DataManagement",
+            "method": "setProperties",
+            "inputData":
+            {
+                "info":
+                [
+                    {
+                        "object": "{{ctx.userSession}}",
+                        "timestamp": "",
+                        "vecNameVal":
+                        [
+                            {
+                                "name": "cm0GlobalChangeContext",
+                                "values":
+                                [
+                                    "{{parameters.eventData.selectedObjects[0].propInternalValue}}"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "cm.changeContextChangedInUserSession"
+                    },
+                    {
+                        "name": "updateUserSessionCtx",
+                        "condition": "ctx.aw_host_type === 'NX'"
+                    },
+                    {
+                        "name": "cm.changeContextChangedOutsideACE"
+                    },
+                    {
+                        "name":"aw.updateOccContextValueAfterActiveEcnChanged",
+                        "eventData": {
+                            "selectedEcn": "{{parameters.eventData.selectedObjects[0].propInternalValue}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "updateSelectionForChangeContextLOV": {
+            "actionType": "JSFunction",
+            "method": "updateActiveChangeSelection",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.changeContextLinkLOV}}",
+                "activeObject": "{{data.ctx.userSession.props.cm0GlobalChangeContext}}"
+            },
+            "deps": "js/changeMgmtUtils"
+        },
+        "updateSessionProperties":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData":
+            {
+                "attributes":
+                [
+                    "awp0RevRule",
+                    "user",
+                    "project",
+                    "group",
+                    "role",
+                    "fnd0LocationCode",
+                    "cm0GlobalChangeContext"
+                ],
+                "objects":
+                [{
+                 "uid": "{{ctx.userSession.uid}}",
+                 "type": "UserSession"
+                }]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "awsidenav.openClose"
+                    },
+                    {
+                        "name": "closeAllPopups"
+                    }
+                ]
+            }
+        },
+        "registerIsChangeContextChangedOnCtx":{
+            "actionType": "JSFunction",
+            "method": "registerCtx",
+            "inputData": {
+                "path": "isChangeContextChanged",
+                "value": true
+            },
+            "deps": "js/appCtxService"
+        },
+        "updateUserSessionOnContext": {
+            "actionType": "JSFunction",
+            "method": "createViewModelObject",
+            "inputData": {
+                "userSession": "{{ctx.userSession.uid}}"
+            },
+            "outputData": {
+                "ctx.userSession": ""
+            },
+            "deps": "js/viewModelObjectService"
+        }
+    },
+    "dataProviders":
+    {
+        "changeContextLinkLOV":
+        {
+            "dataProviderType": "TcLOV",
+            "initializeAction": "getInitialLOVEntries",
+            "nextAction": "getNextLOVEntries",
+            "response": "{{data.listofEcns}}",
+            "totalFound": "{{data.listofEcns.length}}",
+            "moreValuesExist": "{{data.moreValuesExist}}"
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "closeAllPopups",
+            "action": "closePopups"
+        },
+        {
+            "eventId": "changeContextLinkLOV.selectionChangeEvent",
+            "action": "changeContextLOVAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "changeContextLinkLOV.modelObjectsUpdated",
+            "action": "updateSelectionForChangeContextLOV",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "cm.changeContextChangedInUserSession",
+            "action": "updateSessionProperties"
+        },
+        {
+            "eventId": "updateUserSessionCtx",
+            "action": "updateUserSessionOnContext"
+        },
+        {
+            "eventId": "cm.changeContextChangedOutsideACE",
+            "action": "registerIsChangeContextChangedOnCtx",
+            "condition": "!conditions.isInsideACEView && !conditions.isChangeContextRegisteredOnCtx"
+        }
+    ],
+    "conditions":
+    {
+        "performSelectionChangeCondition":
+        {
+            "expression":"(parameters.eventData.selectedObjects[0].propInternalValue === '' && ctx.userSession.props.cm0GlobalChangeContext.value === null ) || (parameters.eventData.selectedObjects[0].propInternalValue === null && ctx.userSession.props.cm0GlobalChangeContext.value === '' )"
+        },
+        "isInsideACEView":
+        {
+            "expression":"ctx.aceActiveContext"
+        },
+        "isChangeContextRegisteredOnCtx":
+        {
+            "expression":"ctx.isChangeContextChanged"
+        }
+    },
+    "i18n":
+    {
+        "activeChangeFilterDisplay":
+        [
+            "ChangeMessages"
+        ],
+        "activeChangefilter":
+        [
+            "ChangeMessages"
+        ],
+        "activeChangeContext":
+        [
+            "ChangeMessages"
+        ]
+    }
+}

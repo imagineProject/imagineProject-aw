@@ -1,0 +1,295 @@
+{
+    "schemaVersion": "1.0.0",
+    "onEvent": [
+        {
+            "eventId": "propertyGroupType.lovValueChanged",
+            "action": "resetPropertyGroupPropertiesLOV"
+        },
+        {
+            "eventId": "resetCreatePropertyGroupPanelData",
+            "action": "resetCreatePropertyGroupPanelDataAction"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+    "actions": {
+        "addPropertyGroup": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2016-09-DataManagement",
+            "method": "createAttachAndSubmitObjects",
+            "inputData": {
+                "inputs": [
+                    {
+                        "clientId": "CreateObject",
+                        "createData": {
+                            "boName": "Fnd0AlsGroup",
+                            "propertyNameValues": {
+                                "fnd0AlsGroupName": [
+                                    "{{data.propertyGroupName.dbValue}}"
+                                ],
+                                "fnd0AlsGroupType": [
+                                    "{{data.propertyGroupType.dbValue}}"
+                                ],
+                                "fnd0AlsGroupProperties": "{{data.propertyGroupProperties.dbValue}}"
+                            }
+                        }
+                    }
+                ]
+            },
+            "outputData": {
+                "addPropGroupResponse": "ServiceData",
+                "errors": "{{function:processPartialErrors}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "addpropertyGroupToProviderEvent",
+                        "eventData": {
+                            "response": "{{data.addPropGroupResponse}}"
+                        }
+                    },
+                    {
+                        "name": "closeDialog",
+                        "condition": "!subPanelContext.panelPinned"
+                    },
+                    {
+                        "name": "resetCreatePropertyGroupPanelData",
+                        "condition": "subPanelContext.panelPinned"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "addPropGroupSuccessMessage"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "addPropGroupFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/propertyGroupsService"
+        },
+        "getGroupTypes": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Am0AlsEnabledTypesProvider",
+                        "startIndex": "{{data.dataProviders.propGroupTypeProvider.startIndex}}",
+                        "searchCriteria": {
+                            "searchString": "{{data.propertyGroupType.filterString}}"
+                        }
+                    }
+                },
+                "1": {
+                    "types": [
+                        {
+                            "name": "ImanType",
+                            "properties": [
+                                {
+                                    "name": "type_name"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "groupTypes": "{{function:getPropGroupTypeLovObjects}}",
+                "totalTypesLoaded": "totalLoaded",
+                "totalTypesFound": "totalFound"
+            }
+        },
+        "getAlsProps": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Am0AlsEnabledPropsProvider",
+                        "startIndex": "{{data.dataProviders.propGroupPropsProvider.startIndex}}",
+                        "searchCriteria": {
+                            "type": "{{data.propertyGroupType.dbValue}}",
+                            "searchString": "{{data.propertyGroupProperties.filterString}}"
+                        }
+                    }
+                },
+                "1": {
+                    "types": [
+                        {
+                            "name": "PropertyInfo",
+                            "properties": [
+                                {
+                                    "name": "property_name"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "ImanType",
+                            "properties": [
+                                {
+                                    "name": "type_name"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "alsProps": "{{function:getPropGroupPropertyLovObjects}}",
+                "totalPropsLoaded": "totalLoaded",
+                "totalPropsFound": "totalFound"
+            }
+        },
+        "resetCreatePropertyGroupPanelDataAction": {
+            "actionType": "JSFunction",
+            "method": "resetPropertyGroupsPanelData",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "propertyGroupName": "propertyGroupName",
+                "propertyGroupType": "propertyGroupType",
+                "propertyGroupProperties": "propertyGroupProperties"
+            },
+            "deps": "js/propertyGroupsService"
+        },
+        "resetPropertyGroupPropertiesLOV": {
+            "actionType": "JSFunction",
+            "method": "resetPropLOV",
+            "inputData": {
+                "prop": "{{data.propertyGroupProperties}}"
+            },
+            "outputData": {
+                "propertyGroupProperties": ""
+            },
+            "deps": "js/propertyGroupsService"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+
+    "conditions": {
+        "isValidToAdd": {
+            "expression": "data.propertyGroupName.dbValue !== '' && data.propertyGroupType.dbValue !== '' && data.propertyGroupProperties.dbValue !== ''"
+        }
+    },
+    "data": {
+        "propertyGroupName": {
+            "displayName": "{{i18n.propertyGroupName}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "labelPosition:": "PROPERTY_LABEL_AT_TOP",
+            "dispValue": "",
+            "maxLength": 128
+        },
+        "propertyGroupType": {
+            "displayName": "{{i18n.propertyGroupType}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "labelPosition:": "PROPERTY_LABEL_AT_TOP",
+            "hasLov": true,
+            "dataProvider": "propGroupTypeProvider",
+            "emptyLOVEntry": false
+        },
+        "propertyGroupProperties": {
+            "displayName": "{{i18n.propertyGroupProperties}}",
+            "type": "STRINGARRAY",
+            "isArray": true,
+            "isRequired": "true",
+            "labelPosition:": "PROPERTY_LABEL_AT_TOP",
+            "dataProvider": "propGroupPropsProvider",
+            "renderingHint": "checkboxoptionlov"
+        }
+    },
+    "dataProviders": {
+        "propGroupTypeProvider": {
+            "action": "getGroupTypes",
+            "response": "{{data.groupTypes}}",
+            "totalFound": "{{data.totalTypesFound}}"
+        },
+        "propGroupPropsProvider": {
+            "action": "getAlsProps",
+            "response": "{{data.alsProps}}",
+            "totalFound": "{{data.totalPropsFound}}"
+        }
+    },
+    "functions": {
+        "getPropGroupTypeLovObjects": {
+            "functionName": "getLovObjects",
+            "parameters": [
+                "type_name"
+            ],
+            "deps": "js/propertyGroupsService"
+        },
+        "getPropGroupPropertyLovObjects": {
+            "functionName": "getLovObjects",
+            "parameters": [
+                "property_name"
+            ],
+            "deps": "js/propertyGroupsService"
+        }
+    },
+    "messages": {
+        "addPropGroupSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.addPropGroupSuccess}}",
+            "messageTextParams": [
+                "{{data.propertyGroupName.uiValue}}"
+            ]
+        },
+        "addPropGroupFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.createPropGroupFailure}}",
+            "messageTextParams": [
+                "{{data.propertyGroupName.uiValue}}",
+                "{{data.errors}}"
+            ]
+        }
+    },
+    "i18n": {
+        "Am0AddPropertyGroupTitle": [
+            "AccessmgmtConstants"
+        ],
+        "addButton": [
+            "AccessmgmtConstants"
+        ],
+        "propertiesSection": [
+            "AccessmgmtConstants"
+        ],
+        "propertyGroupName": [
+            "AccessmgmtConstants"
+        ],
+        "propertyGroupType": [
+            "AccessmgmtConstants"
+        ],
+        "propertyGroupProperties": [
+            "AccessmgmtConstants"
+        ],
+        "addPropGroupSuccess": [
+            "AccessmgmtConstants"
+        ],
+        "createPropGroupFailure": [
+            "AccessmgmtConstants"
+        ]
+    }
+}

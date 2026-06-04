@@ -1,0 +1,420 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-panel-body.directive",
+        "js/aw-widget.directive",
+        "js/aw-list.directive",
+        "js/aw-include.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-i18n.directive",
+        "js/visible-when.directive",
+        "js/aw-listbox.directive",
+        "js/aw-command-panel-section.directive",
+        "js/aw-panel-section.directive"
+    ],
+    "actions":
+    {
+        "populateParticipantTypes": {
+            "actionType": "JSFunctionAsync",
+            "method": "populateParticipantTypes",
+            "inputData": {
+                "data": "{{data}}",
+                "selectedObjects": "{{subPanelContext.validObjects}}",
+                "participantProp": "{{data.participantType}}"
+            },
+            "outputData": {
+                "participantTypesList": "participantTypes",
+                "commonParticipantTypes": "commonParticipantTypes",
+                "participantType": "participantProp",
+                "selectedObjects": "selectedObjects"
+            },
+            "deps": "js/Awp0ReplaceMultipleParticipants"
+        },
+        "generateNotificationsToUser": {
+            "actionType": "JSFunction",
+            "method": "generateNotificationsToUser",
+            "inputData": {
+                "data": "{{data}}",
+                "selectedObjects": "{{data.selectedObjects}}",
+                "input":"{{data.output}}"
+            },
+            "deps": "js/Awp0ReplaceMultipleParticipants"
+        },
+        "addParticipants": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getSelectedReviewers",
+                    "condition": "conditions.isSelectedUsersPresent"
+                },
+                {
+                    "action": "navigateToMainPage",
+                    "condition": "conditions.isSelectedUsersPresent"
+                },
+                {
+                    "action": "addSelectedUserFromSection",
+                    "condition": "conditions.isAddUsersFromSection"
+                },
+                {
+                    "action": "addSelectedUserToSection",
+                    "condition": "conditions.isAddUsersToSection"
+                }
+            ]
+        },
+        "getSelectedReviewers": {
+            "actionType": "JSFunctionAsync",
+            "method": "getSelectedUsers",
+            "inputData": {
+                "selectedUsers": "{{props.addUserPanelState.selectedUsers}}",
+                "addUserPanelState": "{{props.addUserPanelState}}"
+            },
+            "outputData": {
+                "participants": ""
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        },
+        "navigateToMainPage":
+        {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.subPanelContext.activeState}}",
+                "destPanelId": "Awp0ReplaceMultipleParticipantsSub"
+            }
+        },
+        "reassignParticipants":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2015-10-DataManagement",
+            "method": "reassignParticipants",
+            "inputData":
+            {
+                "reassignParticipantInfo":
+                [
+                    {
+                        "itemRevs": "{{data.selectedObjects}}",
+                        "allParticipantTypes": false,
+                        "comments": "{{data.comments.dbValue}}",
+                        "participantTypes": "{{function:getParticipantTypes}}",
+                        "fromAssignee": "{{data.fromUsers[0]}}",
+                        "toAssignee": "{{data.toUsers[0]}}"
+                    }
+                ]
+            },
+
+            "outputData":
+            {
+                "output": "ServiceData"
+            },
+            "events":{
+               "success":
+               [
+                    {
+                        "name": "reassignParticipants.generateNotifications"
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+               ],
+                "failure":
+                [
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/Awp0ReplaceMultipleParticipants"
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+            }
+        },
+        "addSelectedUserFromSection": {
+            "actionType": "JSFunction",
+            "method": "updateDataProvider",
+            "inputData": {
+                "selectedObjects": "{{props.addUserPanelState.selectedUsers}}",
+                "contextProp": "{{props.activeState.value.context}}",
+                "dataProvider": "{{dataProviders.fromUser}}"
+            },
+            "outputData": {
+                "fromUsers": ""
+            },
+            "deps": "js/Awp0ReplaceMultipleParticipants"
+        },
+        "addSelectedUserToSection": {
+            "actionType": "JSFunction",
+            "method": "updateDataProvider",
+            "inputData": {
+                "selectedObjects": "{{data.participants}}",
+                "contextProp": "{{props.activeState.value.context}}",
+                "dataProvider": "{{dataProviders.toUser}}"
+            },
+            "outputData": {
+                "toUsers": ""
+            },
+            "deps": "js/Awp0ReplaceMultipleParticipants"
+        },
+        "removeUsers": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action":"removeSelectedUserFromSection",
+                    "condition": "conditions.isRemoveFromSection"
+                },
+                {
+                    "action": "removeSelectedUserToSection",
+                    "condition": "conditions.isRemoveToSection"
+                }
+            ]
+        },
+        "removeSelectedUserFromSection": {
+            "actionType": "JSFunction",
+            "method": "updateDataProvider",
+            "inputData": {
+                "selectedObjects": [],
+                "contextProp": "{{props.activeState.value.context}}",
+                "dataProvider": "{{dataProviders.fromUser}}"
+            },
+            "outputData": {
+                "fromUsers": ""
+            },
+            "deps": "js/Awp0ReplaceMultipleParticipants"
+        },
+        "removeSelectedUserToSection": {
+            "actionType": "JSFunction",
+            "method": "updateDataProvider",
+            "inputData": {
+                "selectedObjects": [],
+                "contextProp": "{{props.activeState.value.context}}",
+                "dataProvider": "{{dataProviders.toUser}}"
+            },
+            "outputData": {
+                "toUsers": ""
+            },
+            "deps": "js/Awp0ReplaceMultipleParticipants"
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cacheInitialSelection",
+                    "condition": "!data.initialSelectionUids"
+                },
+                {
+                    "action": "closePanel",
+                    "condition": "data.initialSelectionUids[0] !== props.subPanelContext.selectionData.selected[0].uid || data.initialSelectionCount !== props.subPanelContext.selectionData.selected.length"
+                }
+            ]
+        },
+        "cacheInitialSelection":{
+            "actionType": "JSFunction",
+            "method": "cacheMultiSelection",
+            "inputData": {
+                "selectedUid": "{{props.subPanelContext.selectionData.selected}}"
+            },
+            "outputData": {
+                "initialSelectionUids": "selectedObjectUids",
+                "initialSelectionCount": "selectionCount"
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+
+    },
+
+
+
+    "functions":
+    {
+        "getParticipantTypes":
+        {
+            "functionName": "getParticipantTypes",
+            "parameters":
+            [
+                "{{data.participantType.dbValue}}",
+                "{{data.commonParticipantTypes}}"
+            ]
+        }
+    },
+
+    "data": {
+        "participantType": {
+            "displayName": "{{i18n.participant}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": true,
+            "labelPosition": "PROPERTY_LABEL_AT_TOP",
+            "dataProvider": "participantTypesLOVProvider"
+        },
+        "comments": {
+            "displayName": "{{i18n.comments}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "numberOfLines": 3,
+            "maxLength": 240,
+            "dbValue": "",
+            "uiValue":""
+        },
+        "fromSectionCommands":"awp0_fromSectionCommands",
+        "toSectionCommands":"awp0_toSectionCommands"
+    },
+
+    "dataProviders": {
+        "participantTypesLOVProvider": {
+            "response": "{{data.participantTypesList}}",
+            "totalFound": "{{data.participantTypesList.length}}",
+            "selectionModelMode": "single"
+        },
+        "fromUser": {
+            "response": "{{data.fromUsers}}",
+            "totalFound": "{{data.fromUsers.length}}",
+            "selectionModelMode": "single",
+            "commandsAnchor": "aw_reassignParticipantsCellCommand"
+        },
+        "toUser": {
+            "response": "{{data.toUsers}}",
+            "totalFound": "{{data.toUsers.length}}",
+            "selectionModelMode": "single",
+            "commandsAnchor": "aw_reassignParticipantsCellCommand"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "populateParticipantTypes",
+        "onUpdate": [
+            {
+                "action": "addParticipants",
+                "observers": [ "props.addUserPanelState.selectedUsers" ]
+            },
+            {
+                "action": "closePanelOnSelectionChange",
+                "observers": [ "props.subPanelContext.selectionData.selected" ]
+            }
+        ]
+    },
+    "ctx": {
+        "panelContext.validObjects": null,
+        "locationContext.ActiveWorkspace:Location": null
+    },
+
+    "onEvent": [
+        {
+            "eventId": "reassignParticipants.generateNotifications",
+            "action": "generateNotificationsToUser"
+        },
+        {
+            "eventId": "reassignMultiParticipants.removeUser",
+            "action": "removeUsers",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+   ],
+   "conditions":
+   {
+       "isAddUsersFromSection": {
+           "expression": "conditions.isSelectedUsersPresent && props.activeState.value && props.activeState.value.context === 'fromUser'"
+       },
+       "isAddUsersToSection": {
+            "expression": "conditions.isSelectedUsersPresent && props.activeState.value && props.activeState.value.context === 'toUser'"
+        },
+        "isRemoveFromSection": {
+            "expression": "data.eventMap['reassignMultiParticipants.removeUser'].vmo && data.eventMap['reassignMultiParticipants.removeUser'].vmo.propName === 'fromUser'"
+        },
+        "isRemoveToSection": {
+             "expression": "data.eventMap['reassignMultiParticipants.removeUser'].vmo && data.eventMap['reassignMultiParticipants.removeUser'].vmo.propName === 'toUser'"
+        },
+       "isValidToReassign": {
+           "expression": "( data.comments && data.comments.dbValue.length>0) && (dataProviders.fromUser.viewModelCollection.loadedVMObjects.length > 0) && (dataProviders.toUser.viewModelCollection.loadedVMObjects.length > 0)"
+       },
+       "isSelectedUsersPresent": {
+           "expression": "props.subPanelContext.addUserPanelState.selectedUsers && props.subPanelContext.addUserPanelState.selectedUsers.length > 0"
+       }
+   },
+   "messages": {
+        "oneSelectedSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.oneSelectedSuccess}}",
+            "messageTextParams":
+            [
+                "{{data.updatedSelObjsname.uiValues[0]}}"
+
+            ]
+        },
+        "oneSelectedFailure": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.oneSelectedFailure}}",
+            "messageTextParams":
+            [
+                "{{data.failedSelObjsname.uiValues[0]}}"
+
+            ]
+        },
+        "moreThanOneSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.moreThanOneSuccess}}",
+            "messageTextParams":
+            [
+                "{{data.updatedCount}}",
+                "{{data.selectedCount}}"
+
+            ]
+        },
+        "soaFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+   "i18n": {
+        "replaceMultipleParticipantsCommandTitle": [ "WorkflowCommandPanelsMessages"],
+        "assignFrom": ["WorkflowCommandPanelsMessages"],
+        "assignTo": ["WorkflowCommandPanelsMessages"],
+        "comments": ["WorkflowCommandPanelsMessages"],
+        "participant": ["WorkflowCommandPanelsMessages"],
+        "All": ["WorkflowCommandPanelsMessages"],
+        "reassignParticipants": ["WorkflowCommandPanelsMessages"],
+        "oneSelectedSuccess": ["WorkflowCommandPanelsMessages"],
+        "oneSelectedFailure": ["WorkflowCommandPanelsMessages"],
+        "moreThanOneSuccess": ["WorkflowCommandPanelsMessages"]
+    }
+
+}

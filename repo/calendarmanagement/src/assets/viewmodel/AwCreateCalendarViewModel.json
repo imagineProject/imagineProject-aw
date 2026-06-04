@@ -1,0 +1,346 @@
+{
+    "schemaVersion": "1.0.0",
+    "data":{
+        "object_name":{
+            "displayName":"{{i18n.name}}",
+            "type":"STRING",
+            "isRequired":"true",
+            "dbValue":"",
+            "dispValue":"",
+            "isEditable": "true"
+        },
+        "object_description": {
+            "displayName": "{{i18n.description}}",
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "calendarTimeZone": {
+            "displayName": "{{i18n.calendarTimeZone}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "labelPosition:": "PROPERTY_LABEL_AT_TOP",
+            "hasLov":true,
+            "dbValue": "",
+            "dispValue": "",
+            "dataProvider":"CalendarTimezoneProvider"
+        },
+        "base_calenders": {
+            "displayName": "{{i18n.baseCalendar}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "labelPosition:": "PROPERTY_LABEL_AT_TOP",
+            "hasLov":true,
+            "dbValue": "",
+            "dispValue": "",
+            "dataProvider":"BaseCalendarsProvider"
+        }
+    },
+    "actions":
+    {
+        "initializeDefaultProps": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getBaseCalendarList"
+                },
+                {
+                    "action": "getTimezoneLov"
+                },
+                {
+                    "action": "initialize"
+                }
+            ]
+        },
+        "createBaseCalendar": {
+            "actionType": "TcSoaService",
+            "serviceName": "CalendarManagement-2008-06-CalendarManagement",
+            "method": "createCalendars",
+            "inputData": {
+                "newTCCalendars": "{{function:getCreateCalendarInput}}"
+            },
+            "outputData": {
+                "createCalendarResponse": "{{function:processResponse}}"
+            },
+            "events": {
+                "success": [{
+                    "name": "resetUserCalendarPage",
+                    "condition": "ctx.panelContext.user"
+                },
+                {
+                    "name": "complete",
+                    "eventData": {
+                        "source": "toolAndInfoPanel"
+                    }
+                },
+                {
+                    "name": "primaryWorkarea.reset"
+                }]
+            },
+            "actionMessages": {
+                "success": [ {
+                        "message": "createBaseCalendarSuccess",
+                        "condition": "!ctx.panelContext.user"
+
+                    },
+                    {
+                        "message": "createUserCalendarSuccess",
+                        "condition": "ctx.panelContext.user"
+                    }
+                ],
+                "failure": [ {
+                    "message": "calSoaErrorFailureMsg"
+                } ]
+            },
+            "deps": "js/AwCalendarUtils"
+        },
+        "getTimezoneLov":{
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-LOV",
+            "method": "getInitialLOVValues",
+            "inputData":
+            {
+                "initialData":
+                {
+                    "lovInput":
+                    {
+                        "boName": "TCCalendar",
+                        "operationName": "Search"
+                    },
+                    "propertyName": "time_zone"
+                }
+            },
+            "outputData": {
+                "timezoneList": "{{function:getTimezoneList}}",
+                "moreValuesExist":"moreValuesExist"
+            },
+            "deps": "js/AwCalendarUtils"
+        },
+        "getBaseCalendarList":{
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0CalendarDataProvider",
+                        "searchCriteria": {
+                            "searchContentType": "baseCalendars",
+                            "tccal_type": "1"
+                        }
+                    }
+                },
+                "1": {
+                    "types": [ {
+                    "name": "TCCalendar",
+                    "properties":
+                    [
+                        {
+                                "name": "sun_ranges",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "mon_ranges",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "tue_ranges",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "wed_ranges",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "thu_ranges",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "fri_ranges",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "sat_ranges",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "time_zone"
+                            },
+                            {
+                                "name": "object_string"
+                            },
+                            {
+                                "name": "tccal_type"
+                            },
+                            {
+                                "name": "tccal_desc"
+                            },
+                            {
+                                "name": "base_calendar_tag",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Range",
+                        "properties": [ {
+                                "name": "range_end"
+                            },
+                            {
+                                "name": "range_start"
+                            }
+                        ]
+                    }
+                    ]
+                }
+            },
+            "outputData": {
+                "baseCalendarList": "{{function:getBaseCalendarsList}}",
+                "moreValuesExist":"moreValuesExist"
+            }
+        },
+        "initialize": {
+            "actionType": "JSFunction",
+            "method": "setPanelAttributes",
+            "inputData": {
+                "object_name": "{{data.object_name}}",
+                "base_calenders": "{{data.base_calenders}}",
+                "calendarList": "{{data.baseCalendarList}}",
+                "calendarTimeZone": "{{data.calendarTimeZone}}",
+                "timezoneList":"{{data.timezoneList}}",
+                "SiteTimeZone": "{{ctx.preferences.SiteTimeZone[0]}}",
+                "context": "{{ctx.panelContext}}"
+            },
+            "outputData": {
+                "object_name": "object_name",
+                "base_calenders": "base_calenders",
+                "calendarTimeZone": "calendarTimeZone"
+            },
+            "deps": "js/AwCalendarUtils"
+        }
+    },
+    "dataProviders":{
+        "CalendarTimezoneProvider":{
+            "dataProviderType": "Action",
+            "action": "getTimezoneLov",
+            "response": "{{data.timezoneList}}",
+            "moreValuesExist": "{{data.moreValuesExist}}"
+        },
+        "BaseCalendarsProvider": {
+            "dataProviderType": "Action",
+            "action": "getBaseCalendarList",
+            "response": "{{data.baseCalendarList}}",
+            "moreValuesExist": "{{data.moreValuesExist}}"
+        }
+    },
+    "functions": {
+        "getCreateCalendarInput": {
+            "functionName": "getCreateCalendarInput",
+            "parameters": [
+                "{{data.object_name}}",
+                "{{data.object_description}}",
+                "{{data.calendarTimeZone}}",
+                "{{data.base_calenders}}",
+                "{{ctx.panelContext}}"
+            ]
+        },
+        "processResponse": {
+            "functionName": "processResponse",
+            "parameters": [
+                "{{props.subPanelContext.searchState}}",
+                "{{ctx.panelContext}}"
+            ]
+        },
+        "getBaseCalendarsList": {
+            "functionName": "getBaseCalendarsList",
+            "parameters": [],
+            "deps": "js/AwCalendarUtils"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeDefaultProps"
+    },
+    "messages": {
+        "createBaseCalendarSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.calendarBaseCalendarAdded}}",
+            "messageTextParams": [
+                "{{data.object_name.dbValue}}"
+            ]
+        },
+        "createUserCalendarSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.calendarUserCalendarAdded}}",
+            "messageTextParams": [
+                "{{data.object_name.dbValue}}"
+            ]
+        },
+        "calSoaErrorFailureMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "conditions": {
+        "isValidToAdd": {
+            "expression": "(data.object_name.dbValue !== '' && ( data.base_calenders.dbValue !=='' || ctx.panelContext.calendar === 'baseCalendar'))"
+        }
+    },
+    "onEvent": [],
+    "preferences": [
+        "SiteTimeZone",
+        "Default_Base_Calendar_Preference"
+    ],
+    "i18n": {
+        "createBaseCalender": [
+            "CalendarManagementMessages"
+        ],
+        "calendarBaseCalendarAdded": [
+            "CalendarManagementMessages"
+        ],
+        "calendarUserCalendarAdded": [
+            "CalendarManagementMessages"
+        ],
+        "properties": [
+            "CalendarManagementMessages"
+        ],
+        "name": [
+            "CalendarManagementMessages"
+        ],
+        "calendarTimeZone": [
+            "CalendarManagementMessages"
+        ],
+        "baseCalendar": [
+            "CalendarManagementMessages"
+        ],
+        "description": [
+            "CalendarManagementMessages"
+        ],
+        "addButtonText": [
+            "CalendarManagementMessages"
+        ]
+    }
+}

@@ -1,0 +1,291 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+
+    ],
+    "onEvent": [
+        {
+            "eventId": "Am0AddAMRule.conditionSelected",
+            "condition": "data.condition.dbValue !== data.selectedCondition",
+            "action":  "callDataProvider"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+    "actions": {
+        "initialView": {
+            "actionType": "dataProvider",
+            "method": "conditionProvider"
+        },
+        "callDataProvider": {
+            "actionType": "dataProvider",
+            "method": "dataProviderConditionArgs"
+        },
+        "getAMConditionNames": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2022-06-AwAccessManager",
+            "method": "getAMConditionNames",
+            "inputData": {
+                "searchString": "{{function:getSearchString}}",
+                "startIndex": "{{data.dataProviders.conditionProvider.startIndex}}",
+                "pageSize": 50
+            },
+            "outputData": {
+                "conditionNames": "{{function:getConditionNames}}",
+                "totalFound": "totalFound",
+                "totalReturned": "totalReturned"
+            },
+            "deps": "js/Am0AddRuleCommandService"
+        },
+        "getAMConditionArgsProvider": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2022-06-AwAccessManager",
+            "method": "getAMConditionArgs",
+            "inputData": {
+                "conditionName": "{{data.condition.dbValue}}",
+                "searchString": "{{function:getArgsSearchString}}",
+                "startIndex": "{{data.dataProviders.dataProviderConditionArgs.startIndex}}",
+                "pageSize": 50
+            },
+            "outputData": {
+                "ruleValue": "{{function:resetRuleValue}}",
+                "selectedCondition": "{{function:setSelectedCondition}}",
+                "conditionArgs": "{{function:getConditionArgs}}",
+                "argsTotalFound": "totalFound",
+                "argsTotalReturned": "totalReturned"
+            },
+            "deps": "js/Am0AddRuleCommandService"
+        },
+        "notifyConditionSelected":
+        {
+            "actionType":"Event",
+            "method":"Event",
+            "inputData":{
+                "events":[
+                    {
+                        "name":"Am0AddAMRule.conditionSelected"
+                    }
+                ]
+            }
+        },
+        "getACLs": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2022-06-AwAccessManager",
+            "method": "getACLs",
+            "inputData": {
+                "type": "RULETREE",
+                "searchStr": "{{function:getAclsSearchString}}",
+                "startIndex": "{{data.dataProviders.objectAclNameProvider.startIndex}}",
+                "maxCount": 50
+            },
+            "outputData": {
+                "objectAcls": "{{function:loadObjectACLNames}}",
+                "aclsTotalFound": "totalFound",
+                "aclsTotalReturned": "totalReturned"
+            },
+            "deps": "js/Am0AddRuleCommandService"
+        },
+        "createAMRule": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2022-12-AwAccessManager",
+            "method": "createAMTreeNode2",
+            "inputData": {
+                "createNodeInfo": [
+                    {
+                        "conditionName": "{{data.condition.dbValue}}",
+                        "conditionArg": "{{data.ruleValue.dbValue}}",
+                        "parentNode": {
+                            "uid": "{{subPanelContext.selectionData.selected[0].uid}}",
+                            "type": "{{subPanelContext.selectionData.selected[0].type}}"
+                        },
+                        "acl": {
+                            "type": "AM_ACL",
+                            "uid": "{{data.objectAclName.dbValue}}"
+                        },
+                        "clientId": "AM"
+                    }
+                ]
+            },
+            "outputData":
+            {
+                "createdRuleResponse" : "",
+                "ruleFailedToAdd": "{{function:processPartialErrors}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "closeDialog",
+                        "condition": "!subPanelContext.panelPinned"
+                    },
+                    {
+                        "name":"accessManagerTreeView.addRuleInNotExpandedNode",
+                        "condition": "!subPanelContext.selectionData.selected[0].isLeaf && !subPanelContext.selectionData.selected[0].isExpanded",
+                        "eventData": {
+                            "selectedNode": "{{subPanelContext.selectionData.selected[0]}}",
+                            "rule": "{{data.createdRuleResponse}}",
+                            "isPinned":"{{subPanelContext.panelPinned}}"
+                        }
+                    },
+                    {
+                        "name":"accessManagerTreeView.addRuleInExpandedAndLeafNode",
+                        "condition": "subPanelContext.selectionData.selected[0].isExpanded || subPanelContext.selectionData.selected[0].isLeaf",
+                        "eventData": {
+                            "selectedNode": "{{subPanelContext.selectionData.selected[0]}}",
+                            "rule": "{{data.createdRuleResponse}}",
+                            "condition": "{{data.condition}}",
+                            "ruleValue": "{{data.ruleValue}}",
+                            "objectAclName": "{{data.objectAclName}}",
+                            "isPinned":"{{subPanelContext.panelPinned}}"
+                        }
+                    },
+                    {
+                        "name": "updateisAMTreeDirtyFlagEvent",
+                        "condition" : "ctx.isAMTreeDirty !== true",
+                        "eventData" : {
+                            "isAMTreeDirty" : true
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                        "condition": "data.createdRuleResponse.created.length > 0",
+                        "message": "createRuleSuccessMessage"
+                    }
+                ],
+                "failure":[
+                    {
+                        "condition":"data.createdRuleResponse.partialErrors[0].errorValues",
+                        "message":"createRuleFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "data": {
+        "selectedCondition": "",
+        "conditionNames": [],
+        "condition":{
+            "displayName": "{{i18n.condition}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "labelPosition:": "PROPERTY_LABEL_AT_TOP",
+            "hasLov": true,
+            "dataProvider": "conditionProvider"
+        },
+        "ruleValue":{
+            "displayName": "{{i18n.value}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "renderingHint": "textbox",
+            "isSelectOnly": false
+        },
+        "objectAclName":{
+            "displayName": "{{i18n.objectAclName}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "labelPosition:": "PROPERTY_LABEL_AT_TOP",
+            "hasLov": true,
+            "dbValue": "",
+            "dataProvider":"objectAclNameProvider"
+        }
+    },
+    "dataProviders":{
+        "conditionProvider":{
+            "action": "getAMConditionNames",
+            "response": "{{data.conditionNames}}",
+            "totalFound": "{{data.totalFound}}"
+        },
+        "dataProviderConditionArgs":{
+            "action": "getAMConditionArgsProvider",
+            "response": "{{data.conditionArgs}}",
+            "totalFound": "{{data.argsTotalFound}}"
+        },
+        "objectAclNameProvider":{
+            "action": "getACLs",
+            "response": "{{data.objectAcls}}",
+            "totalFound": "{{data.aclsTotalFound}}"
+        }
+    },
+    "conditions": {
+        "isValidToAdd": {
+            "expression": "data.ruleValue.isRequired ? data.condition.dbValue && data.ruleValue.dbValue : data.condition.dbValue"
+        }
+    },
+    "i18n": {
+        "propertiesSection":[ "AccessmgmtConstants" ],
+        "AddAMRuleLabel":[ "AccessmgmtConstants" ],
+        "addButton":[ "AccessmgmtConstants" ],
+        "condition":[ "AccessmgmtConstants" ],
+        "value":[ "AccessmgmtConstants" ],
+        "objectAclName":[ "AccessmgmtConstants" ],
+        "createRuleSuccess":[ "AccessmgmtConstants" ],
+        "createRuleFailure":[ "AccessmgmtConstants" ]
+    },
+    "messages": {
+        "createRuleSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.createRuleSuccess}}",
+            "messageTextParams": [
+                "{{data.condition.uiValue}}"
+            ]
+        },
+        "createRuleFailureMessage":{
+            "messageType": "ERROR",
+            "messageText": "{{i18n.createRuleFailure}}",
+            "messageTextParams": [
+                "{{data.condition.uiValue}}",
+                "{{data.ruleFailedToAdd}}"
+            ]
+        }
+    },
+    "functions": {
+        "resetRuleValue": {
+            "functionName": "resetRuleValue",
+            "parameters": [
+                "{{data.i18n}}","{{data.condition.dbValue}}","{{data.selectedCondition}}","{{data.ruleValue}}"
+            ]
+        },
+        "setSelectedCondition": {
+            "functionName": "setSelectedCondition",
+            "parameters": [
+                "{{data.condition}}"
+            ]
+        },
+        "getSearchString": {
+            "functionName": "getSearchString",
+            "parameters": [
+                "{{data.condition.filterString}}"
+            ]
+        },
+        "getArgsSearchString": {
+            "functionName": "getSearchString",
+            "parameters": [
+                "{{data.ruleValue.filterString}}"
+            ]
+        },
+        "getAclsSearchString": {
+            "functionName": "getSearchString",
+            "parameters": [
+                "{{data.objectAclName.filterString}}"
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initialView"
+    }
+}

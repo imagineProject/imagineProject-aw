@@ -1,0 +1,344 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "addPanelState": {
+            "initialValues": {
+                "creationType": "",
+                "createdObject": "",
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {}
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub",
+                "context": {}
+            },
+            "meta": {}
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {
+                "selectedProjects": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "triggerAssign": {
+                    "field": "true",
+                    "type": "BOOLEAN"
+                }
+            }
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions": {
+        "getAllowedTypesForAddingChildProduct": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2012-10-OccurrenceManagement",
+            "method": "getInfoForAddToBookmark",
+            "inputData": {},
+            "outputData": {
+                "allowedTypeInfo": "{{function:extractAllowedTypesInfoFromResponse}}"
+            },
+
+            "deps": "js/aceAddElementService"
+        },
+
+        "createAndAddElement": {
+            "actionType": "JSFunction",
+            "method": "updateCreateTrigger",
+            "inputData": {
+                "triggerCreate": "{{data.triggerCreate}}",
+                "value": true
+            },
+            "outputData": {
+                "triggerCreate": "triggerCreate"
+            },
+            "deps": "js/addObjectUtils"
+        },
+
+        "createPostProcessing": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "newElementCreatedPostProcessing",
+                "condition": "conditions.isObjectCreated"
+            } ]
+        },
+
+        "newElementCreatedPostProcessing": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "addChild.addObjectToBookMark"
+                } ]
+            }
+        },
+        "addElements": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2016-03-OccurrenceManagement",
+            "method": "addToBookmark2",
+            "inputData": {
+                "input": "{{function:getAddToBookMarkInput}}"
+            },
+
+            "outputData": {
+                "addToBookMarkResponse": ""
+            },
+
+            "events": {
+                "success": [ {
+                        "name": "aceLoadAndSelectProvidedObjectInTree",
+                        "eventData": {
+                            "objectsToSelect": "{{function:getNewlyAddedSwcChildElements}}",
+                            "viewToReact": "{{{{props.subPanelContext.provider.occContext.viewKey}}",
+                            "productContextInfo": "{{function:getPCIOfNewlyAddedSwcProduct}}",
+                            "updateVmosNContextOnPwaReset":"true"
+                        }
+                    },
+                    {
+                        "name": "addChildProduct.closePanel"
+                    }
+                ],
+                "failure": [ {
+                        "condition": "data.addToBookMarkResponse.addedProductsInfo.length >= 1",
+                        "name": "addChild.updatePCIInCtx",
+                        "eventData": {
+                            "objectToSelect": "{{function:getNewlyAddedSwcProductInfo}}"
+                        }
+                    },
+                    {
+                        "condition": "data.addToBookMarkResponse.addedProductsInfo.length >= 1",
+                        "name": "aceElementsSelectionUpdatedEvent",
+                        "eventData": {
+                            "objectsToSelect": "{{function:getNewlyAddedSwcChildElements}}",
+                            "viewToReact": "{{props.subPanelContext.provider.contextKey}}"
+                        }
+                    },
+                    {
+                        "condition": "data.addToBookMarkResponse.addedProductsInfo.length >= 1",
+                        "name": "acePwa.reset",
+                        "eventData": {
+                            "viewToReset": "{{props.subPanelContext.provider.contextKey}}"
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                        "condition": "data.addToBookMarkResponse.addedProductsInfo.length === 1",
+                        "message": "elementAddSuccessfulMessage"
+                    },
+
+                    {
+                        "condition": "data.addToBookMarkResponse.addedProductsInfo.length > 1",
+                        "message": "multipleElementAddSuccessfulMessage"
+                    }
+                ],
+
+                "failure": [ {
+                        "condition": "data.addToBookMarkResponse.addedProductsInfo.length === 1",
+                        "message": "elementAddSuccessfulMessage"
+                    },
+
+                    {
+                        "condition": "data.addToBookMarkResponse.addedProductsInfo.length > 1",
+                        "message": "multipleElementAddSuccessfulMessage"
+                    },
+                    {
+                        "condition": "!data.addToBookMarkResponse || !data.addToBookMarkResponse.addedProductsInfo || data.addToBookMarkResponse.addedProductsInfo.length === 0",
+                        "message": "addElementsToBookmarkFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "setTargetObjectVmo": {
+            "actionType": "JSFunction",
+            "method": "createViewModelObject",
+            "inputData": {
+                "uid": "{{subPanelContext.occContext.workingContextObj.uid}}"
+            },
+            "outputData": {
+                "targetObjectToAdd": ""
+            },
+
+            "events": {
+                "success": [ {
+                    "name": "addProduct.getAllowedTypesForAddingChildProduct"
+                } ]
+            },
+
+            "deps": "js/viewModelObjectService"
+        },
+
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "CREATE_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+
+            "deps": "js/dialogService"
+        },
+
+        "setActiveView":{
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        }
+
+    },
+
+    "messages": {
+        "elementAddSuccessfulMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.elementAddSuccessful}}",
+            "messageTextParams": [
+                "{{data.addToBookMarkResponse.addedProductsInfo[0].rootElement.props.object_string.dbValues[0]}}",
+                "{{data.targetObjectToAdd.props.object_string.dbValues[0]}}"
+            ]
+        },
+
+        "multipleElementAddSuccessfulMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.multipleElementAddSuccessful}}",
+            "messageTextParams": [
+                "{{data.addToBookMarkResponse.addedProductsInfo.length}}",
+                "{{data.targetObjectToAdd.props.object_string.dbValues[0]}}"
+            ]
+        },
+        "addElementsToBookmarkFailureMessage":{
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "setTargetObjectVmo",
+        "onUpdate": {
+            "action": "createPostProcessing",
+            "observers": [ "viewModel.atomicData.addPanelState.createdObject" ]
+        }
+
+    },
+
+    "onEvent": [ {
+            "eventId": "addChild.addObjectToBookMark",
+            "action": "addElements"
+        },
+        {
+            "eventId": "addProduct.getAllowedTypesForAddingChildProduct",
+            "action": "getAllowedTypesForAddingChildProduct"
+        },
+        {
+            "eventId": "addObject.addOprfailed",
+            "action": "closePanel",
+            "condition": "!data._internal.isDestroyed"
+        },
+        {
+            "eventId": "primaryWorkArea.selectionChangeEvent",
+            "action": "closePanel",
+            "condition": "!data._internal.isDestroyed"
+        },
+        {
+            "eventId": "addChildProduct.closePanel",
+            "action": "closePanel"
+        }
+    ],
+
+    "conditions": {
+        "isNewTabAddButtonVisible": {
+            "expression": "addPanelState.selectedTab.view==='NewTabPageSub' && addPanelState.creationType"
+        },
+        "isPaletteTabAddButtonVisible": {
+            "expression": "addPanelState.selectedTab.view==='PaletteTabPageSub' && addPanelState.sourceObjects.length > 0"
+        },
+        "isSearchTabAddButtonVisible": {
+            "expression": "addPanelState.selectedTab.view==='SearchTabPageSub' && addPanelState.sourceObjects.length > 0"
+        },
+        "isObjectCreated": {
+            "expression": "addPanelState.createdObject"
+        }
+
+    },
+
+    "functions": {
+        "getCreateInput": {
+            "functionName": "getCreateInput",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getNewlyAddedSwcProductInfo": {
+            "functionName": "getNewlyAddedSwcProductInfo",
+            "parameters": [ "{{data}}" ]
+        },
+        "getNewlyAddedSwcChildElements": {
+            "functionName": "getNewlyAddedSwcChildElements",
+            "parameters": [ "{{data}}" ]
+        },
+        "getPCIOfNewlyAddedSwcProduct": {
+            "functionName": "getPCIOfNewlyAddedSwcProduct",
+            "parameters": [ "{{data}}" ]
+        },
+        "extractAllowedTypesInfoFromResponse": {
+            "functionName": "extractAllowedTypesInfoFromResponse",
+            "parameters": []
+        },
+        "getAddToBookMarkInput": {
+            "functionName": "getAddToBookMarkInput",
+            "parameters": [
+                "{{data}}",
+                "{{addPanelState.createdObject}}",
+                "{{addPanelState.sourceObjects}}"
+            ]
+        }
+    },
+    "ctx": {
+        "occmgmtContext": {
+            "workingContextObj": { "type": "object" }
+        }
+    },
+    "i18n": {
+        "addElementBtn": [ "OccurrenceManagementConstants" ],
+        "toTitle": [ "OccurrenceManagementConstants" ],
+        "createAndAddElementBtn": [ "OccurrenceManagementConstants" ],
+        "elementAddSuccessful": [ "OccurrenceManagementMessages" ],
+        "multipleElementAddSuccessful": [ "OccurrenceManagementMessages" ],
+        "BACK_BUTTON_TITLE": ["BaseMessages"]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

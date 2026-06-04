@@ -1,0 +1,105 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "showCheckBox": false,
+        "currentDisplayField": {
+            "initialValues": {
+                "activeDisplay": ""
+            },
+            "meta": {}
+        },
+        "displayModesCount": 4,
+        "displayModes": {
+            "tableDisplay": true,
+            "listDisplay": true,
+            "thumbnailDisplay": true,
+            "compareDisplay": false
+        },
+        "currentDisplay": "",
+        "searchFolder": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "contentsText": "{{i18n.Contents}}"
+    },
+    "selectionModels": {
+        "projectSelectionModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "actions": {
+        "updateProjectDataWithAddedProject":{
+            "actionType": "JSFunction",
+            "method": "expandCollapseRefreshProject",
+            "inputData": {
+                "relatedModified": "{{ctx.mselected[0]}}",
+                "refreshLocationFlag": true,
+                "childObjects": "{{data.eventData.project}}"
+            },
+            "deps": "js/projectFolderUtils"
+        },
+        "updateResultsCaption": {
+            "actionType": "JSFunction",
+            "method": "updateResultsCaption",
+            "inputData": {
+                "resultsText": "{{i18n.Contents}}",
+                "searchState": "{{data.searchFolder}}"
+            },
+            "outputData": {
+                "contentsText": "resultsText"
+            },
+            "deps": "js/advancedSearchService"
+        },
+        "updateActiveDisplaySelection": {
+            "actionType": "JSFunction",
+            "method": "updateActiveDisplaySelection",
+            "inputData": {
+                "selectedDisplay": "{{data.currentDisplayField.activeDisplay}}",
+                "isProjectData": true
+            },
+            "deps": "js/projectFolderUtils"
+        },
+        "getProjectContentsDisplayModeFromSession": {
+            "actionType": "JSFunction",
+            "method": "getProjectContentsDisplayModeFromSession",
+            "inputData": {
+                "isProjectData": true
+            },
+            "outputData": {
+                "currentDisplay": "currentDisplay",
+                "currentDisplayField": "currentDisplayField"
+            },
+            "deps": "js/projectFolderUtils"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "functions": {
+    },
+    "i18n": {
+        "Contents": [ "SearchMessages" ]
+    },
+    "lifecycleHooks": {
+        "onMount": "getProjectContentsDisplayModeFromSession",
+        "onUpdate": [
+            {
+                "action": "updateResultsCaption",
+                "observers": [ "viewModel.searchFolder.cursorInfoString" ]
+            },
+            {
+                "action": "updateActiveDisplaySelection",
+                "observers": [ "viewModel.currentDisplayField.activeDisplay" ]
+            }
+        ]
+    },
+    "onEvent": [
+        {
+            "eventId": "addProject.projectCreated",
+            "cacheEventData": true,
+            "action": "updateProjectDataWithAddedProject"
+        }
+    ]
+}

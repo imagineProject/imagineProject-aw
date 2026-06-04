@@ -1,0 +1,377 @@
+{
+    "schemaVersion" : "1.0.0",
+
+    "data" :
+    {
+        "nameBox":{
+            "displayName": "{{i18n.name}}",
+            "type": "STRING",
+            "dbValue": "{{props.subPanelContext.nestedNavigationState.nameBoxForEdit}}",
+            "uiValue": "{{props.subPanelContext.nestedNavigationState.nameBoxForEdit}}",
+            "isRequired": "true",
+            "maxLength":128
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "EditUnitGroupEffectivity",
+                "context": {}
+            },
+            "meta": { }
+        }
+    },
+
+    "onEvent": [
+        {
+            "eventId": "groupUnitEffEditTable.plTable.loadMorePages",
+            "action": "setTableEditable"
+        },
+        {
+            "eventId": "updateRowIdxAndNavigateToEndItemGroupEffPanel",
+            "cacheEventData": true,
+            "action": "updateRowIdxAndNavigateToEndItemPanelAction"
+        },
+        {
+            "eventId": "removeEndItemUnitGroupEffPanel",
+            "cacheEventData": true,
+            "action": "removeEndItemUnitGroupEffAction"
+        },
+        {
+            "eventId": "editGrp.groupEdited",
+            "cacheEventData": true,
+            "action": "updateEffectivities"
+        },
+        {
+            "eventId": "editGrp.applyGroupEffectivity",
+            "action": "applyGroupEffectivity"
+        },
+        {
+            "eventId": "navigateToGroupEffectivitiesView",
+            "action": "navigateToGroupEffectivitiesView"
+        },
+        {
+            "eventId": "updateStateOrCtxBeforeBack",
+            "cacheEventData": true,
+            "action": "updateEndItemAndNavigateToAuthorEGOPanel"
+        }
+    ],
+
+    "functions": {
+        "getUnitEffectivitiesInfoForEdit": {
+            "functionName": "getUnitEffectivitiesInfoForEdit",
+            "parameters":[
+                "{{props.subPanelContext.nestedNavigationState}}",
+                "{{props.subPanelContext.vmo.uid}}"
+             ] }
+    },
+
+    "actions": {
+        "updateRowIdxAndNavigateToEndItemPanelAction": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "updateRowIdxBeforeNavigateAction"
+                },
+                {
+                    "action": "navigateToEndItemPanelAction"
+                }
+            ]
+        },
+        "updateRowIdxBeforeNavigateAction":{
+            "actionType": "JSFunction",
+            "method": "updateRowIdxBeforeNavigate",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}"
+            },
+            "deps": "js/effectivityUnitGroupTableService"
+        },
+        "updateEndItemAndNavigateToAuthorEGOPanel":
+        {
+            "actionType": "JSFunction",
+            "method": "updateEndItemOnState",
+            "inputData":
+            {
+                "eventData": "{{data.eventData}}",
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "columnProviderInfo": "{{data.columnProviders.unitGroupEffColumnProvider}}",
+                "message": "{{data.i18n.errorMessageEndItemGroupEff}}"
+            },
+            "deps": "js/effectivityUnitGroupTableService"
+        },
+        "navigateToEndItemPanelAction":{
+            "actionType": "JSFunction",
+            "method": "navigateToView",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "view": {
+                    "panelId": "AddReferenceSub",
+                    "title": "{{i18n.addEndItem}}",
+                    "additionalSubPanelContext": {
+                        "activeState": "{{fields.activeState}}",
+                        "selectionMode": "single",
+                        "filterTypes": "ItemRevision"
+                    }
+                }
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "removeEndItemUnitGroupEffAction":{
+            "actionType": "JSFunction",
+            "method": "removeEndItem",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "data": "{{data}}"
+            },
+            "deps": "js/effectivityUnitGroupTableService"
+        },
+        "EditUnitGroupEffectivityAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-09-DataManagement",
+            "method": "setProperties",
+            "inputData":
+            {
+                "info":
+                [
+                    {
+                        "object": {
+                            "uid": "{{props.subPanelContext.vmo.uid}}",
+                            "type": "{{props.subPanelContext.vmo.type}}"
+                        },
+                        "vecNameVal":
+                        [
+                            {
+                                "name": "object_name",
+                                "values":
+                                [
+                                    "{{data.nameBox.dbValue}}"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "setPropertiesResponse" : ""
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "editGrp.groupEdited"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "setPropertiesFailureMessage"
+                    }
+            ]}
+        },
+        "updateEffectivities": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-StructureManagement-2009-10-EffectivitiesManagement",
+            "method": "createOrUpdateEffectivites",
+            "inputData":
+            {
+                "effectivitiesInfo": "{{function:getUnitEffectivitiesInfoForEdit}}",
+                "effectivityGroupRevision": {
+                    "uid": "{{props.subPanelContext.vmo.uid}}",
+                    "type": "ItemRevision"
+                }
+           },
+           "outputData": {
+                "effResp" : ""
+            },
+           "events":
+           {
+               "success":
+               [
+                   {
+                       "name": "editGrp.applyGroupEffectivity",
+                       "eventData": {
+                            "viewToReact": "{{props.subPanelContext.provider.contextKey}}"
+                        }
+                   }
+               ]
+           },
+           "deps": "js/effectivityUnitGroupTableService",
+           "actionMessages": {
+            "failure": [
+                {
+                    "message": "editFailureMessage"
+                }
+            ]}
+        },
+        "applyGroupEffectivity":
+        {
+            "actionType": "JSFunction",
+            "method": "applyConfiguration",
+            "inputData":{
+                "value": {
+                    "configContext": {
+                        "r_uid": "{{props.subPanelContext.occContext.productContextInfo.props.awb0CurrentRevRule.dbValues[0]}}",
+                        "eg_uids": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EffectivityGroups.dbValues}}",
+                        "de": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EffDate.dbValues[0]}}",
+                        "startDate": "{{props.subPanelContext.occContext.productContextInfo.props.awb0StartEffDates.dbValues[0]}}",
+                        "endDate": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EndEffDates.dbValues[0]}}",
+                        "var_uids": "{{props.subPanelContext.occContext.productContextInfo.props.awb0VariantRules.dbValues}}",
+                        "iro_uid": "{{props.subPanelContext.occContext.productContextInfo.props.awb0VariantRuleOwningRev.dbValues[0]}}",
+                        "startFreshNavigation": true
+                    },
+                    "transientRequestPref": {
+                        "jitterFreePropLoad" : true,
+                        "userGesture": "EFFECTIVITY_CHANGE"
+                    }
+                },
+                "occContext": "{{props.subPanelContext.occContext}}"
+            },
+            "events": {
+                "success": [{
+                    "name": "navigateToGroupEffectivitiesView"
+                }
+               ]
+            },
+            "deps": "js/effectivityGroupTableService"
+        },
+        "UpdateNameValueOnStateAction": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "inputData": {
+                "path": "",
+                "value": {
+                    "nameBoxForEdit": "{{data.nameBox.dbValue}}"
+                },
+                "target": "{{props.subPanelContext.nestedNavigationState}}"
+            },
+            "deps": "js/occmgmtUtils"
+        },
+        "loadEGORowDataAction": {
+            "actionType": "JSFunction",
+            "method": "loadEGORowData",
+            "inputData": {
+                "columnProviderInfo": "{{data.columnProviders.unitGroupEffColumnProvider}}",
+                "egoToEditUid": "{{props.subPanelContext.vmo.uid}}",
+                "nestedNavigationState" : "{{data.subPanelContext.nestedNavigationState}}",
+                "message": "{{data.i18n.errorMessageEndItemGroupEff}}",
+                "activeView": "{{data.activeState.activeView}}"
+            },
+            "outputData": {
+                "loadResult": ""
+            },
+            "deps": "js/effectivityUnitGroupTableService"
+        },
+        "navigateToGroupEffectivitiesView":{
+            "actionType": "JSFunction",
+            "method": "goToPrevPanel",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}"
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "setTableEditable": {
+            "actionType": "JSFunction",
+            "method": "setTableEditable",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.effGroupDataProvider}}"
+            },
+            "deps": "js/effectivityUnitGroupTableService"
+        }
+    },
+
+    "dataProviders": {
+        "effGroupDataProvider": {
+            "action": "loadEGORowDataAction",
+            "response": "{{data.loadResult.searchResults}}",
+            "totalFound": "{{data.loadResult.totalFound}}",
+            "commandsAnchor": "Awb0EndItemCommandAnchor",
+            "editContext": "TABLE_CONTEXT",
+            "inputData": {
+                "selectionModelMode": "single"
+            }
+        }
+    },
+
+    "columnProviders": {
+        "unitGroupEffColumnProvider": {
+            "frozenColumnIndex": -1,
+            "columns": [
+            {
+                "name": "units",
+                "displayName": "{{i18n.units}}",
+                "minWidth": 60,
+                "width": 120,
+                "pinnedLeft": false,
+                "enableColumnMenu": false
+            },
+            {
+                "name": "enditem",
+                "displayName": "{{i18n.endItemMessage}}",
+                "maxWidth": 300,
+                "minWidth": 80,
+                "width": 202,
+                "pinnedLeft": false,
+                "enableColumnMenu": false,
+                "isTableCommand": true
+            }
+        ] }
+    },
+
+    "grids": {
+        "groupUnitEffEditTable": {
+            "dataProvider": "effGroupDataProvider",
+            "columnProvider": "unitGroupEffColumnProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enablePinning": false,
+                "enableSorting": false,
+                "enableGridMenu": false
+            }
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "setTableEditable",
+        "onUpdate": [
+            {
+                "action": "UpdateNameValueOnStateAction",
+                "observers": [ "viewModel.data.nameBox.dbValue" ]
+            }
+        ]
+    },
+
+    "i18n":
+    {
+        "name":[ "OccurrenceManagementConstants" ],
+        "saveButtonText":[ "OccurrenceManagementConstants" ],
+        "errorMessageEndItemGroupEff":["OccurrenceManagementMessages"],
+        "addEndItem": [ "OccurrenceManagementConstants" ],
+        "endItemMessage":[ "OccurrenceManagementConstants" ],
+        "units":[ "OccurrenceManagementConstants" ],
+        "genericServerError":["OccurrenceManagementMessages"]
+    },
+
+    "messages": {
+        "editFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.genericServerError}}",
+            "messageTextParams": [
+                "{{data.effResp.partialErrors[0].errorValues[0].message}}"
+            ]
+        },
+        "setPropertiesFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.genericServerError}}",
+            "messageTextParams": [
+                "{{data.setPropertiesResponse.ServiceData.partialErrors[0].errorValues[0].message}}"
+            ]
+        }
+    },
+
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

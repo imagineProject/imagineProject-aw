@@ -1,0 +1,175 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports":
+    [
+        "js/aw-command-panel.directive",
+        "js/visible-when.directive",
+        "js/aw-command-panel-section.directive",
+        "js/aw-radiobutton.directive",
+        "js/aw-button.directive",
+        "js/aw-i18n.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-list-filter.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-include.directive",
+        "js/aw-break.directive",
+        "js/aw-panel-section.directive",
+        "js/enable-when.directive"
+
+    ],
+
+    "actions": {
+        "initPanel": {
+            "actionType": "JSFunction",
+            "method": "updateUserPanelState",
+            "inputData": {
+                "addUserPanelState": "{{data.addUserPanelState}}"
+            },
+            "outputData": {
+                "addUserPanelState": "userPanelState",
+                "isDataInit": "isDataInit"
+            },
+            "deps": "js/Awp0AddResourcePool"
+        },
+        "subscribeResourcePools":{
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-09-DataManagement",
+            "method": "setProperties",
+            "inputData": {
+                "info": "{{function:getSubscribeResourcePoolInput}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": [
+                                "{{props.subPanelContext.openedObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+            },
+            "deps": "js/Awp0AddResourcePool",
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "serverError"
+                    }
+                ]
+            }
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "complete",
+                        "condition": "!data.isDestroyed()",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog",
+                        "condition": "!data.isDestroyed()"
+                    }
+                ]
+            }
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "functions":
+    {
+        "getSubscribeResourcePoolInput": {
+            "functionName": "prepareSubscribeResourcePoolInput",
+            "parameters": [
+                "{{props.subPanelContext.openedObject}}",
+                "{{addUserPanelState.selectedUsers}}"
+               ]
+        }
+    },
+    "data": {
+        "addUserPanelState": {
+            "initialValues": {
+                "provider": "Awp0PeoplePickerProvider",
+                "selectionModelMode": "multiple",
+                "criteria": {
+                    "providerContentType": "ResourcePool",
+                    "showRPAccessibleFilter": "false",
+                    "searchString": "*"
+                },
+                "preferenceCriteria": [
+                    "WRKFLW_user_panel_content_display",
+                    "WRKFLW_allow_resourcepool_assignments",
+                    "WRKFLW_show_user_assignment_options"
+                ],
+                "selectedUsers": "",
+                "isAddButtonNeeded": false
+            },
+            "meta": {
+                "selectedUsers": {
+                    "field": "true",
+                    "type": "OBJECTARRAY"
+                }
+            }
+        }
+    },
+    "dataProviders": {
+    },
+
+    "conditions": {
+        "isValidToAdd": {
+           "expression": "addUserPanelState.selectedUsers && addUserPanelState.selectedUsers.length > 0"
+        }
+     },
+     "messages": {
+        "serverError": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+
+    "i18n":
+    {
+        "accessible": [ "InboxMessages"],
+        "allResource": [ "InboxMessages"],
+        "resourcePoolTitle": [ "InboxMessages" ],
+        "surrogateAdd": [ "InboxMessages" ]
+    },
+    "preferences":
+    [
+        "EPM_resource_pool_restrict_subscription"
+    ],
+    "lifecycleHooks": {
+        "onMount": "initPanel"
+    },
+    "ctx": {
+        "preferences": null
+    }
+}

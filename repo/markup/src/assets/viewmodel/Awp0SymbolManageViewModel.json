@@ -1,0 +1,232 @@
+{
+
+    "schemaVersion" : "1.0.0",
+    "data": {
+        "symbolGroup": {
+            "displayName": "{{i18n.symbolGroup}}",
+            "type": "STRING",
+            "dataProvider": "listProviderGroupName",
+            "dbValue": "",
+            "uiValue": "",
+            "isSelectOnly": false
+        },
+        "symbolUserName": {
+            "displayName": "{{i18n.CreateUserId}}",
+            "type": "STRING",
+            "dataProvider": "listProviderUserName",
+            "dbValue": "",
+            "uiValue": "",
+            "isSelectOnly": false
+        },
+        "symbolName": {
+            "displayName": "{{i18n.symbolName}}",
+            "type": "STRING",
+            "dbValue": "",
+            "uiValue": "",
+            "requiredText": "{{i18n.enterSymbolName}}"
+        },
+        "groupNameList":
+        {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "",
+                    "propInternalValue": ""
+                }
+            ]
+        },
+        "selectedSymbols": [],
+        "symbolList": [],
+        "modifiable" : false,
+        "share": ""
+    },
+    "actions": {
+        "getGroupNameList": {
+            "actionType": "JSFunction",
+            "method": "getGroupNameList",
+            "inputData": {
+                "list": "{{data.symbolList}}"
+            },
+            "outputData": {
+                "groupNameList.dbValue": "groupNameList"
+            },
+            "deps": "js/Awp0MarkupService"
+        },
+        "getUserNameList": {
+            "actionType": "JSFunction",
+            "method": "getUserNameList",
+            "inputData": {
+                "list": "{{data.symbolList}}",
+                "symbolGroup": "{{data.symbolGroup.dbValue}}"
+            },
+            "outputData":{
+                "symbolUserName.dbValue":"userNameList"
+            },
+            "deps": "js/Awp0MarkupService"
+        },
+        "manageSymbolSelected": {
+            "actionType": "JSFunction",
+            "method": "manageSymbolSelected",
+            "inputData": {
+                "list": "{{data.symbolList}}"
+            },
+            "outputData": {
+                "selectedSymbols": "selectedSymbols",
+                "symbolGroup.dbValue": "symbolGroup",
+                "symbolGroup.uiValue": "symbolGroup",
+                "symbolName.dbValue": "symbolName",
+                "symbolUserName.dbValue": "symbolUserName",
+                "symbolUserName.uiValue": "symbolUserName",
+                "deletable": "deletable",
+                "modifiable": "modifiable",
+                "share": "share"
+            },
+            "deps": "js/Awp0MarkupService"
+        },
+        "symbolGroupOrNameChanged": {
+            "actionType": "JSFunction",
+            "method": "symbolGroupOrNameChanged",
+            "inputData": {
+                "symbolGroup": "{{data.symbolGroup.dbValue}}",
+                "symbolName": "{{data.symbolName.dbValue}}",
+                "symbolUserId":"{{data.symbolUserName.dbValue}}",
+                "share":"{{data.share}}",
+                "selectedSymbols": "{{data.selectedSymbols}}"
+            },
+            "outputData": {
+                "modifiable": "modifiable",
+                "deletable": "deletable"
+            },
+            "deps": "js/Awp0MarkupService"
+        },
+        "modifySymbols": {
+            "actionType": "JSFunctionAsync",
+            "method": "modifySymbols",
+            "inputData": {
+                "selectedSymbols": "{{data.selectedSymbols}}",
+                "symbolGroup": "{{data.symbolGroup.dbValue}}",
+                "symbolName": "{{data.symbolName.dbValue}}",
+                "symbolUserId":"{{data.symbolUserName.dbValue}}",
+                "share":"{{data.share}}"
+            },
+            "outputData": {
+                "symbolList": "symbolList",
+                "groupNameList.dbValue": "groupNameList",
+                "selectedSymbols": "selectedSymbols",
+                "modifiable": "modifiable",
+                "deletable": "deletable"
+            },
+            "deps": "js/Awp0MarkupService"
+        },
+        "showSymbolList": {
+            "actionType": "JSFunctionAsync",
+            "method": "showSymbolList",
+            "inputData": {},
+            "outputData": {
+                "symbolList": "symbolList",
+                "userType": "userRole"
+            },
+            "deps": "js/Awp0MarkupService"
+        },
+        "manageSymbols":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Markup-2022-06-Markup",
+            "method": "processMarkups",
+            "inputData": {
+                "baseObject": "{{data.eventData.baseObject}}",
+                "action": "{{data.eventData.action}}",
+                "version": "{{data.eventData.version}}",
+                "message": "{{data.eventData.message}}",
+                "markups": "{{data.eventData.markups}}"
+            },
+            "outputData":
+            {
+                "symbolList": "{{function:processSymbols}}"
+            },
+            "deps": "js/Awp0MarkupService"
+        }
+    },
+    "dataProviders": {
+        "listProviderGroupName": {
+            "action": "getGroupNameList",
+            "response": "{{data.groupNameList.dbValue}}",
+            "totalFound": "{{data.groupNameList.dbValue.length}}"
+        },
+        "listProviderUserName": {
+            "action": "getUserNameList",
+            "response": "{{data.symbolUserName.dbValue}}",
+            "totalFound": "{{data.symbolUserName.dbValue.length}}"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "condition.expressionValueChanged",
+            "action": "symbolGroupOrNameChanged",
+            "criteria": {
+                "condition": "conditions.symbolGroupCondition"
+            }
+        },
+        {
+            "eventId": "condition.expressionValueChanged",
+            "action": "symbolGroupOrNameChanged",
+            "criteria": {
+                "condition": "conditions.symbolNameCondition"
+            }
+        },
+        {
+            "eventId": "condition.expressionValueChanged",
+            "action": "symbolGroupOrNameChanged",
+            "criteria": {
+                "condition": "conditions.symbolUserNameCondition"
+            }
+        },
+        {
+            "eventId": "awMarkupService.manageSymbols",
+            "action": "manageSymbols",
+            "cacheEventData": true
+        }
+    ],
+    "conditions": {
+        "atLeastOneSymbolSelected": {
+            "expression": "data.selectedSymbols.length > 0"
+        },
+        "onlyOneSymbolSelected": {
+            "expression": "data.selectedSymbols.length === 1"
+        },
+        "userIsAdmin": {
+            "expression": "data.userType && data.userType === 'admin'"
+        },
+        "symbolGroupCondition": {
+            "expression": "data.symbolGroup.dbValue",
+            "trackValues": true
+        },
+        "symbolNameCondition": {
+            "expression": "data.symbolName.dbValue",
+            "trackValues": true
+        },
+        "symbolUserNameCondition": {
+            "expression": "data.symbolUserName.dbValue",
+            "trackValues": true
+        }
+    },
+    "functions": {
+        "processSymbols": {
+            "functionName": "processSymbols",
+            "parameters": [
+                "{{data.response}}"
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "showSymbolList"
+    },
+    "i18n":{
+        "symbolGroup": [ "MarkupMessages" ],
+        "symbolName": [ "MarkupMessages" ],
+        "modify": [ "MarkupMessages" ],
+        "manage": [ "MarkupMessages" ],
+        "CreateUserId":["UsermanagementCommandPanelMessages"]
+    }
+
+}

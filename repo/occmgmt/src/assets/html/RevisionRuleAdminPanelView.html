@@ -1,0 +1,93 @@
+<aw-panel-header>
+    <aw-label prop="data.revRuleName"></aw-label>
+    <aw-label prop="data.revRuleDesc"></aw-label>
+    <aw-break></aw-break>
+    <aw-panel-section caption="i18n.clauses" collapsed="disabled" class="aw-revRule-removeSpace" exist-when="subPanelContext.nestedNavigationState.clauses.length > 0">
+        <aw-command-bar class="flex-auto" overflow="true" anchor="{{data.clausesCommandAnchor}}" alignment="HORIZONTAL" context="{...subPanelContext,...data, vmo: data.vmo}"></aw-command-bar>
+    </aw-panel-section>
+</aw-panel-header>
+<aw-panel-body>
+    <div aw-repeat="item : subPanelContext.nestedNavigationState.clauses" class="aw-revRule-clausesSections sw-row w-12" aw-class="[{'aw-revRule-clauseModify-indicator': item.modified == true }, {'aw-clauseName-background': item.selected == true },{'aw-revRule-disableMouseClick': (subPanelContext.nestedNavigationState.exactlySameClauseWarning === true) }]">
+
+        <div class="w-1" exist-when="item.clauseIndex !== undefined && item.clauseIndex > -1">
+            <aw-checkbox prop="fields.clauseCheckBoxState.clauses[item.clauseIndex].selected" exist-when="fields.clauseCheckBoxState && fields.clauseCheckBoxState.clauses && fields.clauseCheckBoxState.clauses.length > 0" enable-when="conditions.isRevisionRuleEditable" action="updateNestedNavigationStateClausesWithCheckboxSelections" class="aw-revRule-clauseCheckbox"></aw-checkbox>
+        </div>
+        <div class="w-11">
+            <!-- When item is not group type, which is NOT 17 -->
+            <aw-panel-section caption="{{item.displayText}}" name="RevisionRuleClausesSectionProperties" collapsed="{{item.selected ? 'false' : 'true'}}" class="aw-revRule-clauseIconSize" exist-when="((item.entryType !== subPanelContext.nestedNavigationState.groupUsageTypeEntryType)&&(item.entryType !== subPanelContext.nestedNavigationState.groupItemTypeEntryType))">
+                <!-- 0.Working -->
+                <aw-include name="RevisionRuleAdminClauseProperties" sub-panel-context="{...subPanelContext,...data}" exist-when="item.entryType === 0"></aw-include>
+                <!-- 1.Status -->
+                <aw-include name="RevisionRuleAdminClauseProperties" sub-panel-context="{...subPanelContext,...data}" exist-when="item.entryType === 1"></aw-include>
+                <!-- 2.Override -->
+                <aw-flex-column justify="right" align-content="end" exist-when="item.entryType === 2">
+                    <aw-command-bar class="aw-revRule-removeShadow" anchor="clausePropertiesCommandAnchor" reverse="isReverseSecond" alignment="HORIZONTAL" context="{context:...subPanelContext}"></aw-command-bar>
+                </aw-flex-column>
+                <aw-i18n exist-when="item.entryType == 2 && ctx.RevisionRuleAdmin.folder == undefined">i18n.addFolderMsg</aw-i18n>
+                <aw-default-cell vmo="ctx.RevisionRuleAdmin.folder" exist-when="item.entryType === 2 && ctx.RevisionRuleAdmin.folder !== undefined"></aw-default-cell>
+                <!-- 3.Date -->
+                <aw-include name="RevisionRuleAdminClauseProperties" sub-panel-context="{...subPanelContext,...data}" exist-when="item.entryType === 3"></aw-include>
+                <!-- 4.Unit -->
+                <aw-include name="RevisionRuleAdminClauseProperties" sub-panel-context="{...subPanelContext,...data}" exist-when="item.entryType === 4"></aw-include>
+                <!-- 6.Precise -->
+                <div class="aw-revRule-alignNoArgumentsLabel" exist-when="item.entryType === 6">
+                    {{data.noArgumentsLabel.dbValue}}
+                </div>
+                <!-- 7.Latest -->
+                <aw-include name="RevisionRuleAdminClauseProperties" sub-panel-context="{...subPanelContext,...data}" exist-when="item.entryType === 7"></aw-include>
+                <!-- 8.End Item -->
+                <aw-flex-column justify="right" align-content="end" exist-when="item.entryType === 8">
+                    <aw-command-bar class="aw-revRule-removeShadow" anchor="clausePropertiesCommandAnchor" reverse="isReverseSecond" alignment="HORIZONTAL" context="{context:...subPanelContext}"></aw-command-bar>
+                </aw-flex-column>
+                <aw-i18n exist-when="item.entryType == 8 && ctx.RevisionRuleAdmin.end_item === undefined">i18n.addEndItemMsg</aw-i18n>
+                <aw-default-cell vmo="ctx.RevisionRuleAdmin.end_item" exist-when="ctx.RevisionRuleAdmin.end_item !== undefined && item.entryType === 8"></aw-default-cell>
+                <!-- 10.Branch -->
+                <aw-command-panel-section caption="i18n.branch" exist-when="item.entryType === 10">
+                    <aw-default-cell vmo="ctx.RevisionRuleAdmin.branch" exist-when="ctx.RevisionRuleAdmin.branch !== undefined"></aw-default-cell>
+                </aw-command-panel-section>
+                <!-- 13.Release Event -->
+                <aw-include name="RevisionRuleAdminEventClause" exist-when="item.entryType === 13 && subPanelContext.occContext.supportedFeatures.Awb0ReleaseEventFeature === true" sub-panel-context="{...subPanelContext,...data}" ></aw-include>
+                <!-- 14.Plant Location -->
+                <aw-include name="PlantSolveLocationClause" exist-when="item.entryType === 14" sub-panel-context="{...subPanelContext,...data}" ></aw-include>
+                <!-- 15.Configuration baseline -->
+                <aw-include name="ConfigurationBaselinesClause" exist-when="item.entryType === 15 && ctx.preferences.EnableConfigurationBaseline[0].toLowerCase() === 'true'" sub-panel-context="{...subPanelContext,...data}" ></aw-include>
+                <!-- 16.Configuration baseline object -->
+                <aw-flex-column justify="right" align-content="end" exist-when="item.entryType === 16 && ctx.preferences.EnableConfigurationBaseline[0].toLowerCase() === 'true'">
+                    <aw-command-bar class="aw-revRule-removeShadow" anchor="clausePropertiesForBaselineObjCommandAnchor" reverse="isReverseSecond" alignment="HORIZONTAL" context="{context:...subPanelContext}"></aw-command-bar>
+                </aw-flex-column>
+                <aw-i18n exist-when="item.entryType === 16 && ctx.RevisionRuleAdmin.baselineObject === undefined">i18n.addBaselineObjectMsg</aw-i18n>
+                <aw-default-cell vmo="ctx.RevisionRuleAdmin.baselineObject" exist-when="item.entryType === 16"></aw-default-cell>
+            </aw-panel-section>
+            
+            <!-- Group : When clause is of type Group -->
+            <aw-panel-section caption="{{item.clauseTitle}}" name="RevisionRuleClausesSectionProperties" collapsed="{{item.selected ? 'false' : 'true'}}" class="aw-revRule-clauseIconSize" exist-when="((item.entryType === subPanelContext.nestedNavigationState.groupUsageTypeEntryType)||(item.entryType === subPanelContext.nestedNavigationState.groupItemTypeEntryType))" extended-tooltip="{ 'extendedTooltipContent': item.displayText }" extended-tooltip-options="{placement: 'top', flipBehavior: 'counterclockwise'}">
+                <div aw-repeat="clauseLine : item.clauseLines" class="sw-row w-12">
+                    <div class="w-4">{{clauseLine.key}}</div>
+                    <div class="w-1">&nbsp;:&nbsp;</div>
+                    <div class="w-7">{{clauseLine.value}}</div>
+                </div>
+            </aw-panel-section>
+        </div>
+    </div>
+    <div exist-when="subPanelContext.nestedNavigationState.clauses && dataProviders.getRevisionRuleInfoProvider.vmCollectionObj && dataProviders.getRevisionRuleInfoProvider.vmCollectionObj.dataLoaded && subPanelContext.nestedNavigationState.clauses.length === 0">
+        <aw-i18n>i18n.revisionRuleCannotBeEdited</aw-i18n>
+    </div>
+    <aw-separator exist-when="subPanelContext.nestedNavigationState.exactlySameClauseWarning === true"></aw-separator>
+    <div class="sw-row h-2 align-center" exist-when="subPanelContext.nestedNavigationState.exactlySameClauseWarning === true">
+        <div class="aw-revRule-alignSimilarClauseErrorContent">
+            <div class="aw-revRule-similarClauseErrorIcon">
+                <aw-icon icon-id="indicatorError"></aw-icon>
+            </div>
+            <div class="aw-revRule-similarClauseErrorText">
+                <aw-i18n>i18n.exactlySameClauseWarning</aw-i18n>
+            </div>
+        </div>
+    </div>
+
+</aw-panel-body>
+<aw-panel-footer visible-when="data.mainPanel ==='RevisionRuleAdminMainPanel'">
+    <aw-button button-type="base" size="auto" action="navigateToSaveAsRevisionRulePanel" exist-when="conditions.isDBAPriviledgeUser" enable-when="data.isClauseModified.dbValue">
+        <aw-i18n>i18n.saveAs</aw-i18n>
+    </aw-button>
+    <aw-include name="ConfigureProduct" exist-when="data.mainPanel =='RevisionRuleAdminMainPanel' && data.activeView=='RevisionRuleAdminPanel'" sub-panel-context="{...data, nestedNavigationState: subPanelContext.nestedNavigationState, occContext : subPanelContext.occContext}"></aw-include>
+</aw-panel-footer>

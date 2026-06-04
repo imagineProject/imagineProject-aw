@@ -1,0 +1,91 @@
+{
+    "schemaVersion" : "1.0.0",
+
+    "actions": {
+        "reveal": {
+            "actionType": "dataProvider",
+            "method": "existingSubscription"
+        },
+        "getSubscriptionList": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Notification-2015-03-SubscriptionManagement",
+            "method": "findSubscriptions",
+            "inputData": {
+                "input": {
+                    "target": {
+                        "uid" : "{{ctx.selected.uid}}",
+                        "type" : "{{ctx.selected.type}}"
+                    }
+                }
+            },
+            "outputData": {
+                "listOfSubscriptions": "{{function:getExistingSubscription}}",
+                "totalFound": "subscriptions.length"
+            },
+            "deps": "js/Saw1NotificationService"
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+
+    "lifecycleHooks": {
+    },
+
+    "data": {
+        "subscriptionCommands":"saw1_subscriptionCommands",
+        "activeView": "Saw1SubscribeSub"
+    },
+
+    "onEvent": [
+        {
+            "eventId": "awPanel.reveal",
+            "criteria":
+            {
+                "panelId": "Saw1SubscribeSub"
+            },
+            "action": "reveal"
+        },
+        {
+            "eventId": "initListSubscriptionDataProvider",
+            "action": "getAllSubscriptionsDataProvider"
+        },
+        {
+            "eventId": "appCtx.register",
+            "condition": "conditions.checkSelectionChange",
+            "action": "closePanel"
+        }
+    ],
+
+    "dataProviders": {
+        "existingSubscription": {
+            "action": "getSubscriptionList",
+            "response": "{{data.listOfSubscriptions}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple",
+            "commandsAnchor": "aw_subscriptionShowObjectCellCommandAction"
+        }
+    },
+    
+    "conditions": {
+        "checkSelectionChange": {
+            "expression": "name == 'selected' || name == 'mselected'"
+        }
+    },
+
+    "i18n" : {
+        "mySybscriptionsTitle":["ScheduleManagerMessages"]
+    }
+}

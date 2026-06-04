@@ -1,0 +1,159 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "data": {
+        "dpAnchor": "cm1_participantsOnPanelAnchor"
+    },
+
+    "dataProviders": {
+        "dpDataProvider": {
+            "response": "{{props.participantTypeInfo.modelObjects}}",
+            "totalFound": "{{props.participantTypeInfo.modelObjects.length}}",
+            "totalLoaded": "{{props.participantTypeInfo.modelObjects.length}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+
+    "actions": {
+        "initPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadDisplayInfo"
+                },
+                {
+                    "action": "initDataProvider"
+                }
+            ]
+        },
+        "loadDisplayInfo": {
+            "actionType": "JSFunction",
+            "method": "loadDisplayInfo",
+            "inputData": {
+                "participantTypeInfo": "{{props.participantTypeInfo}}"
+            },
+            "outputData": {
+                "sectionCollapsed": "sectionCollapsed",
+                "sectionHeight": "sectionHeight"
+            },
+            "deps": "js/Cm1CreateParticipantsService"
+        },
+        "initDataProvider": {
+            "actionType": "dataProvider",
+            "methods": ["dpDataProvider"]
+        },
+        "addSelectedParticipantsNarrowMode": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getSelectedParticipants",
+                    "condition": "conditions.isAddParticipantsNarrowMode"
+                },
+                {
+                    "action": "addSelectedParticipantsInternal",
+                    "condition": "conditions.isAddParticipantsNarrowMode"
+                },
+                {
+                    "action": "navigateToMainPanel",
+                    "condition": "conditions.isAddParticipantsNarrowMode"
+                },
+                {
+                    "action": "resentUserParticipantContextData",
+                    "condition": "conditions.isAddParticipantsNarrowMode"
+                }
+            ]
+        },
+        "getSelectedParticipants": {
+            "actionType": "JSFunctionAsync",
+            "method": "getValidObjectsToAdd",
+            "inputData": {
+                "selectedUsers": "{{props.addUserPanelState.selectedUsers}}",
+                "addUserPanelState": "{{props.addUserPanelState}}"
+            },
+            "outputData": {
+                "selectedUsers": ""
+            },
+            "deps": "js/Cm1CreateParticipantsService"
+        },
+        "addSelectedParticipantsInternal": {
+            "actionType": "JSFunction",
+            "method": "addParticipantObjects",
+            "inputData": {
+                "propName": "{{props.addUserPanelState.propName}}",
+                "selectedUsers": "{{data.selectedUsers}}",
+                "participantInfo": "{{props.subPanelContext.participantInfo}}"
+            },
+            "deps": "js/Cm1CreateParticipantsService"
+        },
+        "resentUserParticipantContextData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.addUserPanelState}}",
+                "value" : {
+                    "propName": null,
+                    "selectedUsers": []
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "navigateToMainPanel": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.activeState}}",
+                "value": {
+                    "activeView": "Cm1CreateChangeSub"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateParticipantDataProvider": {
+            "actionType":"JSFunction",
+            "method":"updateDataProvider",
+            "inputData":{
+                "dataProvider": "{{dataProviders.dpDataProvider}}",
+                "modelObjects": "{{props.participantTypeInfo.modelObjects}}"
+            },
+            "outputData": {
+                "sectionCollapsed": "sectionCollapsed"
+            },
+            "deps":"js/Cm1CreateParticipantsService"
+        }
+    },
+
+    "props": {
+        "participant-type-info": {
+            "type": "object"
+        },
+        "sub-panel-context":{
+            "type":"object"
+        },
+        "active-state": {
+            "type": "object"
+        },
+        "add-user-panel-state": {
+            "type": "object"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "initPanel",
+        "onUpdate": [
+            {
+                "action": "updateParticipantDataProvider",
+                "observers": [ "props.participantTypeInfo.updateUids" ]
+            },
+            {
+                "action": "addSelectedParticipantsNarrowMode",
+                "observers": [ "props.addUserPanelState.value.selectedUsers" ]
+            }
+        ]
+    },
+
+    "conditions": {
+        "isAddParticipantsNarrowMode": {
+            "expression": "props.participantTypeInfo.internalName === props.addUserPanelState.participantType && props.addUserPanelState.participantType && props.addUserPanelState.selectedUsers && props.addUserPanelState.selectedUsers.length > 0"
+        }
+    }
+}

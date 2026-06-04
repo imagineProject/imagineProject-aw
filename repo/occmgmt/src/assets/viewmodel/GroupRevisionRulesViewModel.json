@@ -1,0 +1,274 @@
+{
+    "schemaVersion" : "1.0.0",
+
+    "actions":
+    {
+        "groupTypeListSelectionChange": {
+            "actionType": "JSFunction",
+            "method": "groupTypeListSelectionChange",
+            "inputData": {
+                "selectedGroupType": "{{data.groupTypeList.dbValue}}"
+            },
+            "outputData": {
+                "childItemTypeList.propertyDisplayName": ""
+            },
+            "deps": "js/groupClauseToRevRuleService"
+        },
+        "setGroupClauseUsageRevisionTypePanelData": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getUsageRevisionSubType",
+                    "condition": "data.usages !== undefined && data.usages.length === 0"
+                },
+                {
+                    "action": "processUsageRevisionSubTypeResponse",
+                    "condition": "data.usages === undefined || data.usages.length === 0"
+                },
+                {
+                    "action": "setUsageTypesListDataWithScrollRender",
+                    "condition": "data.usages !== undefined && data.usages.length > 0"
+                }
+            ]
+        },
+        "getUsageRevisionSubType": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-DataManagement",
+            "method": "getSubTypeNames",
+            "inputData": {
+                "inBOTypeNames": [
+                    {
+                        "typeName": "Fnd0AbstractOccRevision",
+                        "contextName": "subtypes",
+                        "exclusionPreference": ""
+                    }
+                ]
+            },
+            "outputData": {
+                "soaResponseUsage": ""
+            }
+        },
+        "processUsageRevisionSubTypeResponse": {
+            "actionType": "JSFunction",
+            "method": "processSubTypeResponse",
+            "inputData": {
+                "response": "{{soaResponseUsage}}"
+            },
+            "outputData": {
+                "usages": ""
+            },
+            "deps": "js/groupClauseToRevRuleService"
+        },
+        "setUsageTypesListDataWithScrollRender": {
+            "actionType": "JSFunction",
+            "method": "setListDataWithScrollRender",
+            "inputData": {
+                "startIndex": "{{data.dataProviders.groupClauseAvailableUsageRevisionTypesDataProvider.startIndex}}",
+                "pageSize": "20",
+                "listUsageTypes": "{{data.usages}}",
+                "filterString": "{{data.usageRevisionTypeList.filterString}}"
+            },
+            "outputData": {
+                "totalUsagesFound": "totalSubTypesFound",
+                "listUsageTypesValues": "listSubTypesValues"
+            },
+            "deps": "js/groupClauseToRevRuleService"
+        },
+        "setGroupClauseItemTypePanelData": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getItemSubType",
+                    "condition": "data.items !== undefined && data.items.length === 0"
+                },
+                {
+                    "action": "processItemSubTypeResponse",
+                    "condition": "data.items === undefined || data.items.length === 0"
+                },
+                {
+                    "action": "setItemTypesListDataWithScrollRender",
+                    "condition": "data.items !== undefined && data.items.length > 0"
+                }
+            ]
+        },
+        "getItemSubType": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-DataManagement",
+            "method": "getSubTypeNames",
+            "inputData": {
+                "inBOTypeNames": [
+                    {
+                        "typeName": "Item",
+                        "contextName": "subtypes",
+                        "exclusionPreference": ""
+                    }
+                ]
+            },
+            "outputData": {
+                "soaResponseItem": ""
+            }
+        },
+        "processItemSubTypeResponse": {
+            "actionType": "JSFunction",
+            "method": "processSubTypeResponse",
+            "inputData": {
+                "response": "{{soaResponseItem}}"
+            },
+            "outputData": {
+                "items": ""
+            },
+            "deps": "js/groupClauseToRevRuleService"
+        },
+        "setItemTypesListDataWithScrollRender": {
+            "actionType": "JSFunction",
+            "method": "setListDataWithScrollRender",
+            "inputData": {
+                "startIndex": "{{data.dataProviders.groupClauseAvailableItemTypesDataProvider.startIndex}}",
+                "pageSize": "20",
+                "listItemTypes": "{{data.items}}",
+                "filterString": "{{data.childItemTypeList.filterString}}"
+            },
+            "outputData": {
+                "totalItemsFound": "totalSubTypesFound",
+                "listItemTypesValues": "listSubTypesValues"
+            },
+            "deps": "js/groupClauseToRevRuleService"
+        },
+        "showSelectedClausesInGroupPanel": {
+            "actionType": "JSFunction",
+            "method": "showSelectedClausesInGroupPanel",
+            "inputData": {
+                "nestedNavigationState": "{{subPanelContext.nestedNavigationState}}",
+                "data": "{{data}}",
+                "formProp": "{{formProp}}"
+            },
+            "deps": "js/groupClauseToRevRuleService"
+        },
+        "makeGroupClauseAction": {
+            "actionType": "JSFunction",
+            "method": "makeGroupClauseAction",
+            "inputData": {
+                "nestedNavigationState": "{{subPanelContext.nestedNavigationState}}",
+                "selectedUsageRevisionTypes": "{{data.usageRevisionTypeList}}",
+                "selectedItemTypes": "{{data.childItemTypeList}}",
+                "groupSelectionType": "{{data.groupTypeList.dbValue}}"
+            },
+            "deps": "js/groupClauseToRevRuleService"
+        },
+        "batchToLoadUsageAndItem": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setGroupClauseUsageRevisionTypePanelData"
+                },
+                {
+                    "action": "setGroupClauseItemTypePanelData"
+                },
+                {
+                    "action": "showSelectedClausesInGroupPanel"
+                }
+            ]
+        }
+    },
+
+    "data":
+    {
+        "activeView": "GroupRevisionRules",
+        "groupTypeList": {
+            "displayName": "{{i18n.groupEntrySelectionType}}",
+            "type": "STRING",
+            "isRequired": true,
+            "hasLov": true
+        },
+        "groupTypeListValues": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.groupByItemType}}",
+                    "propInternalValue": 3
+                },
+                {
+                    "propDisplayValue": "{{i18n.groupByUsageType}}",
+                    "propInternalValue": 4
+                }
+            ]
+        },
+        "usageRevisionTypeList": {
+            "displayName": "{{i18n.usageRevisionTypeList}}",
+            "type": "STRINGARRAY",
+            "isArray": true,
+            "dataProvider": "groupClauseAvailableUsageRevisionTypesDataProvider",
+            "isRequired": true,
+            "renderingHint": "checkboxoptionlov"
+        },
+        "childItemTypeList": {
+            "displayName": "{{i18n.childItemTypeListWithoutUsage}}",
+            "type": "STRINGARRAY",
+            "isArray": true,
+            "dataProvider": "groupClauseAvailableItemTypesDataProvider",
+            "isRequired": true,
+            "renderingHint": "checkboxoptionlov"
+        },
+        "showSelectedClausesInGroup": {
+            "displayName": "{{i18n.selectedClauses}}",
+            "dbValue": "",
+            "type": "STRING",
+            "dispValue": ""
+        }
+    },
+
+    "grids":
+    {
+    },
+
+    "columnProviders": 
+    {
+    },
+
+    "dataProviders": 
+    {
+        "groupClauseAvailableUsageRevisionTypesDataProvider": {
+            "action": "setGroupClauseUsageRevisionTypePanelData",
+            "response": "{{data.listUsageTypesValues}}",
+            "totalFound": "{{data.totalUsagesFound}}",
+            "selectionModelMode": "multiple"
+        },
+        "groupClauseAvailableItemTypesDataProvider": {
+            "action": "setGroupClauseItemTypePanelData",
+            "response": "{{data.listItemTypesValues}}",
+            "totalFound": "{{data.totalItemsFound}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+
+    "onEvent": 
+    [    
+    ],
+
+    "messages":
+    {
+    },
+
+    "conditions":
+    {
+    },
+    
+    "lifecycleHooks": 
+    {
+        "onMount": "batchToLoadUsageAndItem"
+    },
+
+    "i18n":
+    {
+        "AvailableItemTypes": ["RevisionRuleAdminConstants"],
+        "AvailableUsageRevisionTypes": ["RevisionRuleAdminConstants"],
+        "groupEntrySelectionType": ["RevisionRuleAdminConstants"],
+        "makeGroupClause": ["RevisionRuleAdminConstants"],
+        "usageRevisionTypeList": ["RevisionRuleAdminConstants"],
+        "childItemTypeList": ["RevisionRuleAdminConstants"],
+        "childItemTypeListWithoutUsage": ["RevisionRuleAdminConstants"],
+        "groupByUsageType": ["RevisionRuleAdminConstants"],
+        "selectedClauses": ["RevisionRuleAdminConstants"],
+        "groupByItemType": ["RevisionRuleAdminConstants"]
+    }
+}

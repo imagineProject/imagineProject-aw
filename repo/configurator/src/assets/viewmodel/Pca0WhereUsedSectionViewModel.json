@@ -1,0 +1,66 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {
+        "onUpdate": [ {
+            "action": "reloadWhereUsedTable",
+            "observers": [
+                "props.subPanelContext.fullScreenState.value"
+            ]
+        } ]
+    },
+    "data": {
+        "gridInfo": {
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "enableExpandAndPaginationInEdit": true,
+                "enableGridMenu": true,
+                "enableSorting": true,
+                "isFilteringEnabled": true
+            }
+        },
+        "columns": [ {
+            "uid": "column_test_uid"
+        } ]
+    },
+    "conditions": {
+        "isContextsCollapsed":{
+            "expression": "!props.subPanelContext.sectionExpStatusCache.contextsExpanded"
+        }
+    },
+
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "actions": {
+        "reloadWhereUsedTable": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "updateSmartObjSetFlag",
+                    "condition": "props.subPanelContext.reloadObjectSetState.value.reloadObjectSet"
+                },
+                {
+                    "action": "setMustReloadFlag",
+                    "condition": "!props.subPanelContext.reloadObjectSetState.value.reloadObjectSet"
+                }
+            ]
+        },
+        "updateSmartObjSetFlag": {
+            "actionType": "JSFunction",
+            "method": "updateSmartObjSetFlag",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/Pca0WhereUsedService"
+        },
+        "setMustReloadFlag": {
+            "actionType": "JSFunction",
+            "method": "setMustReloadFlag",
+            "inputData": {
+                "reloadObjectSetState": "{{props.subPanelContext.reloadObjectSetState}}"
+            },
+            "deps": "js/Pca0WhereUsedService"
+        }
+    }
+}

@@ -1,0 +1,265 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "searchData": {
+            "searchResults": [],
+            "totalFound": 0
+        },
+        "searchPerformed": false,
+        "searchBox": {
+            "dbValue":"",
+            "type": "STRING"
+        },
+        "searchTypeList": {
+            "type": "STRING",
+            "labelPosition": "NO_PROPERTY_LABEL",
+            "hasLov": "true",
+            "dbValue": "",
+            "dispValue": ""
+        },
+        "noRecentContextFoundLabel": {
+            "displayValue": "{{i18n.noRecentContextFound}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "searchTypeListValues": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propInternalValue": "Any",
+                    "propDisplayValue": "{{i18n.anyTitle}}"
+                },
+                {
+                    "propInternalValue": "Cfg0ProductItem",
+                    "propDisplayValue": "{{i18n.attachVariantRuleWithConfiguratorContext}}"
+                },
+                {
+                    "propInternalValue": "Cfg0Dictionary",
+                    "propDisplayValue": "{{i18n.configuratorDictionary}}"
+                }
+            ]
+        }
+    },
+    "actions": {
+        "getRecentHistory": {
+            "actionType": "dataProvider",
+            "method": "recentContextHistoryDataProvider"
+        },
+        "searchAction": {
+            "actionType":"batchJob",
+            "steps": [ {
+                "action": "allocateObjects",
+                "condition": "data.searchBox.dbValue.length > 0"
+            }]
+        },
+        "allocateObjects": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData":  {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Pca0AdvancedReuseSearchResults",
+                        "operationType": "union"
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0SavedQuerySearchProvider",
+                        "searchCriteria":{
+                            "queryName": "{{function:getContextSearchQuery}}",
+                            "searchID": "GENERAL_QUERY",
+                            "typeOfSearch": "ADVANCED_SEARCH",
+                            "lastEndIndex": "",
+                            "totalObjectsFoundReportedToClient": "",
+                            "Name": "{{data.searchBox.dbValue}}",
+                            "Item ID": "{{data.searchBox.dbValue}}",
+                            "utcOffset": "0"
+                        },
+                        "columnFilters": "{{data.columnProviders.contextSearchColumnProvider.columnFilters}}",
+                        "searchSortCriteria": "{{function:getSearchSortCriteria}}",
+                        "searchFilterFieldSortType": "Priority",
+                        "searchFilterMap6": "",
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.contextSearchDataProvider.startIndex}}"
+                        }
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "response": "",
+                "searchPerformed": true,
+                "searchData": "{{function:getContextSearchResult}}",
+                "dataProviders.contextSearchDataProvider.columnConfig": "columnConfig"
+            },
+            "events": {
+                "success": [ {
+                    "name": "contextSearchResultGrid.plTable.reload"
+                } ],
+                "failure": [
+                    {
+                        "name": "Pca0AdvancedReuse.processPartialErrors",
+                        "eventData": {
+                            "ServiceData": "{{data.response.ServiceData}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "loadSearchData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData":  {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Pca0AdvancedReuseSearchResults",
+                        "operationType": "union"
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0SavedQuerySearchProvider",
+                        "searchCriteria":{
+                            "queryName": "{{function:getContextSearchQuery}}",
+                            "searchID": "GENERAL_QUERY",
+                            "typeOfSearch": "ADVANCED_SEARCH",
+                            "lastEndIndex": "",
+                            "totalObjectsFoundReportedToClient": "",
+                            "Name": "{{data.searchBox.dbValue}}",
+                            "Item ID": "{{data.searchBox.dbValue}}",
+                            "utcOffset": "0"
+                        },
+                        "columnFilters": "{{data.columnProviders.contextSearchColumnProvider.columnFilters}}",
+                        "searchSortCriteria": "{{function:getSearchSortCriteria}}",
+                        "searchFilterFieldSortType": "Priority",
+                        "searchFilterMap6": "",
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.contextSearchDataProvider.startIndex}}"
+                        }
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "response": "",
+                "searchPerformed": true,
+                "searchData": "{{function:getContextSearchResult}}",
+                "dataProviders.contextSearchDataProvider.columnConfig": "columnConfig"
+            },
+            "events": {
+                "failure": [
+                    {
+                        "name": "Pca0AdvancedReuse.processPartialErrors",
+                        "eventData": {
+                            "ServiceData": "{{data.response.ServiceData}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "getContextHistoryData": {
+            "actionType": "JSFunctionAsync",
+            "method": "getContextHistoryData",
+            "deps": "js/pca0AdvancedReuseService",
+            "inputData": {
+                "targetContext": "{{data.ctx.pselected}}"
+            },
+            "outputData": {
+                "totalRecentHistoryFound": "totalRecentHistoryFound",
+                "recentHistoryResults": "recentHistoryResults"
+            }
+        }
+    },
+    "grids": {
+        "contextSearchResultGrid": {
+            "dataProvider": "contextSearchDataProvider",
+            "columnProvider": "contextSearchColumnProvider",
+            "gridOptions": {
+                "enableGridMenu": true,
+                "enableExpandAndPaginationInEdit": true,
+                "enableDragAndDrop": false
+            }
+        }
+    },
+    "dataProviders": {
+        "recentContextHistoryDataProvider": {
+            "action": "getContextHistoryData",
+            "response": "{{data.recentHistoryResults}}",
+            "totalFound": "{{data.totalRecentHistoryFound}}",
+            "selectionModelMode": "single",
+            "commandsAnchor": "PCA0_ADVANCED_REUSE_PANEL"
+        },
+        "contextSearchDataProvider": {
+            "nextAction": "loadSearchData",
+            "response": "{{data.searchData.searchResults}}",
+            "totalFound": "{{data.searchData.totalFound}}",
+            "selectionModelMode": "single",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            },
+            "commandsAnchor": "PCA0_ADVANCED_REUSE_PANEL"
+        }
+    },
+    "columnProviders": {
+        "contextSearchColumnProvider": {
+        }
+    },
+    "functions": {
+        "getContextSearchResult": {
+            "functionName": "getContextSearchResult",
+            "parameters": [
+                "{{data.ctx.pselected}}"
+            ],
+            "deps": "js/pca0AdvancedReuseService"
+        },
+        "getSearchSortCriteria": {
+            "functionName": "getSearchSortCriteria",
+            "parameters": [
+                "{{data.columnProviders.contextSearchColumnProvider.sortCriteria}}"
+            ],
+            "deps": "js/pca0AdvancedReuseService"
+        },
+        "getContextSearchQuery": {
+            "functionName": "getContextSearchQuery",
+            "parameters": [
+                "{{data.searchTypeList.dbValue}}"
+            ],
+            "deps": "js/pca0AdvancedReuseService"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "getRecentHistory"
+    },
+    "messages": {
+        "advancedReuseModeGuidance": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.advancedReuseModeGuidanceMsg}}"
+        }
+    },
+    "conditions": {
+        "isRecentContextHistoryFound": {
+            "expression": "data.totalRecentHistoryFound !== 0"
+        },
+        "isSearchResultFound": {
+            "expression": "data.searchData.searchResults.length !== 0"
+        },
+        "isSearchPerformed": {
+            "expression": "data.searchPerformed === true"
+        }
+    },
+    "i18n": {
+        "advancedReuseSearchPlaceHolder": [ "ConfiguratorExplorerMessages" ],
+        "advancedReuseModeGuidanceMsg": [ "ConfiguratorExplorerMessages" ],
+        "anyTitle": [ "ConfiguratorExplorerMessages" ],
+        "configuratorDictionary": [ "ConfiguratorExplorerMessages" ],
+        "recentSectionTitle": [ "ConfiguratorExplorerMessages" ],
+        "reuseFromSectionTitle": [ "ConfiguratorExplorerMessages" ],
+        "attachVariantRuleWithConfiguratorContext": [ "FullScreenConfigurationMessages" ],
+        "noResultFound": [ "ConfiguratorExplorerMessages" ],
+        "noResultFoundHint": [ "ConfiguratorExplorerMessages" ],
+        "noRecentContextFound": [ "ConfiguratorExplorerMessages" ]
+    }
+}

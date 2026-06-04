@@ -1,0 +1,593 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "render": {
+            "method": "awObjectSetTreeRenderFunction",
+            "deps": "js/AwObjectSetTreeService"
+        },
+        "initializeObjectSetTreeData": {
+            "actionType": "JSFunction",
+            "method": "initializeObjectSetTreeData",
+            "inputData": {
+                "treeLoadInput": "request.treeLoadInput",
+                "firstPageUids": "{{props.firstPageUids}}",
+                "objectSetInfo": "{{props.objectSetInfo}}",
+                "firstPageResults": "{{data.treeLoadResult}}",
+                "objectSetUri": "{{props.objectSetUri}}",
+                "columns": "{{props.columns}}",
+                "initialOperationType": "{{props.operationType}}",
+                "updatedOperationType": "{{data.dataProviders.AwObjectSetTreeProvider.columnConfig.operationType}}",
+                "columnFilters": "{{data.grids.AwObjectSetTree.columnProviderInstance.columnFilters}}",
+                "xrtContext": "{{props.xrtContext}}",
+                "objectSetData": "{{props.objectSetData}}",
+                "vmo": "{{props.vmo}}",
+                "sortCriteria": "{{data.grids.AwObjectSetTree.columnProviderInstance.sortCriteria}}",
+                "startIndex": "{{data.dataProviders.AwObjectSetTreeProvider.startIndex}}",
+                "colsToInflate": "{{function:AwObjectSetTree_getAttributesToInflate}}",
+                "reload": "{{props.reload}}",
+                "objectSetState": "{{props.objectSetState}}",
+                "totalFound": "{{props.totalFound}}",
+                "parentUid": "{{props.parentUid}}",
+                "showRelations": "{{props.showRelations}}",
+                "showRootNode":"{{props.showRootNode}}"
+            },
+            "outputData": {
+                "treeLoadResult": "result.treeLoadResult",
+                "dataProviders.AwObjectSetTreeProvider.columnConfig": "result.columnConfig",
+                "totalFound": "result.totalFound"
+            },
+            "deps": "js/AwObjectSetTreeService"
+        },
+        "loadObjectSetDataForTree": {
+            "actionType": "JSFunction",
+            "method": "loadObjectSetDataForTree",
+            "inputData": {
+                "treeLoadInput": "{{data.treeLoadInput}}",
+                "firstPageUids": "{{props.firstPageUids}}",
+                "objectSetInfo": "{{props.objectSetInfo}}",
+                "objectSetUri": "{{props.objectSetUri}}",
+                "initialOperationType": "{{props.operationType}}",
+                "updatedOperationType": "{{data.dataProviders.AwObjectSetTreeProvider.columnConfig.operationType}}",
+                "columnFilters": "{{data.grids.AwObjectSetTree.columnProviderInstance.columnFilters}}",
+                "xrtContext": "{{props.xrtContext}}",
+                "objectSetData": "{{props.objectSetData}}",
+                "sortCriteria": "{{data.grids.AwObjectSetTree.columnProviderInstance.sortCriteria}}",
+                "startIndex": "request.treeLoadInput.startChildNdx",
+                "colsToInflate": "{{function:AwObjectSetTree_getAttributesToInflate}}",
+                "objectSetState": "{{props.objectSetState}}",
+                "dataProvider": "{{data.dataProviders.AwObjectSetTreeProvider}}",
+                "parentUid": "{{props.parentUid}}",
+                "showRelations": "{{props.showRelations}}"
+            },
+            "outputData": {
+                "treeLoadResult": "result.treeLoadResult"
+            },
+            "deps": "js/AwObjectSetTreeService"
+        },
+        "loadColumns": {
+            "actionType": "JSFunction",
+            "method": "loadColumns",
+            "inputData": {
+                "columnConfig": "{{data.dataProviders.AwObjectSetTreeProvider.columnConfig}}",
+                "props": "{{props}}"
+            },
+            "outputData": {
+                "columns": "columnInfos",
+                "dataProviders.AwObjectSetTreeProvider.columnConfig": "columnConfig",
+                "dataProviders.AwObjectSetTreeProvider.objectSetUri": "objectSetUri"
+            },
+            "deps": "js/AwObjectSetTreeService"
+        },
+        "initializeDataProvider": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "reloadTreeIfItIsInitalized",
+                    "condition":"data.dataProviders.AwObjectSetTreeProvider.accessMode === 'tree'"
+                }
+            ]
+        },
+        "reloadTreeIfItIsInitalized": {
+            "actionType": "dataProvider",
+            "method": "AwObjectSetTreeProvider"
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeObjectSetColumns",
+            "inputData": {
+                "eventData": "{{fields.columnsData}}",
+                "viewModel": "{{data}}",
+                "props": "{{props}}",
+                "objectSetUri": "{{props.objectSetUri}}"
+
+            },
+            "outputData": {},
+            "deps": "js/AwObjectSetTreeService"
+        },
+        "saveColumnConfigData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI": "{{props.objectSetUri}}",
+                        "columnConfigId": "{{data.dataProviders.AwObjectSetTreeProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.AwObjectSetTreeProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "outputData": {}
+        },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI": "{{props.objectSetUri}}",
+                        "columnConfigId": "{{data.dataProviders.AwObjectSetTreeProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.AwObjectSetTreeProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "outputData": {},
+            "events": {
+                "success": [ {
+                    "name": "AwObjectSetTree.ColumnConfigSaved"
+                } ]
+            }
+        },
+        "loadDataForSavedColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "getTableViewModelProperties",
+            "deps": "js/AwObjectSetTreeService",
+            "inputData": {
+                "vmNodes": "{{data.dataProviders.AwObjectSetTreeProvider.viewModelCollection.loadedVMObjects}}",
+                "context": {
+                    "clientName": "AWClient",
+                    "clientScopeURI": "{{props.objectSetUri}}",
+                    "typesForArrange": "{{data.dataProviders.AwObjectSetTreeProvider.columnConfig.typesForArrange}}",
+                    "columnsToExclude": [],
+                    "addedColumnNames": "{{data.dataProviders.AwObjectSetTreeProvider.addedColumnNames}}"
+                }
+            },
+            "outputData": {
+                "newColumnConfig": "result.output.columnConfig",
+                "dataProviders.AwObjectSetTreeProvider.addedColumnNames": []
+            },
+            "events": {
+                "success": [ {
+                    "name": "AwObjectSetTree.updateTreeTableColumns"
+                } ]
+            }
+        },
+        "updateObjectSetTreeTableColumns": {
+            "actionType": "JSFunction",
+            "method": "updateObjectSetTreeTableColumns",
+            "inputData": {
+                "data": "{{data}}",
+                "dataProvider": "{{data.dataProviders.AwObjectSetTreeProvider}}"
+            },
+            "outputData": {
+                "newColumnConfig": "result.newColumnConfig",
+                "dataProviders.AwObjectSetTreeProvider.columnConfig": "result.columnConfig"
+            },
+            "deps": "js/AwObjectSetTreeService"
+        },
+        "resetColumnConfigData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [ {
+                        "clientName": "AWClient",
+                        "columnConfigQueryInfos": [ {
+                            "clientScopeURI": "{{props.objectSetUri}}",
+                            "columnsToExclude": [],
+                            "operationType": "configured",
+                            "typeNames": [
+                                "WorkspaceObject"
+                            ]
+                        } ],
+                        "resetColumnConfig": true,
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "outputData": {
+                "dataProviders.AwObjectSetTreeProvider.columnConfig": "columnConfigurations[0].columnConfigurations[0]"
+            },
+            "events": {
+                "success": [ {
+                    "eventData": {
+                        "refreshLocationFlag": true,
+                        "relatedModified": [
+                            "{{ctx.selected}}"
+                        ]
+                    },
+                    "name": "cdm.relatedModified"
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "partialErrors"
+                } ]
+            }
+        },
+        "handleCdmRelatedModifiedEvent": {
+            "actionType": "JSFunction",
+            "method": "handleCdmEventForTree",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.AwObjectSetTreeProvider}}",
+                "eventData": "{{data.eventData}}",
+                "objectSetSource": "{{props.objectSetData.source}}",
+                "vmo": "{{props.vmo}}",
+                "isRefreshAllObjectSets": "{{props.isRefreshAllObjectSets}}",
+                "data": "{{data}}"
+            },
+            "deps": "js/AwObjectSetTreeService"
+        },
+        "updateTotalFoundOnObjectSetState": {
+            "actionType": "JSFunction",
+            "method": "updateTotalFoundOnObjectSetState",
+            "inputData": {
+                "objectSetState": "{{props.objectSetState}}",
+                "totalFound": "{{data.totalFound}}",
+                "dataFetchedForUid": "{{props.parentUid}}"
+            },
+            "deps": "js/AwObjectSetTreeService"
+        },
+        "updateDisplayNames": {
+            "actionType": "JSFunction",
+            "method": "updateDisplayNames",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "propColumns": "{{props.columns}}"
+            },
+            "deps": "js/AwObjectSetTreeService"
+        },
+        "setSelectionBasedOnAltId": {
+            "actionType": "JSFunction",
+            "method": "handleSelection",
+            "inputData": {
+                "selectionModel": "{{props.selectionModel}}",
+                "selectedObjects": "{{props.selectionData.selected}}",
+                "isTreeMode": true
+
+            },
+            "deps": "js/AwObjectSetTreeService"
+        },
+        "setSelectionBasedOnUid": {
+            "actionType": "JSFunction",
+            "method": "handleSelection",
+            "inputData": {
+                "selectionModel": "{{props.selectionModel}}",
+                "selectedObjects": "{{props.selectionData.selected}}",
+                "isTreeMode": false
+            },
+            "deps": "js/AwObjectSetTreeService"
+        },
+        "loadDataFocusAction": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadDataFocusAction",
+            "deps": "js/AwObjectSetTreeService"
+        }
+    },
+    "lifecycleHooks": {
+        "render": "render",
+        "onMount": "setSelectionBasedOnAltId",
+        "onUnmount": "setSelectionBasedOnUid",
+        "onUpdate": [
+            {
+                "action": "initializeDataProvider",
+                "observers": [ "props.objectSetInfo", "props.parentUid" ]
+            },
+            {
+                "action": "loadColumns",
+                "observers": [ "props.columns", "viewModel.dataProviders.AwObjectSetTreeProvider.viewModelCollection.loadedVMObjects" ]
+            },
+            {
+                "action": "doArrangeEvent",
+                "observers": [ "fields.columnsData.columns" ]
+            },
+            {
+                "action":"updateTotalFoundOnObjectSetState",
+                "observers":["viewModel.dataProviders.AwObjectSetTreeProvider.viewModelCollection.loadedVMObjects"]
+            }
+        ]
+    },
+    "dataProviders": {
+        "AwObjectSetTreeProvider": {
+            "action": "loadObjectSetDataForTree",
+            "initializeAction": "initializeObjectSetTreeData",
+            "focusAction": "loadDataFocusAction",
+            "treeLoadResult": "{{data.treeLoadResult}}",
+            "commandsAnchor": "com.siemens.splm.clientfx.ui.modelObjectDataGridActionCommands",
+            "selectionModelMode": "multiple",
+            "treePageSize": 50,
+            "inputData": {
+                "accessMode": "tree",
+                "selectionData": "{{props.selectionData}}",
+                "selectionModel": "{{props.selectionModel}}"
+            }
+        }
+    },
+    "columnProviders": {
+        "AwObjectSetTreeColumnProvider": {
+            "loadColumnAction": "loadColumns",
+            "columns": "{{data.columnInfos}}",
+            "saveColumnAction": "saveColumnConfigData",
+            "saveColumnAndLoadAction": "saveColumnConfigLoadData",
+            "resetColumnAction": "resetColumnConfigData"
+        }
+    },
+    "grids": {
+        "AwObjectSetTree": {
+            "dataProvider": "AwObjectSetTreeProvider",
+            "columnProvider": "AwObjectSetTreeColumnProvider",
+            "addIconColumn": false,
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "enableGridMenu": true,
+                "enablePinning": false,
+                "enableSorting": true,
+                "flexLastColumn": true,
+                "useStaticFirstCol": true
+            }
+        }
+    },
+    "messages": {
+        "partialErrors": {
+            "messageText": "{{i18n.error}}",
+            "messageTextParams": [
+                "{{data.partialErrors[0].errorValues[0].message}}"
+            ],
+            "messageType": "ERROR"
+        }
+    },
+    "i18n": {
+        "error": [
+            "XRTMessages"
+        ]
+    },
+    "functions": {
+        "AwObjectSetTree_getAttributesToInflate": {
+            "functionName": "getAttributesToInflate",
+            "parameters": [
+                "{{data.dataProviders.AwObjectSetTreeProvider.columnConfig}}",
+                "{{props.columns}}"
+            ]
+        },
+        "AwObjectSetTree_getValidColumnConfig": {
+            "functionName": "getValidColumnConfig",
+            "parameters": [
+                "{{data.dataProviders.AwObjectSetTreeProvider.columnConfig}}"
+            ]
+        },
+        "AwObjectSetTree_getObjSetColumns": {
+            "functionName": "getObjSetColumns",
+            "parameters": [
+                "{{data.dataProviders.AwObjectSetTreeProvider.newColumns}}",
+                "{{data.columnProviders.AwObjectSetTreeColumnProvider.columnConfig.columns}}"
+            ]
+        },
+        "getActiveWorkspaceXrtContext": {
+            "functionName": "getActiveWorkspaceXrtContext",
+            "parameters": [
+                "{{ctx.ActiveWorkspace:xrtContext}}"
+            ]
+        }
+    },
+    "data": {
+        "reusable": true,
+        "showCheckBox": {
+            "initialValues": {
+                "value": false
+            },
+            "meta": {}
+        },
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "selectRows": {
+            "initialValues": {
+                "value": ""
+            },
+            "meta": {}
+        },
+        "columnsData": {
+            "initialValues": {
+                "value": false
+            },
+            "meta": {}
+        }
+    },
+    "doc": {
+        "description": "A component used to represent Treee View for ObjectSet Data",
+        "access": "public"
+    },
+    "props": {
+        "object-set-data": {
+            "type": "object",
+            "doc": {
+                "type": "object",
+                "required": true,
+                "default": null,
+                "description": "The ObjectSet data contains the details of the display modes, order and source.",
+                "access": "public"
+            }
+        },
+        "firstpage-uids": {
+            "type": "array",
+            "doc": {
+                "type": "array",
+                "required": true,
+                "default": [],
+                "description": "The array of the first page objects uids",
+                "access": "public"
+            }
+        },
+        "selection-data": {
+            "type": "object",
+            "doc": {
+                "type": "object",
+                "required": true,
+                "default": null,
+                "description": "The information of the selected object for objectSet and its updates using atomic data.",
+                "access": "public"
+            }
+        },
+        "selection-model": {
+            "type": "object",
+            "doc": {
+                "type": "object",
+                "required": true,
+                "default": null,
+                "description": "The information of the selected model and internal state information such as multi-select state, selection mode, and selection status for objectSet",
+                "access": "public"
+            }
+        },
+        "columns": {
+            "type": "array",
+            "doc": {
+                "type": "array",
+                "required": true,
+                "default": [],
+                "description": "The details of columns that need to be displayed in the tree.",
+                "access": "public"
+            }
+        },
+        "operation-type": {
+            "type": "string",
+            "doc": {
+                "type": "string",
+                "required": true,
+                "default": null,
+                "description": "The operation type can be fetched from the column config of the column provider. it can be defaulted to union",
+                "access": "public"
+            }
+        },
+        "object-set-uri": {
+            "type": "string",
+            "doc": {
+                "type": "string",
+                "required": true,
+                "default": null,
+                "description": "The objectset uri is fetched from the coulmn provider of xrt.",
+                "access": "public"
+            }
+        },
+        "object-set-state": {
+            "type": "object",
+            "doc": {
+                "type": "object",
+                "required": true,
+                "default": null,
+                "description": "The atomic data that contains the current state of Object Set such as show checkBox, selection data and selection model.",
+                "access": "public"
+            }
+        },
+        "total-found": {
+            "type": "integer",
+            "doc": {
+                "type": "integer",
+                "required": true,
+                "default": 0,
+                "description": "The total count of array of objects fetched.",
+                "access": "public"
+            }
+        },
+        "parent-uid": {
+            "type": "string",
+            "doc": {
+                "type": "string",
+                "required": true,
+                "default": null,
+                "description": "The uid of the folder that is used to get the array of objects.",
+                "access": "public"
+            }
+        },
+        "xrt-context":{
+            "type": "object",
+            "doc": {
+                "type": "object",
+                "required": true,
+                "default": null,
+                "description": "The xrt context",
+                "access": "public"
+            }
+        },
+        "show-relations":{
+            "type": "string",
+            "doc": {
+                "type": "string",
+                "required": false,
+                "default": null,
+                "description": "This is used to configure whether to show relations in Tree at all levels or from 2nd level. To show relation for all levels pass value as 'allLevels'.",
+                "access": "public"
+            }
+        },
+        "show-root-node":{
+            "type": "boolean",
+            "doc": {
+                "type": "boolean",
+                "required": false,
+                "default": false,
+                "description": "This is used to configure whether to show root node as in Tree.",
+                "access": "public"
+            }
+        },
+        "show-check-box":{
+            "type": "boolean",
+            "doc": {
+                "type": "boolean",
+                "required": false,
+                "default": false,
+                "description": "The flag to show/hide the checkbox for selection",
+                "access": "public"
+            }
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent"
+        },
+        {
+            "eventId": "cdm.relatedModified",
+            "action": "handleCdmRelatedModifiedEvent",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "AwObjectSetTreeProvider.modelObjectsUpdated",
+            "cacheEventData": true,
+            "action": "updateDisplayNames"
+        },
+        {
+            "eventId": "vmc.modified.AwObjectSetTreeProvider",
+            "cacheEventData": true,
+            "action": "updateDisplayNames"
+        },
+        {
+            "eventId": "AwObjectSetTree.ColumnConfigSaved",
+            "cacheEventData": true,
+            "action": "loadDataForSavedColumnConfig",
+            "condition": "!ctx.editInProgress"
+        },
+        {
+            "eventId": "AwObjectSetTree.updateTreeTableColumns",
+            "action": "updateObjectSetTreeTableColumns"
+        }
+    ]
+}
+

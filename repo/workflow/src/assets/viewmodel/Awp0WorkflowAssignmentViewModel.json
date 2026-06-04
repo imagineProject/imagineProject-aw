@@ -1,0 +1,993 @@
+{
+
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-column.directive",
+        "js/aw-widget.directive",
+        "js/aw-panel-body.directive"
+    ],
+    "actions": {
+        "initializeView": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "initTableGridOptions"
+                },
+                {
+                    "action": "registerPropPolicy"
+                },
+                {
+                    "action": "prePopulatePALList",
+                    "condition": "props.assignmentState.selectedPals && props.assignmentState.selectedPals.length > 0"
+                },
+                {
+                    "action": "loadAssigmentList"
+                }
+            ]
+        },
+        "initTableGridOptions": {
+            "actionType": "JSFunction",
+            "method": "initTableGridOptions",
+            "inputData": {
+                "data": "{{data}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "outputData": {
+                "isTableDataReady": ""
+            },
+            "deps": "js/Awp0TaskAssignmentTable"
+        },
+        "prePopulatePALList": {
+            "actionType": "JSFunction",
+            "method": "prePopulatePALList",
+            "inputData": {
+                "palList": "{{data.palList}}",
+                "selectedPals": "{{props.assignmentState.selectedPals}}"
+            },
+            "outputData": {
+                "palList": ""
+            },
+            "deps": "js/Awp0TaskAssignmentTable"
+        },
+        "loadAssigmentList": {
+            "actionType": "JSFunction",
+            "method": "loadAssigmentList",
+            "inputData": {
+                "selected": "{{props.objectToRender}}"
+            },
+            "outputData": {
+                "assignmentLists": ""
+            },
+            "deps": "js/Awp0TaskAssignmentTable"
+        },
+        "reloadDataProvider": {
+            "actionType": "dataProvider",
+            "method": "treeTasksTemplateDataProvider"
+        },
+        "processAssignmentListsValueChanged": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Workflowaw-2020-12-Workflow",
+            "method": "getWorkflowTaskAssignments",
+            "deps": "js/Awp0WorkflowAssignmentService",
+            "inputData": {
+                "inData" : "{{function:getPALAssignmentInputData}}"
+            },
+            "policy": {
+                "types": [ {
+                        "name": "EPMAssignmentList",
+                        "properties": [ {
+                                "name": "resources",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "task_templates",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            }
+                        ]
+
+                    },
+                    {
+                        "name": "EPMResourceList",
+                        "properties": [ {
+                                "name": "resources",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "profiles",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "actions"
+                            }
+                        ]
+
+                    },
+                    {
+                        "name": "GroupMember",
+                        "properties": [ {
+                                "name": "group",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+
+                            {
+                                "name": "role",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "userName"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "User",
+                        "properties": [ {
+                                "name": "person",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "user_name"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "POM_member",
+                        "properties":
+                        [
+                            {
+                                "name": "user",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "EPMSignoffProfile",
+                        "properties": [ {
+                                "name": "number_of_signoffs"
+                            },
+                            {
+                                "name": "REF(group,Group).object_full_name"
+                            },
+                            {
+                                "name": "REF(role,Role).role_name"
+                            },
+                            {
+                                "name": "allow_subgroups"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Signoff",
+                        "properties": [ {
+                                "name": "group_member",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "origin",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "palData": "output"
+            },
+            "events": {
+                "success": [ {
+                    "name": "workflow.populatePALAssignmentInfo"
+                } ]
+            }
+        },
+        "loadTreeColumns": {
+            "actionType": "JSFunction",
+            "method": "loadTreeTableColumns",
+            "inputData": {
+                "data": "{{data}}",
+                "tableColumns": "{{data.assignmentTableColumns}}",
+                "narrowModeColumns": "{{data.assignmentTablePanelModeColumns}}",
+                "isNarrowMode": "{{subPanelContext.isPanelMode}}",
+                "isStartEnabled":"{{props.assignmentState.isStartEditEnabled}}",
+                "panelId":"{{props.subPanelContext.panelId}}"
+            },
+            "outputData": {
+                "dataProviders.treeTasksTemplateDataProvider.columnConfig": "columnConfig"
+            },
+            "deps": "js/Awp0TaskAssignmentTable"
+        },
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeTableData",
+            "inputData": {
+                "treeLoadInput": "request.treeLoadInput",
+                "data":"{{data}}",
+                "selected": "{{props.objectToRender}}",
+                "operationMode": "{{props.treeOperationMode}}",
+                "targetObjects": "{{props.targetObject}}",
+                "assignmentState": "{{props.assignmentState}}",
+                "sortCriteria": "{{columnProviders.treeTasksColumnProvider.sortCriteria}}",
+                "columnFilters": "{{columnProviders.treeTasksColumnProvider.columnFilters}}"
+            },
+            "outputData": {
+                "treeLoadResult": "treeLoadResult",
+                "validTaskObject": "validTaskObject",
+                "taskTemplateObject": "taskTemplateObject",
+                "requiredPropertiesLoaded": "requiredPropertiesLoaded"
+            },
+            "deps": "js/Awp0TaskAssignmentTable"
+        },
+        "registerPropPolicy": {
+            "actionType": "JSFunction",
+            "method": "registerPropPolicy",
+            "inputData": {
+                "policy": "{{data.policy}}"
+            },
+            "deps": "js/Awp0TaskAssignmentTable"
+        },
+        "unRegisterPropPolicy": {
+            "actionType": "JSFunction",
+            "method": "unRegisterPropPolicy",
+            "inputData": {},
+            "deps": "js/Awp0TaskAssignmentTable"
+        },
+        "populatePALAssignmentInfo":{
+            "actionType": "JSFunction",
+            "method": "populatePALAssignmentInfo",
+            "inputData": {
+                "palData": "{{data.palData}}",
+                "palInfoMap": "{{props.assignmentState.taskAssignmentDataObject.palInfoMap}}",
+                "assignmentState": "{{props.assignmentState}}"
+            },
+            "deps": "js/Awp0WorkflowAssignmentService"
+        },
+        "getPALAssignmentDataBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getPALAssignmentData",
+                    "condition": "props.assignmentState.selectedPals"
+                }
+            ]
+        },
+        "getPALAssignmentData": {
+            "actionType": "JSFunction",
+            "method": "getPALAssignmentData",
+            "inputData": {
+                "assignmentState": "{{props.assignmentState}}"
+            },
+            "outputData": {
+                "newSelectedPals": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "workflow.loadPalAssignmentData",
+                    "condition": "data.newSelectedPals && data.newSelectedPals.length> 0"
+                },
+                {
+                    "name": "workflow.clearPopulatePALAssignmentInfo",
+                    "condition": "data.newSelectedPals && data.newSelectedPals.length<= 0"
+                } ]
+            },
+            "deps": "js/Awp0WorkflowAssignmentService"
+        },
+        "clearPopulatePALAssignmentInfo": {
+            "actionType": "JSFunction",
+            "method": "populatePALAssignmentInfo",
+            "inputData": {
+                "palData": [],
+                "palInfoMap": "{{props.assignmentState.taskAssignmentDataObject.palInfoMap}}",
+                "assignmentState": "{{props.assignmentState}}"
+            },
+            "deps": "js/Awp0WorkflowAssignmentService"
+        },
+        "updateSelectedPALInfo": {
+            "actionType": "JSFunction",
+            "method": "updateSelectedPALContextInfo",
+            "inputData": {
+                "selectedPal": "{{data.palList.dbValue}}",
+                "assignmentState": "{{props.assignmentState}}"
+            },
+            "deps": "js/Awp0WorkflowAssignmentService"
+        },
+        "taskNodeSelectAction": {
+            "actionType": "JSFunction",
+            "method": "taskNodeSelection",
+            "inputData": {
+                "data": "{{data}}",
+                "dataProvider": "{{data.dataProviders.treeTasksTemplateDataProvider}}",
+                "subPanelContext": "{{props.subPanelContext}}",
+                "selectedTaskUid": "{{data.selectedTaskUid}}",
+                "assignmentState": null
+            },
+            "deps": "js/Awp0TaskAssignmentTable"
+        },
+        "preSelectInputTaskObject": {
+            "actionType": "JSFunction",
+            "method": "taskNodeSelection",
+            "inputData": {
+                "data": "{{data}}",
+                "dataProvider": "{{dataProviders.treeTasksTemplateDataProvider}}",
+                "subPanelContext": "{{props.subPanelContext}}",
+                "taskUid": "{{props.assignmentState.newTaskSelectedUid}}",
+                "assignmentState": "{{props.assignmentState}}"
+            },
+            "deps": "js/Awp0TaskAssignmentTable"
+        },
+        "taskNodeSelectBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "taskNodeSelectAction",
+                    "condition": "props.subPanelContext.isPanelMode"
+                },
+                {
+                    "action": "preSelectInputTaskObject",
+                    "condition": "!props.subPanelContext.isPanelMode && props.assignmentState.newTaskSelectedUid"
+                },
+                {
+                    "action": "loadAssigmentList"
+                }
+            ]
+        },
+        "reloadTable": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getSelectedTaskUidString",
+                    "condition": "props.assignmentState.isReloadTable && props.subPanelContext.isPanelMode"
+                },
+                {
+                    "action": "reloadTableInternal",
+                    "condition": "props.assignmentState.isReloadTable"
+                },
+                {
+                    "action": "prePopulatePALList",
+                    "condition": "props.assignmentState.selectedPals && props.assignmentState.isReloadTable && !props.assignmentState.isStartEditEnabled"
+                },
+                {
+                    "action": "setEditHandlerContext",
+                    "condition": "props.assignmentState.isReloadTable && props.assignmentState.isStartEditEnabled && !props.subPanelContext.isPanelMode"
+                },
+                {
+                    "action": "resentReloadTableContextData",
+                    "condition": "props.assignmentState.isReloadTable"
+                }
+            ]
+        },
+        "getSelectedTaskUidString": {
+            "actionType": "JSFunction",
+            "method": "getSelectedTaskUidString",
+            "inputData": {
+                "selectionModel": "{{data.selectionModels.assignmentTreeTableSelectionModel}}"
+            },
+            "outputData": {
+                "selectedTaskUid": ""
+            },
+            "deps": "js/Awp0TaskAssignmentTable"
+        },
+        "reloadTableInternal": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "taskTreeTable.plTable.reload"
+                    }
+                ]
+            }
+        },
+        "setEditHandlerContext": {
+            "actionType": "JSFunction",
+            "method": "setEditHandlerContext",
+            "inputData": {
+                "assignmentState": "{{props.assignmentState}}"
+            },
+            "deps": "js/Awp0WorkflowAssignmentService"
+        },
+        "resentReloadTableContextData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.assignmentState}}",
+                "value" : {
+                    "isReloadTable": false
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "getFilterFacets": {
+            "actionType": "JSFunction",
+            "method": "getFilterFacetValues",
+            "inputData": {
+                "columnName": "{{filterFacetInput.column.field}}",
+                "objects": "{{data.dataProviders.treeTasksTemplateDataProvider.viewModelCollection.loadedVMObjects}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "filterFacetResults": ""
+            },
+            "deps": "js/Awp0WorkflowSortFilterService"
+        },
+        "dialogActionForReplaceContextMenu": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                }
+            }
+        },
+        "enableReplacePanelForQuorum": {
+            "actionType": "JSFunction",
+            "method": "enableReplaceTaskAssignmentPanel",
+            "inputData": {
+                "commandContext": "{{data.eventMap['openReplacePanelFromMessage'].commandContext}}",
+                "ctx": "{{ctx}}"
+            },
+            "deps": "js/Awp0WorkflowAssignmentService"
+        }
+    },
+    "data": {
+        "isAddButtonVisible": true,
+        "palList": {
+            "displayName": "{{i18n.assignmentList}}",
+            "type": "STRINGARRAY",
+            "hasLov": true,
+            "isArray": true,
+            "isEditable": "true",
+            "dbValue": [],
+            "uiValue": "",
+            "renderingHint":"checkboxoptionlov",
+            "dataProvider" : "getPALList"
+        },
+        "policy": {
+            "types": [
+                {
+                    "name": "EPMSignoffProfile",
+                    "properties": [ {
+                            "name": "number_of_signoffs"
+                        },
+                        {
+                            "name": "REF(group,Group).object_full_name"
+                        },
+                        {
+                            "name": "REF(role,Role).role_name"
+                        },
+                        {
+                            "name": "allow_subgroups"
+                        },
+                        {
+                            "name": "group",
+                            "modifiers":
+                            [
+                                {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "role",
+                            "modifiers":
+                            [
+                                {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Group",
+                    "properties": [ {
+                        "name": "object_full_name"
+                    } ]
+                },
+                {
+                    "name": "Role",
+                    "properties": [ {
+                        "name": "role_name"
+                    } ]
+                },
+                {
+                    "name": "User",
+                    "properties": [ {
+                            "name": "person",
+                            "modifiers": [ {
+                                "name": "withProperties",
+                                "Value": "true"
+                            } ]
+                        },
+                        {
+                            "name": "user_name"
+                        }
+                    ]
+                },
+                {
+
+                    "name": "EPMTaskTemplate",
+                    "properties": [ {
+                        "name": "assignment_lists",
+                        "modifiers": [ {
+                            "name": "withProperties",
+                            "Value": "true"
+                        } ]
+                    },
+                    {
+                        "name": "fnd0OptionalParticipants"
+                    },
+                    {
+                        "name": "fnd0RequiredParticipants"
+                    } ]
+                },
+                {
+                    "name": "GroupMember",
+                    "properties": [ {
+                            "name": "group",
+                            "modifiers":
+                            [
+                                {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "role",
+                            "modifiers":
+                            [
+                                {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "userName"
+                        }
+                    ]
+                },
+                {
+                    "name": "POM_member",
+                    "properties":
+                    [
+                        {
+                            "name": "user",
+                            "modifiers":
+                            [
+                                {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "ImanType",
+                    "properties": [
+                        {
+                            "name": "fnd0InternalName"
+                        },
+                        {
+                            "name": "object_string"
+                        },
+                        {
+                           "name": "type_name"
+                       }
+                    ]
+                },
+                {
+                    "name": "Signoff",
+                    "properties": [ {
+                        "name": "fnd0ParentTask",
+                        "modifiers": [ {
+                            "name": "withProperties",
+                            "Value": "true"
+                        } ]
+                    } ]
+                },
+                {
+
+                    "name": "EPMTask",
+                    "properties": [ {
+                            "name": "parent_process",
+                            "modifiers": [ {
+                                "name": "withProperties",
+                                "Value": "true"
+                            } ]
+                        },
+                        {
+                            "name": "task_template",
+                            "modifiers": [ {
+                                "name": "withProperties",
+                                "Value": "true"
+                            } ]
+                        },
+                        {
+                            "name": "root_task",
+                            "modifiers": [ {
+                                "name": "withProperties",
+                                "Value": "true"
+                            } ]
+                        },
+                        {
+                            "name": "task_state"
+                        },
+                        {
+                            "name": "state"
+                        },
+                        {
+                            "name": "signoff_quorum"
+                        },
+                        {
+                            "name": "awp0AddReviewerByMeBehavior"
+                        },
+                        {
+                            "name": "awp0AssignableByMeBehavior"
+                        }
+                    ]
+                },
+                {
+
+                    "name": "EPMJob",
+                    "properties": [ {
+                            "name": "process_template",
+                            "modifiers": [ {
+                                "name": "withProperties",
+                                "Value": "true"
+                            } ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "assignmentTablePanelModeColumns": [
+            {
+                "propName": "object_name",
+                "propDisplayName": "{{i18n.task}}",
+                "width": 200,
+                "isTreeNavigation": true,
+                "minWidth": 150,
+                "type": "String",
+                "isFilteringEnabled": true
+            },
+            {
+                "propName": "taskAssignment",
+                "propDisplayName": "{{i18n.assignee}}",
+                "width": 200,
+                "isTreeNavigation": false,
+                "minWidth": 100,
+                "type": "OBJECT",
+                "isFilteringEnabled": false
+            },
+            {
+                "propName": "assignmentOrigin",
+                "propDisplayName": "{{i18n.originString}}",
+                "width": 200,
+                "isTreeNavigation": false,
+                "minWidth": 100,
+                "type": "String",
+                "isFilteringEnabled": false
+            }
+        ],
+        "assignmentTableColumns": [
+            {
+                "propName": "object_name",
+                "propDisplayName": "{{i18n.task}}",
+                "width": 290,
+                "isTreeNavigation": true,
+                "minWidth": 150,
+                "type": "String",
+                "isFilteringEnabled": true
+            },
+            {
+                "propName": "task_state",
+                "propDisplayName": "{{i18n.status}}",
+                "width": 125,
+                "isTreeNavigation": false,
+                "minWidth": 100,
+                "type": "String",
+                "isFilteringEnabled": false
+            },
+            {
+                "propName": "taskAssignment",
+                "propDisplayName": "{{i18n.assignee}}",
+                "width": 370,
+                "isTreeNavigation": false,
+                "minWidth": 100,
+                "type": "OBJECT",
+                "isFilteringEnabled": false
+
+            },
+            {
+                "propName": "assignmentOrigin",
+                "propDisplayName": "{{i18n.assignmentOriginString}}",
+                "width": 175,
+                "isTreeNavigation": false,
+                "minWidth": 100,
+                "type": "String",
+                "isFilteringEnabled": false
+
+            },
+            {
+                "propName": "signoffProfile",
+                "propDisplayName": "{{i18n.signoffProfile}}",
+                "width": 175,
+                "isTreeNavigation": false,
+                "minWidth": 100,
+                "type": "String",
+                "isFilteringEnabled": false
+
+            },
+            {
+                "propName": "decision",
+                "propDisplayName": "{{i18n.decision}}",
+                "width": 175,
+                "isTreeNavigation": false,
+                "minWidth": 100,
+                "type": "String",
+                "isFilteringEnabled": false
+            },
+            {
+                "propName": "isRequired",
+                "propDisplayName": "{{i18n.required}}",
+                "width": 175,
+                "isTreeNavigation": false,
+                "minWidth": 100,
+                "type": "String",
+                "isFilteringEnabled": false
+            }
+        ]
+    },
+    "dataProviders": {
+        "getPALList": {
+            "response": "{{data.assignmentLists}}",
+            "moreValuesExist": false,
+            "totalFound": "{{data.assignmentLists.length}}"
+        },
+        "treeTasksTemplateDataProvider": {
+            "initializeAction": "loadData",
+            "nextAction": "loadData",
+            "previousAction": "loadData",
+            "treeLoadResult": "action.result.treeLoadResult",
+            "selectionModelMode": "multiple",
+            "editContext": "ASSIGNMENT_TABLE_CONTEXT",
+            "contextMenuCommandsAnchor": "aw_taskAssignmentTreeTableContextMenu",
+            "inputData": {
+                "accessMode": "tree",
+                "selectionData": "{{subPanelContext.selectionData}}",
+                "selectionModel": "{{data.selectionModels.assignmentTreeTableSelectionModel}}"
+            },
+            "filterFacetAction": "getFilterFacets",
+            "filterFacetResults": "{{data.filterFacetResults}}"
+        }
+    },
+    "columnProviders": {
+        "treeTasksColumnProvider": {
+            "loadColumnAction": "loadTreeColumns",
+            "columns": "{{data.columns}}",
+            "sortCriteria": [],
+            "frozenColumnIndex": 0
+        }
+    },
+    "selectionModels": {
+        "assignmentTreeTableSelectionModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "grids": {
+        "taskTreeTable": {
+            "dataProvider": "treeTasksTemplateDataProvider",
+            "columnProvider": "treeTasksColumnProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableGridMenu": false,
+                "enablePinning": true,
+                "enableSorting": true,
+                "enableDynamicRowHeight": true,
+                "isFilteringEnabled": true,
+                "maxRowsToShow": 7,
+                "textBundle": {
+                    "TwistieTooltipCollapsed": "{{i18n.expand}}",
+                    "TwistieTooltipExpanded": "{{i18n.collapse}}"
+                },
+                "useStaticFirstCol": true
+            }
+
+        }
+    },
+
+    "functions":
+    {
+        "getPALAssignmentInputData":
+        {
+            "functionName": "getPALAssignmentInputData",
+            "parameters":
+            [
+                "{{data}}",
+                "{{data.validTaskObject}}",
+                "{{data.newSelectedPals}}"
+            ]
+        },
+        "getValidObjectToPropLoad": {
+            "functionName": "getValidObjectToPropLoad",
+            "parameters":
+            [
+                "{{ctx}}",
+                "{{data}}"
+            ]
+        }
+    },
+    "conditions": {
+        "palChangeCondition": {
+            "expression": "data.palList.dbValue",
+            "trackValues": true
+        },
+        "isPrivileged": {
+            "expression": "conditions.isPALAvaialbleAssignmentTab || subPanelContext.isPanelMode"
+        },
+        "isPALAvaialbleAssignmentTab": {
+            "expression": "conditions.isAssignmentTab && props.assignmentState.isStartEditEnabled && data.taskTemplateObject && data.taskTemplateObject.props.assignment_lists.dbValues.length > 0"
+        },
+        "isAssignmentTab": {
+            "expression": "subPanelContext.pageContext.primaryActiveTabId === 'tc_xrt_Assignments' || subPanelContext.activeTab.pageId === 'tc_xrt_Assignments'"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "initializeView",
+        "onUnmount": "unRegisterPropPolicy",
+        "onUpdate": [
+            {
+                "action": "getPALAssignmentDataBatchJob",
+                "observers": [ "props.assignmentState.selectedPals" ]
+            },
+            {
+                "action": "reloadTable",
+                "observers": [ "props.assignmentState.isReloadTable" ]
+            },
+            {
+                "action": "loadTreeColumns",
+                "observers": [ "props.assignmentState.isStartEditEnabled" ]
+            }
+        ]
+    },
+    "props": {
+        "workflow-data": {
+            "type": "object"
+        },
+        "assignment-table-columns": {
+            "type": "object"
+        },
+        "object-to-render": {
+            "type": "object"
+        },
+        "assignment-data": {
+            "type": "object"
+        },
+        "assignment-table-data": {
+            "type": "object"
+        },
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "max-rows-to-shown": {
+            "type": "object"
+        },
+        "tree-operation-mode": {
+            "type": "object"
+        },
+        "task-assignment-data": {
+            "type": "object"
+        },
+        "task-info-object": {
+            "type": "object"
+        },
+        "assignment-state": {
+            "type": "object"
+        },
+        "target-object": {
+            "type": "object"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "workflowTreetable.reset",
+            "action": "reloadDataProvider"
+        },
+        {
+            "eventId": "workflow.populatePALAssignmentInfo",
+            "action": "populatePALAssignmentInfo"
+        },
+        {
+            "eventId": "workflow.clearPopulatePALAssignmentInfo",
+            "action": "clearPopulatePALAssignmentInfo"
+        },
+        {
+            "eventId":"workflow.loadPalAssignmentData",
+            "action": "processAssignmentListsValueChanged"
+        },
+        {
+            "eventId": "getPALList.validSelectionEvent",
+            "action": "updateSelectedPALInfo"
+        },
+        {
+            "eventId": "workflow.taskNodeSelection",
+            "condition": "subPanelContext.isPanelMode",
+            "action": "taskNodeSelectAction"
+        },
+        {
+            "eventId": "treeTasksTemplateDataProvider.treeNodesLoaded",
+            "action": "taskNodeSelectBatchAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "openReplacePanelFromMessage",
+            "action": "enableReplacePanelForQuorum",
+            "cacheEventData": true
+        }
+    ],
+
+    "i18n": {
+        "assignee": [ "WorkflowCommandPanelsMessages" ],
+        "additionalReviewers": [ "InboxMessages" ],
+        "notifyLabel": [ "InboxMessages" ],
+        "acknowledge": [ "InboxMessages" ],
+        "addReviewerLabelText": [ "InboxMessages" ],
+        "collapse": [ "WorkflowCommandPanelsMessages" ],
+        "expand": [ "WorkflowCommandPanelsMessages" ],
+        "required": [ "InboxMessages" ],
+        "taskName": [ "WorkflowCommandPanelsMessages" ],
+        "duplicateReviewerMsg": [ "WorkflowCommandPanelsMessages" ],
+        "multipleDuplicateMsg": [ "WorkflowCommandPanelsMessages" ],
+        "wasNotAdded": [ "WorkflowCommandPanelsMessages" ],
+        "assignmentList": [ "WorkflowCommandPanelsMessages" ],
+        "none": [ "WorkflowCommandPanelsMessages" ],
+        "task": [ "WorkflowCommandPanelsMessages" ],
+        "status": [ "WorkflowCommandPanelsMessages" ],
+        "Acknowledgers": [ "WorkflowCommandPanelsMessages" ],
+        "Notifyees": [ "WorkflowCommandPanelsMessages" ],
+        "originString": [ "WorkflowCommandPanelsMessages" ],
+        "assignmentOriginString": [ "WorkflowCommandPanelsMessages" ],
+        "taskAssignments": [ "WorkflowCommandPanelsMessages" ],
+        "responsibleUser": ["PlantDataManagementConstants"],
+        "implementer": ["PlantDataManagementConstants"],
+        "decision": ["WorkflowCommandPanelsMessages"],
+        "signoffProfile": ["WorkflowCommandPanelsMessages"]
+    }
+
+}

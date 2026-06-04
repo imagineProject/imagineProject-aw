@@ -1,0 +1,196 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {
+        "onMount": "onMountStructuresObjectSetActions",
+        "onUpdate": [ {
+            "action": "updateSelection",
+            "observers": [ "props.subPanelContext.selectionData" ]
+        } ]
+    },
+    "data": {
+        "objectSetStructures": {
+            "initialValues": {
+                "pwaSelectionData": "{{props.subPanelContext.pwaSelectionData}}",
+                "dpRef": { "current": null },
+                "objectSetUri": "Smc0WhereUsed",
+                "objectSetInfo": {
+                    "firstPage": []
+                },
+                "commandContext": {
+                    "tableDataProviderName": "Awp0ObjectSetRowProvider",
+                    "clientScopeURI": "Smc0WhereUsed",
+                    "objectSetSource": "Fnd0WUInStructuresProvider.BOMLine",
+                    "searchCriteria": {
+                        "parentUid": "{{props.subPanelContext.pwaSelectionData.nodeUid}}",
+                        "allRevisions": "{{props.subPanelContext.xrtContext.showAllRevisions}}",
+                        "allContexts": "{{props.subPanelContext.xrtContext.showDataFromAllContexts}}",
+                        "objectSet": "Fnd0WUInStructuresProvider.BOMLine",
+                        "revisionRule": "{{ctx.userSession.props.awp0RevRule.dbValue}}"
+                    }
+                },
+                "objsetdata": {
+                    "uid": "",
+                    "defaultDisplay": "tableDisplay",
+                    "elementType": "objectSet",
+                    "id": "objectSet_structureWU",
+                    "sortyBy": "object_string",
+                    "sortDirection": "ascending",
+                    "source": "Fnd0WUInStructuresProvider.BOMLine",
+                    "sourceHasDataset": true,
+                    "displayModes": {
+                        "tableDisplay": {
+                            "gridProvider": "Smc0WhereUsed"
+                        },
+                        "thumbnailDisplay": true
+                    },
+                    "commands": [],
+                    "searchCriteria": {
+                        "parentUid": "{{props.subPanelContext.pwaSelectionData.nodeUid}}",
+                        "allRevisions": "{{props.subPanelContext.xrtContext.showAllRevisions}}",
+                        "allContexts": "{{props.subPanelContext.xrtContext.showDataFromAllContexts}}",
+                        "objectSet": "Fnd0WUInStructuresProvider.BOMLine"
+                    }
+                }
+            },
+            "meta": {}
+        },
+        "sectionExpStatusCache": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "actions": {
+        "refreshStructuresObjectSet": {
+            "actionType": "JSFunction",
+            "method": "refreshObjectSet",
+            "inputData": {
+                "isSectionExpanded": "{{atomicData.sectionExpStatusCache.structuresExpanded}}",
+                "vmObjectSet": "{{atomicDataRef.objectSetStructures}}",
+                "xrtContext": "{{props.subPanelContext.xrtContext}}"
+            },
+            "outputData": {
+                "structuresOutOfSync": ""
+            },
+            "deps": "js/Pca0WhereUsedService"
+        },
+        "onMountStructuresObjectSetActions": {
+            "actionType": "JSFunction",
+            "method": "onMountStructuresObjectSetActions",
+            "inputData": {
+                "callback": "{{props.subPanelContext.settingsUpdateCallback}}"
+            },
+            "outputData": {
+                "sectionExpStatusCache": ""
+            },
+            "deps": "js/featureWhereUsedStructureService"
+        },
+        "updateSelection": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "condition": "conditions.isSelectionItemRevision",
+                    "name": "structureWUTable.loadVMOsEvent"
+                } ]
+            }
+        },
+        "loadVMOs": {
+            "actionType": "JSFunction",
+            "method": "loadVMOs",
+            "inputData": {
+                "selectionData": "{{props.subPanelContext.selectionData}}",
+                "selectionModel": "{{selectionModels.structureWUSelectionModel}}"
+            },
+            "deps": "js/featureWhereUsedStructureService",
+            "events": {
+                "success": [ {
+                    "name": "structureWUTable.updateSelectionData"
+                } ]
+            }
+        },
+        "updateSelectionData": {
+            "actionType": "JSFunction",
+            "method": "updateSelectionData",
+            "inputData": {
+                "selectionData": "{{props.subPanelContext.selectionData}}",
+                "selectionModel": "{{selectionModels.structureWUSelectionModel}}"
+            },
+            "outputData": {
+                "props.subPanelContext.selectionData": ""
+            },
+            "deps": "js/featureWhereUsedStructureService"
+        },
+        "updateSectionExpStatusForStructures": {
+            "actionType": "JSFunction",
+            "method": "updateSectionExpStatus",
+            "inputData": {
+                "sectionExpStatusCache": "{{atomicDataRef.sectionExpStatusCache}}",
+                "sessionStorageUid": "occMgmtStructuresInWhereUsed",
+                "cacheEntryId": "structuresExpanded",
+                "isCollapsed": "{{parameters.eventData.isCollapsed}}",
+                "xrtContext": "{{props.subPanelContext.xrtContext}}",
+                "objectSet": "{{atomicDataRef.objectSetStructures}}",
+                "isSectionOutOfSync": "{{data.structuresOutOfSync}}"
+            },
+            "outputData": {
+                "structuresOutOfSync": ""
+            },
+            "deps": "js/Pca0WhereUsedService"
+        }
+    },
+    "functions": {},
+    "onEvent": [ {
+            "eventId": "Pca0WhereUsed.refreshLayoutSlots",
+            "action": "refreshStructuresObjectSet"
+        },
+        {
+            "eventId": "awPanelSection.collapse",
+            "action": "updateSectionExpStatusForStructures",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "criteria": {
+                "name": "where_used_in_structures"
+            }
+        },
+        {
+            "eventId": "structureWUTable.updateSelectionData",
+            "action": "updateSelectionData"
+        },
+        {
+            "eventId": "structureWUTable.loadVMOsEvent",
+            "action": "loadVMOs"
+        }
+    ],
+    "conditions": {
+        "isSelectionItemRevision": {
+            "expression": {
+                "$source": "props.subPanelContext.selectionData.selected",
+                "$query": {
+                    "$all": {
+                        "$source": "modelType.typeHierarchyArray",
+                        "$query": {
+                            "$in": [
+                                "BOMLine"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "i18n": {
+        "structure": [ "OccurrenceVariantConstants" ],
+        "revisionRuleLabel": [ "OccurrenceManagementConstants" ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "selectionModels": {
+        "structureWUSelectionModel": {
+            "selectionMode": "multiple"
+        }
+    }
+}

@@ -1,0 +1,419 @@
+{
+    "schemaVersion" : "1.0.0",
+    "data": {
+        "configurationBaselineType": {
+            "displayName": "{{i18n.configurationBaselineType}}",
+            "name": "configurationBaselineType",
+            "type": "STRING",
+            "isRequired": true,
+            "dataProvider": "configBaselineTypeDataProvider",
+            "uiValue": "",
+            "dbValue": "",
+            "emptyLOVEntry": false
+        },
+        "configurationBaselineName": {
+            "displayName": "{{i18n.name}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "isEditable": "true",
+            "dbValue": "",
+            "dispValue": "",
+            "maxLength": 128
+        },
+        "configurationBaselineDescription": {
+            "displayName": "{{i18n.description}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "",
+            "dispValue": ""
+        },
+        "configBaselineValidationRule": {
+            "type": "STRING",
+            "isRequired": false,
+            "dataProvider": "validationRuleDataProvider",
+            "uiValue": "",
+            "dbValue": "",
+            "emptyLOVEntry": false
+        },
+        "configBaselineValidationRuleLabel": {
+            "displayName": "{{i18n.validationRule}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "Test_Value"
+        },
+        "configurationBaselineClose": {
+            "displayName": "{{i18n.closeConfigurationBaseline}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": false,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "closureWorkflow": {
+            "displayName": "{{i18n.closureWorkflow}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "hasLov": true
+        },
+        "closeTooltipView": {
+            "view": "CloseTooltip"
+        },
+        "validationRuleTooltip": {
+            "extendedTooltipContent": "{{i18n.validationRuleTooltipMsg}}"
+        },
+        "baselineDescription": {
+            "type": "STRING",
+            "displayName": "{{i18n.datasetDesc}}"
+        },
+        "topLine": {
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "actionOnWorkingContent": {
+            "displayName": "{{i18n.actionOnWorkingContent}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "hasLov": true
+        },
+        "actionOnWorkingContents_list": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.captureAndApplyStatus}}",
+                    "propDisplayDescription": "{{i18n.captureAndApplyStatusDesc}}",
+                    "dispValue": "{{i18n.captureAndApplyStatus}}",
+                    "propInternalValue": 0
+                },
+                {
+                    "propDisplayValue": "{{i18n.freezeAndApplyStatus}}",
+                    "propDisplayDescription": "{{i18n.freezeAndApplyStatusDesc}}",
+                    "dispValue": "{{i18n.freezeAndApplyStatus}}",
+                    "propInternalValue": 1
+                },
+                {
+                    "propDisplayValue": "{{i18n.captureConfigurationAsIs}}",
+                    "propDisplayDescription": "{{i18n.captureConfigurationAsIsDesc}}",
+                    "dispValue": "{{i18n.captureConfigurationAsIs}}",
+                    "propInternalValue": 2
+                }
+            ]
+        },
+        "runInBackground": {
+            "type": "BOOLEAN",
+            "isEditable": "true",
+            "displayName": "{{i18n.runInBackground}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+    "dataProviders": {
+        "configBaselineTypeDataProvider": {
+            "dataProviderType": "TcLOV",
+            "action": "loadConfigBaselineType",
+            "response": "{{data.configBaselineTypeLOV}}",
+            "totalFound": "{{data.configBaselineType.length}}"
+        },
+        "validationRuleDataProvider": {
+            "initializeAction": "loadValidationRule",
+            "response": "{{data.validationRuleListResponse.validationRuleList}}",
+            "totalFound": "{{data.totalRules}}",
+            "selectionModelMode": "single",
+            "moreValuesExist": "{{data.validationRuleListResponse.moreValuesExist}}"
+        }
+    },
+    "actions": {
+        "loadConfigBaselineType": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-LOV",
+            "method": "getInitialLOVValues",
+            "inputData": {
+                    "initialData": {
+                        "propertyName" : "fnd0ConfigBaselineType",
+                        "lovInput": {
+                            "owningObject": {
+                                "type": "Fnd0ConfigurationBaseline"
+                            },
+                            "propertyValues": {
+                                "object_name": ["{{data.configurationBaselineName.dbValue}}"]
+                            },
+                            "operationName": "Create",
+                            "boName": "Fnd0ConfigurationBaseline"
+                        }
+                   }
+            },
+            "outputData": {
+                "configBaselineTypeLOV": "{{function:getLOVList}}"
+            },
+            "deps": "js/configurationBaselineService"
+        },
+        "loadValidationRule": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData": {
+                "searchInput": {
+                    "maxToLoad": 20,
+                    "maxToReturn": 20,
+                    "providerName": "Fnd0ConfigBaselineProvider",
+                    "searchCriteria": {
+                        "baselineType": "{{data.configurationBaselineType.dbValue}}"
+                    },
+                    "searchFilterFieldSortType": "Alphabetical",
+                    "searchFilterMap": {},
+                    "searchSortCriteria": [],
+                    "attributesToInflate": [],
+                    "internalPropertyName": "",
+                    "startIndex": 0
+                }
+            },
+            "outputData": {
+                "validationRuleListResponse": "{{function:getPagedValidationRuleList}}",
+                "totalRules": "totalFound"
+            },
+            "deps": "js/configurationBaselineService"
+        },
+        "getConfigBaselineTemplateListBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getConfigBaselineTemplateList",
+                    "condition": "data.configurationBaselineClose.dbValue"
+                }
+            ]
+        },
+        "getConfigBaselineTemplateList": {
+            "actionType": "JSFunction",
+            "method": "getConfigBaselineTemplateList",
+            "inputData": {
+                "input": "{{ctx.preferences.Baseline_release_procedures}}"
+            },
+            "outputData": {
+                "configBaselineTemplateList": ""
+            },
+            "deps": "js/configurationBaselineService"
+        },
+        "prePopulateConfigBaselineName": {
+            "actionType": "JSFunction",
+            "method": "prePopulateConfigBaselineName",
+            "inputData": {
+                "occContext": "{{props.subPanelContext.occContext}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "configurationBaselineName.dbValue": "configBaselineName"
+            },
+            "deps": "js/configurationBaselineService"
+        },
+        "populateBackingObject": {
+            "actionType": "JSFunction",
+            "method": "getBackingObject",
+            "inputData": {
+                "modelObject": "{{props.subPanelContext.occContext.pwaSelection[0]}}",
+                "data":"{{data}}"
+            },
+            "deps": "js/configurationBaselineService"
+        },
+        "createConfigurationBaselineAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2023-06-DataManagement",
+            "method": "createObjects",
+            "inputData": {
+                "createInputs": "{{function:createInputForCreateConfigurationBaselineSOA}}",
+                "runInBackground": "{{data.runInBackground.dbValue}}"
+            },
+            "outputData": {
+                "createdWorkingContext": "",
+                "selectedObject": "output[0].objects[0].uid"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": ["{{ctx.selected}}"]
+                        },
+                        "condition": "!data.runInBackground.dbValue"
+                    },
+                    {
+                        "name": "configurationBaseline.closePanel"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "configBaselineCreateRunInBgSuccessMsg",
+                        "condition": "data.runInBackground.dbValue"
+                    },
+                    {
+                        "message": "configurationBaselineCreatedSuccessfully",
+                        "condition": "!data.runInBackground.dbValue"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "configurationBaselineCreationFailure",
+                        "condition": "!data.runInBackground.dbValue"
+                    }
+                ]
+            },
+            "deps": "js/configurationBaselineService"
+        },
+        "initializePanel" :{
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action": "prePopulateConfigBaselineName"
+                },
+                {
+                    "action": "updateHeaderDataForConfigBaselinePanel"
+                },
+                {
+                    "action":"populateBackingObject"
+
+                }
+            ]
+        },
+        "updateHeaderDataForConfigBaselinePanel": {
+            "actionType": "JSFunction",
+            "method": "updateHeaderDataForConfigBaselinePanel",
+            "inputData": {
+                "occContext": "{{props.subPanelContext.occContext}}"
+            },
+            "outputData": {
+                "fromString": ""
+            },
+            "deps": "js/configurationBaselineService"
+        },
+        "onUpdateConfigBaselineName": {
+            "actionType": "JSFunction",
+            "method": "updateConfigurationBaselineNameField",
+            "inputData": {
+                "fields": "{{fields}}",
+                "data": "{{data}}"
+            },
+            "deps": "js/configurationBaselineService"
+        },
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "functions": {
+        "createInputForCreateConfigurationBaselineSOA": {
+            "functionName": "createInputForCreateConfigurationBaselineSOA",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getLOVList": {
+            "functionName": "getLOVList",
+            "parameters": []
+        },
+        "getPagedValidationRuleList": {
+            "functionName": "getPagedValidationRuleList",
+            "parameters": [
+                "{{data}}"
+            ]
+        }
+    },
+    "conditions": {
+        "isClientDispatcherInstalled": {
+            "expression": "ctx.preferences.DISPATCHER_CLIENT_INSTALLED && ctx.preferences.DISPATCHER_CLIENT_INSTALLED[0] !== 'false'"
+        },
+        "enableConfigurationBaseline": {
+            "expression": "data.configurationBaselineType.dbValue && data.configurationBaselineName.dbValue"
+        },
+        "isClosureWorkflowVisible": {
+            "expression": "data.actionOnWorkingContent.dbValue === 0 || data.actionOnWorkingContent.dbValue === 1"
+        },
+        "isCloseBaselineCreate": {
+            "expression":"data.configurationBaselineClose.dbValue"
+        },
+        "isClosureWorkflowVisibleInCreatePanel":{
+            "expression": "conditions.isClosureWorkflowVisible && conditions.isCloseBaselineCreate"
+        }
+    },
+    "messages": {
+        "configurationBaselineCreatedSuccessfully": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.creationOfConfigurationBaselineSuccessful}}",
+            "messageTextParams": [
+                "{{data.configurationBaselineName.dbValue}}"
+            ]
+        },
+        "configurationBaselineCreationFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.genericServerError}}",
+            "messageTextParams": [
+                "{{data.createdWorkingContext.ServiceData.partialErrors[0].errorValues[0].message}}"
+            ]
+        },
+        "configBaselineCreateRunInBgSuccessMsg": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.configBaselineCreateRunInBgSuccessMsg}}",
+            "messageTextParams": [
+                "{{data.configurationBaselineName.dbValue}}"
+            ]
+        }
+    },
+    "i18n": {
+        "createConfigurationBaseline": [ "OccMgmtConfigBaselineConstants" ],
+        "createBtn": [ "OccMgmtConfigBaselineConstants" ],
+        "creationOfConfigurationBaselineSuccessful": [ "OccMgmtConfigBaselineMessages" ],
+        "createConfigurationBaselinePrefix":[ "OccMgmtConfigBaselineMessages" ],
+        "runInBackground": [ "OccMgmtConfigBaselineConstants" ],
+        "genericServerError": [ "OccurrenceManagementMessages" ],
+        "configBaselineCreateRunInBgSuccessMsg": [ "OccMgmtConfigBaselineMessages" ],
+        "properties": ["OccMgmtConfigBaselineConstants"],
+        "configurationBaselineType": ["OccMgmtConfigBaselineConstants"],
+        "name": ["OccMgmtConfigBaselineConstants"],
+        "description": ["OccMgmtConfigBaselineConstants"],
+        "validationRule": ["OccMgmtConfigBaselineConstants"],
+        "closeConfigurationBaseline": ["OccMgmtConfigBaselineConstants"],
+        "validationRuleTooltipMsg": ["OccMgmtConfigBaselineMessages"],
+        "closeConfigurationBaselineCheckboxTooltip": ["OccMgmtConfigBaselineMessages"],
+        "fromTitle": ["OccurrenceManagementConstants"],
+        "configBaselineTemplate": ["OccMgmtConfigBaselineConstants"],
+        "actionOnWorkingContent": ["OccMgmtConfigBaselineConstants"],
+        "closureWorkflow": ["OccMgmtConfigBaselineConstants"],
+        "freezeAndApplyStatus": ["OccMgmtConfigBaselineConstants"   ],
+        "captureAndApplyStatus": ["OccMgmtConfigBaselineConstants"],
+        "captureConfigurationAsIs": ["OccMgmtConfigBaselineConstants"],
+        "captureAndApplyStatusDesc": ["OccMgmtConfigBaselineMessages"],
+        "freezeAndApplyStatusDesc": ["OccMgmtConfigBaselineMessages"],
+        "captureConfigurationAsIsDesc": ["OccMgmtConfigBaselineMessages"]
+    },
+    "lifecycleHooks": {
+        "onMount": "initializePanel",
+        "onUpdate": [
+            {
+                "action": "getConfigBaselineTemplateListBatchJob",
+                "observers": [ "viewModel.data.configurationBaselineClose.dbValue" ]
+            },
+            {
+                "action": "onUpdateConfigBaselineName",
+                "observers": ["viewModel.data.configurationBaselineName.dbValue"]
+            }
+        ]
+
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "configurationBaseline.closePanel",
+            "action": "closePanel"
+        }
+    ]
+}

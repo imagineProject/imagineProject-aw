@@ -1,0 +1,135 @@
+{
+    "lifecycleHooks": {
+        "onUpdate": {
+            "action": "reloadFileVersions",
+            "observers": [ "props.dataset" ]
+        }
+    },
+    "actions": {
+        "reloadFileVersions": {
+            "actionType": "dataProvider",
+            "method": "gridDataProviderDHWS"
+        },
+
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/fileVersion.service",
+            "method": "getFileVersions",
+            "inputData": {
+                "0": {
+                    "vmo": "{{props.dataset}}",
+                    "sortCriteria": "{{data.columnProviders.fileVersionColumnProvider.sortCriteria}}",
+                    "columnsToShow": "{{props.columnsToShow}}"
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "searchResults"
+            },
+            "events": {
+                "success": [ {
+                    "name": "selectFirstItemFV"
+                } ]
+            }
+        },
+        "selectFirstItem": {
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "0": "{{data.dataProviders.gridDataProviderDHWS.selectionModel}}",
+                "1": "{{data.searchResults[0]}}"
+            },
+            "deps": "js/selectionModelFactory"
+        },
+
+        "loadColumns": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/fileVersion.service",
+            "method": "getColumns",
+            "inputData": {
+                "0": {
+                    "dataProvider": "{{data.dataProviders.gridDataProviderDHWS}}",
+                    "columnsToShow": "{{props.columnsToShow}}"
+                }
+            }
+        }
+    },
+    "data": {
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        }
+    },
+    "editHandlers": {
+        "infoPanelEditHandler": {
+            "context": "INFO_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "dataProviders": {
+        "gridDataProviderDHWS": {
+            "action": "loadData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "commandsAnchor": "",
+            "selectionModelMode": "single",
+            "inputData": {
+                "selectionData": "{{props.selectionData}}"
+            }
+        }
+    },
+    "columnProviders": {
+        "fileVersionColumnProvider": {
+            "loadColumnAction": "loadColumns",
+            "columns": "{{data.columns}}",
+            "soaEnabled": false,
+            "frozenColumnIndex": -1
+        }
+    },
+    "grids": {
+        "fileVersionsTable": {
+            "dataProvider": "gridDataProviderDHWS",
+            "columnProvider": "fileVersionColumnProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enablePinning": false,
+                "enableSorting": true
+            }
+        }
+    },
+    "props": {
+        "dataset": {
+            "type": "object"
+        },
+        "selection-data": {
+            "type": "object"
+        },
+        "columns-to-show": {
+            "type": "object"
+        },
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "i18n": {
+        "VersionsSectionHeader": [
+            "FileVersionsMessages"
+        ]
+    },
+    "onEvent": [ {
+        "eventId": "selectFirstItemFV",
+        "action": "selectFirstItem"
+    },
+    {
+        "eventId": "datasetVersionsToRenderUpdate",
+        "action": "reloadFileVersions"
+    }],
+    "schemaVersion": "1.0.0"
+}

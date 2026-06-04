@@ -1,0 +1,345 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "data": {
+        "plmxmlFileName": {
+            "displayName": "{{i18n.plmxmlFileName}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "isEditable": "true",
+            "dbValue": "",
+            "maxLength": 128,
+            "dispValue": ""
+        },
+        "transferModeListBox": {
+            "displayName": "{{i18n.transferMode}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "dataProvider" : "transferModeProvider",
+            "uiValue": "",
+            "dbValue": "",
+            "emptyLOVEntry": false,
+            "name": "transferModeListBox"
+        },
+        "revisionRuleListBox": {
+            "displayName": "{{i18n.revisionRule}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "dataProvider" : "revisionRuleProvider",
+            "uiValue": "",
+            "dbValue": ""
+        },
+        "languageList": {
+            "displayName": "{{i18n.languages}}",
+            "type": "STRING",
+            "isArray": true,
+            "hasLov": true,
+            "renderingHint": "checkboxoptionlov",
+            "dataProvider": "languageListCheckBoxProvider"
+        }
+    },
+    "dataProviders": {
+        "transferModeProvider": {
+            "response": "{{data.transferModeListBoxValues}}"
+        },
+        "revisionRuleProvider": {
+            "response": "{{data.revisionRuleListBoxValues}}"
+        },
+        "languageListCheckBoxProvider": {
+            "response": "{{data.languageListValues}}",
+            "moreValuesExist": false
+        }
+    },
+    "actions": {
+        "populatePLMXMLName": {
+            "actionType": "JSFunction",
+            "method": "populatePLMXMLName",
+            "inputData": {
+                "plmxmlFileName": "{{data.plmxmlFileName}}",
+                "ctx": "{{ctx}}"
+            },
+            "outputData": {
+                "plmxmlFileName": ""
+            },
+            "deps": "js/exportToPLMXML"
+        },
+        "getTransferModes": {
+            "actionType": "TcSoaService",
+            "serviceName": "GlobalMultiSite-2007-06-ImportExport",
+            "method": "getTransferModes",
+            "inputData": {
+                "inputs": {
+                    "scope": "EXPORT",
+                    "schemaFormat": "PLMXML"
+                }
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "TransferMode",
+                        "properties": [
+                            {
+                                "name": "object_name"
+                            },
+                            {
+                                "name": "object_desc"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "transferModeListBoxValues": "{{function:getXferModes}}"
+            },
+            "deps": "js/exportToPLMXML"
+        },
+        "transferModeChanged": {
+            "actionType": "JSFunction",
+            "method": "updateLanguagesSelection",
+            "deps": "js/exportToPLMXML",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "languageList.dbValue": "langsDB",
+                "languageList.uiValue": "langsDisplay",
+                "languageList.displayValues": "langsDisplay"
+            }
+        },
+        "getPreferenceValues": {
+            "actionType": "JSFunction",
+            "method": "getPreferenceValues",
+            "deps": "js/exportToPLMXML",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "transferMode2Langs": ""
+            }
+        },
+        "populateRevisionRules": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-LOV",
+            "method": "getInitialLOVValues",
+            "inputData": {
+                "initialData": {
+                    "propertyName": "awp0RevRule",
+                    "filterData": {
+                        "filterString": "",
+                        "maxResults": 2000,
+                        "numberToReturn": 10000,
+                        "order": 1,
+                        "sortPropertyName": ""
+                    },
+                    "lov": {
+                        "uid": "AAAAAAAAAAAAAA",
+                        "type": "unknownType"
+                    },
+                    "lovInput": {
+                        "owningObject": {
+                            "uid": "{{ctx.userSession.uid}}",
+                            "type": "UserSession"
+                        },
+                        "operationName": "FakeOperation",
+                        "boName": "UserSession",
+                        "propertyValues": {}
+                    }
+                }
+            },
+            "outputData": {
+                "revisionRuleListBoxValues": "{{function:getRevRules}}"
+            },
+            "deps": "js/exportToPLMXML"
+        },
+
+        "populateLanguages": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-04-LanguageInformation",
+            "method": "getLanguagesList",
+            "inputData": {
+                "scenario": "supportedLanguages"
+            },
+            "outputData": {
+                "supportedLanguageList": "languageList"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "PLMXMLExportPanel.convertToLanguageList"
+                    }
+                ]
+            }
+        },
+        "convertToLanguageList": {
+            "actionType": "JSFunction",
+            "method": "createListModelObjects",
+            "inputData": {
+                "input": "{{data.supportedLanguageList}}",
+                "propName": "languageName"
+            },
+            "outputData": {
+                "languageListValues": ""
+            },
+            "deps": "js/listBoxService"
+        },
+        "executePLMXMLExport": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-TCXMLImportExport-2021-06-PLMXML",
+            "method": "exportObjectsToPLMXML",
+            "inputData": {
+                "input": "{{function:getSOAInputForPLMXMLExport}}"
+            },
+            "outputData": {
+                "exportPartialErrors": "{{function:processPLMXMLPartialErrors}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "exportPLMXML.closeDialog"
+                    }
+                ]
+            },
+            "deps": "js/exportToPLMXML"
+        },
+        "initializePLMXMLExportPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getTransferModes"
+                },
+                {
+                    "action": "getPreferenceValues"
+                },
+                {
+                    "action": "populatePLMXMLName"
+                },
+                {
+                    "action": "populateLanguages"
+                },
+                {
+                    "action": "populateRevisionRules",
+                    "condition": "conditions.isValidForBOMExport"
+                }
+            ]
+        },
+        "closeExportPLMXMLDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializePLMXMLExportPanel"
+    },
+    "onEvent": [
+        {
+            "eventId": "PLMXMLExportPanel.convertToLanguageList",
+            "action": "convertToLanguageList"
+        },
+        {
+            "eventId": "exportPLMXML.closeDialog",
+            "action": "closeExportPLMXMLDialog"
+        }
+    ],
+    "functions": {
+        "getXferModes": {
+            "functionName": "getXferModes",
+            "parameters": [
+                "{{response}}"
+            ]
+        },
+        "getRevRules": {
+            "functionName": "getRevRules",
+            "parameters": [
+                "{{response}}"
+            ]
+        },
+        "getSOAInputForPLMXMLExport": {
+            "functionName": "getSOAInputForPLMXMLExport",
+            "parameters": [
+                "{{data}}",
+                "{{ctx}}",
+                "{{subPanelContext.occContext}}"
+            ]
+        },
+        "processPLMXMLPartialErrors": {
+            "functionName": "processPLMXMLPartialErrors",
+            "parameters": [
+                "{{data}}",
+                "{{ctx}}"
+            ]
+        }
+    },
+    "conditions": {
+        "isValidForBOMExport": {
+            "expression": "ctx.mselected.length === 1 && ( ctx.mselected[0].modelType.typeHierarchyArray.indexOf( 'Item' ) > -1 || ctx.mselected[0].modelType.typeHierarchyArray.indexOf( 'ItemRevision' ) > -1 )"
+        },
+        "isSingleObjectSelected": {
+            "expression": "ctx.mselected.length === 1"
+        },
+        "isValidBOMRoot": {
+            "expression": "ctx.mselected[0].modelType.typeHierarchyArray.indexOf( 'Item' ) > -1 || ctx.mselected[0].modelType.typeHierarchyArray.indexOf( 'ItemRevision' ) > -1"
+        },
+        "isExportButtonVisible": {
+            "expression": "data.plmxmlFileName.dbValue && data.transferModeListBox.dbValue"
+        },
+        "isLanguageListLoaded": {
+            "expression": "data.languageListValues && data.languageListValues.length > 0"
+        }
+    },
+    "messages": {
+        "singleSelectionPLMXMLExportFailed": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.singleSelectionPLMXMLExportFailedMessage}}",
+            "messageTextParams": [
+                "{{ctx.mselected[0].props.object_string.uiValues[0]}}",
+                "{{data.briefcaseName.dbValue}}",
+                "{{data.exportPartialErrors[0].errorValues[0].message}}"
+            ]
+        },
+        "multipleSelectionPLMXMLExportFailed": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.multipleSelectionPLMXMLExportFailedMessage}}",
+            "messageTextParams": [
+                "{{ctx.mselected.length}}",
+                "{{data.briefcaseName.dbValue}}",
+                "{{data.exportPartialErrors[0].errorValues[0].message}}"
+            ]
+        }
+    },
+    "i18n": {
+        "transferMode": [
+            "pieMessages"
+        ],
+        "plmxmlFileName": [
+            "pieMessages"
+        ],
+        "revisionRule": [
+            "pieMessages"
+        ],
+        "cmdExportButton": [
+            "pieMessages"
+        ],
+        "languages": [
+            "pieMessages"
+        ],
+        "singleSelectionPLMXMLExportStartedMessage": [
+            "pieMessages"
+        ],
+        "multipleSelectionPLMXMLExportStartedMessage": [
+            "pieMessages"
+        ],
+        "singleSelectionPLMXMLExportFailedMessage": [
+            "pieMessages"
+        ],
+        "multipleSelectionPLMXMLExportFailedMessage": [
+            "pieMessages"
+        ]
+    }
+}

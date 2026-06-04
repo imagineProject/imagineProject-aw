@@ -1,0 +1,92 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-panel-body.directive",
+        "js/aw-default-cell.directive",
+        "js/aw-list.directive"
+    ],
+    "actions": {
+        "callMergeChangeSoa": {
+            "actionType": "TcSoaService",
+            "deps": "js/Cm1RevertMergeUtils",
+            "serviceName": "Internal-CmAws-2020-12-Changes",
+            "method": "mergeRedLineChanges",
+            "inputData": {
+                "mergeRedLineChangesInput": "{{function:getInputForMerge}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "getMergeCandidates.reload"
+                    },
+                    {
+                        "name": "updateStartFreshNavigation"
+                    },
+                    {
+                        "name": "cm1MergeUsgReloadTable"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "Cm1MergeSuccessMessage"
+                } ],
+                "failure": [ {
+                    "message": "cm1MergeFailureMessage"
+                } ]
+            }
+        }
+    },
+    "functions": {
+        "getInputForMerge": {
+            "functionName": "getInputForMerge",
+            "parameters": [
+                "{{props.mergeItem}}"
+            ]
+        }
+    },
+    "onEvent": [],
+    "conditions": {
+        "isNotAlreadyMerged": {
+            "expression": "props.mergeItem.mergeCandidateItem.isAlreadyMerged === false"
+        },
+        "isMergeConflict": {
+            "expression": "props.mergeItem.mergeCandidateItem.isMergeConflict && props.mergeItem.mergeCandidateItem.isMergeConflict === true"
+        }
+    },
+    "props": {
+        "merge-item": {
+            "type": "object"
+        }
+    },
+    "data":{
+        "mergeCompleteLabel": {
+            "displayName": "{{i18n.cm1MergeCandidatesComplete}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "dispValue": "{{i18n.cm1MergeCandidatesComplete}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        }
+    },
+    "messages": {
+        "Cm1MergeSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.Cm1MergeSuccessMessage}}",
+            "messageTextParams": [
+                "{{props.mergeItem.mergeCandidateItem.mergeAction.displayName}}",
+                "{{props.mergeItem.mergeCandidateItem.objectToBeMerged.props.object_string.displayValues[0]}}"
+            ]
+        },
+        "cm1MergeFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n": {
+        "Cm1MergeChangesTitle": [
+            "ChangeMessages"
+        ],
+        "Cm1MergeSuccessMessage": [ "ChangeMessages" ],
+        "cm1MergeCandidatesComplete": [ "ChangeMessages" ]
+    }
+}

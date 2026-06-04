@@ -1,0 +1,300 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "fileChangeAction": {
+            "actionType": "JSFunction",
+            "method": "setFileParameters",
+            "inputData": {
+                "fileName": "{{parameters.fileName}}",
+                "validFile": "{{parameters.validFile}}",
+                "fileNameNoExt": "{{parameters.fileNameNoExt}}",
+                "fileExt": "{{parameters.fileExt}}",
+                "formData": "{{parameters.formData}}"
+            },
+            "outputData": {
+                "fileName": "fileName",
+                "validFile": "validFile",
+                "fileNameNoExt": "fileNameNoExt",
+                "fileExt": "fileExt",
+                "formData": "formData"
+            },
+            "deps": "js/fileUploadUtils"
+        },
+        "Awp0ImportTableConfigsAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-01-FileManagement",
+            "method": "getTransientFileTicketsForUpload",
+            "inputData": {
+                "transientFileInfos": [ {
+                    "fileName": "{{data.fileName}}",
+                    "isBinary": false,
+                    "deleteFlag": false
+                } ]
+            },
+            "outputData": {
+                "fmsTicket": "transientFileTicketInfos[0].ticket"
+            },
+            "events": {
+                "success": [ {
+                    "name": "fmsTicket.generated"
+                } ]
+            }
+        },
+        "updateFormData":
+        {
+            "actionType": "JSFunction",
+            "method": "updateFormData",
+            "deps": "js/fileUploadUtils",
+            "inputData":
+            {
+                "formData": "{{data.formData}}",
+                "key": "fmsTicket",
+                "value": "{{data.fmsTicket}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "Awp0ImportTableConfigs.fileTicketCreated"
+                    }
+                ]
+            }
+        },
+        "uploadFile": {
+            "actionType": "RESTService",
+            "serviceName": "",
+            "method": "POST",
+            "inputData": {
+                "request": {
+                    "method": "POST",
+                    "url": "{{Constants.fmsUrl}}",
+                    "headers": {
+                        "Content-type": "undefined"
+                    },
+
+                    "data": "{{data.formData}}"
+                }
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Awp0ImportTableConfigs.import"
+                    }
+                ],
+                "failure":
+                [
+                    {
+                        "name": "Awp0ImportTableConfigs.closeImportPopup"
+                    }
+                ]
+            },
+            "actionMessages": {}
+        },
+        "importTableConfigs": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2024-12-UiConfig",
+            "method": "importTableConfigurations",
+            "inputData": {
+                "importTableConfigsInput": {
+                    "importOptions":"{{function:getImportOptions}}",
+                    "fileTicket": "{{data.fmsTicket}}"
+                }
+            },
+            "outputData": {
+                "importTableConfigsResponsefileTicket": "fileTicket",
+                "importTableConfigsLogFileName" : "{{function:getImportTableConfigsLogFilename}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "Awp0ImportTableConfigs.doExportDocumentEvent"
+                    },
+                    {
+                        "name": "tableConfigsTree.plTable.reload",
+                        "condition": "subPanelContext.searchState.criteria.searchString === ''"
+                    },
+                    {
+                        "name": "tableConfigsImported",
+                        "condition": "subPanelContext.searchState.criteria.searchString !== ''"
+                    }
+                ],
+                "failure": [ {
+                    "name": "Awp0ImportTableConfigs.doExportDocumentEvent"
+                } ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "importTableConfigsSuccessfulInfoMessage"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "importTableConfigsFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/ImportExportTableConfigs"
+        },
+        "closeImportPopupWindow": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "inputData": {
+                "popupId": "{{data.popupId}}"
+            },
+            "deps": "js/popupService"
+        },
+        "doExportDocument": {
+            "actionType": "openFile",
+            "inputData": {
+                "fileTicket": "{{data.importTableConfigsResponsefileTicket}}",
+                "openFileName": "{{data.importTableConfigsLogFileName}}"
+            }
+        },
+        "closeDialog": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "inputData": {
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/popupService"
+        },
+        "doExportDocumentAndClose": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "doExportDocument"
+                },
+                {
+                    "action": "closeDialog"
+                }
+            ]
+        }
+    },
+    "data": {
+        "scopeState": {
+            "initialValues": {
+              "columnConfigScope": {
+                "columnConfigScopeObject": {
+                  "dbValue": "Site",
+                  "type": "STRING"
+                }
+              },
+              "selectedListItem": {
+                "dbValue": "",
+                "type": "STRING"
+              }
+            },
+            "meta": {
+              "columnConfigScope": {
+                "columnConfigScopeObject": {
+                  "field": "true",
+                  "type": "STRING"
+                }
+              },
+              "selectedListItem": {
+                "field": "true",
+                "type": "STRING"
+              }
+            }
+        },
+        "importAction": {
+            "displayName": "{{i18n.importAction}}",
+            "type": "STRING",
+            "isEditable": "true",
+            "dbValue": "Override"
+        },
+        "importActionValues": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.override}}",
+                    "propInternalValue": "Override"
+                },
+                {
+                    "propDisplayValue": "{{i18n.merge}}",
+                    "propInternalValue": "Merge"
+                },
+                {
+                    "propDisplayValue": "{{i18n.skip}}",
+                    "propInternalValue": "Skip"
+                }
+            ]
+        },
+        "columnConfigIdValue": {
+            "dbValue": "dummyValue"
+        }
+    },
+    "messages": {
+        "importTableConfigsSuccessfulInfoMessage": {
+            "messageType": "INFO",
+            "messageText":  "{{i18n.Awp0ImportTableConfigsSuccessfulInfoMessage}}"
+        },
+        "importTableConfigsFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.Awp0ImportTableConfigsFailureErrorMessage}}"
+        }
+    },
+    "i18n": {
+        "Awp0ImportTableConfigsTitle": [ "tableConfigsMessages" ],
+        "Awp0ImportTableConfigsDesc": [ "tableConfigsMessages" ],
+        "Awp0ImportTableConfigsSuccessfulInfoMessage": [ "tableConfigsMessages" ],
+        "Awp0ImportTableConfigsFailureErrorMessage": [ "tableConfigsMessages" ],
+        "importAction": [ "tableConfigsMessages" ],
+        "override": [ "tableConfigsMessages" ],
+        "merge": [ "tableConfigsMessages" ],
+        "skip": [ "tableConfigsMessages" ]
+    },
+    "conditions": {
+        "fileSelected": {
+            "expression": "data.fileName && data.fileName !== null && data.fileName != ''"
+        },
+        "siteScopeSelectedFromImport": {
+            "expression": "data.atomicData.scopeState.columnConfigScope.columnConfigScopeObject.dbValue === 'Site'"
+        },
+        "noSiteScopeSelectedFromImport": {
+            "expression": "data.atomicData.scopeState.columnConfigScope.columnConfigScopeObject.dbValue === 'Group' || data.atomicData.scopeState.columnConfigScope.columnConfigScopeObject.dbValue === 'Role' || data.atomicData.scopeState.columnConfigScope.columnConfigScopeObject.dbValue === 'Workspace'"
+        },
+        "scopeValueSelectedForNoSiteScopeFromImport": {
+            "expression": "data.atomicData.scopeState.selectedListItem.dbValue !== ''"
+        },
+        "showImportButton": {
+            "expression": "conditions.fileSelected && ( conditions.siteScopeSelectedFromImport || ( conditions.noSiteScopeSelectedFromImport && conditions.scopeValueSelectedForNoSiteScopeFromImport ) )"
+        }
+    },
+    "functions": {
+        "getImportTableConfigsLogFilename": {
+            "functionName": "getImportTableConfigsLogFilename",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getImportOptions": {
+            "functionName": "getImportOptions",
+            "parameters": [
+                "{{data}}"
+            ]
+        }
+    },
+    "onEvent": [ {
+            "eventId": "fmsTicket.generated",
+            "action": "updateFormData"
+        },
+        {
+            "eventId": "Awp0ImportTableConfigs.import",
+            "action": "importTableConfigs"
+        },
+        {
+            "eventId": "Awp0ImportTableConfigs.fileTicketCreated",
+            "action": "uploadFile"
+        },
+        {
+            "eventId": "Awp0ImportTableConfigs.closeImportPopup",
+            "action": "closeImportPopupWindow"
+        },
+        {
+            "eventId": "Awp0ImportTableConfigs.doExportDocumentEvent",
+            "action": "doExportDocumentAndClose"
+        }
+    ]
+}

@@ -1,0 +1,219 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "getScheduleCalendarByRelation": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-09-DataManagement",
+            "method": "expandGRMRelationsForPrimary",
+            "inputData": {
+                "primaryObjects": ["{{subPanelContext.selected}}"],
+                "pref": {
+                    "expItemRev": false,
+                    "returnRelations": false,
+                    "info": [ {
+                        "relationTypeName": "TCCalendar_Rel_Type"
+                    } ]
+                }
+            },
+            "policy": {
+                "types": [ {
+                        "name": "TCCalendar",
+                        "properties": [ {
+                                "name": "sun_ranges",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "mon_ranges",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "tue_ranges",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "wed_ranges",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "thu_ranges",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "fri_ranges",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "sat_ranges",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "time_zone"
+                            },
+                            {
+                                "name": "object_string"
+                            },
+                            {
+                                "name": "tccal_type"
+                            },
+                            {
+                                "name": "tccal_desc"
+                            },
+                            {
+                                "name": "base_calendar_tag",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Range",
+                        "properties": [ {
+                                "name": "range_end"
+                            },
+                            {
+                                "name": "range_start"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Schedule",
+                        "properties": [
+                            {
+                                "name": "saw1ScheduleMembers",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "ScheduleMember",
+                        "properties": [
+                            {
+                                "name": "member_priv"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "TCCalendarEvent",
+                        "properties": [ {
+                                "name": "tccalendar_tag"
+                            },
+                            {
+                                "name": "recur_interval"
+                            },
+                            {
+                                "name": "recur_month"
+                            },
+                            {
+                                "name": "recur_weeks_of_month"
+                            },
+                            {
+                                "name": "recur_days_of_week"
+                            },
+                            {
+                                "name": "timestamp"
+                            },
+                            {
+                                "name": "owning_site"
+                            },
+                            {
+                                "name": "pid"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "response": "{{function:processGRMResponse}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "getRoleInScheduleEvent"
+                    }
+                ]
+            },
+            "deps": "js/Saw1ScheduleCalendarService"
+        },
+        "getRoleInScheduleAction": {
+            "actionType": "JSFunction",
+            "method": "getRoleInSchedule",
+            "deps": "js/Saw1ScheduleCalendarService",
+            "inputData": {
+                "scheduleMemberUid": "{{data.response.schedule.props.saw1ScheduleMembers.dbValues[0]}}"
+            },
+            "outputData": {
+                "roleInSchedule": ""
+            }
+        },
+        "callRecalculateScheduleSoa": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2012-02-ScheduleManagement",
+            "method": "recalculateScheduleNonInteractive",
+            "deps": "js/Saw1ScheduleCalendarService",
+            "inputData": {
+                "schedule": "{{data.response.schedule}}",
+                "recalcType": -1,
+                "runAsync": 0
+            }
+        }
+    },
+    "functions": {
+        "processGRMResponse": {
+            "functionName": "processGRMResponse"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "recalculateScheduleEvent",
+            "action": "callRecalculateScheduleSoa"
+        },
+        {
+            "eventId": "getRoleInScheduleEvent",
+            "action": "getRoleInScheduleAction"
+        }
+    ],
+    "conditions": {
+        "allowEdit": {
+            "expression": "(props.subPanelContext.selected.props.published.dbValues[0] === '0' && data.roleInSchedule === '2')"
+        }
+    },
+    "messages": {
+        "publishedScheduleMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.publishedScheduleMessage}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "getScheduleCalendarByRelation"
+    },
+    "i18n": {
+        "publishedScheduleMessage": [
+            "ScheduleManagerMessages"
+        ]
+    }
+}

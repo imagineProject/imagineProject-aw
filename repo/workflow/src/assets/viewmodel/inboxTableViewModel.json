@@ -1,0 +1,380 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "data": {
+        "tableLoaded": false,
+        "assignAllConditionVerdict": false
+    },
+    "actions": {
+        "initSearch": {
+            "actionType": "JSFunction",
+            "method": "initSearch",
+            "inputData": {
+                "data": "{{data.actions}}",
+                "actionName": "doGridDataProvider",
+                "tableLoaded": "{{data.tableLoaded}}"
+            },
+            "deps": "js/awSearchService"
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "resetColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [ {
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos": [ {
+                            "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}",
+                            "operationType": "configured",
+                            "typeNames": [ "WorkspaceObject" ],
+                            "columnsToExclude": []
+                        } ],
+                        "businessObjects": [ {} ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "dataProviders.gridDataProvider.columnConfig": "columnConfigurations[0].columnConfigurations[0]"
+            }
+        },
+        "doGridDataProvider": {
+            "actionType": "dataProvider",
+            "method": "gridDataProvider"
+        },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "operationType": "as_arranged",
+                        "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}"
+                    },
+                    "saveColumnConfigData": {
+                        "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}",
+                        "columnConfigId": "{{data.dataProviders.gridDataProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.gridDataProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "columnFilters": "{{data.columnProviders.clientScopeUI.columnFilters}}",
+                        "providerName": "{{subPanelContext.searchState.provider}}",
+                        "searchCriteria": "{{subPanelContext.searchState.criteria}}",
+                        "searchFilterFieldSortType": "{{subPanelContext.searchState.sortType}}",
+                        "searchFilterMap6": "{{subPanelContext.searchState.activeFilterMap}}",
+                        "searchSortCriteria": "{{data.columnProviders.clientScopeUI.sortCriteria}}",
+                        "startIndex": "{{data.dataProviders.gridDataProvider.startIndex}}"
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "dataProviders.gridDataProvider.columnConfig": "columnConfig",
+                "tableLoaded": true,
+                "output": "{{function:processOutput}}"
+            }
+        },
+        "loadDataBatchJob": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "loadData"
+                },
+                {
+                    "action": "selectFirstItem",
+                    "condition": "conditions.isSelectFirstItemCondition"
+                }
+            ]
+        },
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}"
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "columnFilters": "{{data.columnProviders.clientScopeUI.columnFilters}}",
+                        "providerName": "{{subPanelContext.searchState.provider}}",
+                        "searchCriteria": "{{subPanelContext.searchState.criteria}}",
+                        "searchFilterFieldSortType": "{{subPanelContext.searchState.sortType}}",
+                        "searchFilterMap6": "{{subPanelContext.searchState.activeFilterMap}}",
+                        "searchSortCriteria": "{{data.columnProviders.clientScopeUI.sortCriteria}}",
+                        "startIndex": "{{data.dataProviders.gridDataProvider.startIndex}}"
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "tableLoaded": true,
+                "dataProviders.gridDataProvider.columnConfig": "columnConfig",
+                "output": "{{function:processOutput}}"
+            }
+        },
+        "selectFirstItem": {
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.gridDataProvider.selectionModel}}",
+                "newSelection": "{{data.searchResults.objects[0].uid}}"
+            },
+            "deps": "js/selectionModelFactory"
+        },
+        "getFilterFacets": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2019-12-Finder",
+            "method": "getFilterValues",
+            "inputData": {
+                "filterFacetInput": {
+                    "columnFilters": "{{filterFacetInput.columnFilters}}",
+                    "columnName": "{{filterFacetInput.column.field}}",
+                    "maxToReturn": "{{filterFacetInput.maxToReturn}}",
+                    "providerName": "{{subPanelContext.searchState.provider}}",
+                    "searchCriteria": "{{function:getFilterValuesSearchCriteria}}",
+                    "searchFilterMap":  "{{subPanelContext.searchState.activeFilterMap}}",
+                    "startIndex": "{{filterFacetInput.startIndex}}"
+                }
+            },
+            "outputData": {
+                "filterFacetResults": "{{json:facetValues}}"
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        },
+        "batchActionForSelection": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "checkPrefAndFireEvents"
+                },
+                {
+                    "action": "getWorkflowTaskViewModelAction",
+                    "condition": "props.subPanelContext.selectionData.value.selected.length >= 1"
+                },
+                {
+                    "action": "registerVerdictInCtx",
+                    "condition": "props.subPanelContext.selectionData.value.selected.length >= 1"
+                },
+                {
+                    "action": "unRegisterVerdicts",
+                    "condition": "props.subPanelContext.selectionData.value.selected.length <= 0"
+                }
+            ]
+        },
+        "getWorkflowTaskViewModelAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2018-05-Workflow",
+            "method": "getWorkflowTaskViewModel",
+            "inputData": {
+                "input": [
+                    {
+                        "selection": "{{function:getWorkflowTaskViewModelInputs}}",
+                        "typeToPropertiesMap":
+                        {
+                            "assignalltask_isUserPrivileged": [ ]
+                        }
+                    }
+                ] 
+            },
+            "outputData":
+            {
+                "assignAllConditionVerdict": "output[0].additionalData.assignalltask_isUserPrivileged[0]"
+            },
+            "deps": "js/Awp0RemoveReviewers"
+        },
+        "checkPrefAndFireEvents": {
+            "actionType": "JSFunction",
+            "method": "checkPrefAndFireEvents",
+            "inputData":
+             {
+                 "selected": "{{props.subPanelContext.selectionData.value.selected}}",
+                 "contentType": "{{props.subPanelContext.searchState.criteria.searchInboxContentType}}",
+                 "dialogAction": "{{actions.inboxDialogAction}}"
+             },
+            "deps": "js/aw.inbox.service"
+        },
+        "registerVerdictInCtx": {
+            "actionType": "JSFunction",
+            "method": "updateVerdictToCtx",
+            "inputData": {
+                "data": "{{data}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/Awp0RemoveReviewers"
+        },
+        "unRegisterVerdicts": {
+            "actionType": "bulkModifyCtx",
+            "inputData": {
+                "updates": [
+                    {
+                        "type": "unregister",
+                        "path": "assignAllConditionVerdict"
+                    },
+                    {
+                        "type": "unregister",
+                        "path": "removePrivilegeConditionVerdict"
+                    }
+                ]
+            }
+        },
+        "openOrClosePerformPanelBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "checkPrefAndFireEvents",
+                    "condition": "conditions.isValidViewMode"
+                }
+            ]
+        },
+        "inboxDialogAction": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view": "Awp0PerformTaskPanel",
+                    "parent": ".aw-layout-workareaMain",
+                    "placement": "right",
+                    "width": "WIDE",
+                    "height": "FULL"
+                }
+            },
+            "outputData": {
+                "popupId": "id"
+            }
+        }
+    },
+    "functions": {
+        "getFilterValuesSearchCriteria": {
+            "functionName": "getFilterValuesSearchCriteria",
+            "parameters": [
+                "{{subPanelContext.searchState.criteria}}",
+                "{{filterFacetInput.column.field}}"
+            ]
+        },
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.searchState}}"
+            ],
+            "deps": "js/aw.inbox.service"
+        },
+        "getWorkflowTaskViewModelInputs": {
+            "functionName": "getWorkflowTaskViewModelInputs",
+            "parameters":
+            [
+                "{{subPanelContext}}"
+            ]
+        }
+    },
+    "messages": {
+        "invalidFileError": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.invalidFileError}}",
+            "navigationOptions": [ {
+                    "option": "Discard",
+                    "text": "{{i18n.Discard}}"
+                },
+                {
+                    "option": "Save",
+                    "text": "{{i18n.Save}}"
+                }
+            ]
+        }
+    },
+
+    "i18n": {
+    },
+    "dataProviders": {
+        "gridDataProvider": {
+            "action": "loadDataBatchJob",
+            "editContext": "TABLE_CONTEXT",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands",
+            "filterFacetAction": "getFilterFacets",
+            "filterFacetResults": "{{data.filterFacetResults}}"
+        }
+    },
+    "columnProviders": {
+        "clientScopeUI": {
+            "saveColumnAndLoadAction": "saveColumnConfigLoadData",
+            "resetColumnAction": "resetColumnConfig",
+            "sortCriteria": "{{ctx.sublocation.sortCriteria}}"
+        }
+    },
+    "grids": {
+        "gridView": {
+            "dataProvider": "gridDataProvider",
+            "columnProvider": "clientScopeUI",
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "enableGridMenu": true,
+                "isFilteringEnabled": true
+            }
+        }
+    },
+    "onEvent": [ {
+        "eventId": "columnArrange",
+        "cacheEventData": true,
+        "action": "doArrangeEvent"
+    },
+    {
+        "eventId": "appCtx.register",
+        "condition": "name === 'ViewModeContext'",
+        "action": "openOrClosePerformPanelBatchAction"
+    } ],
+    "conditions": {
+        "isValidViewMode": {
+            "expression": "( ctx.ViewModeContext.ViewModeContext === 'TableView' || ctx.ViewModeContext.ViewModeContext === 'TableSummaryView' )&& props.subPanelContext.selectionData.value.selected"
+        },
+        "isSelectFirstItemCondition": {
+            "expression": "subPanelContext.searchState.totalFound > 0 && ctx.preferences.WRKFLW_preselect_first_task && ctx.preferences.WRKFLW_preselect_first_task[0] === 'true'"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [{
+            "action": "initSearch",
+            "observers": [
+                "props.subPanelContext.searchState.criteria.searchString",
+                "props.subPanelContext.searchState.filterString",
+                "props.subPanelContext.searchState.criteria.userId"
+            ]
+        },
+        {
+            "action": "checkPrefAndFireEvents",
+            "observers": ["props.subPanelContext.selectionData.value.selected"]
+        }]
+    },
+    "ctx": {
+        "preferences": null
+    }
+}

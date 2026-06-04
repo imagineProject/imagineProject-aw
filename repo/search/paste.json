@@ -1,0 +1,264 @@
+{
+  "pasteHandlers": {
+    "dropHandlerForProjectDataFolder": {
+      "action": "blockDragDropProjectDataOrProjectSubFolder",
+      "activeWhen": {
+        "condition": "conditions.isProjectDataFolderBeingDraggedOrDropped"
+      }
+    },
+    "dropHandlerForProjectSubFolder": {
+      "action": "blockDragDropProjectDataOrProjectSubFolder",
+      "activeWhen": {
+        "condition": "conditions.isProjectSubFolderBeingDraggedOrDropped"
+      }
+    },
+    "dropHandlerForActiveFolder": {
+      "action": "blockDragDrop",
+      "activeWhen": {
+        "condition": "conditions.isMyActiveFolderOrActiveFolderBeingDraggedOrDropped"
+      }
+    },
+    "dropHandlerForProjectFolder": {
+      "action": "dragDropToProjectFolder",
+      "activeWhen": {
+        "condition": "conditions.isBeingDraggedOrDroppedToProjectFolder"
+      }
+    }
+  },
+  "actions": {
+    "blockDragDrop": {
+      "actionType": "Event",
+      "method": "Event",
+      "inputData": {
+        "events": [
+          {}
+        ]
+      },
+      "actionMessages": {
+        "success": [
+          {
+            "message": "ActiveFolderDragDropDisabledMessage"
+          }
+        ]
+      }
+    },
+    "blockDragDropProjectDataOrProjectSubFolder": {
+      "actionType": "Event",
+      "method": "Event",
+      "inputData": {
+        "events": [
+          {}
+        ]
+      }
+    },
+    "dragDropToProjectFolder": {
+      "actionType": "JSFunctionAsync",
+      "method": "dragDropToProjectFolder",
+      "deps": "js/projectFolderUtils",
+      "inputData": {
+        "sourceObject": "{{pasteContext.sourceObject}}",
+        "targetObject": "{{pasteContext.targetObject}}",
+        "pasteContext": "{{pasteContext}}"
+      }
+    }
+  },
+  "messages": {
+    "ActiveFolderDragDropDisabledMessage": {
+      "messageType": "WARNING",
+      "messageText": "{{i18n.dragDropDisabledMessage}}",
+      "messageTextParams": [
+        "{{pasteContext.sourceObject}}",
+        "{{pasteContext.targetObject}}"
+      ]
+    }
+  },
+  "conditions": {
+    "isMyActiveFolderOrActiveFolderBeingDraggedOrDropped": {
+      "expression": {
+        "$or": [
+          {
+            "$and": [
+              {
+                "$source": "pasteContext.targetObject",
+                "$query": {
+                  "$typeOf": "Fnd0HomeFolder"
+                }
+              },
+              {
+                "$or": [
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Awp0MySearchFolder"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Awp0SearchFolder"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "$and": [
+              {
+                "$source": "pasteContext.targetObject",
+                "$query": {
+                  "$typeOf": "Awp0MySearchFolder"
+                }
+              },
+              {
+                "$or": [
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Awp0MySearchFolder"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Awp0SearchFolder"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "$and": [
+              {
+                "$source": "pasteContext.targetObject",
+                "$query": {
+                  "$typeOf": "Awp0SearchFolder"
+                }
+              },
+              {
+                "$or": [
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Awp0MySearchFolder"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Awp0SearchFolder"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "isBeingDraggedOrDroppedToProjectFolder": {
+      "expression": {
+        "$or": [
+          {
+            "$and": [
+              {
+                "$source": "pasteContext.targetObject",
+                "$query": {
+                  "$all": {
+                    "$source": "alternateID",
+                    "$query": {
+                      "$regexp": "([w]*)Awp0ProjectFolder([w]*)"
+                    }
+                  }
+                }
+              },
+              {
+                "$source": "pasteContext.targetObject",
+                "$query": {
+                  "$typeOf": "Folder"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Folder"
+                }
+              }
+            ]
+          },
+          {
+            "$and": [
+              {
+                "$source": "pasteContext.targetObject",
+                "$query": {
+                  "$typeOf": "Awp0ProjectFolder"
+                }
+              },
+              {
+                "$or": [
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "WorkspaceObject"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "osFileHandles"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "isProjectDataFolderBeingDraggedOrDropped": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Awp0ProjectDataFolder"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "Awp0ProjectDataTemplates"
+            }
+          }
+        ]
+      }
+    },
+    "isProjectSubFolderBeingDraggedOrDropped": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Awp0ProjectSubFolder"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "Awp0ProjectDataTemplates"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "i18n": {
+    "dragDropDisabledMessage": [
+      "SearchMessages"
+    ],
+    "pasteSuccessful": [
+      "awAddDirectiveMessages"
+    ]
+  }
+}

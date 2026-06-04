@@ -1,0 +1,173 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {},
+    "actions": {
+        "createTableConfigBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "createTableConfig"
+                },
+                {
+                    "action": "closeDialog",
+                    "condition": "data.createdTableConfigData"
+                }
+            ]
+        },
+        "createTableConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "createTableConfig",
+            "inputData": {
+                "columnConfigIdForLeafTable": "{{data.columnConfigId.dbValue}}",
+                "scope": "{{data.atomicData.scopeState.columnConfigScope.columnConfigScopeObject.dbValue}}",
+                "scopeName": "{{data.atomicData.scopeState.selectedListItem.dbValue}}",
+                "tableConfigName": "{{data.tableConfigName.dbValue}}",
+                "operatedNode": "{{function:getSelectionFromCommandContext}}",
+                "i18n": "{{i18n}}"
+            },
+            "outputData": {
+                "createdTableConfigData": "{{json:createdTableConfigurationJson}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "tableConfigCreated",
+                        "eventData": {
+                            "createdTableConfigData": "{{data.createdTableConfigData}}",
+                            "operatedNode": "{{function:getSelectionFromCommandContext}}"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/tableConfigsPwaService"
+        },
+        "closeDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "data": {
+        "scopeState": {
+            "initialValues": {
+              "columnConfigScope": {
+                "columnConfigScopeObject": {
+                  "dbValue": "Site",
+                  "type": "STRING"
+                }
+              },
+              "selectedListItem": {
+                "dbValue": "",
+                "type": "STRING"
+              }
+            },
+            "meta": {
+              "columnConfigScope": {
+                "columnConfigScopeObject": {
+                  "field": "true",
+                  "type": "STRING"
+                }
+              },
+              "selectedListItem": {
+                "field": "true",
+                "type": "STRING"
+              }
+            }
+        },
+        "tableConfigName": {
+            "displayName": "{{i18n.tableConfigName}}",
+            "type": "STRING",
+            "renderingHint": "textbox",
+            "isEditable": true,
+            "isRequired": false,
+            "dbValue": "",
+            "requiredText": "{{i18n.tableConfigNamePlaceholder}}"
+        },
+        "columnConfigId": {
+            "displayName": "{{i18n.columnConfigId}}",
+            "type": "STRING",
+            "renderingHint": "textbox",
+            "isEditable": true,
+            "isRequired": true,
+            "dbValue": ""
+        },
+        "columnConfigIdValue": {
+            "dbValue": "{{subPanelContext.selection[0].props.columnConfigId.uiValue || subPanelContext.selected[0].props.columnConfigId.uiValue}}"
+        }
+    },
+    "functions": {
+        "getSelectionFromCommandContext": {
+            "functionName": "getSelectionFromCommandContext",
+            "parameters": [
+                "{{subPanelContext}}"
+            ],
+            "deps": "js/tableConfigsPwaService"
+        }
+    },
+    "onEvent": [ {
+        "eventId": "primaryWorkArea.selectionChangeEvent",
+        "action": "closeDialog"
+    } ],
+    "i18n": {
+        "add": [ "tableConfigsMessages" ],
+        "tableConfigName": [ "tableConfigsMessages" ],
+        "saveEditsGroupPWATitle": [ "ZeroCompileCommandMessages"],
+        "cancel": [ "ZeroCompileCommandMessages" ],
+        "overwrite": [ "tableConfigsMessages" ],
+        "saveAsOverwriteMessage": [ "tableConfigsMessages" ],
+        "addTableConfigOverwriteMessage": [ "tableConfigsMessages" ],
+        "tableConfigNameExists": [ "tableConfigsMessages" ],
+        "selectedGroupExists": [ "tableConfigsMessages" ],
+        "selectedRoleExists": [ "tableConfigsMessages" ],
+        "selectedWorkspaceExists": [ "tableConfigsMessages" ],
+        "group": [ "tableConfigsMessages" ],
+        "role": [ "tableConfigsMessages" ],
+        "workspace": [ "tableConfigsMessages" ],
+        "tableConfigNamePlaceholder": [ "tableConfigsMessages" ],
+        "columnConfigId": [ "tableConfigsMessages" ],
+        "noColumnConfigIdBanner": [ "tableConfigsMessages" ],
+        "columnConfigIdExistsMessage": [ "tableConfigsMessages" ]
+    },
+    "messages": {
+        "noColumnConfigIdBanner": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.noColumnConfigIdBanner}}"
+        }
+    },
+    "conditions": {
+        "isSiteScopeSelected": {
+            "expression": "data.atomicData.scopeState.columnConfigScope.columnConfigScopeObject.dbValue === 'Site'"
+        },
+        "isGroupScopeSelected": {
+            "expression": "data.atomicData.scopeState.columnConfigScope.columnConfigScopeObject.dbValue === 'Group'"
+        },
+        "isRoleScopeSelected": {
+            "expression": "data.atomicData.scopeState.columnConfigScope.columnConfigScopeObject.dbValue === 'Role'"
+        },
+        "isWorkspaceScopeSelected": {
+            "expression": "data.atomicData.scopeState.columnConfigScope.columnConfigScopeObject.dbValue === 'Workspace'"
+        },
+        "isScopeItemSelected": {
+            "expression": "data.atomicData.scopeState.selectedListItem.dbValue.length > 0"
+        },
+        "isTableConfigNameEntered": {
+            "expression": "data.tableConfigName.dbValue.length > 0"
+        },
+        "enableButton": {
+            "expression": "(conditions.columnConfigIdExists || conditions.isColumnConfigIdEntered) && (conditions.isSiteScopeSelected || ((conditions.isGroupScopeSelected || conditions.isRoleScopeSelected || conditions.isWorkspaceScopeSelected) && conditions.isScopeItemSelected))"
+        },
+        "isAddTableConfig": {
+            "expression": "subPanelContext.isAddTableConfig"
+        },
+        "columnConfigIdExists": {
+            "expression": "subPanelContext.selection[0].props.columnConfigId.uiValue.length > 0 || subPanelContext.selected[0].props.columnConfigId.uiValue.length > 0"
+        },
+        "isColumnConfigIdEntered": {
+            "expression": "data.columnConfigId.dbValue.length > 0"
+        }
+    }
+}

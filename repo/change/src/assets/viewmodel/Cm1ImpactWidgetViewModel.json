@@ -1,0 +1,450 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "createImpactedRelationAndSetProps": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2008-06-DataManagement",
+            "method": "createOrUpdateRelations",
+            "inputData": {
+                "infos": "{{function:getInputToCreateImpactedRelation}}",
+                "sync": false
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "resetPersistedImpactedTable.refreshTable"
+                    }
+                ]
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "updateCandidatesSelection": {
+            "actionType": "JSFunction",
+            "method": "updateSelections",
+            "inputData": {
+                "data": "{{data.candidateTable}}",
+                "sel1": "{{data.selectionModels.impactCandidatesSelModel}}",
+                "sel2": "{{data.selectionModels.relatedItemsSelModel}}",
+                "sel3": "{{data.selectionModels.impactItemsSelMoel}}"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "updateRelatedSelection": {
+            "actionType": "JSFunction",
+            "method": "updateSelections",
+            "inputData": {
+                "data": "{{data.relatedTable}}",
+                "sel1": "{{data.selectionModels.impactCandidatesSelModel}}",
+                "sel2": "{{data.selectionModels.relatedItemsSelModel}}",
+                "sel3": "{{data.selectionModels.impactItemsSelMoel}}"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "updateImapactedItemsSelection": {
+            "actionType": "JSFunction",
+            "method": "updateSelections",
+            "inputData": {
+                "data": "{{data.impactedItemsTable}}",
+                "sel1": "{{data.selectionModels.impactCandidatesSelModel}}",
+                "sel2": "{{data.selectionModels.relatedItemsSelModel}}",
+                "sel3": "{{data.selectionModels.impactItemsSelMoel}}"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "getProblemItemListWithoutUsage": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "attributes": [
+                    "cm0ProblemPartRevs",
+                    "Cm0HasNonImpactedItem"
+                ],
+                "objects": [
+                    {
+                    "uid": "{{ctx.xrtSummaryContextObject.uid}}",
+                    "type": "{{ctx.xrtSummaryContextObject.type}}"
+                    }
+                ]
+            },
+            "outputData": {
+                "problemItems": "{{function:getList}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "impactWidget.problemItemsListLoaded"
+                    }
+                ]
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "populateData":{
+            "actionType": "JSFunction",
+            "method": "populateData",
+            "inputData": {
+                "problemItemListProp":  "{{data.selectedProblemItem}}",
+                "data":"{{data}}"
+            },
+            "outputData": {
+                "selectedProblemItem": "selectedProblemItem",
+                "isDropTargetSet":"isDropTargetSet",
+                "changeImpactedVMO":"changeImpactedVMO",
+                "selectedChangeVMO":"selectedChangeVMO",
+                "selectedChangeObjectUid":"selectedChangeObjectUid",
+                "problemItemLOVLoaded":"problemItemLOVLoaded"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "handleProblemItemSelection": {
+            "actionType": "JSFunction",
+            "method": "handleProblemItemSelection",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "selectedObj":""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "cm1ImpactAnalysis.updateConfigurationState"
+                    }]
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "reloadProbableImpactedTable": {
+            "actionType": "JSFunction",
+            "method": "reloadProbableImpactedTable",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "createImpactedRelationSoaCallForRelationBrowser": {
+            "actionType": "JSFunction",
+            "method": "execute",
+            "deps": "js/pasteService",
+            "inputData": {
+                "targetObject": "{{data.selectedChangeVMO}}",
+                "sourceObjects": "{{ctx.mselected}}",
+                "relationType": "CMHasImpactedItem"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "resetPersistedImpactedTable.refreshTable"
+                    },
+                    {
+                        "name": "objectsAddedFromRelationBrowser"
+                    },
+                    {
+                        "name": "deSelectRelationBrowserGraph"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "resetPersistedImpactedTable.refreshTable"
+                    },
+                    {
+                        "name": "calculateColorIndicatorForProbableImpacted"
+                    },
+                    {
+                        "name": "deSelectRelationBrowserGraph"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "condition": "ctx.mselected.length === 1",
+                        "message": "pasteImpactedSuccessMessageForRelationBrowser"
+                    },
+                    {
+                        "condition": "ctx.mselected.length > 1",
+                        "message": "pasteMultipleImpactedSuccessMessageForRelationBrowser"
+                    }
+                ]
+            }
+        },
+        "setViewerContext": {
+            "actionType": "JSFunction",
+            "method": "setViewerContext",
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "refreshGraph": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "awGraphLegend.activeViewChanged",
+                        "eventData": {
+                            "graphModel": "{{ctx.graph.graphModel}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "deSelectRelationBrowserGraph": {
+            "actionType": "JSFunction",
+            "method": "deSelectRelationBrowserGraph",
+            "inputData": {
+                "data": "{{ctx.graph.graphModel}}"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "enableColorFiltering": {
+            "actionType": "JSFunction",
+            "method": "toggleColorFiltering",
+            "inputData": {
+                "forceToggleOff": false
+            },
+            "deps": "js/Awp0SearchHighlightingService"
+        },
+        "setPanelTitle": {
+            "actionType": "JSFunction",
+            "method": "getDisplayName",
+            "inputData": {
+                "title": "{{data.title}}",
+                "selection": "{{data.selectedProblemItem.uiValues[0]}}"
+            },
+            "outputData": {
+                "selectionDisplayName": ""
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "initPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getProblemItemListWithoutUsage"
+                },
+                {
+                    "action": "enableColorFiltering"
+                }
+            ]
+        },
+        "updateConfigState":{
+            "actionType": "JSFunction",
+            "method": "updateConfigState",
+            "inputData": {
+                "configurationState": "{{fields.configurationState}}",
+                "data":null,
+                "selectedProblemItem":"{{data.selectedObj}}"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        }
+    },
+    "ctx": {
+        "ImpactsViewMode":{
+            "type": "string"
+        },
+        "ImpactsViewData":{
+            "type": "Object"
+        }
+    },
+    "functions": {
+        "getCreateInputToCreteImpactedRelation": {
+            "functionName": "getCreateInputToCreteImpactedRelation",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getList": {
+            "functionName": "getProblemItemList",
+            "parameters": [
+            ],
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "getInputToCreateImpactedRelation": {
+            "functionName": "getSoaInputForCreateRelations",
+            "parameters": [
+                "{{ctx.pselected}}",
+                "{{data.eventData}}"
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initPanel",
+        "onUpdate": [ {
+            "action": "updateCandidatesSelection",
+            "observers": [ "viewModel.candidateTable.selected" ]
+        },
+        {
+            "action": "updateRelatedSelection",
+            "observers": [ "viewModel.relatedTable.selected" ]
+        },
+        {
+            "action": "updateImapactedItemsSelection",
+            "observers": [ "viewModel.impactedItemsTable.selected" ]
+        },
+        {
+            "action": "reloadProbableImpactedTable",
+            "observers": ["viewModel.data.selectedProblemItem.dbValue"]
+        },
+        {
+            "action": "setPanelTitle",
+            "observers": ["viewModel.data.selectedProblemItem.dbValue"]
+        }
+
+     ]
+    },
+    "onEvent": [
+        {
+            "eventId": "cm1ImpactAnalysis.updateConfigurationState",
+            "action": "updateConfigState"
+        },
+        {
+            "eventId": "impactWidget.problemItemsListLoaded",
+            "action": "populateData"
+        },
+        {
+            "eventId": "createImpactedRelationSoaCallForRelationBrowser.relationBrowser",
+            "action": "createImpactedRelationSoaCallForRelationBrowser"
+        },
+        {
+            "eventId": "cm1ImpactAnalysis.changePasteService",
+            "action": "createImpactedRelationAndSetProps",
+            "cacheEventData": true
+        }
+    ],
+    "conditions": {
+        "isCm1RelationBrowser": {
+            "expression": "ctx.ImpactsViewMode === 'RelationView'"
+        }
+    },
+    "data": {
+        "title": {
+            "type": "STRING",
+            "hasLov": true,
+            "displayName": "{{i18n.proposedImpactedTitle}}"
+        },
+        "impactedCandidatesTitle": {
+            "displayName": "{{i18n.impactedCandidatesTitle}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true"
+        },
+        "impactAnalysisOverviewLabel": {
+            "dispValue": "{{i18n.impactAnalysisOverviewLabel}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "problemItemLOVLoaded": {
+            "type": "BOOLEAN"
+        },
+        "selectedProblemItem": {
+            "type": "STRING",
+            "hasLov": true,
+            "displayName": "{{i18n.impactedCandidatesTitle}}"
+        },
+        "configurationState": {
+            "initialValues": {
+                "prodContextIds":[],
+                "selectedRevRuleUID":"",
+                "selectedEffUIDs":[],
+                "displayValues":{
+                    "revRule":"",
+                    "singleProductId":"",
+                    "singleEffectivity":"",
+                    "selectedProductIDs":[],
+                    "selectedEffectivities":[]
+                }
+            },
+            "meta": {
+            }
+        },
+        "cm1ImpactWidgetState": {
+            "initialValues": {
+                "probImpactedLastSingleSelection":"",
+                "selectedObjects":[],
+                "dataProviderName":"",
+                "dataProvidersLoadedVMOs":{
+                    "loadedProbableImpactedVMOs":[],
+                    "loadedRelatedVMOs":[],
+                    "loadedPersistedVMOs":[]
+                },
+                "totalFoundRelated":0
+            },
+            "meta": {}
+        },
+        "candidateTable": {
+            "meta": {}
+        },
+        "relatedTable": {
+            "meta": {}
+        },
+        "impactedItemsTable": {
+            "meta": {}
+        },
+        "probableImpactedTablePrevSel": {
+            "dbValue":null,
+            "type":"object"
+        },
+        "subPanelContext":{
+            "type":"object"
+        },
+        "dataProviders": {},
+        "addToImpactedCommand": "cm1_addImpactedItemCommands"
+    },
+    "selectionModels": {
+        "impactCandidatesSelModel": {
+            "selectionMode": "multiple"
+        },
+        "relatedItemsSelModel": {
+            "selectionMode": "multiple"
+        },
+        "impactItemsSelMoel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "messages": {
+        "pasteImpactedSuccessMessageForRelationBrowser": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.pasteImpactedSuccessMessage}}",
+            "messageTextParams": [
+                "{{ctx.mselected[0]}}",
+                "{{ctx.currentChange.props.object_string.dbValues[0]}}"
+            ]
+        },
+        "pasteMultipleImpactedSuccessMessageForRelationBrowser": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.pasteMultipleImpactedSuccessMessage}}",
+            "messageTextParams": [
+                "{{ctx.mselected}}",
+                "{{ctx.currentChange.props.object_string.dbValues[0]}}"
+            ]
+        }
+    },
+    "i18n": {
+        "TwistieTooltipCollapsed": [
+            "ChangeMessages"
+        ],
+        "TwistieTooltipExpanded": [
+            "ChangeMessages"
+        ],
+        "pasteImpactedSuccessMessage": [
+            "ChangeMessages"
+        ],
+        "pasteMultipleImpactedSuccessMessage": [
+            "ChangeMessages"
+        ],
+        "persistedImpactesTitle": [
+            "ChangeMessages"
+        ],
+        "relatedImpactesTitle": [
+            "ChangeMessages"
+        ],
+        "impactedCandidatesTitle": [
+            "ChangeMessages"
+        ],
+        "proposedImpactedTitle": [
+            "ChangeMessages"
+        ],
+        "impactAnalysisOverviewLabel":[
+            "ChangeMessages"
+        ]
+    }
+}

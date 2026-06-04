@@ -1,0 +1,110 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "closeSettingsPanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "complete",
+                    "eventData": {
+                        "source": "toolAndInfoPanel"
+                    }
+                } ]
+            }
+        },
+        "settingsClose": {
+            "actionType": "JSFunction",
+            "method": "settingsClose",
+            "deps": "js/Pca0SettingsService"
+        },
+        "updateFilterCriteriaComponentsFromFscSettingsPanel": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "modifyFilterCriteria"
+                },
+                {
+                    "action": "navigateBackToSettings"
+                },
+                {
+                    "action": "triggerFilterCriteriaUpdate"
+                }
+            ]
+        },
+        "modifyFilterCriteria": {
+            "actionType": "JSFunction",
+            "method": "filterCriteriaModified",
+            "deps": "js/Pca0FilterCriteriaSettingsService"
+        },
+        "navigateBackToSettings": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "inputData": {
+                "subView": "Pca0SettingsContent"
+            },
+            "outputData": {
+                "activeView": ""
+            },
+            "deps": "js/Pca0SettingsService"
+        },
+        "triggerFilterCriteriaUpdate": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0FilterCriteriaSettings.refreshContent"
+                } ]
+            }
+        },
+        "navigateToView": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "inputData": {
+                "subView": "{{parameters.eventData.subView}}"
+            },
+            "outputData": {
+                "activeView": ""
+            },
+            "deps": "js/Pca0SettingsService"
+        }
+    },
+    "lifecycleHooks": {
+        "onUnmount": "settingsClose"
+    },
+    "data": {
+        "activeView": "Pca0SettingsContent"
+    },
+    "i18n": {
+        "settings": [ "FullScreenConfigurationMessages" ],
+        "effectivity": [ "FullScreenConfigurationMessages" ],
+        "ruleDateSubPanelTitle": [ "FullScreenConfigurationMessages" ]
+    },
+    "onEvent": [ {
+            "eventId": "gwt.SubLocationContentSelectionChangeEvent",
+            "action": "closeSettingsPanel"
+        },
+        {
+            "eventId": "Pca0Settings.closeDialog",
+            "action": "closeSettingsPanel"
+        },
+        {
+            "eventId": "Pca0FilterCriteria.navigateToSubView",
+            "action": "navigateToView",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0RuleDate.ruleDateChanged",
+            "action": "updateFilterCriteriaComponentsFromFscSettingsPanel"
+        },
+        {
+            "eventId": "Pca0DateEffectivity.effectivityChanged",
+            "action": "updateFilterCriteriaComponentsFromFscSettingsPanel"
+        },
+        {
+            "eventId": "Pca0UnitEffectivity.effectivityChanged",
+            "action": "modifyFilterCriteria"
+        }
+    ]
+}

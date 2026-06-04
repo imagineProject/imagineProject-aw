@@ -1,0 +1,98 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "nodesLoadedAction":{
+            "actionType": "JSFunction",
+            "method": "nodesLoadedAction",
+            "inputData": {
+                "data": "{{data.response}}",
+                "referenceSetList": "{{data.dataProviders.dataProviderListReferenceSets}}",
+                "referenceSet": "{{props.subPanelContext.referenceSet}}"
+            },
+            "deps": "js/PmiToolService"
+        },
+        "initializeDataProvider": {
+            "actionType": "dataProvider",
+            "method": "dataProviderListReferenceSets"
+        },
+        "getReferenceSetsList":{
+            "actionType": "JSFunctionAsync",
+            "method": "getReferenceSetsList",
+            "inputData": {
+                "viewerContextData": "{{props.subPanelContext.viewerContextData}}",
+                "referenceSet": "{{props.subPanelContext.referenceSet}}"
+            },
+            "outputData": {
+                "response": "referenceSets",
+                "totalFound": "count"
+            },
+            "events": {
+                "success": [ {
+                    "name": "refSetloadedEvent"
+                } ]
+            },
+            "deps": "js/PmiToolService"
+        },
+        "closePopupWindow": {
+            "actionType": "JSFunction",
+            "method": "hidePopupChangeReferenceSets",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/PmiToolService"
+
+        },
+        "applyPreferenceSet":{
+            "actionType": "JSFunction",
+            "method": "applyPreferenceSet",
+            "inputData": {
+                "response": "{{data.response}}",
+                "viewerContextData": "{{props.subPanelContext.viewerContextData}}",
+                "subPanelContext":"{{props.subPanelContext}}"
+            },
+            "deps": "js/PmiToolService"
+
+        }
+    },
+    "data": {
+        "referenceSetLabel": {
+            "displayName": "{{i18n.referenceSets}}",
+            "isEditable": "false",
+            "dispValue": "{{i18n.referenceSets}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        }
+    },
+    "dataProviders": {
+        "dataProviderListReferenceSets": {
+            "action": "getReferenceSetsList",
+            "response": "{{data.response}}",
+            "totalFound": "{{data.totalFound}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeDataProvider"
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "refSetloadedEvent",
+            "cacheEventData": true,
+            "action": "nodesLoadedAction"
+        }
+
+    ],
+    "conditions": {
+        "isDifferentRefSet": {
+            "expression": "data.dataProviders.dataProviderListReferenceSets.getSelectedObjects()[0] && data.dataProviders.dataProviderListReferenceSets.getSelectedObjects()[0].cellHeader1 !== props.subPanelContext.referenceSet.activeReferenceSet"
+        }
+    },
+     "i18n": {
+        "referenceSets": [ "PmiToolMessages" ],
+        "apply": [ "PmiToolMessages" ],
+        "cancel": [ "PmiToolMessages" ]
+    }
+}

@@ -1,0 +1,321 @@
+{
+  "schemaVersion": "1.0.0",
+  "pasteHandlers": {
+    "pasteHandlerForGeneratingEBOMFromDBOM": {
+      "action": "BOMGenerationBatchAction",
+      "activeWhen": {
+        "condition": "conditions.isSourceAndTargetValid"
+      }
+    },
+    "pasteHandlerForNonCBALocation": {
+      "action": "aceDefaultPasteAction",
+      "activeWhen": {
+        "condition": "conditions.isSourceAndTargetValidButNonCBALocation"
+      }
+    }
+  },
+  "actions": {
+    "BOMGenerationBatchAction": {
+      "actionType": "batchJob",
+      "steps": [
+        {
+          "action": "Pma1DisallowBOMGenerationAndShowErrMsg",
+          "condition": "ctx.cadbomalignment && ctx.cadbomalignment.ImpactAnalysis.isImpactAnalysisMode"
+        },
+        {
+          "action": "showPopUpNotification",
+          "condition": "ctx.cadbomalignment && !ctx.cadbomalignment.ImpactAnalysis.isImpactAnalysisMode"
+        }
+      ]
+    },
+    "showPopUpNotification": {
+      "actionType": "JSFunction",
+      "method": "show",
+      "inputData": {
+        "data": {
+          "declView": "PmaGenerateBom",
+          "subPanelContext": {
+            "pasteContext": "{{pasteContext}}"
+          },
+          "options": {
+            "clickOutsideToClose": false,
+            "isModal": true,
+            "hasMask": true,
+            "className": "aw-pma-popupColor",
+            "innerClassName": "aw-pma-popupColor",
+            "draggable": false
+          }
+        }
+      },
+      "outputData": {
+        "popupId": "id"
+      },
+      "deps": "js/popupService"
+    },
+    "Pma1DisallowBOMGenerationAndShowErrMsg": {
+      "actionType": "JSFunction",
+      "method": "showError",
+      "inputData": {
+        "0": "{{data.i18n.Pma1BOMGenerationInImpactAnalysisError}}"
+      },
+      "deps": "js/messagingService"
+    }
+  },
+  "conditions": {
+    "isSourceAndTargetValid": {
+      "expression": {
+        "$and": [
+          {
+            "$or": [
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Awb0PartElement"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Awb0PartElement"
+                    }
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              },
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Awb0PartElement"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Awb0PositionedElement"
+                    }
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              },
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Awb0PositionedElement"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Awb0PartElement"
+                    }
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              },
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Awb0PositionedElement"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Awb0PositionedElement"
+                    }
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              },
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Fgf0PartitionElement"
+                    }
+                  },
+                  {
+                    "$or": [
+                      {
+                        "$source": "pasteContext.sourceObject",
+                        "$query": {
+                          "$typeOf": "Awb0Element"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "$source": "pasteContext.isDragDropIntent",
+            "$query": {
+              "$eq": true
+            }
+          }
+        ]
+      }
+    },
+    "isSourceAndTargetValidButNonCBALocation": {
+      "expression": {
+        "$or": [
+          {
+            "$and": [
+              {
+                "$source": "pasteContext.targetObject",
+                "$query": {
+                  "$typeOf": "Awb0PartElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Awb0PartElement"
+                }
+              },
+              {
+                "$source": "ctx.sublocation.nameToken",
+                "$query": {
+                  "$neq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                }
+              }
+            ]
+          },
+          {
+            "$and": [
+              {
+                "$source": "pasteContext.targetObject",
+                "$query": {
+                  "$typeOf": "Awb0PartElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Awb0PositionedElement"
+                }
+              },
+              {
+                "$source": "ctx.sublocation.nameToken",
+                "$query": {
+                  "$neq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                }
+              }
+            ]
+          },
+          {
+            "$and": [
+              {
+                "$source": "pasteContext.targetObject",
+                "$query": {
+                  "$typeOf": "Awb0PositionedElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Awb0PartElement"
+                }
+              },
+              {
+                "$source": "ctx.sublocation.nameToken",
+                "$query": {
+                  "$neq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                }
+              }
+            ]
+          },
+          {
+            "$and": [
+              {
+                "$source": "pasteContext.targetObject",
+                "$query": {
+                  "$typeOf": "Awb0PositionedElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Awb0PositionedElement"
+                }
+              },
+              {
+                "$source": "ctx.sublocation.nameToken",
+                "$query": {
+                  "$neq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                }
+              }
+            ]
+          },
+          {
+            "$and": [
+              {
+                "$source": "pasteContext.targetObject",
+                "$query": {
+                  "$typeOf": "Fgf0PartitionElement"
+                }
+              },
+              {
+                "$or": [
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Awb0Element"
+                    }
+                  }
+                ]
+              },
+              {
+                "$source": "ctx.sublocation.nameToken",
+                "$query": {
+                  "$neq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "i18n": {
+    "Pma1BOMGenerationInImpactAnalysisError": [
+      "PMA1AutomationMessages"
+    ]
+  }
+}

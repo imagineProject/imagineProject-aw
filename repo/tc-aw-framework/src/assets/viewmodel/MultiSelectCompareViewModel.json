@@ -1,0 +1,193 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/awCompare.service",
+            "method": "getViewModelObjects",
+            "inputData": {
+                "0": "{{subPanelContext.selection}}",
+                "1": "{{data.dataProviders.compareDataProvider.columnConfig.columns}}"
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "searchResults"
+            }
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "saveColumns": {
+            "actionType": "JSFunctionAsync",
+            "method": "saveColumns",
+            "inputData": {
+                "columnProvider": "{{data.columnProviders.compareColumnProvider}}",
+                "gridId": "multiSelectCompare",
+                "declViewModel": "{{data}}",
+                "ctx": "{{ctx}}",
+                "eventData": "{{data.eventData}}",
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "deps": "js/awCompare.service"
+        },
+        "loadColumns": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/awCompare.service",
+            "method": "getTypesAndCallSoa",
+            "inputData": {
+                "soaInput": {
+                    "getOrResetUiConfigsIn": [ {
+                        "scope": "LoginUser",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": false,
+                        "columnConfigQueryInfos": [ {
+                            "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}",
+                            "operationType": "union",
+                            "typeNames": ""
+                        } ],
+                        "businessObjects": ""
+                    } ]
+                },
+                "modelObjects": "{{subPanelContext.selection}}",
+                "columnProvider": "{{data.columnProviders.compareColumnProvider}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "dataProviders.compareDataProvider.columnConfig": "columnConfigurations.0.columnConfigurations.0",
+                "dataProviders.compareDataProvider.columnConfigId": "columnConfigurations.0.columnConfigurations.0.columnConfigId",
+                "compareInitialized": true
+            }
+        },
+        "reloadTable": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events":
+                [
+                    {
+                        "name": "multiSelectCompare.plTable.reload"
+                    }
+                ]
+            }
+        },
+        "resetCompare": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadColumns",
+                    "condition": "conditions.compareShouldReloadColumns"
+                },
+                {
+                    "action": "reloadTable",
+                    "condition": "conditions.compareShouldReloadColumns"
+                }
+            ]
+        },
+        "saveColumnAndLoadAction": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}",
+                        "columnConfigId": "{{data.dataProviders.compareDataProvider.columnConfigId}}",
+                        "columns": "{{data.dataProviders.compareDataProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "outputData": {},
+            "events": {
+                "success": [ {
+                    "name": "multiSelectCompare.plTable.clientRefresh"
+                } ]
+            }
+        },
+        "resetColumns": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/awCompare.service",
+            "method": "getTypesAndCallSoa",
+            "inputData": {
+                "soaInput": {
+                    "getOrResetUiConfigsIn": [ {
+                        "scope": "LoginUser",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos": [ {
+                            "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}",
+                            "operationType": "{{data.eventData.operationType}}",
+                            "typeNames": "{{types}}"
+                        } ],
+                        "businessObjects": "{{subPanelContext.selection}}"
+                    } ]
+                },
+                "modelObjects": "{{subPanelContext.selection}}",
+                "columnProvider": "{{data.columnProviders.compareColumnProvider}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "dataProviders.compareDataProvider.columnConfig": "columnConfigurations.0.columnConfigurations.0"
+            },
+            "events": {
+                "success": [ {
+                    "name": "multiSelectCompare.plTable.clientRefresh"
+                } ]
+            }
+        }
+    },
+    "conditions": {
+        "compareShouldReloadColumns": {
+            "expression": "data.compareInitialized === true && props.subPanelContext.selection.length > 1"
+        }
+    },
+    "columnProviders": {
+        "compareColumnProvider": {
+            "name": "compareGridView",
+            "loadColumnAction": "loadColumns",
+            "saveColumnAndLoadAction": "saveColumnAndLoadAction",
+            "resetColumnAction": "resetColumns"
+        }
+    },
+    "dataProviders": {
+        "compareDataProvider": {
+            "action": "loadData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "inputData": {
+                "selectionData": "{{subPanelContext.selectionData}}"
+            }
+        }
+    },
+    "grids": {
+        "multiSelectCompare": {
+            "dataProvider": "compareDataProvider",
+            "columnProvider": "compareColumnProvider",
+            "enableArrangeMenu": true,
+            "gridOptions": {}
+        }
+    },
+    "onEvent": [ {
+        "eventId": "columnArrange",
+        "cacheEventData": true,
+        "action": "doArrangeEvent"
+    },
+    {
+        "eventId": "awCompare.saveColumns",
+        "action": "saveColumns"
+    } ],
+    "lifecycleHooks": {
+        "onUpdate": [ {
+            "action": "resetCompare",
+            "observers": [ "props.subPanelContext.selection.length", "props.subPanelContext.selection[0].uid" ]
+        } ]
+    },
+    "i18n": {}
+}

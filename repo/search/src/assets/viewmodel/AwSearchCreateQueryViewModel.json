@@ -1,0 +1,204 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports": [],
+    "actions": {
+        "loadTypeList": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2016-03-Finder",
+            "method": "performSearch",
+            "inputData": {
+                "searchInput": {
+                    "attributesToInflate": [ "parent_types", "type_name" ],
+                    "internalPropertyName": "",
+                    "maxToLoad": 25,
+                    "maxToReturn": 25,
+                    "providerName": "Awp0TypeSearchProvider",
+                    "searchCriteria": {
+                        "searchString": "{{data.typeListProp.filterString}}",
+                        "listOfIncludeObjectTypes": "BusinessObject",
+                        "loadAllSubTypes": "true",
+                        "defaultType": "{{data.typeListProp.filterString}}"
+                    },
+                    "searchFilterFieldSortType": "Alphabetical",
+                    "searchFilterMap": {},
+                    "searchSortCriteria": [],
+                    "startIndex": "{{data.dataProviders.getTypeListProvider.startIndex}}"
+                }
+            },
+            "outputData": {
+                "typeListTotalFound": "totalFound",
+                "typeList": "{{function:convertTypesToLovEntries}}"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "createQuery": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "createQueryObject"
+                },
+                {
+                    "action": "updatesearchStateWithSavedQuery"
+                },
+                {
+                    "action": "closeDialogPanel"
+                }
+
+            ]
+        },
+        "createQueryObject": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Search-2024-12-SavedQuery",
+            "method": "createOrModifySavedQuery",
+            "inputData": {
+                "input" : {
+                    "queryName": "{{data.createQueryName.dbValue}}",
+                    "queryDescription": "{{data.createQueryProperty1.dbValue}}",
+                    "searchType": "{{function:getQueryTypeName}}",
+                    "isICSType": false,
+                    "queryClauses": [],
+                    "revisionRuleName": "",
+                    "sorter" : {
+                        "attribute": "",
+                        "order": "",
+                        "entryKey": ""
+                    }
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "savedquery": "savedquery"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "SOAFailureMsg"
+                    }
+                ]
+            },
+            "deps": "js/AwSearchQueryBuilderService"
+        },
+        "updatesearchStateWithSavedQuery" : {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.searchState}}",
+                "value": {
+                    "saveAsUid": "{{data.savedquery.uid}}"
+                }
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "primaryWorkarea.reset"
+                    }
+                 ]
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "closeDialogPanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "data":
+    {
+        "createQueryName":
+        {
+            "displayName": "{{i18n.Name}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "isEditable": "true",
+            "maxLength": 128,
+            "autofocus": true
+        },
+        "typeListProp": {
+            "isRequired": true,
+            "displayName": "{{i18n.SearchType}}",
+            "type": "STRING",
+            "hasLov": true,
+            "isEditable": true,
+            "dataProvider": "getTypeListProvider"
+        },
+        "createQueryProperty1":
+        {
+            "displayName": "{{i18n.Description}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "maxLength": 128
+        },
+
+         "createQueryProperty2":
+        {
+            "displayName": "{{i18n.queryType}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "maxLength": 128
+        },
+
+         "createQueryDefaultValue":
+        {
+            "displayName": "{{i18n.DefaultValue}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "maxLength": 128
+        }
+
+    },
+
+    "functions":
+    {
+        "getQueryTypeName": {
+            "functionName": "getQueryTypeName",
+            "parameters": [ "{{data.typeListProp.dbValue}}" ]
+        }
+    },
+
+    "messages": {
+        "SOAFailureMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "closeDialog",
+            "action": "closeDialogPanel"
+        }
+    ],
+    "conditions":
+    {
+        "isValidToCreateQuery":
+        {
+            "expression": "data.createQueryName.dbValue && data.typeListProp.dbValue"
+        }
+    },
+    "dataProviders": {
+        "getTypeListProvider": {
+            "action": "loadTypeList",
+            "response": "{{data.typeList}}",
+            "totalFound": "{{data.typeListTotalFound}}"
+        }
+    },
+    "i18n":
+    {
+        "Name":[ "SearchMessages"],
+        "Description":[ "SearchMessages"],
+        "queryType": ["SearchMessages"],
+        "DefaultValue": ["SearchMessages"],
+        "Create" : ["SearchMessages"],
+        "createNewQuery" :["SearchMessages"],
+        "properties": ["SearchMessages"],
+        "SearchType": ["SearchMessages"]
+    }
+
+}

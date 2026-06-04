@@ -1,0 +1,150 @@
+{
+    "schemaVersion" : "1.0.0",
+    "data":{
+        "_provider": {
+            "breadcrumbConfig": {
+                "type": "navigate",
+                "vm" : "orgBreadCrumb"
+            },
+            "label": {
+                "source": "/i18n/UsermanagementMessages",
+                "key": "organizationTitle"
+            },
+            "clientScopeURI": "Um0ShowOrganization",
+            "nameToken": "com.siemens.splm.client.usermanagement:organizationsublocation",
+            "context": {
+                "search": {
+                    "provider": "um0AdminDataProvider",
+                    "criteria": {
+                        "resourceProviderContentType": "Organization"
+                    },
+                    "sortType": "Alphabetical",
+                    "maxToLoad": 50,
+                    "maxToReturn": 50,
+                    "hideInContentSearchBox": true,
+                    "showLoadingText": true
+                }
+            },
+            "policy": "/policies/adminObjectPropertyPolicy.json",
+            "selectionMode": "multiple",
+            "hideRelationsTree": true,
+            "viewBase": "org",
+            "defaultDisplayMode": "TreeSummaryView",
+            "viewModes": {
+                "SummaryView": {
+                    "primaryWorkArea": "list",
+                    "secondaryWorkArea": true
+                },
+                "TableSummaryView": {
+                    "primaryWorkArea": "table",
+                    "secondaryWorkArea": true
+                },
+                "ListView": {
+                    "primaryWorkArea": "list",
+                    "secondaryWorkArea": false
+                },
+                "TableView": {
+                    "primaryWorkArea": "table",
+                    "secondaryWorkArea": false
+                },
+                "ImageView": {
+                    "primaryWorkArea": "image",
+                    "secondaryWorkArea": false
+                },
+                "TreeView": {
+                    "primaryWorkArea": "tree",
+                    "secondaryWorkArea": false
+                },
+                "TreeSummaryView": {
+                    "primaryWorkArea": "tree",
+                    "secondaryWorkArea": true
+                }
+            }
+        },
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "searchState": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "onEvent": [ {
+            "eventId": "locationChangeSuccess",
+            "action": "updateSearchCriteriaAndXrtContext"
+        },
+        {
+            "eventId": "OrgList.registerCtxForNewNodes",
+            "cacheEventData": true,
+            "action": "registerCtxForNewNodes"
+        },
+        {
+            "eventId": "OrgList.unRegisterCtxForNewNodes",
+            "cacheEventData": true,
+            "action": "unRegisterCtxForNewNodes"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "updateSearchCriteriaAndXrtContext",
+        "onUpdate": [ {
+            "action": "handleSelectionChange",
+            "observers": [ "viewModel.atomicData.selectionData.selected[0]", "viewModel.atomicData.selectionData.selected.length" ]
+        } ]
+    },
+    "actions": {
+        "handleSelectionChange":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getUpdatedObjectSetInfo",
+                    "condition":"data.selectionData.selected.length===1 && data.selectionData.selected[0].uid === data.searchState.pwaSelection[0].uid"
+                },
+                {
+                    "action":"updateSearchCriteriaAndXrtContext"
+
+                }
+
+            ]
+        },
+        "getUpdatedObjectSetInfo":{
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "relatedModified": "{{data.selectionData.selected}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "updateSearchCriteriaAndXrtContext": {
+            "actionType": "JSFunction",
+            "method": "updateSearchCriteriaAndXrtContext",
+            "inputData": {
+                "searchStateAtomicData": "{{data.atomicDataRef.searchState}}",
+                "searchStateUpdater": "{{data.updateAtomicData}}",
+                "selectionData": "{{data.selectionData}}"
+            },
+            "deps": "js/userMgmtService"
+        },
+        "registerCtxForNewNodes":{
+            "actionType": "JSFunction",
+            "method": "registerCtxForNewNodes",
+            "inputData": {
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/um0AddInAnOrganizationService"
+        },
+        "unRegisterCtxForNewNodes":{
+            "actionType": "JSFunction",
+            "method": "unRegisterCtxForNewNodes",
+            "inputData": {
+            },
+            "deps": "js/um0AddInAnOrganizationService"
+        }
+    }
+}

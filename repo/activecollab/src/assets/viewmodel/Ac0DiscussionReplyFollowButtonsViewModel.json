@@ -1,0 +1,212 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "expandCommentsLink": {
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "false"
+        },
+        "collapseCommentsLink": {
+            "displayName": "{{i18n.collapse}}",
+            "type": "STRING",
+            "isRequired": "false"
+        },
+        "expandCollapseSwitchObj": {
+            "showExpandDiscussion": true,
+            "showCollapseDiscussion": false
+        },
+        "subUnSubToConvSwitch": {
+            "showFollowConv": ""
+        },
+        "collapseCommentsLinkDesc": {
+            "extendedTooltipContent": "{{i18n.collapseDesc}}"
+        },
+        "expandNoCommentsLinkDesc": {
+            "extendedTooltipContent": "{{i18n.expandNoCommentsLinkDesc}}"
+        },
+        "expandCommentsLinkDesc": {
+            "extendedTooltipContent": "{{i18n.expandCommentsLinkDesc}}"
+        }
+    },
+    "ports": {
+    },
+    "actions": {
+        "buildRepliesText": {
+            "actionType": "JSFunction",
+            "method": "buildRepliesText",
+            "inputData": {
+                "data": "{{data.expandCommentsLink}}",
+                "numReplies": "{{props.replyDiscussion}}"
+            },
+            "outputData": {
+                "expandCommentsLink": ""
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+
+        "expandComments": {
+            "actionType": "JSFunction",
+            "method": "expandDiscussionAction",
+            "inputData": {
+                "data": "{{data.expandCollapseSwitchObj}}",
+                "replyDiscussion": "{{props.replyDiscussion}}"
+            },
+            "outputData": {
+                "expandCollapseSwitchObj": ""
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+
+        "followDiscussion": {
+            "actionType": "JSFunction",
+            "method": "followDiscussionAction",
+            "inputData": {
+                "data": "{{data.subUnSubToConvSwitch}}"
+            },
+            "outputData": {
+                "subUnSubToConvSwitch": ""
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+
+        "unFollowDiscussion": {
+            "actionType": "JSFunction",
+            "method": "unFollowDiscussionAction",
+            "inputData": {
+                "data": "{{data.subUnSubToConvSwitch}}"
+            },
+            "outputData": {
+                "subUnSubToConvSwitch": ""
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+
+        "collapseComments": {
+            "actionType": "JSFunction",
+            "method": "collapseDiscussionAction",
+            "inputData": {
+                "data": "{{data.expandCollapseSwitchObj}}",
+                "replyDiscussion": "{{props.replyDiscussion}}"
+            },
+            "outputData": {
+                "expandCollapseSwitchObj": ""
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+
+        "initializeDiscussionCommands": {
+            "actionType": "JSFunction",
+            "method": "initDiscussionSubscription",
+            "inputData":
+            {
+                "data": "{{data.subUnSubToConvSwitch}}",
+                "convItem": "{{props.discussionObj.discussionItem}}"
+            },
+            "outputData": {
+                "subUnSubToConvSwitch": ""
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+
+        "noop": {
+            "actionType": "JSFunction",
+            "method": "getRandObjId",
+            "deps": "js/Ac0ConversationService"
+        },
+
+        "Ac0SubConvObjCommandAction": {
+            "actionType": "JSFunctionAsync",
+            "method": "collabSubscribeToConversation",
+            "deps": "js/Ac0NotificationService",
+            "inputData": {
+                "convItem": "{{props.discussionObj.discussionItem}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Ac0DiscussionReplyFollowButton.followDiscussion"
+                } ]
+            }
+        },
+        "Ac0UnSubConvObjCommandAction": {
+            "actionType": "JSFunctionAsync",
+            "method": "collabUnSubscribeToConversation",
+            "deps": "js/Ac0NotificationService",
+            "inputData": {
+                "convItem": "{{props.discussionObj.discussionItem}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Ac0DiscussionReplyFollowButton.unFollowDiscussion"
+                } ]
+            }
+        }
+    },
+
+    "onEvent": [
+        {
+            "eventId": "primaryWorkArea.selectionChangeEvent",
+            "condition": "conditions.inDiscussLocation",
+            "action": "collapseComments"
+        },
+        {
+            "eventId": "Ac0DiscussionTile.expandCommentsEvent",
+            "condition": "conditions.inDiscussLocation",
+            "action": "expandComments"
+        },
+        {
+            "eventId": "Ac0DiscussionReplyFollowButton.followDiscussion",
+            "action": "followDiscussion"
+        },
+        {
+            "eventId": "Ac0DiscussionReplyFollowButton.unFollowDiscussion",
+            "action": "unFollowDiscussion"
+        }
+    ],
+
+    "lifecycleHooks": {
+        "onUpdate": [{
+            "action": "buildRepliesText",
+            "observers": [ "props.replyDiscussion.repliesString" ]
+
+        },
+        {
+            "action": "initializeDiscussionCommands",
+            "observers": [ "props.replyDiscussion.showFollowConv" ]
+
+        }]
+    },
+
+    "conditions": {
+        "inDiscussLocation":
+        {
+            "expression": "(ctx.sublocation.clientScopeURI === 'Ac0CollaborationFeed' || ctx.sublocation.clientScopeURI === 'Ac0CollaborationActions')"
+        },
+        "hasNoReplies":
+        {
+            "expression": "props.discussionObj.discussionItem.props.numReplies.dbValue === 0"
+        },
+        "hasReplies":
+        {
+            "expression": "props.discussionObj.discussionItem.props.numReplies.dbValue >= 1"
+        }
+    },
+
+    "props": {
+        "reply-discussion": {
+            "type": "object"
+        },
+        "discussion-obj": {
+            "type": "object"
+        }
+    },
+    "i18n": {
+        "follow": [ "ActiveCollabDeclarativeMessages" ],
+        "followConvDesc": [ "ActiveCollabDeclarativeMessages" ],
+        "unfollow": ["ActiveCollabDeclarativeMessages"],
+        "unFollowConvDesc": [ "ActiveCollabDeclarativeMessages" ],
+        "collapse": ["ActiveCollabDeclarativeMessages"],
+        "collapseDesc": ["ActiveCollabDeclarativeMessages"],
+        "expandNoCommentsLinkDesc": ["ActiveCollabDeclarativeMessages"],
+        "expandCommentsLinkDesc": ["ActiveCollabDeclarativeMessages"]
+    }
+}

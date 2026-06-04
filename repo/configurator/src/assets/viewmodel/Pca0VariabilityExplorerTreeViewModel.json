@@ -1,0 +1,2435 @@
+{
+    "schemaVersion": "1.0.0",
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "selection-data": {
+            "type": "object"
+        },
+        "selected-variability": {
+            "type": "object"
+        }
+    },
+    "data": {
+        "variabilityProps": {
+            "initialValues": {
+                "expandAll": true,
+                "resetColumnProperties": true
+            },
+            "meta": {
+                "expandAll": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                },
+                "resetColumnProperties": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                },
+                "soaResponse": {
+                    "type": "OBJECT",
+                    "field": "true"
+                }
+            }
+        },
+        "objectTypesCacheMap": {},
+        "newRowCacheMap": {},
+        "searchState": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "columnsToDisableSort": [
+            "cfg0Effectivity"
+        ],
+        "columnsToDisableFilter": [
+            "cfg0Effectivity"
+        ],
+        "unsavedRows": [],
+        "inlineAuthoringHandlerContext": "VariabilityExplorerEditContext",
+        "applicableObjectTypeCacheMap": {},
+        "isReviseAction" : false,
+        "businessObjectConstantMap": {}
+    },
+    "ctx": {
+        "sublocation.clientScopeURI": {
+            "type": "string"
+        },
+        "editInProgress": null,
+        "ConfiguratorCtx": null
+    },
+    "actions": {
+        "initComponentAndUpdateXrtContext": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "initComponent"
+                },
+                {
+                    "action": "resetInlineDataCache",
+                    "condition": "ctx.ConfiguratorCtx.inlineAuthoringContext.isInlineAuthoringMode"
+                },
+                {
+                    "action": "updateXrtContext",
+                    "condition": "!subPanelContext.selectedData"
+                }
+            ]
+        },
+        "initComponent": {
+            "actionType": "JSFunctionAsync",
+            "method": "initComponent",
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "updateXrtContext": {
+            "actionType": "JSFunction",
+            "method": "updateXrtContext",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "loadVariabilityDataFromServer": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2024-06-ConfiguratorManagement",
+            "method": "getVariability3",
+            "policy": {
+                "types": "{{function:getConfigPerspectivePolicy}}"
+            },
+            "inputData": {
+                "configPerspective": "{{ctx.ConfiguratorCtx.configPerspective}}",
+                "configContext": "{{function:populateConfigContext}}",
+                "requestType": "{{function:populateRequestType}}",
+                "parentUids": "{{function:populateParentNode}}",
+                "level": 0,
+                "sortCriteria": "{{data.columnProviders.treeColumnProvider.sortCriteria}}",
+                "columnFilters": "{{data.columnProviders.treeColumnProvider.columnFilters}}",
+                "requestInfo": ""
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "loadTreeProviderData": {
+            "actionType": "JSFunction",
+            "method": "loadTreeProviderData",
+            "inputData": {
+                "data": "{{data}}",
+                "viewModelAction": "loadVariabilityDataFromServer"
+            },
+            "outputData": {
+                "treeLoadResult": "result.treeLoadResult",
+                "variabilityProps": "result.variabilityProps",
+                "initialColumnFilters": "result.initialColumnFilters"
+            },
+            "deps": "js/Pca0VariabilityTreeDisplayService"
+        },
+        "initializeColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetTableViewModelProperties",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "input": {
+                        "objectUids": [],
+                        "columnConfigInput": {
+                            "clientName": "AWClient",
+                            "hostingClientName": "",
+                            "clientScopeURI": "{{ctx.state.params.pageId === 'tc_xrt_Models' ? 'Pca0VariabilityExplorerProducts' : 'Pca0VariabilityExplorerFeatures'}}",
+                            "operationType": "union",
+                            "columnsToExclude": []
+                        },
+                        "requestPreference": {
+                            "typesToInclude": []
+                        }
+                    }
+                }
+            },
+            "outputData": {
+                "initialColumnFilters": "{{function:updateInitialColumnfilters}}",
+                "dataProviders.treeDataProvider.columnConfig":"{{function:loadTreeColumns}}"
+            }
+        },
+        "loadTreeProperties": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeProperties",
+            "inputData": {
+                "methodArgument": {
+                    "propertyLoadInput": "request.propertyLoadInput",
+                    "propertyLoadContext": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "{{ctx.state.params.pageId === 'tc_xrt_Models' ? 'Pca0VariabilityExplorerProducts' : 'Pca0VariabilityExplorerFeatures'}}",
+                        "typesForArrange": "{{data.dataProviders.treeDataProvider.columnConfig.typesForArrange}}"
+                    },
+                    "contextKey": "ConfiguratorCtx",
+                    "declViewModel": "{{data}}",
+                    "uwDataProvider": "{{data.dataProviders.treeDataProvider}}"
+                }
+            },
+            "outputData": {
+                "dataProviders.treeDataProvider.columnConfig": "result.propertyLoadResult.columnConfig",
+                "ctx.searchResponseInfo.columnConfig": "result.propertyLoadResult.columnConfig"
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "loadTreeTablePropertiesOnInitialLoad": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeTablePropertiesOnInitialLoad",
+            "deps": "js/pca0VariabilityExplorerService",
+            "inputData": {
+                "vmNodes": "{{data.dataProviders.treeDataProvider.viewModelCollection.loadedVMObjects}}",
+                "declViewModel": "{{data}}",
+                "uwDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "context": {
+                    "clientName": "AWClient",
+                    "clientScopeURI": "{{ctx.state.params.pageId === 'tc_xrt_Models' ? 'Pca0VariabilityExplorerProducts' : 'Pca0VariabilityExplorerFeatures'}}",
+                    "typesForArrange": "{{data.dataProviders.treeDataProvider.columnConfig.typesForArrange}}"
+                },
+                "contextKey": "ConfiguratorCtx"
+            },
+            "outputData": {
+                "dataProviders.treeDataProvider.columnConfig": "result.propertyLoadResult.columnConfig",
+                "ctx.searchResponseInfo.columnConfig": "result.propertyLoadResult.columnConfig"
+            }
+        },
+        "loadDataForSavedColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetTableViewModelProperties",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "input": {
+                        "objectUids": [],
+                        "columnConfigInput": {
+                            "clientName": "AWClient",
+                            "hostingClientName": "",
+                            "clientScopeURI": "{{ctx.state.params.pageId === 'tc_xrt_Models' ? 'Pca0VariabilityExplorerProducts' : 'Pca0VariabilityExplorerFeatures'}}",
+                            "operationType": "union",
+                            "columnsToExclude": []
+                        },
+                        "requestPreference": {
+                            "typesToInclude": [ "{{function:getTypesToInclude}}" ]
+                        }
+                    }
+                }
+            },
+            "outputData": {
+                "dataProviders.treeDataProvider.columnConfig": "{{function:updateColumnConfig}}"
+            }
+        },
+        "getTypeHierarchyString": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2015-10-Session",
+            "method": "getTypeDescriptions2",
+            "inputData": {
+                "typeNames": ["{{data.eventData.selectedObjects[0].propInternalValue}}"],
+                "options": {}
+            },
+            "outputData": {
+                "typeHierarchyResponse": ""
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "resetColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [ {
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos": [ {
+                            "clientScopeURI": "{{ctx.state.params.pageId === 'tc_xrt_Models' ? 'Pca0VariabilityExplorerProducts' : 'Pca0VariabilityExplorerFeatures'}}",
+                            "operationType": "union",
+                            "typeNames": "{{data.dataProviders.treeDataProvider.columnConfig.typesForArrange}}",
+                            "columnsToExclude": []
+                        } ],
+                        "businessObjects": [ {} ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "dataProviders.treeDataProvider.columnConfig": "{{function:postResetFunction}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "variabilityExplorerGrid.plTable.reload"
+                } ]
+            }
+        },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI": "{{ctx.state.params.pageId === 'tc_xrt_Models' ? 'Pca0VariabilityExplorerProducts' : 'Pca0VariabilityExplorerFeatures'}}",
+                        "columnConfigId": "{{data.dataProviders.treeDataProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.treeDataProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "events": {
+                "success": [ {
+                    "name": "variabilityExplorerGrid.plTable.reload"
+                } ]
+            }
+        },
+        "saveColumnConfigData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI": "{{ctx.state.params.pageId === 'tc_xrt_Models' ? 'Pca0VariabilityExplorerProducts' : 'Pca0VariabilityExplorerFeatures'}}",
+                        "columnConfigId": "{{data.dataProviders.treeDataProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.treeDataProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "outputData": {}
+        },
+        "clearNewRowCacheMap": {
+            "actionType": "JSFunction",
+            "method": "clearNewRowCacheMap",
+            "inputData": {
+                "newRowCacheMap": "{{data.newRowCacheMap}}"
+            },
+            "outputData": {
+                "newRowCacheMap": ""
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "variabilityExplorerGrid.clearNewRowCacheMap"
+                } ]
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "storageSyncAndFirePWAReset": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "syncSessionStorage"
+                },
+                {
+                    "action": "resetPrimaryWorkArea"
+                }
+            ]
+        },
+        "syncSessionStorage": {
+            "actionType": "JSFunction",
+            "method": "syncSessionStorage",
+            "deps": "js/pca0ContextManagementService"
+        },
+        "resetPrimaryWorkArea": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "primaryWorkarea.reset",
+                    "eventData": {}
+                } ]
+            }
+        },
+        "plTableClientRefresh": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "variabilityExplorerGrid.plTable.clientRefresh"
+                } ]
+            }
+        },
+        "processPartialErrors": {
+            "actionType": "JSFunction",
+            "method": "processPartialErrors",
+            "inputData": {
+                "eventData": "{{data.eventData.ServiceData}}"
+            },
+
+            "deps": "js/pca0CommonUtils"
+        },
+        "processPartialErrorsAfterSave": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "processPartialErrors"
+                },
+                {
+                    "action": "updateUnsavedRows"
+                },
+                {
+                    "action": "postSaveHandlerPartialErrors"
+                },
+                {
+                    "action": "selectFirstUnsavedRow"
+                }
+            ]
+        },
+        "addInlineRow": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "addInlineRowFromCache",
+                    "condition": "conditions.shouldLoadInlineRowFromCacheCondition"
+                },
+                {
+                    "action": "loadDataForSavedColumnConfig",
+                    "condition": "conditions.shouldLoadInlineRowFromServerCondition"
+                },
+                {
+                    "action": "addInlineRowFromServer",
+                    "condition": "conditions.shouldLoadInlineRowFromServerCondition"
+                }
+            ]
+        },
+        "removeEditHandlerBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "removeEditHandler",
+                "condition": "conditions.noInlineRowCondition"
+            } ]
+        },
+        "removeEditHandler": {
+            "actionType": "JSFunction",
+            "method": "removeEditHandler",
+            "inputData": {
+                "inlineAuthoringHandlerContext": "{{data.inlineAuthoringHandlerContext}}",
+                "searchState": "{{subPanelContext.searchState}}"
+            },
+            "outputData": {
+                "failedUnsavedRows": "undefined"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "discardAllUnsavedRows": {
+            "actionType": "JSFunction",
+            "method": "discardAllUnsavedRows",
+            "inputData": {
+                "unsavedRows": "{{data.unsavedRows}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "outputData": {
+                "unsavedRows": "",
+                "failedUnsavedRows": "undefined"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "addInlineRowFromServer": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-06-ConfiguratorManagement",
+            "method": "getViewModelForCreate",
+            "inputData": {
+                "businessObjectType": "{{data.eventData.targetObjectType}}",
+                "propertyNames": "{{function:populateVisiblePropertyList}}",
+                "configContext": "{{subPanelContext.provider.baseSelection}}"
+            },
+            "outputData": {
+                "response": "",
+                "newRowCacheMap": "{{function:cacheInlineRowFromServerResponse}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0InlineAuthoring.renderInlineRow",
+                    "eventData": {
+                        "targetObjectType": "{{data.eventData.targetObjectType}}",
+                        "absType": "{{data.eventData.absType}}",
+                        "parentElement": "{{function:populateParentElement}}"
+                    }
+                } ],
+                "failure": [ {
+                    "name": "Pca0InlineAuthoring.processPartialErrors",
+                    "eventData": {
+                        "ServiceData": "{{data.response.ServiceData}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "getUpdatedVmoFromServer": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-06-ConfiguratorManagement",
+            "method": "getViewModelForCreate",
+            "inputData": {
+                "businessObjectType": "{{data.eventData.selectedObjects[0].propInternalValue}}",
+                "propertyNames": "{{function:populateVisiblePropertyList}}",
+                "configContext": "{{subPanelContext.provider.baseSelection}}"
+            },
+            "outputData": {
+                "response": "",
+                "newRowCacheMap": "{{function:cacheInlineRowFromServerResponse}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0InlineAuthoring.replaceInlineVmoWithUpdatedProps",
+                    "eventData": {
+                        "response": "{{data.response}}",
+                        "selectedObject": "{{data.eventData.selectedObjects[0]}}"
+                    }
+                } ],
+                "failure": [ {
+                    "name": "Pca0InlineAuthoring.processPartialErrors",
+                    "eventData": {
+                        "ServiceData": "{{data.response.ServiceData}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "replaceInlineVmoWithUpdatedProps": {
+            "actionType": "JSFunction",
+            "method": "replaceInlineVmoWithUpdatedProps",
+            "inputData": {
+                "newRowCacheMap": "{{data.newRowCacheMap}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "eventData": "{{parameters.eventData}}",
+                "typeHierarchyResponse": "{{data.typeHierarchyResponse}}",
+                "selectedVMO": "{{data.selectedVMO}}"
+            },
+            "outputData": {
+                "isProductModelAuthoringAllowed":""
+            },
+            "actionMessages": {
+                "success": [ {
+                    "condition": "data.isProductModelAuthoringAllowed === false",
+                    "message": "Pca0MultipleProductModelAuthoringNotAllowed"
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "addInlineRowFromCache": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0InlineAuthoring.renderInlineRow",
+                    "eventData": {
+                        "targetObjectType": "{{data.eventData.targetObjectType}}",
+                        "absType": "{{data.eventData.absType}}",
+                        "parentElement": "{{function:populateParentElement}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "renderInlineRow": {
+            "actionType": "JSFunction",
+            "method": "renderInlineRow",
+            "inputData": {
+                "targetObjectType": "{{data.eventData.targetObjectType}}",
+                "absType": "{{data.eventData.absType}}",
+                "parentNode": "{{data.eventData.parentElement}}",
+                "unsavedRows": "{{data.unsavedRows}}",
+                "newRowCacheMap": "{{data.newRowCacheMap}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "inlineAuthoringHandlerContext": "{{data.inlineAuthoringHandlerContext}}",
+                "objectTypesCacheMap": "{{data.objectTypesCacheMap}}",
+                "gridId": "variabilityExplorerGrid",
+                "clientScopeURI": "{{subPanelContext.provider.clientScopeURI}}"
+            },
+            "outputData": {
+                "unsavedRows": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0InlineAuthoring.ResetLoadingStatus",
+                    "condition": "conditions.isParentCached",
+                    "eventData": {
+                        "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                        "parentNode": "{{data.eventData.parentElement}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "trySaveEdits": {
+            "actionType": "JSFunction",
+            "method": "isAllowedToSave",
+            "inputData": {
+                "unsavedRows": "{{data.unsavedRows}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "outputData": {
+                "isSaveAllowed": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0InlineAuthoring.handleSaveEdits"
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "handleSaveEdits": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0InlineAuthoring.createVariabilityObject",
+                    "condition": "conditions.isSaveAllowed"
+                } ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "condition": "conditions.isNotSaveAllowed",
+                    "message": "showSaveRequirementsMessage"
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "saveInlineRowBatchJob": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "updateLockInlineAuthStatus"
+            },
+            {
+                "action": "saveInlineRow"
+            } ]
+        },
+        "updateLockInlineAuthStatus": {
+            "actionType": "JSFunction",
+            "method": "updateLockInlineAuthStatus",
+            "inputData": {
+                "value": true
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "saveInlineRow": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "createAndAddObjects2",
+            "inputData": {
+                "configPerspective": "{{ctx.ConfiguratorCtx.configPerspective}}",
+                "objectsToCreateAndAdd": "{{function:populateInlineRows}}",
+                "sortCriteria": "{{data.columnProviders.treeColumnProvider.sortCriteria}}",
+                "columnFilters": "{{data.columnProviders.treeColumnProvider.columnFilters}}",
+                "requestInfo": ""
+            },
+            "outputData": {
+                "response": "",
+                "failedUnsavedRows": "undefined"
+            },
+            "events": {
+                "success": [ {
+                    "name": "pca0InlineAuthoringHandler.postSaveHandler"
+                } ],
+                "failure": [ {
+                        "name": "Pca0InlineAuthoring.processPartialErrorsAfterSave",
+                        "condition": "conditions.isInlineAuthoringMode",
+                        "eventData": {
+                            "ServiceData": "{{data.response.ServiceData}}"
+                        }
+                    },
+                    {
+                        "name": "Pca0InlineAuthoring.processPartialErrorsAndDiscardAllUnsavedRows",
+                        "condition": "conditions.isNotInlineAuthoringMode"
+                    }
+                ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "postSaveHandlerPartialErrors": {
+            "actionType": "JSFunction",
+            "method": "postSaveHandler",
+            "inputData": {
+                "savedRows": "{{data.savedRows}}",
+                "failedUnsavedRows": "{{data.failedUnsavedRows}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "soaResponse": "{{data.response}}",
+                "selectSavedRows": false
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "selectFirstUnsavedRow": {
+            "actionType": "JSFunction",
+            "method": "selectFirstUnsavedRow",
+            "inputData": {
+                "unsavedRows": "{{data.unsavedRows}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "outputData": {
+                "selectionToUpdate": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "plTable.scrollToRow",
+                    "condition": "conditions.isSelectedRow",
+                    "eventData": {
+                        "gridId": "variabilityExplorerGrid",
+                        "rowUids": "{{data.selectionToUpdate}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "goToNextFailure": {
+            "actionType": "JSFunction",
+            "method": "selectNextUnsavedRow",
+            "inputData": {
+                "failedUnsavedRows": "{{data.failedUnsavedRows}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "outputData": {
+                "selectionToUpdate": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "plTable.scrollToRow",
+                    "condition": "conditions.isSelectedRow",
+                    "eventData": {
+                        "gridId": "variabilityExplorerGrid",
+                        "rowUids": "{{data.selectionToUpdate}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "processPartialErrorsAndDiscardAllUnsavedRows": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "postSaveHandlerPartialErrors"
+                },
+                {
+                    "action": "discardAllUnsavedRows"
+                }
+            ]
+        },
+        "postSaveHandlerBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "postSaveHandler"
+                },
+                {
+                    "action": "resetInlineDataCache"
+                }
+            ]
+        },
+        "postSaveHandler": {
+            "actionType": "JSFunction",
+            "method": "postSaveHandler",
+            "inputData": {
+                "savedRows": "{{data.unsavedRows}}",
+                "failedUnsavedRows": "{{data.failedUnsavedRows}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "soaResponse": "{{data.response}}",
+                "selectSavedRows": true
+            },
+            "outputData": {
+                "selectionToUpdate": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "plTable.scrollToRow",
+                    "condition": "conditions.isSelectedRow",
+                    "eventData": {
+                        "gridId": "variabilityExplorerGrid",
+                        "rowUids": "{{data.selectionToUpdate}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "discardUnsavedAndResetInlineDataCacheBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "discardAllUnsavedRows"
+                },
+                {
+                    "action": "resetInlineDataCache"
+                }
+            ]
+        },
+        "resetInlineDataCache": {
+            "actionType": "JSFunction",
+            "method": "resetInlineDataCache",
+            "outputData": {
+                "unsavedRows": "",
+                "savedRows": "",
+                "failedUnsavedRows": "undefined"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "removeUnsavedRow": {
+            "actionType": "JSFunction",
+            "method": "removeUnsavedRow",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}",
+                "unsavedRows": "{{data.unsavedRows}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "outputData": {
+                "unsavedRows": "result.unsavedRows",
+                "failedUnsavedRows": "result.failedUnsavedRows"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "removeSavedRowAndChildrenFromUi": {
+            "actionType": "JSFunction",
+            "method": "removeSavedRowAndChildrenFromUi",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "updateUnsavedRows": {
+            "actionType": "JSFunction",
+            "method": "updateUnsavedRows",
+            "inputData": {
+                "unsavedRows": "{{data.unsavedRows}}",
+                "ServiceData": "{{data.response.ServiceData}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "outputData": {
+                "unsavedRows": "result.unsavedRows",
+                "savedRows": "result.savedRows",
+                "failedUnsavedRows": "result.failedUnsavedRows"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "confirmationForFeatureDataTypeWidgetSelectionChange": {
+            "actionType": "JSFunction",
+            "method": "confirmationForWidgetSelectionChange",
+            "inputData": {
+                "widgetVmo": "{{data.eventData.vmo}}",
+                "viewModelProp": "{{data.eventData.viewModelProp}}",
+                "widgetPropertyName": "cfg0ValueDataType"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "confirmationForObjectTypeWidgetSelectionChange": {
+            "actionType": "JSFunction",
+            "method": "confirmationForWidgetSelectionChange",
+            "inputData": {
+                "widgetVmo": "{{data.eventData.vmo}}",
+                "viewModelProp": "{{data.eventData.viewModelProp}}",
+                "widgetPropertyName": "object_type"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "updatePropCellBasedOnFamilyDataTypeValue": {
+            "actionType": "JSFunction",
+            "method": "updateMinMaxValueTypeBasedOnFamilyDataType",
+            "inputData": {
+                "widgetVmo": "{{data.eventData.vmo}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "handleFeatureDataTypeWidgetSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "confirmationForFeatureDataTypeWidgetSelectionChange"
+                },
+                {
+                    "action": "updatePropCellBasedOnFamilyDataTypeValue"
+                },
+                {
+                    "action": "updatePreviousSelectedFeatureDataTypeLovType"
+                }
+            ]
+        },
+        "updatePreviousSelectedFeatureDataTypeLovType": {
+            "actionType": "JSFunction",
+            "method": "updatePreviousSelectedLovType",
+            "inputData": {
+                "widgetVmo": "{{data.eventData.vmo}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "widgetPropertyName": "cfg0ValueDataType"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "handleObjectTypeWidgetSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "copySelectedObject"
+            },
+            {
+                "action": "updatePreviousSelectedObjectTypeLovType"
+            },
+            {
+                "action": "confirmationForObjectTypeWidgetSelectionChange",
+                "condition": "data.eventData.vmo.children && data.eventData.vmo.children.length > 0"
+            },
+            {
+                "action": "updateColumnConfigAndVmoAfterObjectTypeChange",
+                "condition": "!data.eventData.vmo.children || data.eventData.vmo.children.length === 0"
+            } ]
+        },
+        "copySelectedObject": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "selectedVMO": "{{ctx.mselected[0]}}"
+            },
+            "outputData": {
+                "selectedVMO": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "updateColumnConfigAndVmoAfterObjectTypeChange": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "loadDataForSavedColumnConfig"
+            },
+            {
+                "action": "getTypeHierarchyString"
+            },
+            {
+                "action": "getUpdatedVmoFromServer"
+            } ]
+        },
+        "updatePreviousSelectedObjectTypeLovType": {
+            "actionType": "JSFunction",
+            "method": "updatePreviousSelectedLovType",
+            "inputData": {
+                "widgetVmo": "{{data.eventData.vmo}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "widgetPropertyName": "object_type"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "goAheadWidgetSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "removeUnsavedChildrenAfterLovValueChange",
+                "condition": "data.eventData.vmo.isInlineRow && data.eventData.vmo.children && data.eventData.vmo.children.length > 0"
+            } ]
+        },
+        "reverseWidgetSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "reverseDataTypeFamilySelection",
+                "condition": "data.eventData.vmo.isInlineRow && data.eventData.vmo.children && data.eventData.vmo.children.length > 0 && data.eventData.vmo.absType === 'Cfg0AbsLiteralValueFamily' && data.eventData.viewModelProp.propertyName === 'cfg0ValueDataType'"
+            },
+            {
+                "action": "reverseObjectTypeFamilySelection",
+                "condition": "data.eventData.vmo.isInlineRow && data.eventData.vmo.children && data.eventData.vmo.children.length > 0 && data.eventData.viewModelProp.propertyName === 'object_type'"
+            } ]
+        },
+        "removeUnsavedChildrenAfterLovValueChange": {
+            "actionType": "JSFunction",
+            "method": "removeUnsavedChildrenAfterLovValueChange",
+            "inputData": {
+                "selected": "{{data.eventData.vmo}}",
+                "unsavedRows": "{{data.unsavedRows}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "outputData": {
+                "unsavedRows": "result.unsavedRows",
+                "failedUnsavedRows": "result.failedUnsavedRows"
+            },
+            "events": {
+                "success": [ {
+                    "name": "pca0InlineAuthoringHandler.updateColumnConfigAndVmoAfterObjectTypeChange",
+                    "condition": "parameters.eventData.widgetPropertyName === 'object_type'"
+                } ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "condition": "parameters.eventData.reusedFamilyChanged",
+                    "message": "reusedFamilyChangedMessage"
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "reverseDataTypeFamilySelection": {
+            "actionType": "JSFunction",
+            "method": "reverseWidgetSelectionChange",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "unsavedRows": "{{data.unsavedRows}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "widgetPropertyName": "cfg0ValueDataType"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "reverseObjectTypeFamilySelection": {
+            "actionType": "JSFunction",
+            "method": "reverseWidgetSelectionChange",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "unsavedRows": "{{data.unsavedRows}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "widgetPropertyName": "object_type"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "updateInlineRowVMOPropertiesForReuse": {
+            "actionType": "JSFunction",
+            "method": "updateInlineRowVMOPropertiesForReuse",
+            "inputData": {
+                "lovValue": "{{parameters.eventData}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "widgetPropertyName": "{{parameters.eventData.propertyName}}"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "loadPropertiesOfObjectName": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": [ {
+                    "uid": "{{parameters.eventData.lovValue.mo.uid}}",
+                    "type": "{{parameters.eventData.lovValue.mo.type}}"
+                } ],
+                "attributes": "{{function:populateVisiblePropertyList}}"
+            },
+            "outputData": {
+                "propResponse": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "updateInlineRowVMOPropertiesForReuse",
+                    "eventData": {
+                        "response": "{{propResponse}}",
+                        "lovValue": "{{parameters.eventData.lovValue}}",
+                        "propertyName": "object_name"
+                    }
+                },
+                {
+                    "name": "Pca0VariabilityExplorerTree.removeUnsavedChildrenAfterAllocatedFamilyChange",
+                    "condition": "data.ctx.selected.isInlineRow && data.ctx.selected.children && data.ctx.selected.children.length > 0",
+                    "eventData": {
+                        "reusedFamilyChanged": true
+                    }
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "loadPropertiesOfCfg0ObjectId": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": [ {
+                    "uid": "{{parameters.eventData.lovValue.mo.uid}}",
+                    "type": "{{parameters.eventData.lovValue.mo.type}}"
+                } ],
+                "attributes": "{{function:populateVisiblePropertyList}}"
+            },
+            "outputData": {
+                "propResponse": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "updateInlineRowVMOPropertiesForReuse",
+                    "eventData": {
+                        "response": "{{propResponse}}",
+                        "lovValue": "{{parameters.eventData.lovValue}}",
+                        "propertyName": "cfg0ObjectId"
+                    }
+                },
+                {
+                    "name": "Pca0VariabilityExplorerTree.removeUnsavedChildrenAfterAllocatedFamilyChange",
+                    "condition": "data.ctx.selected.isInlineRow && data.ctx.selected.children && data.ctx.selected.children.length > 0",
+                    "eventData": {
+                        "reusedFamilyChanged": true
+                    }
+                } ]
+            },
+
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "removeSavedRow": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "deleteObjects",
+            "inputData": {
+                "objects": "{{function:getObjectsToDelete}}"
+            },
+            "outputData": {
+                "response": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0InlineAuthoring.removeSavedRowAndChildrenFromUi",
+                    "eventData": {
+                        "row": "{{parameters.eventData.row}}"
+                    }
+                },
+                {
+                    "condition": "conditions.inAdvancedReusePickerMode",
+                    "name": "Pca0VariabilityPicker.enableSelectionsInReusePickerView",
+                    "eventData": {
+                        "response": "{{data.response}}",
+                        "allocationUidMap": "{{function:getAllocationUidMap}}"
+                    }
+                } ],
+                "failure": [ {
+                    "name": "Pca0InlineAuthoring.processPartialErrors",
+                    "eventData": {
+                        "ServiceData": "{{data.response}}"
+                    }
+                },
+                {
+                    "condition": "parameters.eventData.row.length && parameters.eventData.row.length > 1",
+                    "name": "pca0InlineAuthoringHandler.postRemovePartialScenarioHandler",
+                    "eventData": {
+                        "ServiceData": "{{data.response}}",
+                        "row": "{{parameters.eventData.row}}"
+                    }
+                },
+                {
+                    "condition": "conditions.inAdvancedReusePickerMode",
+                    "name": "Pca0VariabilityPicker.enableSelectionsInReusePickerView",
+                    "eventData": {
+                        "response": "{{data.response}}",
+                        "allocationUidMap": "{{function:getAllocationUidMap}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "sortRowsByLevel": {
+            "actionType": "JSFunction",
+            "method": "sortRowsByLevel",
+            "inputData": {
+                "rows": "{{parameters.eventData.row}}"
+            },
+            "outputData": {
+                "sortedRows": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0InlineAuthoring.RemoveSavedRow",
+                    "eventData": {
+                        "row": "{{data.sortedRows}}",
+                        "isDeleteAction": "{{parameters.eventData.isDeleteAction}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "cacheLoadedObjectTypes": {
+            "actionType": "JSFunction",
+            "method": "cacheLoadedObjectTypes",
+            "inputData": {
+                "objectTypesCacheMap": "{{data.objectTypesCacheMap}}",
+                "boTypeName": "{{parameters.eventData.boTypeName}}",
+                "loadedObjectTypes": "{{parameters.eventData.loadedObjectTypes}}",
+                "vmoUid": "{{parameters.eventData.vmoUid}}",
+                "viewModelCollection": "{{data.dataProviders.treeDataProvider.viewModelCollection}}"
+            },
+            "outputData": {
+                "objectTypesCacheMap": ""
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "resetLoadingStatus": {
+            "actionType": "JSFunction",
+            "method": "resetLoadingStatus",
+            "inputData": {
+                "treeDataProvider": "{{parameters.eventData.treeDataProvider}}",
+                "parentNode": "{{parameters.eventData.parentNode}}"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+         "getAbstractObjectType": {
+            "actionType": "JSFunctionAsync",
+            "method": "getAbstractObjectType",
+            "inputData": {
+                "viewModelCollection": "{{data.dataProviders.treeDataProvider.viewModelCollection}}",
+                "type": "{{parameters.eventData.type}}",
+                "commandContext": "{{commandContext}}",
+                "familyAbstractType": "{{data.familyAbstractType}}"
+            },
+            "outputData": {
+                "absType": "abstractObjectType",
+                "familyAbstractType": "familyAbstractObjectType"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0InlineAuthoring.getDefaultValTypeConstForFeatureAuthoring",
+                    "condition": "conditions.isDefaultValTypeConstForFeatureAuthoringRequired",
+                    "eventData": {
+                        "absType": "{{data.absType}}",
+                        "type": "{{parameters.eventData.type}}",
+                        "selectedRowType": "{{parameters.eventData.selectedRowType}}"
+                    }
+                },
+                {
+                    "name": "Pca0InlineAuthoring.getApplicableTargetObjectType",
+                    "condition": "conditions.isApplicableObjectTypeForFamilyOrGroupAuthoringRequired",
+                    "eventData": {
+                        "absType": "{{data.absType}}"
+                    }
+                } ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "condition": "data.absType === 'boolFeature'",
+                    "message": "booleanFeatureAuthNotSupportedMessage"
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "getApplicableTargetObjectType": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "getApplicableTargetObjectTypeFromCache",
+                "condition": "data.applicableObjectTypeCacheMap[parameters.eventData.absType] !== undefined"
+            },
+            {
+                "action": "getApplicableTargetObjectTypeFromServer",
+                "condition": "data.applicableObjectTypeCacheMap[parameters.eventData.absType] === undefined"
+            },
+            {
+                "action": "cacheApplicableObjectType",
+                "condition": "data.applicableObjectTypeCacheMap[parameters.eventData.absType] === undefined"
+            } ]
+        },
+        "getApplicableTargetObjectTypeFromServer": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-04-DataManagement",
+            "method": "findDisplayableSubBusinessObjectsWithDisplayNames",
+            "inputData": {
+                "input": [ {
+                    "boTypeName": "{{parameters.eventData.absType}}",
+                    "exclusionBOTypeNames": []
+                } ]
+            },
+            "outputData": {
+                "targetObjectType": "{{function:getDefaultBOTypeToAdd}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0InlineAuthoring.addInlineRow",
+                    "eventData": {
+                        "targetObjectType": "{{data.targetObjectType}}",
+                        "absType": "{{parameters.eventData.absType}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "getApplicableTargetObjectTypeFromCache": {
+            "actionType": "JSFunction",
+            "method": "getApplicableTargetObjectTypeFromCache",
+            "inputData": {
+                "applicableObjectTypeCacheMap": "{{data.applicableObjectTypeCacheMap}}",
+                "boTypeName": "{{parameters.eventData.absType}}"
+            },
+            "outputData": {
+                "targetObjectType": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0InlineAuthoring.addInlineRow",
+                    "eventData": {
+                        "targetObjectType": "{{data.targetObjectType}}",
+                        "absType": "{{parameters.eventData.absType}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "cacheApplicableObjectType": {
+            "actionType": "JSFunction",
+            "method": "cacheApplicableObjectType",
+            "inputData": {
+                "applicableObjectTypeCacheMap": "{{data.applicableObjectTypeCacheMap}}",
+                "absType": "{{parameters.eventData.absType}}",
+                "targetObjectType": "{{data.targetObjectType}}"
+            },
+            "outputData": {
+                "applicableObjectTypeCacheMap": ""
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "addChildrenAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2014-10-DataManagement",
+            "method": "addChildren",
+            "inputData":
+            {
+                "inputData":
+                [{
+                    "clientId": "",
+                    "childrenObj": "{{parameters.eventData.sourceObjects}}",
+                    "parentObj": "{{parameters.eventData.targetObject}}",
+                    "propertyName": "{{function:getPropertyName}}"
+                }]
+            },
+            "outputData":
+            {
+               "addChildrenResponse": ""
+            },
+            "events": {
+               "success": [
+                    {
+                        "condition": "parameters.eventData.addOperationType === 'dragAndDropFamily' && parameters.eventData.sourceParentObject.type !== '__Fsc_Unassigned_Group__' ",
+                        "name": "Pca0VariabilityExplorerTree.removeChildren",
+                        "eventData": {
+                            "targetObject": "{{parameters.eventData.sourceParentObject}}",
+                            "sourceObjects": "{{parameters.eventData.sourceObjects}}",
+                            "sourceParentObject": "{{parameters.eventData.targetObject}}",
+                            "removeOperationType": "dragAndDropFamily",
+                            "sourceObjectBOs": "{{parameters.eventData.sourceObjectBOs}}"
+                        }
+                    },
+                    {
+                        "condition": "parameters.eventData.addOperationType === 'dragAndDropFamily' && parameters.eventData.sourceParentObject.type === '__Fsc_Unassigned_Group__' ",
+                        "name": "Pca0VariabilityExplorerTree.postFamilyMoveHandler",
+                        "eventData": {
+                            "sourceObjectBOs": "{{parameters.eventData.sourceObjectBOs}}",
+                            "targetObject": "{{parameters.eventData.targetObject}}"
+                        }
+                    },
+                    {
+                        "condition": "conditions.isAddOperationTypeDragAndDropProductModelOrFeature",
+                        "name": "Pca0VariabilityExplorerTree.postProductModelOrFeatureDropHandler",
+                        "eventData": {
+                            "object": "{{parameters.eventData.targetObject}}"
+                        }
+                    }
+               ],
+                "failure": [
+                    {
+                        "name": "Pca0InlineAuthoring.processPartialErrors",
+                        "eventData": {
+                            "ServiceData": "{{data.addChildrenResponse}}"
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "condition": "conditions.isAddOperationTypeDragAndDropProductModelOrFeature && parameters.eventData.sourceObjects.length === 1",
+                    "message": "singleProductModelDragAndDropMessage"
+                },
+                {
+                    "condition": "conditions.isAddOperationTypeDragAndDropProductModelOrFeature && parameters.eventData.sourceObjects.length > 1",
+                    "message": "multipleProductModelDragAndDropMessage"
+                }]
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "removeChildrenAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2014-10-DataManagement",
+            "method": "removeChildren",
+            "inputData":
+            {
+                "inputData": [{
+                    "clientId": "",
+                    "parentObj": "{{function:getTargetObject}}",
+                    "childrenObj": "{{parameters.eventData.sourceObjects}}",
+                    "propertyName": "{{function:getPropertyName}}"
+                }]
+            },
+            "outputData":
+            {
+                "removeChildrenResponse": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "condition": "parameters.eventData.removeOperationType === 'dragAndDropFamily'",
+                        "name": "Pca0VariabilityExplorerTree.postFamilyMoveHandler",
+                        "eventData": {
+                            "sourceObjectBOs": "{{parameters.eventData.sourceObjectBOs}}",
+                            "targetObject": "{{parameters.eventData.sourceParentObject}}"
+                        }
+                    },
+                    {
+                        "condition": "parameters.eventData.removeOperationType === 'paste'",
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{ctx.xrtSummaryContextObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "condition": "parameters.eventData.removeOperationType === 'cut'",
+                        "name": "Pca0VariabilityExplorerTree.postCutStandaloneFeature",
+                        "eventData": {
+                            "sourceObjects": "{{parameters.eventData.sourceObjectBOs}}"
+                        }
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "Pca0InlineAuthoring.processPartialErrors",
+                        "eventData": {
+                            "ServiceData": "{{data.removeChildrenResponse}}"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "postProductModelOrFeatureDropHandler": {
+            "actionType": "JSFunction",
+            "method": "postProductModelOrFeatureDropHandler",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.treeDataProvider.selectionModel}}",
+                "object": "{{parameters.eventData.object}}"
+            },
+            "outputData": {
+                "refreshNeeded": ""
+            },
+            "events": {
+                "success": [ {
+                        "condition": "data.refreshNeeded === true",
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{ctx.xrtSummaryContextObject}}"
+                            ],
+                            "refreshLocationFlag": true
+                        }
+                } ]
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "postFamilyMoveHandler": {
+            "actionType": "JSFunction",
+            "method": "postFamilyMoveHandler",
+            "inputData": {
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "sourceObject": "{{parameters.eventData.sourceObjectBOs}}",
+                "targetObject": "{{parameters.eventData.targetObject}}",
+                "expandTargetNode": true
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "startEditForNewVmos": {
+            "actionType": "JSFunction",
+            "method": "startEditForNewVmos",
+            "inputData": {
+                "editContext": "{{data.dataProviders.treeDataProvider.json.editContext}}"
+            },
+            "deps": "js/editEventsService"
+        },
+        "postRemovePartialScenarioHandler": {
+            "actionType": "JSFunction",
+            "method": "postRemovePartialScenarioHandler",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "postStandaloneFeaturePasteHandler": {
+            "actionType": "JSFunction",
+            "method": "postStandaloneFeaturePasteHandler",
+            "inputData": {
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "sourceObject": "{{parameters.eventData.sourceObjects}}",
+                "targetObject": "{{parameters.eventData.targetObject}}"
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "postCutStandaloneFeature": {
+            "actionType":"batchJob",
+            "steps": [ {
+                    "action": "updateTreeDataProviderPostCut"
+                },
+                {
+                    "action": "setContents"
+                }
+            ]
+        },
+        "updateTreeDataProviderPostCut": {
+            "actionType": "JSFunction",
+            "method": "updateTreeDataProviderPostCut",
+            "inputData": {
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "sourceObject": "{{parameters.eventData.sourceObjects}}"
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "setContents": {
+            "actionType": "JSFunction",
+            "method": "setContents",
+            "deps": "js/tcClipboardService",
+            "inputData": {
+                "uid": "{{parameters.eventData.sourceObjects}}"
+            }
+        },
+        "validateRevisedObject": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "{{ctx.state.params.pageId === 'tc_xrt_Models' ? 'Pca0VariabilityExplorerProducts' : 'Pca0VariabilityExplorerFeatures'}}"
+                    },
+                    "saveColumnConfigData": {
+                        "clientScopeURI": "{{ctx.state.params.pageId === 'tc_xrt_Models' ? 'Pca0VariabilityExplorerProducts' : 'Pca0VariabilityExplorerFeatures'}}",
+                        "columnConfigId": "{{data.dataProviders.treeDataProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.treeDataProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "maxToLoad": 99,
+                        "maxToReturn": 50,
+                        "providerName": "Pca0ApplyPrecFilterProvider",
+                        "searchCriteria": "{{function:getReviseCriteria}}",
+                        "columnFilters": "{{data.columnProviders.treeDataProvider.columnFilters}}",
+                        "searchSortCriteria": "{{data.columnProviders.treeDataProvider.sortCriteria}}",
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.treeDataProvider.startIndex}}"
+                        }
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "searchResults": "{{json:searchResultsJSON}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0VariabilityExplorerTree.showReviseObjects",
+                    "eventData": {
+                        "searchResults": "{{data.searchResults}}"
+                    }
+                } ],
+                "failure": [ {
+                    "name": "Pca0InlineAuthoring.processPartialErrors",
+                    "eventData": {
+                        "searchResults": "{{data.searchResults}}"
+                    }
+                } ]
+            }
+        },
+        "updateObjectAfterRevise": {
+            "actionType": "JSFunction",
+            "method": "updateObjectAfterRevise",
+            "inputData": {
+                "selectedObject": "{{data.ctx.selected}}",
+                "dataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "eventData": "{{parameters.eventData.searchResults}}"
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "validateIsReviseAction": {
+            "actionType": "JSFunction",
+            "method": "validateIsReviseAction",
+            "inputData": {
+                "tag" : "{{parameters.tag}}"
+            },
+            "outputData": {
+                "isReviseAction" : ""
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "allocateVariability": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2024-06-ConfiguratorManagement",
+            "method": "allocateVariability",
+            "inputData": {
+                "perspective": "{{ctx.ConfiguratorCtx.configPerspective}}",
+                "objectsToAllocate": "{{parameters.eventData.sourceObjects}}",
+                "sortCriteria": "{{data.columnProviders.treeColumnProvider.sortCriteria}}",
+                "columnFilters": "{{data.columnProviders.treeColumnProvider.columnFilters}}",
+                "requestInfo": {
+                    "isAsync": [ "{{parameters.eventData.runInBackground.toString()}}" ]
+                }
+            },
+            "outputData": {
+                "allocateVariabilitySoaResponse": ""
+            },
+            "events": {
+                "success": [ {
+                        "condition": "conditions.inAsyncReuseMode",
+                        "name": "Pca0AdvancedReuse.closePanel"
+                    },
+                    {
+                        "condition": "!conditions.inAsyncReuseMode",
+                        "name": "Pca0VariabilityExplorerTree.updateTreeAfterReuse",
+                        "eventData": {
+                            "soaResponse": "{{data.allocateVariabilitySoaResponse}}"
+                        }
+                    },
+                    {
+                        "condition": "conditions.inAdvancedReusePickerMode && !conditions.inAsyncReuseMode",
+                        "name": "Pca0VariabilityPicker.disableSelectionsInReusePickerView",
+                        "eventData": {
+                            "soaResponse": "{{data.allocateVariabilitySoaResponse}}"
+                        }
+                    }
+                ],
+                "failure": [ {
+                        "condition": "!conditions.inAsyncReuseMode",
+                        "name": "Pca0VariabilityExplorerTree.updateTreeAfterReuse",
+                        "eventData": {
+                            "soaResponse": "{{data.allocateVariabilitySoaResponse}}"
+                        }
+                    },
+                    {
+                        "condition": "conditions.inAdvancedReusePickerMode && !conditions.inAsyncReuseMode",
+                        "name": "Pca0VariabilityPicker.disableSelectionsInReusePickerView",
+                        "eventData": {
+                            "soaResponse": "{{data.allocateVariabilitySoaResponse}}"
+                        }
+                    },
+                    {
+                        "name": "Pca0InlineAuthoring.processPartialErrors",
+                        "eventData": {
+                            "ServiceData": "{{data.allocateVariabilitySoaResponse.ServiceData}}"
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "condition": "conditions.inAsyncReuseMode",
+                    "message": "advancedReuseSuccessInAsyncMode"
+                } ]
+            },
+            "deps": "js/pca0AdvancedReuseService"
+        },
+        "updateTreeAfterReuse": {
+            "actionType": "JSFunction",
+            "method": "updateTreeAfterReuse",
+            "inputData": {
+                "soaResponse": "{{parameters.eventData.soaResponse}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "deps": "js/pca0AdvancedReuseService"
+        },
+        "updateReuseModeFlag": {
+            "actionType": "JSFunction",
+            "method": "toggleReuseFlagInCtx",
+            "inputData": {
+                "flagName": "reuseMode"
+            },
+            "outputData": {
+                "inlineReuseMode": ""
+            },
+            "deps": "js/pca0AdvancedReuseService"
+        },
+        "modifyAuxiliaryEditAction": {
+            "actionType": "JSFunction",
+            "method": "enableAuxiliaryForEdit",
+            "inputData": {
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "expandBelowAction": {
+            "actionType": "JSFunction",
+            "method": "performExpandBelow",
+            "inputData": {
+                "selectedObject": "{{parameters.eventData.selectedObject}}",
+                "dataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "outputData": {
+                "nodeToBeExpand" : ""
+            },
+            "deps": "js/pca0VariabilityExplorerExpandService"
+        },
+        "collapseBelowAction": {
+            "actionType": "JSFunction",
+            "method": "performCollapseBelow",
+            "inputData": {
+                "data" : "{{data}}",
+                "gridId" : "{{data.grids.variabilityExplorerGrid.gridid}}",
+                "selectedObject": "{{parameters.eventData.selectedObject}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "deps": "js/pca0VariabilityExplorerExpandService"
+        },
+        "loadTreeProviderDataForExpand": {
+            "actionType": "JSFunction",
+            "method": "loadTreeProviderDataForExpand",
+            "inputData": {
+                "data": "{{data}}",
+                "viewModelAction": "loadVariabilityDataFromServerForExpand",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "gridId" : "{{data.grids.variabilityExplorerGrid.gridid}}",
+                "selectedObject": "{{parameters.eventData.selectedObject}}"
+            },
+            "deps": "js/pca0VariabilityExplorerExpandService"
+        },
+        "loadVariabilityDataFromServerForExpand": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2024-06-ConfiguratorManagement",
+            "method": "getVariability3",
+            "policy": {
+                "types": "{{function:getConfigPerspectivePolicy}}"
+            },
+            "inputData": {
+                "configPerspective": "{{ctx.ConfiguratorCtx.configPerspective}}",
+                "configContext": "{{function:populateConfigContext}}",
+                "requestType": "{{function:populateRequestTypeForExpand}}",
+                "parentUids": "{{function:populateParentNodeForExpand}}",
+                "level":"{{function:populateLevelIndex}}",
+                "sortCriteria": "{{data.columnProviders.treeColumnProvider.sortCriteria}}",
+                "columnFilters": "{{data.columnProviders.treeColumnProvider.columnFilters}}",
+                "requestInfo": { "expandBelow" :[ "true" ] }
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "getDefaultValueTypeConstant": {
+            "actionType": "TcSoaService",
+            "serviceName": "BusinessModeler-2007-06-Constants",
+            "method": "getTypeConstantValues",
+            "inputData": {
+                "keys": [ {
+                    "constantName": "Cfg0DefaultValueType",
+                    "typeName": "{{parameters.eventData.selectedRowType}}"
+                } ]
+            },
+            "outputData": {
+                "response": "",
+                "businessObjectConstantMap": "{{function:cacheBusinessObjectConstantMap}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0InlineAuthoring.addInlineRow",
+                    "eventData": {
+                        "targetObjectType": "{{function:getBusinessObjectConstantValue}}",
+                        "absType": "{{parameters.eventData.absType}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "getDefaultValTypeConstForFeatureAuthoring": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "getApplicableTargetObjectTypeFromServerForFeature",
+                "condition": "conditions.applicableObjectTypeCacheMapNotAvailable"
+            },
+            {
+                "action": "cacheApplicableObjectType",
+                "condition": "conditions.applicableObjectTypeCacheMapNotAvailable"
+            },
+            {
+                "action": "getDefaultValTypeConstFromCache",
+                "condition": "conditions.defaultValueTypeFamilyBOConstantAvailable"
+            },
+            {
+                "action": "getDefaultValueTypeConstant",
+                "condition": "!conditions.defaultValueTypeFamilyBOConstantAvailable"
+            } ]
+        },
+        "getApplicableTargetObjectTypeFromServerForFeature": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-04-DataManagement",
+            "method": "findDisplayableSubBusinessObjectsWithDisplayNames",
+            "inputData": {
+                "input": [ {
+                    "boTypeName": "{{parameters.eventData.absType}}",
+                    "exclusionBOTypeNames": []
+                } ]
+            },
+            "outputData": {
+                "targetObjectType": "{{function:getDefaultBOTypeToAdd}}"
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "getDefaultValTypeConstFromCache": {
+            "actionType": "JSFunction",
+            "method": "getBusinessObjectConstantValue",
+            "inputData": {
+                "businessObjectConstantMap": "{{data.businessObjectConstantMap}}",
+                "boTypeName": "{{parameters.eventData.selectedRowType}}"
+            },
+            "outputData": {
+                "targetObjectType": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0InlineAuthoring.addInlineRow",
+                    "eventData": {
+                        "targetObjectType": "{{data.targetObjectType}}",
+                        "absType": "{{parameters.eventData.absType}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0InlineAuthoringHandler"
+        }
+    },
+    "dataProviders": {
+        "treeDataProvider": {
+            "initializeAction": "loadTreeProviderData",
+            "action": "loadTreeProviderData",
+            "editContext": "TABLE_CONTEXT",
+            "treeLoadResult": "{{data.treeLoadResult}}",
+            "selectionModelMode": "multiple",
+            "cacheCollapse": true,
+            "inputData": {
+                "accessMode": "tree",
+                "topNodeUid": "variabilityTreeData",
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "selectionData": "{{props.selectionData}}",
+                "editSupportParamKeys": [ "s_uid", "d_uids" ]
+            },
+            "showDecorators": "true",
+            "contextMenuCommandsAnchor": "pca0ContextMenuAnchor",
+            "commandsAnchor": "objNameCellAnchor"
+        },
+        "treePropertyProvider": {
+            "action": "loadTreeProperties",
+            "propertyLoadResult": "action.result.propertyLoadResult"
+        }
+    },
+    "columnProviders": {
+        "treeColumnProvider": {
+            "loadColumnAction": "initializeColumnConfig",
+            "columns": "{{data.columns}}",
+            "saveColumnAction": "saveColumnConfigData",
+            "saveColumnAndLoadAction": "saveColumnConfigLoadData",
+            "resetColumnAction": "resetColumnConfig"
+        }
+    },
+    "grids": {
+        "variabilityExplorerGrid": {
+            "dataProvider": "treeDataProvider",
+            "propertyProvider": "treePropertyProvider",
+            "columnProvider": "treeColumnProvider",
+            "enableArrangeMenu": true,
+            "addIconColumn": false,
+            "gridOptions": {
+                "useStaticFirstCol": true,
+                "enableExpandAndPaginationInEdit": true,
+                "enableSorting": true,
+                "isFilteringEnabled": true
+            }
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "reviseObject.assignProjects",
+            "action": "validateIsReviseAction",
+            "inputArgs": {
+                "tag": "revise"
+            }
+        },
+        {
+            "eventId": "saveAsObject.assignProjects",
+            "action": "validateIsReviseAction",
+            "inputArgs": {
+                "tag": "saveAs"
+            }
+        },
+        {
+            "eventId": "Pca0ReviseObjectPostHandler",
+            "condition": "data.isReviseAction === true",
+            "action": "validateRevisedObject",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.showReviseObjects",
+            "action": "updateObjectAfterRevise",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "treeDataProvider.treeNodesLoaded",
+            "cacheEventData": true,
+            "condition": "!data.dataProviders.treeDataProvider.columnConfigLoadingInProgress",
+            "action": "loadTreeTablePropertiesOnInitialLoad"
+        },
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent",
+            "condition": "name === 'variabilityExplorerGrid'"
+        },
+        {
+            "eventId": "variabilityExplorerGrid.clearNewRowCacheMap",
+            "action": "clearNewRowCacheMap"
+        },
+        {
+            "eventId": "Pca0FilterCriteriaSettings.filterCriteriaUpdated",
+            "action": "storageSyncAndFirePWAReset",
+            "criteria": {
+                "contextKey": "ConfiguratorCtx"
+            }
+        },
+        {
+            "eventId": "primaryWorkarea.multiSelectAction",
+            "action": "plTableClientRefresh"
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.getAbstractObjectType",
+            "action": "getAbstractObjectType",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.getApplicableTargetObjectType",
+            "action": "getApplicableTargetObjectType",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.addInlineRow",
+            "action": "addInlineRow",
+            "cacheEventData": true
+
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.processPartialErrors",
+            "action": "processPartialErrors",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.processPartialErrorsAfterSave",
+            "action": "processPartialErrorsAfterSave",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.renderInlineRow",
+            "action": "renderInlineRow",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.trySaveEdits",
+            "cacheEventData": true,
+            "action": "trySaveEdits"
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.createVariabilityObject",
+            "cacheEventData": true,
+            "action": "saveInlineRowBatchJob"
+        },
+        {
+            "eventId": "pca0InlineAuthoringHandler.resetInlineDataCache",
+            "action": "resetInlineDataCache"
+        },
+        {
+            "eventId": "pca0InlineAuthoringHandler.discardUnsavedAndResetInlineDataCache",
+            "action": "discardUnsavedAndResetInlineDataCacheBatch"
+        },
+        {
+            "eventId": "pca0InlineAuthoringHandler.postSaveHandler",
+            "action": "postSaveHandlerBatch"
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.RemoveUnsavedRow",
+            "action": "removeUnsavedRow",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "tcDataprovider.validSelectionEvent",
+            "cacheEventData": true,
+            "action": "handleFeatureDataTypeWidgetSelectionChange",
+            "condition": "conditions.isInlineAuthoringMode"
+        },
+        {
+            "eventId": "objTypeProvider.validSelectionEvent",
+            "action": "handleObjectTypeWidgetSelectionChange",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.goAheadWidgetSelectionChange",
+            "action": "goAheadWidgetSelectionChange",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.reverseWidgetSelectionChange",
+            "action": "reverseWidgetSelectionChange",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.processPartialErrorsAndDiscardAllUnsavedRows",
+            "action": "processPartialErrorsAndDiscardAllUnsavedRows"
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.RemoveAllUnsavedRows",
+            "action": "discardAllUnsavedRows"
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.handleSaveEdits",
+            "action": "handleSaveEdits"
+        },
+        {
+            "eventId": "object_name.lovValueChanged",
+            "action": "loadPropertiesOfObjectName",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "cfg0ObjectId.lovValueChanged",
+            "action": "loadPropertiesOfCfg0ObjectId",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "updateInlineRowVMOPropertiesForReuse",
+            "action": "updateInlineRowVMOPropertiesForReuse",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.RemoveSavedRow",
+            "action": "removeSavedRow",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.removeSavedRowAndChildrenFromUi",
+            "action": "removeSavedRowAndChildrenFromUi",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.Pca0SortRowsByLevel",
+            "action": "sortRowsByLevel",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "PcaObjectTypeLOVComponent.cacheLoadedObjectTypes",
+            "action": "cacheLoadedObjectTypes",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.ResetLoadingStatus",
+            "action": "resetLoadingStatus",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.addChildren",
+            "action": "addChildrenAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.removeChildren",
+            "action": "removeChildrenAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.postProductModelOrFeatureDropHandler",
+            "action": "postProductModelOrFeatureDropHandler",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.postFamilyMoveHandler",
+            "action": "postFamilyMoveHandler",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.removeUnsavedChildrenAfterAllocatedFamilyChange",
+            "action": "removeUnsavedChildrenAfterLovValueChange",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.replaceInlineVmoWithUpdatedProps",
+            "action": "replaceInlineVmoWithUpdatedProps",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "pca0InlineAuthoringHandler.updateColumnConfigAndVmoAfterObjectTypeChange",
+            "action": "updateColumnConfigAndVmoAfterObjectTypeChange",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "treeDataProvider.startEditForNewVmosRequested",
+            "action": "startEditForNewVmos"
+        },
+        {
+            "eventId": "pca0InlineAuthoringHandler.postRemovePartialScenarioHandler",
+            "action": "postRemovePartialScenarioHandler",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.postStandaloneFeaturePasteHandler",
+            "action": "postStandaloneFeaturePasteHandler",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.postCutStandaloneFeature",
+            "action": "postCutStandaloneFeature",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.pca0AllocateAcrossTabs",
+            "action": "allocateVariability",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Reuse.updateReuseModeFlag",
+            "action": "updateReuseModeFlag"
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.updateTreeAfterReuse",
+            "action": "updateTreeAfterReuse",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.modifyAuxiliaryEditAction",
+            "action": "modifyAuxiliaryEditAction"
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.expandBelow",
+            "action": "expandBelowAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.collapseBelow",
+            "action": "collapseBelowAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.loadVariabilityDataFromServer",
+            "action": "loadTreeProviderDataForExpand",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0InlineAuthoring.getDefaultValTypeConstForFeatureAuthoring",
+            "action": "getDefaultValTypeConstForFeatureAuthoring",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+    ],
+    "functions": {
+        "getReviseCriteria": {
+            "functionName": "getInputAndReviseCriteria",
+            "parameters": [ "{{parameters.eventData.uid}}", "revise" ],
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "populateConfigContext": {
+            "functionName": "populateConfigContext",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "populateParentNode": {
+            "functionName": "populateParentNode",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "populateRequestType": {
+            "functionName": "populateRequestType",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "populateRequestTypeForExpand": {
+            "functionName": "populateRequestTypeForExpand",
+            "parameters": [
+                "{{data}}",
+                "{{data.nodeToBeExpand}}"
+            ]
+        },
+        "getConfigPerspectivePolicy": {
+            "functionName": "getConfigPerspectivePolicy",
+            "parameters": []
+        },
+        "getConfigPerspective": {
+            "functionName": "getConfigPerspective"
+        },
+        "populateVisiblePropertyList": {
+            "functionName": "populateVisiblePropertyList",
+            "parameters": [
+                "{{data.dataProviders.treeDataProvider}}"
+            ]
+        },
+        "populateInlineRows": {
+            "functionName": "populateInlineRows",
+            "parameters": [
+                "{{data.unsavedRows}}",
+                "{{data.dataProviders.treeDataProvider}}"
+            ],
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "cacheInlineRowFromServerResponse": {
+            "functionName": "cacheInlineRowFromServerResponse",
+            "parameters": [
+                "{{data}}",
+                "{{response}}"
+            ],
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "updateColumnConfig": {
+            "functionName": "updateColumnConfig",
+            "parameters": [
+                "{{dataProviders.treeDataProvider.columnConfig}}"
+            ],
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "updateInitialColumnfilters": {
+            "functionName": "updateInitialColumnfilters",
+            "parameters": [],
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "loadTreeColumns": {
+            "functionName": "loadTreeColumns",
+            "parameters": [],
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "postResetFunction": {
+            "functionName": "postResetFunction",
+            "parameters": [
+                "{{data.dataProviders.treeDataProvider.columnConfig}}"
+            ],
+            "deps": "js/tcarrange.service"
+        },
+        "populateParentElement": {
+            "functionName": "populateParentElement",
+            "parameters": [
+                "{{commandContext}}",
+                "{{data.dataProviders.treeDataProvider}}",
+                "{{data.eventData.absType}}"
+            ]
+        },
+        "getObjectsToDelete": {
+            "functionName": "getObjectsToDelete",
+            "parameters": [
+                "{{parameters.eventData.row}}",
+                "{{parameters.eventData.isDeleteAction}}"
+            ]
+        },
+        "getAllocationUidMap": {
+            "functionName": "getAllocationUidMap",
+            "parameters": [
+                "{{data.dataProviders.treeDataProvider.viewModelCollection}}"
+            ]
+        },
+        "getTypesToInclude": {
+            "functionName": "getTypesToInclude",
+            "parameters": [
+                "{{data.eventData}}"
+            ],
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "getPropertyName": {
+            "functionName": "getPropertyName",
+            "parameters": [
+                "{{data.ctx.pselected}}",
+                "{{parameters.eventData}}"
+            ]
+        },
+        "getTargetObject": {
+            "functionName": "getTargetObject",
+            "parameters": [
+                "{{parameters.eventData}}",
+                "{{data.dataProviders.treeDataProvider}}"
+            ]
+        },
+        "populateParentNodeForExpand": {
+            "functionName": "populateParentNodeForExpand",
+            "parameters": [
+                "{{data.nodeToBeExpand}}"
+            ]
+        },
+        "populateLevelIndex": {
+            "functionName": "populateLevelIndex",
+            "parameters": [
+                "{{data.nodeToBeExpand}}"
+            ]
+        },
+        "getDefaultBOTypeToAdd": {
+            "functionName": "getDefaultBOTypeToAdd",
+            "parameters": [
+                "{{parameters.eventData.type}}"
+            ]
+        },
+        "getBusinessObjectConstantValue": {
+            "functionName": "getBusinessObjectConstantValue",
+            "parameters": [
+                "{{data.businessObjectConstantMap}}",
+                "{{parameters.eventData.selectedRowType}}"
+            ]
+        },
+        "cacheBusinessObjectConstantMap": {
+            "functionName": "cacheBusinessObjectConstantMap",
+            "parameters": [
+                "{{data.applicableObjectTypeCacheMap}}",
+                "{{data.businessObjectConstantMap}}",
+                "{{parameters.eventData.selectedRowType}}",
+                "{{data.absType}}"
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initComponentAndUpdateXrtContext",
+        "onUpdate": [ {
+                "action": "updateXrtContext",
+                "observers": [ "props.subPanelContext.selectionData" ]
+            },
+            {
+                "action": "removeEditHandlerBatch",
+                "observers": [ "viewModel.data.unsavedRows" ]
+            }
+        ]
+    },
+    "i18n": {
+        "Pca0RevisionRule": [ "ConfiguratorExplorerMessages" ],
+        "Pca0ShowSaveRequirementsMessage": [ "ConfiguratorExplorerMessages" ],
+        "Pca0ShowFailedRowsAfterSaveMessage": [ "ConfiguratorExplorerMessages" ],
+        "Pca0ShowNextFailedRowMessage": [ "ConfiguratorExplorerMessages" ],
+        "multipleProductModelAuthoringNotAllowed": [ "ConfiguratorExplorerMessages" ],
+        "pasteSuccessMessage": [ "ZeroCompileCommandMessages" ],
+        "pasteMultipleSuccessMessage": [ "ZeroCompileCommandMessages" ],
+        "reusedFamilyChanged": [ "ConfiguratorExplorerMessages" ],
+        "booleanFeatureAuthNotSupported": [ "ConfiguratorExplorerMessages" ],
+        "inlineReuseModeGuidanceMsg": [ "ConfiguratorExplorerMessages" ],
+        "exitReuseMode": [ "ConfiguratorExplorerMessages" ],
+        "advancedReuseSuccessInAsyncMode": [ "ConfiguratorExplorerMessages" ]
+    },
+    "conditions": {
+        "showFailedGuidance": {
+            "expression": "data.failedUnsavedRows && data.failedUnsavedRows.length > 0"
+        },
+        "showNext": {
+            "expression": "data.failedUnsavedRows && data.failedUnsavedRows.length > 1"
+        },
+        "noChildNodeAvailable": {
+            "expression": "data.eventData.vmo.children.length === 0"
+        },
+        "noInlineRowCondition": {
+            "expression": "!data.unsavedRows || data.unsavedRows.length === 0"
+        },
+        "shouldLoadInlineRowFromCacheCondition": {
+            "expression": "data.newRowCacheMap[data.eventData.targetObjectType] !== undefined"
+        },
+        "shouldLoadInlineRowFromServerCondition": {
+            "expression": "!conditions.shouldLoadInlineRowFromCacheCondition"
+        },
+        "isInlineAuthoringMode": {
+            "expression": "ctx.ConfiguratorCtx.inlineAuthoringContext.isInlineAuthoringMode === true"
+        },
+        "isNotInlineAuthoringMode": {
+            "expression": "!conditions.isInlineAuthoringMode"
+        },
+        "isSaveAllowed": {
+            "expression": "data.isSaveAllowed === true"
+        },
+        "isNotSaveAllowed": {
+            "expression": "!conditions.isSaveAllowed"
+        },
+        "isParentCached": {
+            "expression": "data.eventData.parentElement !== undefined && data.eventData.parentElement.isCached === true"
+        },
+        "isSelectedRow": {
+            "expression": "data.selectionToUpdate !== undefined"
+        },
+        "isAddOperationTypeDragAndDropProductModelOrFeature": {
+            "expression": "parameters.eventData.addOperationType === 'dragAndDropProductModelsOrFeatures'"
+        },
+        "showReuseModeGuidance": {
+            "expression": "ctx.state.params.pageId === 'tc_xrt_Features' && data.inlineReuseMode === true"
+        },
+        "inAdvancedReusePickerMode": {
+            "expression": "ctx.state.params.pageId === 'tc_xrt_Features' && ctx.ConfiguratorCtx.advancedReusePickerMode === true"
+        },
+        "inAsyncReuseMode": {
+            "expression": "parameters.eventData.runInBackground === true"
+        },
+        "applicableObjectTypeCacheMapNotAvailable": {
+            "expression": "data.applicableObjectTypeCacheMap[parameters.eventData.absType] === undefined"
+        },
+        "defaultValueTypeFamilyBOConstantAvailable": {
+            "expression": "data.businessObjectConstantMap[parameters.eventData.selectedRowType] !== undefined"
+        },
+        "isDefaultValTypeConstForFeatureAuthoringRequired":{
+            "expression":"data.absType === 'Cfg0AbsLiteralOptionValue' || data.absType === 'Cfg0AbsPackageOptionValue' || data.absType === 'Cfg0AbsSummaryOptionValue' || data.absType === 'Cfg0AbsFeature' || data.absType === 'Cfg0AbsProductModel' || data.absType === 'Cfg0AbsSummaryModel' || data.absType === 'Cfg0AbsProductLine'"
+        },
+        "isApplicableObjectTypeForFamilyOrGroupAuthoringRequired":{
+            "expression":"data.absType !== 'Cfg0AbsLiteralOptionValue' && data.absType !== 'Cfg0AbsPackageOptionValue' && data.absType !== 'Cfg0AbsSummaryOptionValue' && data.absType !== 'Cfg0AbsFeature' && data.absType !== 'Cfg0AbsProductModel' && data.absType !== 'Cfg0AbsSummaryModel' && data.absType !== 'Cfg0AbsProductLine' && data.absType !== 'boolFeature'"
+        }
+    },
+    "messages": {
+        "showSaveRequirementsMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.Pca0ShowSaveRequirementsMessage}}"
+        },
+        "ShowFailedRowsAfterSaveMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.Pca0ShowFailedRowsAfterSaveMessage}}"
+        },
+        "Pca0MultipleProductModelAuthoringNotAllowed": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.multipleProductModelAuthoringNotAllowed}}"
+        },
+        "singleProductModelDragAndDropMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.pasteSuccessMessage}}",
+            "messageTextParams": [ "{{parameters.eventData.sourceObjects[0].displayName}}", "{{parameters.eventData.targetObject.displayName}}" ]
+        },
+        "multipleProductModelDragAndDropMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.pasteMultipleSuccessMessage}}",
+            "messageTextParams": [ "{{parameters.eventData.sourceObjects.length}}", "{{parameters.eventData.targetObject.displayName}}" ]
+        },
+        "reusedFamilyChangedMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.reusedFamilyChanged}}"
+        },
+        "booleanFeatureAuthNotSupportedMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.booleanFeatureAuthNotSupported}}"
+        },
+        "showReuseModeGuidanceMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.inlineReuseModeGuidanceMsg}}"
+        },
+        "advancedReuseSuccessInAsyncMode": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.advancedReuseSuccessInAsyncMode}}"
+        }
+    }
+}

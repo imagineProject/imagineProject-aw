@@ -1,0 +1,179 @@
+{
+    "schemaVersion" : "1.0.0",
+    "data":
+    {
+        "createPartOption":{
+            "displayName": "",
+            "labelPosition": "NO_PROPERTY_LABEL",
+            "type": "STRING",
+            "dbValue": "deferForLater"
+        },
+        "createPartOptionValues":{
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.autoCreateRadioButtonLabel}}",
+                    "propInternalValue": "autoCreate"
+                },
+                {
+                    "propDisplayValue": "{{i18n.addPartRadioButtonLabel}}",
+                    "propInternalValue": "addPart"
+                },
+                {
+                    "propDisplayValue": "{{i18n.assignPartIdRadioButtonLabel}}",
+                    "propInternalValue": "assignPartId"
+                },
+                {
+                    "propDisplayValue": "{{i18n.deferForLaterRadioButtonLabel}}",
+                    "propInternalValue": "deferForLater"
+                }
+            ]
+
+        },
+        "autoCreatePartMessage":{
+            "displayName": "",
+            "dbValue": "",
+            "type": "STRING",
+            "dispValue": "{{i18n.autoCreatePartMessage}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "pmaAssignPartIdTextBox":{
+            "displayName": "{{i18n.assignPartNumberTextBoxLabel}}",
+            "type": "STRING",
+            "isEditable": "true",
+            "dbValue": "",
+            "maxLength": "128"
+        }
+    },
+    "actions":{
+        "loadContentForPartCreateBatch":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action":"loadContentForPartCreate",
+                    "condition":"data.createPartOption.dbValue === 'addPart'"
+                }
+            ]
+
+        },
+        "loadContentForPartCreate":{
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{subPanelContext.activeState}}",
+                "value": {
+                    "activeView": "PmaCreatePartPanel",
+                    "dynamicPanelTitle": "{{i18n.addPart}}",
+                    "dynamicPanelId": "PmaCreatePartPanel",
+                    "prevPanelId": "{{subPanelContext.activeState.activeView}}",
+                    "primaryXrtTypeLoaded": "{{subPanelContext.xrtState.xrtTypeLoaded}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateAssociatePartNumberProperty":{
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "pma.updateAssociatePartNumberProperty",
+                    "eventData": {
+                        "associatePartNumber":"{{data.pmaAssignPartIdTextBox.dbValue}}"
+                    }
+                } ]
+            }
+
+        },
+        "initDesignPanel": {
+            "actionType": "JSFunction",
+            "method": "updateSubPanel",
+            "inputData": {
+                "props":"{{props.subPanelContext}}"
+            },
+            "deps": "js/Pma1Utils"
+        },
+        "init": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "initDesignPanel",
+                    "condition": "!conditions.isAlignPartCustomPanelExists"
+                }
+            ]
+        },
+        "clearAssociatePartNumberProperty":{
+            "actionType": "JSFunction",
+            "method": "clearAssociatePartNumberProperty",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/Pma1Utils"
+        }
+    },
+    "onEvent":[
+        {
+            "eventId": "pma.clearAssociatePartNumberProperty",
+            "action": "clearAssociatePartNumberProperty"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount":"init",
+        "onUpdate": [
+            {
+                "action": "updateAssociatePartNumberProperty",
+                "observers":[ "fields.pmaAssignPartIdTextBox.value" ]
+            }
+        ]
+    },
+    "i18n": {
+        "addPart": [
+            "PMA1AutomationConstants"
+        ],
+        "autoCreatePartMessage":[
+            "PMA1AutomationMessages"
+        ],
+        "assignPartNumberTextBoxLabel":[
+            "PMA1AutomationConstants"
+        ],
+        "autoCreateRadioButtonLabel":[
+            "PMA1AutomationConstants"
+        ],
+        "addPartRadioButtonLabel":[
+            "PMA1AutomationConstants"
+        ],
+        "assignPartIdRadioButtonLabel":[
+            "PMA1AutomationConstants"
+        ],
+        "deferForLaterRadioButtonLabel":[
+            "PMA1AutomationConstants"
+        ],
+        "partCreationlabel":[
+            "PMA1AutomationConstants"
+        ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "conditions":{
+        "isAutoCreatePartSelected":{
+            "expression":"data.createPartOption.dbValue === 'autoCreate'"
+        },
+        "createPartRadioButtonVisibility":{
+            "expression":"subPanelContext.fields.selected.properties.pma0IsPartRequired.value === true && subPanelContext.fields.selected.properties.pma0IsPartRequired.disabled === false"
+        },
+        "isValidCommandSource":{
+            "expression":"ctx.activeNavigationCommand_dialog.commandId !== 'CbaAlignPart' && ctx.activeNavigationCommand_dialog.commandId !== 'CbaAlignDesign'"
+        },
+        "isCreatePanel":{
+            "expression":"conditions.isValidCommandSource && props.subPanelContext.activeState.value.activeView === 'AddObjectPrimarySub'"
+        },
+        "isRevisePanel":{
+            "expression":"conditions.isValidCommandSource && props.subPanelContext.activeState.value.activeView === 'Awp0ShowRevision'"
+        },
+        "isAlignPartCustomPanelExists":{
+            "expression":"conditions.isCreatePanel || conditions.isRevisePanel"
+        }
+    }
+}

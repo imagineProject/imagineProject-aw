@@ -1,0 +1,87 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "initialize":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "updateSelectedReportFromSelection",
+                "condition": "!props.subPanelContext.reportsState"
+            }, {
+                "action": "updateSelectedReportFromReportsState",
+                "condition": "props.subPanelContext.reportsState"
+            }]
+        },
+        "updateSelectedReportFromSelection": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{fields.shareReportState}}",
+                "value": {
+                    "selectedReport": "{{props.subPanelContext.selectionData.selected[0]}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateSelectedReportFromReportsState": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{fields.shareReportState}}",
+                "value": {
+                    "selectedReport": "{{props.subPanelContext.reportsState.selectedReport}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateSharePanelWithSelection":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "updateSelectedReportFromSelection",
+                "condition": "conditions.hasSharePrivilege"
+            },{
+                "action": "closeDialog",
+                "condition": "!conditions.hasSharePrivilege"
+            }]
+        },
+        "closeDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{props.subPanelContext.popupOptions.popupId}}"
+             },
+            "deps": "js/dialogService"
+        }
+    },
+    "data": {
+        "activeView": "ShareTemplate",
+        "shareReportState": {
+            "initialValues": {
+                "disableAddButton": true,
+                "disableRemoveButton": true,
+                "sharedWithList":[]
+            },
+            "meta": {}
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initialize",
+        "onUpdate":[
+            {
+                "action": "updateSharePanelWithSelection",
+                "observers": [ "props.subPanelContext.selectionData.selected[0].uid" ]
+            }
+        ]
+    },
+    "conditions":{
+        "hasSharePrivilege": {
+            "expression": "(props.subPanelContext.selectionData.selected.length === 1 && (props.subPanelContext.selectionData.selected[0].type === 'ReportDefinition' || props.subPanelContext.selectionData.selected[0].type === 'Rb0ReportsDashboard')) && ((props.subPanelContext.selectionData.selected[0].props.owning_user.dbValues[0] === ctx.userSession.props.user.dbValues[0])||(ctx.userSession.props.group.displayValues[0] === 'dba'))"
+        }
+    },
+    "onEvent": [],
+    "i18n": {
+        "shareTemplateTitle": [
+            "ReportChartMessages"
+        ]
+    }
+}

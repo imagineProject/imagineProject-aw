@@ -1,0 +1,79 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "data": {
+        "searchBox": {
+            "displayName": "{{i18n.contextSearchDisplayText}}",
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "searchBoxPlaceHolder": {
+            "dbValue": "{{i18n.contextSearchDisplayText}}"
+        }
+    },
+    "dataProviders": {
+        "performSearch":
+        {
+            "action":"getContextAndDicrtionariesList",
+            "response": "{{data.listData}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "single",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            },
+            "commandsAnchor": "CONTEXT_DICT_COMMANDS"
+        }
+    },
+    "actions": {
+        "reveal": {
+            "actionType": "dataProvider",
+            "method": "performSearch"
+        },
+        "getContextAndDicrtionariesList": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData":  {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": ""
+                    },
+                    "inflateProperties": false,
+                    "saveColumnConfigData": {},
+                    "searchInput": "{{function:searchInputData}}"
+                }
+            },
+            "outputData": {
+                "soaResponse": "",
+                "totalFound": "data.totalFound",
+                "listData": "{{function:getFormattedDataForList}}"
+            }
+        },
+        "getRecentContextList": {
+            "actionType": "TcSoaService",
+            "serviceName": "Administration-2012-09-PreferenceManagement",
+            "method": "getPreferences",
+            "inputData": {
+                "preferenceNames": ["Cfg0OptionsViewHistoryUIDs"],
+                "includePreferenceDescriptions": true
+            }
+        }
+    },
+    "functions": {
+        "getFormattedDataForList": {
+            "functionName": "getFormattedDataForList",
+            "deps": "js/Pca0LandingPageService"
+        },
+        "searchInputData": {
+            "functionName": "searchInputData",
+            "parameters": [
+                "{{data.searchBox.dbValue}}"
+            ],
+            "deps": "js/Pca0LandingPageService"
+        }
+    },
+    "i18n": {
+        "contextSearchDisplayText": [ "ConfiguratorMessages" ]
+    }
+}

@@ -1,0 +1,186 @@
+{
+  "commands": {
+    "Awv0PmiTool": {
+      "iconId": "cmdPMI",
+      "isGroup": false,
+      "title": "{{i18n.Awv0PmiCommandTitle}}",
+      "description": "{{i18n.Awv0PmiToolDesc}}",
+      "hasDialog": true
+    },
+    "Awv0PmiLeafStructureTool": {
+      "iconId": "cmdPMI",
+      "isGroup": false,
+      "title": "{{i18n.pmiAndLeafStrCommandTitle}}",
+      "description": "{{i18n.pmiAndLeafStrCommandDesc}}",
+      "hasDialog": true
+    },
+    "PmiStepThroughPrevCommand": {
+      "iconId": "cmdUp",
+      "isGroup": false,
+      "title": "{{i18n.stepThroughPrev}}",
+      "description": "{{i18n.PmiStepThroughPrevCommandDesc}}"
+    },
+    "PmiStepThroughNextCommand": {
+      "iconId": "cmdDown",
+      "isGroup": false,
+      "title": "{{i18n.stepThroughNext}}",
+      "description": "{{i18n.PmiStepThroughNextCommandDesc}}"
+    }
+  },
+  "commandHandlers": {
+    "Awv0PmiToolHandler": {
+      "id": "Awv0PmiTool",
+      "action": "showToolPanel",
+      "activeWhen": {
+        "condition": "conditions.isPmiToolsViewerIn3DMode"
+      },
+      "visibleWhen": {
+        "condition": "conditions.isPmiToolsViewerIn3DMode"
+      },
+      "enableWhen": {
+        "condition": "conditions.isViewerRevealedAndIn3DModeWithPMI"
+      }
+    },
+    "Awv0PmiLeafStructureToolHandler": {
+      "id": "Awv0PmiLeafStructureTool",
+      "action": "showToolPanel",
+      "activeWhen": {
+        "condition": "conditions.isPmiLeafStructureViewerIn3DMode"
+      },
+      "visibleWhen": {
+        "condition": "conditions.isPmiLeafStructureViewerIn3DMode"
+      },
+      "enableWhen": {
+        "condition": "conditions.isViewerRevealedAndIn3DModeWithPMIOrLeafStructure"
+      }
+    },
+    "PmiStepThroughPrevCommandHandler": {
+      "id": "PmiStepThroughPrevCommand",
+      "activeWhen": {
+        "condition": "conditions.isPMIDataAvailable"
+      },
+      "visibleWhen": {
+        "condition": "conditions.isPMIDataAvailable"
+      },
+      "action": "stepThroughPrevInListAction"
+    },
+    "PmiStepThroughNextCommandHandler": {
+      "id": "PmiStepThroughNextCommand",
+      "activeWhen": {
+        "condition": "conditions.isPMIDataAvailable"
+      },
+      "visibleWhen": {
+        "condition": "conditions.isPMIDataAvailable"
+      },
+      "action": "stepThroughNextInListAction"
+    }
+  },
+  "commandPlacements": {
+    "Awv0PmiToolCommandPlacement": {
+      "id": "Awv0PmiTool",
+      "uiAnchor": "aw_3dViewer",
+      "priority": 80
+    },
+    "Awv0PmiLeafStructureToolCommandPlacement": {
+      "id": "Awv0PmiLeafStructureTool",
+      "uiAnchor": "aw_3dViewer",
+      "priority": 80
+    },
+    "PmiStepThroughNextCommandPlacement": {
+      "id": "PmiStepThroughNextCommand",
+      "uiAnchor": "pmiStepCmdsAnchor",
+      "priority": 1
+    },
+    "PmiStepThroughPrevCommandPlacement": {
+      "id": "PmiStepThroughPrevCommand",
+      "uiAnchor": "pmiStepCmdsAnchor",
+      "priority": 2
+    }
+  },
+  "actions": {
+    "showToolPanel": {
+      "actionType": "JSFunction",
+      "method": "activateViewerCommandDialog",
+      "deps": "js/viewerContext.service",
+      "inputData": {
+        "commandId": "Awv0PmiTool",
+        "context": "{{commandContext}}"
+      }
+    },
+    "stepThroughPrevInListAction": {
+      "actionType": "JSFunction",
+      "method": "stepThroughPrev",
+      "inputData": {
+        "modelViewState": "{{commandContext.mvData}}",
+        "entitiesState": "{{commandContext.pmiData}}",
+        "pmiRawEntityState": "{{commandContext.pmiRawEntityState}}",
+        "context": "{{commandContext.viewerContextData}}"
+      },
+      "deps": "js/PmiToolService"
+    },
+    "stepThroughNextInListAction": {
+      "actionType": "JSFunction",
+      "method": "stepThroughNext",
+      "inputData": {
+        "modelViewState": "{{commandContext.mvData}}",
+        "entitiesState": "{{commandContext.pmiData}}",
+        "pmiRawEntityState": "{{commandContext.pmiRawEntityState}}",
+        "context": "{{commandContext.viewerContextData}}"
+      },
+      "deps": "js/PmiToolService"
+    }
+  },
+  "conditions": {
+    "isViewerRevealedAndIn3DModeWithPMI": {
+      "expression": "commandContext.viewerAtomicData.isViewerRevealed && conditions.isPmiToolsViewerIn3DMode && commandContext.viewerAtomicData.hasPMIData && commandContext.viewerAtomicData.disablePMI !== true && !commandContext.viewerAtomicData.isExplodeViewVisible && conditions.isPMIManagerAvailable"
+    },
+    "isPMIDataAvailable": {
+      "expression": "commandContext.viewerAtomicData.hasPMIData"
+    },
+    "isViewerRevealedAndIn3DModeWithPMIOrLeafStructure": {
+      "expression": "commandContext.viewerAtomicData.isViewerRevealed && conditions.isPmiLeafStructureViewerIn3DMode && commandContext.viewerAtomicData.disablePMI !== true && !commandContext.viewerAtomicData.isExplodeViewVisible && conditions.isPMIManagerAvailable"
+    },
+    "isPmiToolsViewerIn3DMode": {
+      "expression": "commandContext.viewerAtomicData.viewerViewMode === 'VIEWER3D' && !conditions.isLeafStructureEnabled"
+    },
+    "isPmiLeafStructureViewerIn3DMode": {
+      "expression": "commandContext.viewerAtomicData.viewerViewMode === 'VIEWER3D' && conditions.isLeafStructureEnabled"
+    },
+    "isPMIManagerAvailable": {
+      "expression": "commandContext.viewerAtomicData.activeManagers.indexOf('pmiMgr')>-1 && commandContext.viewerAtomicData.activeManagers.indexOf('modelViewMgr')>-1"
+    },
+    "isLeafStructureEnabled": {
+      "expression": "commandContext.viewerAtomicData.viewerPreference.AWC_visExposedBetaFeatures.indexOf('enableLeafStructurePanel') >= 0"
+    }
+  },
+  "messages": {},
+  "i18n": {
+    "Awv0PmiCommandTitle": [
+      "PmiToolMessages"
+    ],
+    "pmiAndLeafStrCommandTitle": [
+      "PmiToolMessages"
+    ],
+    "stepThroughPrev": [
+      "PmiToolMessages"
+    ],
+    "stepThroughNext": [
+      "PmiToolMessages"
+    ],
+    "pmiStepCmdsAnchor": [
+      "PmiToolMessages"
+    ],
+    "Awv0PmiToolDesc": [
+      "PmiToolMessages"
+    ],
+    "pmiAndLeafStrCommandDesc": [
+      "PmiToolMessages"
+    ],
+    "PmiStepThroughPrevCommandDesc": [
+      "PmiToolMessages"
+    ],
+    "PmiStepThroughNextCommandDesc": [
+      "PmiToolMessages"
+    ]
+  }
+}

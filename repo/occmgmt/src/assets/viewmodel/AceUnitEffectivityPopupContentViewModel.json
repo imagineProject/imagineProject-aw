@@ -1,0 +1,310 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+
+    "actions": {
+        "initializeView": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getPreferredUnitEffectivitiesAction"
+                },
+                {
+                    "action": "setViewNameOnContext"
+                }
+            ]
+        },
+
+        "setViewNameOnContext": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "deps": "js/occmgmtUtils",
+            "inputData": {
+                "path": "",
+                "value": {
+                    "transientRequestPref": {
+                        "viewName": "{{props.subPanelContext.activeView}}"
+                    }
+                },
+                "target": "{{props.subPanelContext.occContext}}"
+            }
+        },
+
+        "updateUnitEffectivity": {
+            "actionType": "JSFunction",
+            "method": "updateUnitEffectivity",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "data": "{{data}}",
+                "occContext": "{{data.subPanelContext.occContext}}",
+                "configUnitEndItem": "{{props.subPanelContext.configUnitEndItem}}"
+            },
+            "deps": "js/endItemUnitEffectivityConfigurationService"
+        },
+
+        "applyUnitEffectivity": {
+            "actionType": "JSFunction",
+            "method": "applyUnitEffectivity",
+            "inputData": {
+                "data": "{{data}}",
+                "occContext": "{{data.subPanelContext.occContext}}",
+                "configUnitEndItem": "{{props.subPanelContext.configUnitEndItem}}"
+            },
+            "deps": "js/endItemUnitEffectivityConfigurationService"
+        },
+        "selectUnitEffectivity": {
+            "actionType": "JSFunction",
+            "method": "selectUnitEffectivity",
+            "inputData": {
+                "data": "{{data}}",
+                "occContext": "{{data.subPanelContext.occContext}}"
+            },
+            "deps": "js/endItemUnitEffectivityConfigurationService"
+        },
+
+        "getPreferredUnitEffectivitiesAction": {
+            "actionType": "dataProvider",
+            "method": "getPreferredUnitEffectivities"
+        },
+
+        "getPreferredUnitEffectivities": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2019-12-OccurrenceConfiguration",
+            "method": "getConfigurationRules2",
+            "inputData": {
+                "input": {
+                    "maxToLoad": 20,
+                    "startIndex": 0,
+                    "searchCriteria": "",
+                    "productContext": {
+                        "type": "Awb0ProductContextInfo",
+                        "uid": "{{props.subPanelContext.occContext.productContextInfo.uid}}"
+                    },
+
+                    "typeToFetch": "RevisionRule",
+                    "fetchOnlyPreferredConfiguration": true
+                }
+            },
+
+            "outputData": {
+                "unitEffectivities": "{{function:processUnitEffectivity}}"
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "errorInGettingPreferredConfigInfo"
+                } ]
+            },
+
+            "deps": "js/endItemUnitEffectivityConfigurationService"
+        },
+        "applyUnitEffectivityChange": {
+            "actionType": "JSFunction",
+            "method": "applyEffectivityChange",
+            "inputData": {
+                "value": {
+                    "configContext": {
+                        "r_uid": "{{data.subPanelContext.occContext.productContextInfo.props.awb0CurrentRevRule.dbValues[0]}}",
+                        "useGlobalRevRule": "{{data.eventData.useGlobalRevRule}}",
+                        "var_uids": "{{data.subPanelContext.occContext.productContextInfo.props.awb0VariantRules.dbValues}}",
+                        "iro_uid": "{{data.subPanelContext.occContext.productContextInfo.props.awb0VariantRuleOwningRev.dbValues[ 0 ]}}",
+                        "ue": "{{data.eventData.effectiveUnit}}",
+                        "ei_uid": "{{data.eventData.endItem ? data.eventData.endItem.uid:undefined}}",
+                        "eg_uids": "{{data.eventData.egos}}",
+                        "de": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EffDate.dbValues[0]}}",
+                        "startFreshNavigation": true
+                    },
+                    "transientRequestPref": {
+                        "userGesture": "REVISION_RULE_CHANGE",
+                        "jitterFreePropLoad" : true
+                    }
+                },
+                "occContext": "{{data.subPanelContext.occContext}}"
+            },
+            "deps": "js/endItemUnitEffectivityConfigurationService"
+        },
+
+        "launchGroupEffectivityPanel": {
+            "actionType": "JSFunction",
+            "method": "launchCustomDialogPanel",
+            "deps": "js/occmgmtCustomDialogService",
+            "inputData": {
+                "customDialogAction": "{{subPanelContext.customDialogAction}}",
+                "options": {
+                    "view": "Awb0GroupEffectivity",
+                    "placement": "left",
+                    "parent": ".aw-layout-workarea",
+                    "width": "STANDARD",
+                    "height": "FULL",
+                    "subPanelContext": "{{subPanelContext}}",
+                    "isCloseVisible": false,
+                    "push": true
+                }
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "awPopupWidget.close"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "awPopupWidget.close"
+                    }
+                ]
+            }
+        },
+        "navigateToGroupEffectivityPanel": {
+            "actionType": "JSFunction",
+            "method": "navigateToView",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "view": {
+                    "panelId": "GroupEffectivities",
+                    "title": "{{i18n.groupEffectivities}}",
+                    "additionalSubPanelContext":
+                    {
+                        "activeView":"{{props.subPanelContext.activeView}}"
+                    }
+                }
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "awPopupWidget.close"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "awPopupWidget.close"
+                    }
+                ]
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "closePopupWindow": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "inputData": {
+                "popupId": "{{data.popupId}}"
+            },
+            "deps": "js/popupService"
+        }
+    },
+
+    "dataProviders": {
+        "getPreferredUnitEffectivities": {
+            "action": "getPreferredUnitEffectivities",
+            "response": "{{data.unitEffectivities}}",
+            "selectionModelMode": "single"
+        }
+    },
+
+    "onEvent": [ {
+            "eventId": "getPreferredUnitEffectivities.selectionChangeEvent",
+            "cacheEventData": true,
+            "action": "updateUnitEffectivity"
+        },
+        {
+            "eventId": "getPreferredUnitEffectivities.modelObjectsUpdated",
+            "cacheEventData": true,
+            "action": "selectUnitEffectivity"
+        },
+        {
+            "eventId": "awConfigPanel.unitEffectivityChanged",
+            "cacheEventData": true,
+            "action": "applyUnitEffectivityChange"
+        },
+        {
+            "eventId": "awPopupWidget.close",
+            "action": "closePopupWindow"
+        },
+        {
+            "eventId": "awConfigPanel.groupEffectivityClicked",
+            "condition": "!data.subPanelContext.nestedNavigationState",
+            "action": "launchGroupEffectivityPanel"
+        },
+        {
+            "eventId": "awConfigPanel.groupEffectivityClicked",
+            "condition": "data.subPanelContext.nestedNavigationState.views.length>=0",
+            "action": "navigateToGroupEffectivityPanel"
+        }
+    ],
+
+    "functions": {
+        "processUnitEffectivity": {
+            "functionName": "processUnitEffectivity",
+            "parameters": [ "{{data}}", "{{data.subPanelContext.occContext}}" ]
+        }
+    },
+
+    "messages": {
+
+        "errorInGettingPreferredConfigInfo": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.errorInGettingPreferredConfigInfo}}"
+        }
+
+    },
+
+    "data": {
+        "newUnitEffectivity": {
+            "displayName": "",
+            "type": "INTEGER",
+            "requiredText": "n",
+            "propertyLabelDisplay": "NO_PROPERTY_LABEL",
+            "validationCriteria": [ {
+                "condition": "conditions.isPositiveNumber",
+                "value": "{{i18n.shouldBePositiveNumber}}"
+            } ]
+        },
+
+        "effectivityGroups": {
+            "uiValue": "{{i18n.effectivityGroups}}",
+            "type": "STRING"
+        },
+
+        "multipleGroups": {
+            "uiValue": "{{i18n.multipleGroups}}",
+            "type": "STRING"
+        },
+
+        "effectivityUnitSectionAllUnitsValue": {
+            "uiValue": "{{i18n.effectivityUnitSectionAllUnitsValue}}",
+            "displayName": "{{i18n.effectivityUnitSectionAllUnitsValue}}",
+            "type": "STRING"
+        }
+    },
+    "conditions": {
+        "isPositiveNumber": {
+            "expression": "data.newUnitEffectivity.dbValue < 0"
+        }
+    },
+
+    "i18n": {
+        "effectivityGroups": [
+            "OccurrenceManagementConstants"
+        ],
+        "multipleGroups": [
+            "OccurrenceManagementConstants"
+        ],
+        "errorInGettingPreferredConfigInfo": [
+            "OccurrenceManagementMessages"
+        ],
+        "shouldBePositiveNumber": [
+            "OccurrenceManagementMessages"
+        ],
+        "effectivityUnitSectionAllUnitsValue": [
+            "OccurrenceManagementConstants"
+        ],
+        "groupEffectivities": [
+            "OccurrenceManagementConstants"
+        ]
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeView"
+    }
+}

@@ -1,0 +1,195 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "closePackageDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+
+            "deps": "js/dialogService"
+        },
+        "renderPackagePanel": {
+            "actionType": "JSFunction",
+            "method": "renderPackagePanel",
+            "inputData": {},
+            "deps": "js/pca0FscPackageService"
+        },
+        "addPackage": {
+            "actionType": "JSFunction",
+            "method": "addPackageToConfiguration",
+            "inputData": {},
+            "deps": "js/pca0FscPackageService",
+            "events": {
+                "success": [ {
+                        "name": "Pca0Features.loadScopeData"
+                    },
+                    {
+                        "name": "Pca0Configurator.closeDialog"
+                    }
+                ]
+            }
+        },
+        "updateValue": {
+            "actionType": "JSFunction",
+            "method": "updateValue",
+            "inputData": {
+                "data": "{{data}}",
+                "newValue": "{{eventData.newValue}}",
+                "path": "{{eventData.path}}"
+            },
+            "outputData": {
+                "scopeStruct.group": "result.group"
+            },
+            "deps": "js/pca0FscPackageService"
+        },
+        "loadPackageData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "policy": {
+                "types": "{{function:getPropertyPolicyForVCV}}",
+                "override":true
+            },
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{ctx.fscContext.packageContext.configPerspective}}",
+                    "scopes": [
+                        ""
+                    ],
+                    "selectedExpressions": "{{function:convertSelectedExpressionJsonObjectToString}}",
+                    "requestInfo": {
+                        "requestType": [
+                            "getConfigPackage"
+                        ],
+                        "packageFeatureList": [
+                            "{{ctx.fscContext.packageContext.currentPackage.optValue.uid}}"
+                        ],
+                        "configurationControlMode": [
+                            "guided"
+                        ]
+                    }
+                }
+            },
+            "outputData": {
+                "scopeStruct": "{{function:getPackageGroup}}"
+            },
+            "events": {
+                "failure": [ {
+                    "name": "Pca0FullScreenConfiguration.processPartialError",
+                    "eventData": {
+                        "ServiceData": "{{data.ServiceData}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0FscPackageService"
+        },
+        "selectPackageOption": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "policy": {
+                "types": "{{function:getPropertyPolicyForVCV}}",
+                "override":true
+            },
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{ctx.fscContext.packageContext.configPerspective}}",
+                    "scopes": [
+                        ""
+                    ],
+                    "selectedExpressions": "{{function:convertSelectedExpressionJsonObjectToString}}",
+                    "payloadStrings": "{{ctx.fscContext.packageContext.payloadStrings}}",
+                    "requestInfo": {
+                        "requestType": [
+                            "getConfigPackage"
+                        ],
+                        "packageFeatureList": [
+                            "{{ctx.fscContext.packageContext.currentPackage.optValue.uid}}"
+                        ],
+                        "configurationControlMode": [
+                            "guided"
+                        ]
+                    }
+                }
+            },
+            "outputData": {
+                "scopeStruct": "{{function:getPackageGroup}}",
+                "showSavePackageCommand": true
+            },
+            "deps": "js/pca0FscPackageService",
+            "events": {
+                "failure": [ {
+                    "name": "Pca0FullScreenConfiguration.processPartialError",
+                    "eventData": {
+                        "ServiceData": "{{data.ServiceData}}"
+                    }
+                } ]
+            }
+        },
+        "unregisterPackageContext": {
+            "actionType": "JSFunction",
+            "method": "unregisterPackageContext",
+            "inputData": {},
+            "deps": "js/pca0FscPackageService"
+        }
+    },
+    "functions": {
+        "getPackageGroup": {
+            "functionName": "getPackageGroup"
+        },
+        "convertSelectedExpressionJsonObjectToString": {
+            "functionName": "convertSelectedExpressionJsonObjectToString",
+            "parameters": [ "{{ctx.fscContext.packageContext.selectedExpressions}}" ]
+        },
+        "getPropertyPolicyForVCV": {
+            "functionName": "getPropertyPolicyForVCV"
+        }
+    },
+    "data": {
+        "familyCmdAnchor": "aw_cfgFamilyCommandBar",
+        "valueaction": "selectPackageOption",
+        "variantcontext": "fscContext.packageContext",
+        "scopeStruct": {
+            "group": {}
+        },
+        "showSavePackageCommand": false
+    },
+    "lifecycleHooks": {
+        "onMount": "loadPackageData",
+        "onUnmount": "unregisterPackageContext",
+        "render": "renderPackagePanel"
+    },
+    "onEvent": [
+        {
+            "eventId": "gwt.SubLocationContentSelectionChangeEvent",
+            "action": "closePackageDialog"
+        },
+        {
+            "eventId": "Pca0Configurator.closeDialog",
+            "action": "closePackageDialog"
+        },
+        {
+            "eventId": "Pca0FscValue.updateValue",
+            "action": "updateValue",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0FSCPackage.selectPackageOption",
+            "action": "selectPackageOption"
+        }
+    ],
+    "i18n": {
+        "addBtn": [
+            "FullScreenConfigurationMessages"
+        ],
+        "aw_single_select_message": [
+            "FullScreenConfigurationMessages"
+        ],
+        "allowedRange": [
+            "FullScreenConfigurationMessages"
+        ]
+    }
+}

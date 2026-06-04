@@ -1,0 +1,112 @@
+{
+    "schemaVersion" : "1.0.0",
+    "actions":
+    {
+        "initialize": {
+            "actionType": "JSFunction",
+            "method": "loadPanelTabs",
+            "inputData": {
+                "tabs": "{{data.saveAsTabsModel}}",
+                "subPanelContext": "{{subPanelContext}}"
+
+            },
+            "outputData": {
+                "tabModels": "visibleTabs",
+                "tabApiCallback": "api"
+            },
+            "deps": "js/um0AddInAnOrganizationService"
+        },
+        "handleTabChange": {
+            "actionType": "JSFunction",
+            "method": "handleTabChange",
+            "inputData": {
+                "tabs": "{{data.tabModels}}",
+                "pageId": "{{data.eventData.pageId}}",
+                "tabTitle": "{{data.eventData.tabTitle}}"
+            },
+            "outputData": {
+                "activeTab": "activeTab"
+            },
+            "deps": "js/um0AddInAnOrganizationService"
+        },
+        "closePanel":
+        {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            }
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "awPanel.selectionChange",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "saveAsObject.tabChange",
+            "action": "handleTabChange",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "organization.closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "initialize"
+    },
+
+    "data":
+    {
+        "saveAsTabsModel": [
+            {
+                "name": "{{i18n.NewTab}}",
+                "tabKey": "new",
+                "pageId": "OrganizationNewTab",
+                "view": "OrganizationNewTab",
+                "recreatePanel": true,
+                "visibleWhen": "data.selectedTab.tabKey === 'new'",
+                "priority": 1
+            },
+            {
+                "name": "{{i18n.SearchTab}}",
+                "tabKey": "search",
+                "pageId": "OrganizationSearchTab",
+                "view": "OrganizationSearchTab",
+                "recreatePanel": true,
+                "visibleWhen": "data.selectedTab.tabKey === 'search'",
+                "priority": 0
+            }
+
+        ]
+    },
+
+    "i18n":
+    {
+        "AddTitle": [ "UsermanagementCommandPanelMessages" ],
+        "NewTab": [ "UsermanagementCommandPanelMessages" ],
+        "SearchTab": [ "UsermanagementCommandPanelMessages" ],
+        "AddButton": [ "UsermanagementCommandPanelMessages" ]
+    }
+}

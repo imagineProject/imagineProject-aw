@@ -1,0 +1,189 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions":{
+        "selectDelayFiltering": {
+            "actionType": "JSFunction",
+            "method": "updateDelayFilteringToggle",
+            "inputData":
+            {
+                "toggle": "{{data.delayFiltering.dbValue}}"
+            },
+            "outputData":{
+                "delayedApplyUpdatedValue": ""
+            },
+
+            "deps":"js/filterSettingsService"
+        },
+        "selectIncludeWithChildren": {
+            "actionType": "JSFunction",
+            "method": "updateIncludeWithChildrenToggle",
+            "inputData":
+            {
+                "toggle": "{{data.includeWithChildren.dbValue}}"
+            },
+            "outputData":{
+                "includeWithChildrenUpdatedValue": ""
+            },
+
+            "deps":"js/filterSettingsService"
+        },
+        "applySettings": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setDelayedApplyPreference",
+                    "condition": "data.delayedApplyUpdatedValue !== ''"
+                },
+                {
+                    "action": "updateSelectElementIncludePreferenceOnContext",
+                    "condition": "data.includeWithChildrenUpdatedValue !== ''"
+                },
+                {
+                    "action": "updateSharedData"
+                }
+            ]
+        },
+        "getFilterPreferences":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Administration-2012-09-PreferenceManagement",
+            "method": "getPreferences",
+            "inputData":
+            {
+                "preferenceNames": [ "AWC_Discovery_Delayed_Filter_Apply", "AWS_SelectElement_IncludeChildren" ],
+                "includePreferenceDescriptions": false
+            },
+            "outputData":
+            {
+                "result":"{{function:retrieveGetPreferenceResponse}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "filterPanel.processGetPreferenceResponse"
+                } ]
+            },
+            "deps":"js/filterSettingsService"
+        },
+        "setDelayedApplyPreference":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Administration-2012-09-PreferenceManagement",
+            "method": "setPreferences2",
+            "inputData": {
+                "preferenceInput": [ {
+                    "preferenceName": "AWC_Discovery_Delayed_Filter_Apply",
+                    "values": [ "{{data.delayedApplyUpdatedValue}}" ]
+                } ]
+            }
+        },
+        "updateSharedData": {
+            "actionType": "JSFunction",
+            "method": "updateSharedData",
+            "inputData": {
+                "activeViewSharedData": "{{props.subPanelContext.activeViewSharedData}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "nextActiveView": "Awb0DiscoveryFilterCommandSubPanel",
+                "delayedApplyUpdatedValue":"{{data.delayedApplyUpdatedValue}}",
+                "includeWithChildrenUpdatedValue":"{{data.includeWithChildrenUpdatedValue}}"
+            },
+            "deps": "js/filterSettingsService"
+        },
+        "updateDelayFilteringToggle": {
+            "actionType": "JSFunction",
+            "method": "updateDelayFilteringToggle",
+            "inputData": {
+               "delayedApplyUpdatedValue":"{{data.delayedApplyUpdatedValue}}"
+            },
+            "deps": "js/filterSettingsService"
+        },
+        "updateIncludeWithChildrenToggle": {
+            "actionType": "JSFunction",
+            "method": "updateIncludeWithChildrenToggle",
+            "inputData": {
+               "includeWithChildrenUpdatedValue":"{{data.includeWithChildrenUpdatedValue}}"
+            },
+            "deps": "js/filterSettingsService"
+        },
+        "processGetPreferenceResponse":
+        {
+            "actionType": "JSFunction",
+            "method": "processGetPreferenceResponse",
+            "inputData": {
+               "data": "{{data}}",
+               "sharedData": "{{props.subPanelContext.sharedData}}"
+            },
+            "outputData": {
+                "delayFiltering": "delayFiltering",
+                "includeWithChildren": "includeWithChildren",
+                "isInitialized": true
+            },
+            "deps": "js/filterSettingsService"
+        },
+        "updateSelectElementIncludePreferenceOnContext":
+        {
+            "actionType": "JSFunction",
+            "method": "updateSelectElementIncludePreferenceOnContext",
+            "inputData": {
+                "value": "{{data.includeWithChildrenUpdatedValue}}"
+            },
+            "deps": "js/filterSettingsService"
+        }
+    },
+    "functions": {
+        "retrieveGetPreferenceResponse": {
+            "functionName": "retrieveGetPreferenceResponse",
+            "parameters": [
+                "{{response}}"
+             ]
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "filterPanel.processGetPreferenceResponse",
+            "action": "processGetPreferenceResponse"
+        }
+    ],
+    "data":
+    {
+        "autoUpdateTooltip": {
+            "view": "ExtendedTooltipDefault"
+        },
+        "autoUpdateTooltipContext": {
+            "title": "{{i18n.delayFiltering}}",
+            "description": "{{i18n.autoUpdateDesc}}"
+        },
+        "includeWithChildrenTooltipContext": {
+            "title": "{{i18n.includeWithChildrenFiltering}}",
+            "description": "{{i18n.includeWithChildrenDesc}}"
+        },
+        "delayedApplyUpdatedValue": "",
+        "includeWithChildrenUpdatedValue": "",
+        "initialToggleValue": false,
+        "initialIncludeToggleValue": true
+    },
+
+    "conditions": {
+        "isValidToApply": {
+            "expression": "data.delayFiltering.dbValue !== data.initialToggleValue || data.includeWithChildren.dbValue !== data.initialIncludeToggleValue"
+        }
+    },
+    "props":
+    {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "getFilterPreferences"
+    },
+    "i18n":
+    {
+        "applyButtonTitle": [ "OccurrenceManagementSubsetConstants" ],
+        "delayFiltering": ["OccurrenceManagementSubsetConstants"],
+        "autoUpdateDesc" : ["OccurrenceManagementSubsetConstants"],
+        "includeWithChildrenFiltering": ["OccurrenceManagementSubsetConstants"],
+        "includeWithChildrenDesc" : ["OccurrenceManagementSubsetConstants"],
+        "filter" :  ["OccurrenceManagementConstants"]
+    }
+}

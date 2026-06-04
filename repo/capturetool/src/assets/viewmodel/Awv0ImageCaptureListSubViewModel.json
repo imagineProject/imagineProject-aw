@@ -1,0 +1,206 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "updateCaptureNameAndDescription": {
+            "actionType": "JSFunction",
+            "method": "updateCaptureNameAndDescription",
+            "inputData":{
+                "imageCapturePanelData":"{{props.imageCapturePanelData}}"
+            },
+            "deps": "js/Awv0ImageCaptureService"
+        },
+        "clearPreviousSelectionAndPopulateCaptureList": {
+            "actionType": "JSFunction",
+            "method": "clearPreviousSelectionAndPopulateCaptureList",
+            "inputData": {
+                "imageCapturePanelData":"{{props.imageCapturePanelData}}",
+                "viewerContextData":"{{props.viewerContextData}}"
+            },
+            "deps": "js/Awv0ImageCaptureService"
+        },
+        "clearPreviousImageCaptureSelection":{
+            "actionType": "JSFunction",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.imageCaptureListDataProvider}}",
+                "imageCapturePanelData":"{{props.imageCapturePanelData}}",
+                "viewerContextData":"{{props.viewerContextData}}"
+            },
+            "method": "clearPreviousImageCaptureSelection",
+            "deps": "js/Awv0ImageCaptureService"
+        },
+        "setExistingSelection": {
+            "actionType": "JSFunction",
+            "method": "setExistingSelection",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.imageCaptureListDataProvider}}",
+                "imageCapturePanelData":"{{props.imageCapturePanelData}}"
+            },
+            "deps": "js/Awv0ImageCaptureService"
+        },
+        "getImageCaptureContext": {
+            "actionType": "JSFunction",
+            "method": "getImageCaptureContext",
+            "inputData": {
+                "imageCapturePanelData":"{{props.imageCapturePanelData}}",
+                "viewerContextData": "{{props.viewerContextData}}"
+            },
+            "outputData": {
+                "imageCaptureContextData": "currentSelectionData",
+                "imageCaptureContextCount": "totalFound"
+            },
+            "deps": "js/Awv0ImageCaptureService"
+        },
+        "getAllImageCapturesData": {
+            "actionType": "JSFunction",
+            "method": "getAllImageCapturesData",
+            "inputData": {
+                "searchCriteria": {
+                    "searchString": "{{data.filterBox.dbValue}}"
+                },
+                "imageCapturePanelData":"{{props.imageCapturePanelData}}"
+            },
+            "outputData": {
+                "existingImageCapturesData": "imageCapturesData",
+                "existingImageCapturesCount": "imageCapturesDataLength"
+            },
+            "deps": "js/Awv0ImageCaptureService"
+        },
+        "onSelectionChange": {
+            "actionType": "JSFunction",
+            "method": "onSelectionChange",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.imageCaptureListDataProvider}}",
+                "imageCapturePanelData":"{{props.imageCapturePanelData}}",
+                "viewerContextData":"{{props.viewerContextData}}"
+            },
+            "outputData": {
+
+            },
+            "deps": "js/Awv0ImageCaptureService"
+        },
+        "getImageCaptureContextAction": {
+            "actionType": "dataProvider",
+            "method": "imageCaptureContextDataProvider"
+        },
+
+        "getUpdatedImageCaptureList": {
+            "actionType": "dataProvider",
+            "method": "imageCaptureListDataProvider"
+        },
+        "revealAction": {
+            "actionType": "JSFunction",
+            "method": "imageCapturePanelRevealed",
+            "inputData": {
+                "imageCapturePanelData":"{{props.imageCapturePanelData}}",
+                "subPanelContext":"{{props.subPanelContext}}"
+            },
+            "deps": "js/Awv0ImageCaptureService"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "primaryWorkArea.selectionChangeEvent",
+            "action": "clearPreviousSelectionAndPopulateCaptureList"
+        },
+        {
+            "eventId": "imageCaptureListDataProvider.modelObjectsUpdated",
+            "action": "setExistingSelection"
+        },
+        {
+            "eventId": "imageCaptureListDataProvider.selectionChangeEvent",
+            "action": "onSelectionChange"
+        }
+    ],
+    "data": {
+        "filterBox": {
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "false",
+            "requiredText": "{{i18n.filter}}",
+            "dbValue": ""
+        },
+        "createCaptureCommand": "image_capture_create_command"
+    },
+    "dataProviders": {
+        "imageCaptureContextDataProvider": {
+            "action": "getImageCaptureContext",
+            "response": "{{data.imageCaptureContextData}}",
+            "totalFound": "{{data.imageCaptureContextCount}}",
+            "selectionModelMode": "single",
+            "commandsAnchor": "image_capture_context_cell_commands"
+        },
+        "imageCaptureListDataProvider": {
+            "action": "getAllImageCapturesData",
+            "response": "{{data.existingImageCapturesData}}",
+            "totalFound": "{{data.existingImageCapturesCount}}",
+            "selectionModelMode": "single",
+            "commandsAnchor": "image_capture_list_cell_commands"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount":"revealAction",
+        "onUpdate": [ {
+            "action": "getImageCaptureContextAction",
+            "observers": [ "props.imageCapturePanelData.updateImageCaptureContextData" ]
+        },
+        {
+            "action": "getUpdatedImageCaptureList",
+            "observers": [ "props.imageCapturePanelData.updateImageCaptureList" ]
+        }
+     ]
+    },
+    "props": {
+        "imageCapturePanelData":{
+            "type":"Object"
+        },
+        "sub-panel-context":{
+            "type":"Object"
+        }
+    },
+    "i18n": {
+        "captureToolPanelTitle": [
+            "ImageCaptureToolMessages"
+        ],
+        "deleteImageCapture": [
+            "ImageCaptureToolMessages"
+        ],
+        "showObjectCommandTitle": [
+            "ImageCaptureToolMessages"
+        ],
+        "launchMarkup": [
+            "ImageCaptureToolMessages"
+        ],
+        "createCapture": [
+            "ImageCaptureToolMessages"
+        ],
+        "showingImageCapturesFor": [
+            "ImageCaptureToolMessages"
+        ],
+        "imageListLabel": [
+            "ImageCaptureToolMessages"
+        ],
+        "back": [
+            "ImageCaptureToolMessages"
+        ],
+        "cancel": [
+            "ImageCaptureToolMessages"
+        ],
+        "delete": [
+            "ImageCaptureToolMessages"
+        ],
+        "filter": [
+            "ImageCaptureToolMessages"
+        ],
+        "captureDeleteConfirmation": [
+            "ImageCaptureToolMessages"
+        ],
+        "defaultCatpureStringPrefix": [
+            "ImageCaptureToolMessages"
+        ],
+        "currentImageCaptureLabel": [
+            "ImageCaptureToolMessages"
+        ],
+        "allImagesDeleteConfirmationText": [
+            "ImageCaptureToolMessages"
+        ]
+    }
+}

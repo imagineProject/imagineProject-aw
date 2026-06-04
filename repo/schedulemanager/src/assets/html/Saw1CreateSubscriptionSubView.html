@@ -1,0 +1,59 @@
+<aw-panel-body>
+    <aw-panel-section visible-when="ctx.mselected.length === 1">
+        <aw-title-link prop="data.subscribedObject" action="Saw1GoToListSubscriptions"></aw-title-link>
+    </aw-panel-section>
+
+    <aw-panel-section visible-when="ctx.mselected.length>1" caption="i18n.multiObjectSelectedText"></aw-panel-section>
+
+    <aw-panel-section>
+        <aw-row height="3f" visible-when="ctx.mselected.length === 1 && data.isCreateUseCase">
+            <aw-column width="fill">
+                <aw-checkbox prop="data.myEventsCheckbox" action="multiEventDisplay"></aw-checkbox>
+            </aw-column>
+            <aw-column>
+                <aw-icon-button button-type="button" command="data.configureMySelectedEvents"></aw-icon-button>
+            </aw-column>
+        </aw-row>
+
+        <aw-listbox prop="data.eventType" list="data.eventTypeNames.dbValue" action="updateDataOnPanel"
+            title={{data.eventType.uiValue}}></aw-listbox>        
+        <aw-widget prop="data.daysBeforeFinishDate"
+            exist-when="data.myEventsCheckbox.dbValue === false && data.eventType.dbValue == '__Near_Due'"></aw-widget>
+        <aw-listbox prop="data.status"
+            exist-when="data.myEventsCheckbox.dbValue === false && data.eventType.dbValue === '__Status_ChangeTo'"
+            list="data.statusList.dbValue" action="updateDataOnPanel"></aw-listbox>
+        <aw-listbox prop="data.priority"
+            exist-when="data.myEventsCheckbox.dbValue === false && data.eventType.dbValue === '__Priority_ChangeTo'"
+            list="data.priorityList.dbValue" action="updateDataOnPanel"></aw-listbox>
+        <aw-listbox prop="data.workReady"
+            exist-when="data.myEventsCheckbox.dbValue === false && data.eventType.dbValue === '__Work_Ready'"
+            list="data.workReadyList.dbValue"></aw-listbox>
+        <aw-widget prop="data.daysBeforeStartDate"
+            exist-when="data.myEventsCheckbox.dbValue === false && data.eventType.dbValue == '__Work_Ready' && data.workReady.dbValue !== 'PredComplete' ">
+        </aw-widget>
+        <aw-textbox prop="data.ruleName" exist-when="data.myEventsCheckbox.dbValue === false"></aw-textbox>
+    </aw-panel-section>
+
+    <aw-panel-section caption="i18n.notificationSectionTitle" context="data" collapsed="true">
+        <aw-textbox prop="data.emailSubject" visible-when="data.myEventsCheckbox.dbValue === false"></aw-textbox>
+        <aw-textarea prop="data.emailText" visible-when="data.myEventsCheckbox.dbValue === false"></aw-textarea>
+        <aw-textbox prop="data.emailIds" visible-when="!data.isSelectedVMOForSubscription"></aw-textbox>
+    </aw-panel-section>
+
+    <aw-command-panel-section caption="i18n.followersPanelTitle" visible-when="!data.isSelectedVMOForSubscription"
+        anchor="data.addFollowersCommand" context="data" visible-when="data.activeView!='Saw1AddFollowerSub'">
+        <aw-list dataprovider="data.dataProviders.followers_provider">
+            <aw-default-cell vmo="item"></aw-default-cell>
+        </aw-list>
+    </aw-command-panel-section>
+</aw-panel-body>
+
+<aw-panel-footer>
+
+    <aw-button visible-when="data.isCreateUseCase" action="createSubscriptionAction">
+        <aw-i18n>i18n.followPanelOrCommandTitle</aw-i18n>
+    </aw-button>
+    <aw-button visible-when="!data.isCreateUseCase" action="updateSubscriptionAction">
+        <aw-i18n>i18n.saveSubscription</aw-i18n>
+    </aw-button>
+</aw-panel-footer>

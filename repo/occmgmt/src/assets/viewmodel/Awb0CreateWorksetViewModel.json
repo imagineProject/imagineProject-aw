@@ -1,0 +1,349 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "triggerBackgroundSBM": {
+            "actionType": "JSFunction",
+            "method": "saveUserWorkingContextState",
+            "inputData": {
+                "shouldFireEventOnSuccess": true
+            },
+            "deps": "js/aceBackgroundWorkingContextService"
+        },
+        "populateBackingObject": {
+            "actionType": "JSFunction",
+            "method": "getBackingObject",
+            "inputData": {
+                "modelObject": "{{props.subPanelContext.occContext.openedElement}}",
+                "data":"{{data}}"
+            },
+            "deps": "js/createWorksetService"
+        },
+        "isAceIndexedProduct": {
+            "actionType": "JSFunction",
+            "method": "isAceIndexedProduct",
+            "inputData": {
+                "occContext": "{{props.subPanelContext.occContext}}"
+            },
+            "outputData":{
+                "isAceIndexedProduct":""
+            },
+            "deps": "js/createWorksetService"
+        },
+        "initializePanel" :{
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action":"populateBackingObject"
+
+                },
+                {
+                    "action":"isAceIndexedProduct"
+                }
+            ]
+        },
+        "createAndOpenWorkset": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action":"genericAddObject",
+                    "condition": "conditions.isCreateRelateandSubmitObjectsApplicable"
+
+                },
+                {
+                    "action":"createOrUpdateSavedSessionSoa",
+                    "condition": "conditions.isCreateOrUpdateSavedSessionApplicable"
+                },
+                {
+                    "action": "showSavedWorkingContext"
+                }
+            ]
+        },
+        "genericAddObject": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Core-2012-10-DataManagement",
+            "method": "createRelateAndSubmitObjects",
+            "inputData": {
+                "inputs": "{{function:getCreateInput}}"
+            },
+            "outputData": {
+                "createdWorkingContext": "{{function:validateWorkingContext}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "swc.objectCreated",
+                        "eventData": {
+                            "createdObject": "{{data.createdWorkingContext}}"
+                        }
+                    },
+                    {
+                        "name": "createWorkingContext"
+                    }
+
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "worksetCreationSuccess"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "worksetCreationFailure"
+                    }
+                ]
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "createOrUpdateSavedSessionSoa": {
+            "actionType": "TcSoaService",
+            "serviceName": "Cad-2020-01-AppSessionManagement",
+            "method": "createOrUpdateSavedSession",
+            "inputData": {
+                "sessionsToCreateOrUpdate": "{{function:createInputForCreateAndUpdateSavedSessionSOA}}"
+            },
+            "outputData": {
+                "createdWorkingContext": "sessionOutputs[0].sessionObject"
+            },
+            "events": {
+                "success": [ {
+                        "name": "swc.objectCreated",
+                        "eventData": {
+                            "createdObject": "{{data.createdWorkingContext}}"
+                        }
+                    },
+                    {
+                        "name": "createWorkingContext"
+                    }
+
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "worksetCreationSuccess"
+                } ],
+                "failure": [ {
+                    "message": "worksetCreationFailure"
+                } ]
+            },
+            "deps": "js/createWorksetService"
+        },
+        "updateWorkingContextAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2020-05-OccurrenceManagement",
+            "method": "updateWorkingContext",
+            "inputData": {
+                "input": [ {
+                    "productInfo": "{{props.subPanelContext.occContext.productContextInfo}}",
+                    "workingContext": "{{data.createdWorkingContext}}",
+                    "saveResult": true,
+                    "operation": "Create"
+                } ]
+            }
+        },
+        "showSavedWorkingContext": {
+            "actionType": "JSFunction",
+            "method": "go",
+            "inputData": {
+                "showObject": "com_siemens_splm_clientfx_tcui_xrt_showObject",
+                "toParams": {
+                    "uid": "{{data.createdWorkingContext.uid}}",
+                    "altPwa":"{{props.subPanelContext.occContext.currentState.altPwa}}",
+                    "altPwa_2":"{{props.subPanelContext.occContext.currentState.altPwa_2}}",
+                    "spageId":"{{props.subPanelContext.occContext.currentState.spageId}}"
+                },
+                "option": {
+                    "inherit": false
+                }
+            },
+            "deps": "js/locationNavigation.service"
+        },
+        "prePopulateNameField": {
+            "actionType": "JSFunction",
+            "method": "prePopulateNameField",
+            "inputData": {
+                "createType": "{{addPanelState.creationType.props.type_name.dbValues[0]}}",
+                "containerName": "{{i18n.createWorksetPrefix}}",
+                "xrtType": "CREATE",
+                "editHandler": "{{editHandlers.addPanelEditHandler}}",
+                "occContext":"{{props.subPanelContext.occContext}}"
+            },
+            "deps": "js/createWorksetService"
+        },
+        "setActiveView": {
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "performPostProcessingAfterXRTLoaded": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "prePopulateNameField",
+                "condition": "conditions.isXRTTypeLoaded"
+            } ]
+        }
+
+    },
+    "functions": {
+        "getCreateInput": {
+            "functionName": "getCreateInput",
+            "parameters": [
+                "{{data}}",
+                "",
+                "{{addPanelState.creationType}}",
+                "{{editHandlers.addPanelEditHandler}}"
+            ]
+        },
+
+        "validateWorkingContext": {
+            "functionName": "validateWorkingContext",
+            "parameters": [
+                "{{data}}"
+            ],
+            "deps": "js/createWorksetService"
+        },
+        "createInputForCreateAndUpdateSavedSessionSOA": {
+            "functionName": "createInputForCreateAndUpdateSavedSessionSOA",
+            "parameters": [
+                "{{data}}",
+                "{{data.editHandlers.addPanelEditHandler}}"
+            ]
+        }
+
+    },
+    "onEvent": [ {
+            "eventId": "saveBWC.success",
+            "action": "createAndOpenWorkset"
+        },
+        {
+            "eventId": "saveBWC.failure",
+            "cacheEventData": true,
+            "message": "backgroundSaveFailedBeforeWorksetCreate"
+        },
+        {
+            "eventId": "createWorkingContext",
+            "action": "updateWorkingContextAction"
+        },
+        {
+            "eventId": "getCreatableContentTypes.selectionChangeEvent",
+            "action": "handleTypeSelection"
+        }
+    ],
+    "data": {
+        "addPanelState": {
+            "initialValues": {
+                "creationType": "",
+                "selectedTab": "",
+                "xrtTypeLoaded": ""
+            },
+            "meta": {}
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub",
+                "context": {}
+            },
+            "meta": {}
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {
+                "selectedProjects": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "triggerAssign": {
+                    "field": "true",
+                    "type": "BOOLEAN"
+                }
+            }
+        },
+        "topLine": {
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "isAceIndexedProduct":false
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "conditions": {
+        "isXRTTypeLoaded": {
+            "expression": "xrtState.xrtTypeLoaded"
+        },
+        "isAssignUserProject": {
+            "expression": "subPanelContext.projectState.value.triggerAssign == true"
+    },
+    "isCreateOrUpdateSavedSessionApplicable": {
+        "expression": "!data.isAceIndexedProduct"
+    },
+    "isCreateRelateandSubmitObjectsApplicable": {
+        "expression": "data.isAceIndexedProduct"
+    }
+    },
+    "messages": {
+        "backgroundSaveFailedBeforeWorksetCreate": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.autoSaveOfBookmarkNotYetComplete}}"
+        },
+        "worksetCreationSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.creationOfWorksetSuccessful}}",
+            "messageTextParams": [
+                "{{data.createdWorkingContext.props.object_string.dbValues[0]}}"
+            ]
+        },
+        "worksetCreationFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [ {
+            "action": "performPostProcessingAfterXRTLoaded",
+            "observers": [ "viewModel.atomicData.xrtState.xrtTypeLoaded" ]
+        } ],
+        "onMount": "initializePanel"
+    },
+    "i18n": {
+        "addWorksetPanelTitle": [
+            "OccurrenceManagementSubsetConstants"
+        ],
+        "creationOfWorksetSuccessful": [ "OccurrenceManagementSubsetConstants" ],
+        "BACK_BUTTON_TITLE": [ "BaseMessages" ],
+        "CreateWorksetCmd": [ "OccurrenceManagementSubsetConstants" ],
+        "Add": [ "OccurrenceManagementSubsetConstants" ],
+        "createWorksetPrefix": [ "OccurrenceManagementSubsetConstants" ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

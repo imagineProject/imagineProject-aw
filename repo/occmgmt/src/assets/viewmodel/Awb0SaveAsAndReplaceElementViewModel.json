@@ -1,0 +1,821 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "operation": {
+            "initialValues": {
+                "name" : ""
+            },
+            "meta": {}
+        },
+        "adaptedPropForSaveAsReplace": {
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "awb0UnderlyingObject"
+        },
+        "targetObject": {},
+        "cloneChildrenCheckBox": {
+            "displayName": "{{i18n.cloneChildren}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": false
+        },
+        "splitOccurrenceCheckBox": {
+            "displayName": "{{i18n.splitOccurrence}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": false
+        },
+        "defaultIdsOrIdNamingRuleCheckBox": {
+            "type": "BOOLEAN",
+            "isRequired": "true",
+            "propertyRadioFalseText": "{{i18n.idNamingRule}}",
+            "propertyRadioTrueText": "{{i18n.defaultIds}}",
+            "dbValue": true,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "prefixTextBox": {
+            "displayName": "{{i18n.prefix}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": ""
+        },
+        "suffixTextBox": {
+            "displayName": "{{i18n.suffix}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": ""
+        },
+        "replaceTextBox": {
+            "displayName": "{{i18n.replaceElementBtn}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "",
+            "validationCriteria": [ {
+                "condition": "conditions.isWithTextBoxFilledWithoutReplaceValue",
+                "value": "{{i18n.PROP_REQUIRED_ERROR}}"
+            } ]
+        },
+        "withTextBox": {
+            "displayName": "{{i18n.with}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": ""
+        },
+        "runInBackgroundCheckBox": {
+            "displayName": "{{i18n.runInBackground}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": false
+        },
+        "xrtState": {
+            "initialValues": {
+                "deepCopyDatas": ""
+            },
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "saveAsContext": {}
+    },
+    "editHandlers": {
+        "saveasPanelEditHandler": {
+            "context": "SAVEAS_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions": {
+        "addSplitElementsToTreeAndClosePanelBatchJob": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "addSplitElementsToTree"
+                },
+                {
+                    "action": "closePanel",
+                    "condition": "conditions.shouldSplit && !conditions.isPanelPinned"
+                }
+            ]
+        },
+        "addSplitElementsToTree": {
+            "actionType": "JSFunction",
+            "method": "afterSplitEleUpdatedProcessSplitResponse",
+            "inputData": {
+                "data": "{{data.addElementResponse}}"
+            },
+            "deps": "js/psEditSaveHandler"
+        },
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "SAVEAS_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+
+            "deps": "js/dialogService"
+        },
+        "onUpdateWithTextBox": {
+            "actionType": "JSFunction",
+            "method": "updateField",
+            "inputData": {
+                "fields": "{{fields}}",
+                "fieldNameToValidate": "replaceTextBox"
+            },
+            "deps": "js/occMgmtDuplicateViewService"
+        },
+        "getObjectAndUpdateCtxForSaveAsAndReplace": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "updateDataFromCtx",
+                    "condition": "ctx.aceActiveContext.context.adaptedPropForSaveAsReplace"
+                },
+                {
+                    "action": "getObjectForSaveAsAndReplace"
+                },
+                {
+                    "action": "updateCtxForSaveAsOnReveal"
+                },
+                {
+                    "action": "closePanel",
+                    "condition": "ctx.pwaSelectionInfo.currentSelectedCount === 0 || props.subPanelContext.occContext.pwaSelection.length > 1"
+                }
+            ]
+        },
+        "updateDataFromCtx": {
+            "actionType": "JSFunction",
+            "method": "updateDataFromCtx",
+            "inputData": {
+                "data": "{{data}}",
+                "objectToUpdate": "adaptedPropForSaveAsReplace",
+                "value": "{{ctx.aceActiveContext.context.adaptedPropForSaveAsReplace}}"
+            },
+            "deps": "js/occmgmtUtils"
+        },
+        "getObjectForSaveAsAndReplace": {
+            "actionType": "JSFunction",
+            "method": "getObject",
+            "inputData": {
+                "modelObj": "{{function:getAdaptedPropertyValueForSaveAsAndReplace}}"
+            },
+            "outputData": {
+                "modelObjectForSaveAsAndReplace": ""
+            },
+            "deps": "js/occmgmtUtils"
+        },
+        "clearCtxForSaveAsAndReplace": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "aceActiveContext.context.adaptedPropForSaveAsReplace",
+                "value": "undefined"
+            },
+            "deps": "js/appCtxService"
+        },
+        "saveAsAndReplace": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                        "name": "saveAsAndReplace.duplicate",
+                        "condition": "data.cloneChildrenCheckBox.dbValue"
+                    },
+                    {
+                        "name": "saveAsAndReplace.saveAs",
+                        "eventData": {
+                            "selectedObjectForReplaceElement": "{{props.subPanelContext.occContext.pwaSelection[0]}}"
+                        },
+                        "condition": "!data.cloneChildrenCheckBox.dbValue"
+                    }
+                ]
+            }
+        },
+        "duplicateAndReplaceSOA": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2018-05-OccurrenceManagement",
+            "method": "duplicateAndReplace",
+            "inputData": {
+                "inputData": {
+                    "elements": ["{{function:getDuplicateAndReplaceSOAInput}}"],
+                    "defaultName": {
+                        "autogen": "{{data.defaultIdsOrIdNamingRuleCheckBox.dbValue}}",
+                        "fromString": "{{data.replaceTextBox.dbValue}}",
+                        "toString": "{{data.withTextBox.dbValue}}",
+                        "prefix": "{{data.prefixTextBox.dbValue}}",
+                        "suffix": "{{data.suffixTextBox.dbValue}}"
+                    },
+                    "duplicateFlags": "{{function:getDuplicateFlags}}",
+                    "productContextInfo": {
+                        "uid": "{{subPanelContext.occContext.productContextInfo.uid}}",
+                        "type": "{{subPanelContext.occContext.productContextInfo.type}}"
+                    }
+                }
+            },
+            "outputData": {
+                "duplicateAndReplaceResponse": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "replaceElement.elementReplacedSuccessfully",
+                        "eventData": {
+                            "viewToReact": "{{ctx.aceActiveContext.key}}"
+                        }
+                    },
+                    {
+                        "name": "saveAsAndReplace.closePanel",
+                        "condition": "!data.splitElement"
+                    },
+                    {
+                        "name": "ace.replaceRowsInTree",
+                        "eventData": {
+                            "srcUids": "{{data.duplicateAndReplaceResponse.plain}}"
+                        },
+                        "condition": "data.duplicateAndReplaceResponse.plain.includes(ctx.selected.uid)"
+                    },
+                    {
+                        "name": "aceSecondaryWorkArea.refreshTabs"
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": ["{{data.addElementResponse.effSplitOutputs[0].newSplitElement}}","{{data.addElementResponse.effSplitOutputs[0].sourceElement}}"]
+                        },
+                        "condition":"data.splitElement"
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": "{{subPanelContext.occContext.pwaSelection}}"
+                        },
+                        "condition":"!data.splitElement"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "saveAsAndReplace.closePanel"
+                    },
+                    {
+                        "name": "replaceElement.elementReplacedSuccessfully",
+                        "eventData": {
+                            "viewToReact": "{{ctx.aceActiveContext.key}}"
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "duplicateAndReplaceInBackgroundSuccessMessage",
+                    "condition": "data.runInBackgroundCheckBox.dbValue"
+                } ],
+                "failure": [ {
+                    "message": "duplicateAndReplaceFailure"
+                } ]
+            },
+            "deps": "js/evaluateExpressionInGivenContext"
+        },
+        "saveAsOperation": {
+            "actionType": "JSFunction",
+            "method": "setOperation",
+            "inputData": {
+                "selectedOperation": "saveAsOperation",
+                "operation": "{{fields.operation}}"
+            },
+
+            "deps": "js/aceAddElementService"
+        },
+        "saveAs":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "saveAsOperation",
+                "condition": "conditions.shouldSplit"
+                },
+                {
+                    "action": "effSplitElementsIfApplicable",
+                    "condition": "conditions.shouldSplit"
+                },
+                {
+                    "action": "saveAsSOA",
+                    "condition": "!conditions.shouldSplit"
+                }
+            ]
+        },
+        "saveAsSOA": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2012-09-DataManagement",
+            "method": "saveAsObjectAndRelate",
+            "inputData": {
+                "saveAsInput": "{{function:getSaveAsInput}}",
+                "relateInfo": [ {
+                    "relate": true
+                } ]
+            },
+            "outputData": {
+                "replacement": "result.saveAsTrees[0].objectCopy"
+            },
+            "events": {
+                "success": [ {
+                    "name": "saveAs.saveAsComplete"
+                }
+             ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "duplicateAndReplaceFailure"
+                    }
+                ]
+            },
+            "deps": "js/Awp0ShowSaveAsService"
+        },
+        "replaceElement": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2016-03-OccurrenceManagement",
+            "method": "replaceElement",
+            "inputData": {
+                "input": {
+                    "replacement": "{{data.replacement}}",
+                    "elements": [
+                        "{{function:getElementTobeReplaced}}"
+                    ],
+                    "productContextInfo": "{{subPanelContext.occContext.productContextInfo}}"
+                }
+            },
+            "outputData": {
+                "replaceElementResponse": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "saveAsAndReplace.closePanel",
+                        "condition": "!data.splitElement"
+                    },
+                    {
+                        "name": "replaceElement.elementReplacedSuccessfully",
+                        "eventData": {
+                            "viewToReact": "{{ctx.aceActiveContext.key}}"
+                        }
+                    },
+                    {
+                        "name": "ace.replaceRowsInTree",
+                        "eventData": {
+                            "srcUids": "{{data.replaceElementResponse.ServiceData.updated}}"
+                        },
+                        "condition": "data.replaceElementResponse.ServiceData.updated.includes(data.eventMap['saveAsAndReplace.saveAs'].selectedObjectForReplaceElement.uid)"
+                    },
+                    {
+                        "name": "aceSecondaryWorkArea.refreshTabs"
+                    },
+                    {
+                        "name": "saveAsAndReplace.setTargetObjectOnReveal",
+                        "condition": "conditions.isPanelPinned"
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": ["{{data.addElementResponse.effSplitOutputs[0].newSplitElement}}","{{data.addElementResponse.effSplitOutputs[0].sourceElement}}"]
+                        },
+                        "condition":"data.splitElement"
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": "{{subPanelContext.occContext.pwaSelection}}"
+                        },
+                        "condition":"!data.splitElement"
+                    }
+                ],
+                "failure": [ {
+                    "name": "saveAsAndReplace.closePanel"
+                } ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "splitOccurrenceInfoMsg",
+                        "condition": "conditions.isInputLineSplit"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "duplicateAndReplaceFailure"
+                    }
+                ]
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "initializeSaveAsAndReplacePanel": {
+            "actionType": "batchJob",
+            "steps": [ { "action": "setTargetObjectOnReveal" },
+                { "action": "getObjectAndUpdateCtxForSaveAsAndReplace" }
+            ]
+        },
+        "setTargetObjectOnReveal": {
+            "actionType": "JSFunction",
+            "method": "createViewModelObject",
+            "inputData": {
+                "selectedUid": "{{props.subPanelContext.occContext.pwaSelection[0].uid}}"
+            },
+            "outputData": {
+                "targetObject": ""
+            },
+            "deps": "js/viewModelObjectService"
+        },
+        "updateCtxForSaveAsOnReveal": {
+            "actionType": "JSFunctionAsync",
+            "method": "updateSaveAsContext",
+            "inputData": {
+                "selectedObject": "{{data.modelObjectForSaveAsAndReplace}}"
+            },
+            "outputData": {
+                "saveAsContext": "saveAsContext"
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "autoAssignProperty": {
+            "actionType": "JSFunction",
+            "method": "autoAssignProperty",
+            "inputData": {
+                "prop": "{{data.eventData.prop}}",
+                "operationType": "SAVEAS",
+                "pattern": "{{data.eventData.newPattern}}",
+                "sourceObject": "{{data.modelObjectForSaveAsAndReplace}}",
+                "createType": null,
+                "editHandler": "{{editHandlers.saveasPanelEditHandler}}"
+            },
+
+            "deps": "js/autoAssignService"
+        },
+        "duplicateAndReplaceOperation": {
+            "actionType": "JSFunction",
+            "method": "setOperation",
+            "inputData": {
+                "selectedOperation": "duplicateAndReplaceOperation",
+                "operation": "{{fields.operation}}"
+            },
+
+            "deps": "js/aceAddElementService"
+        },
+        "duplicateAndReplace":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "duplicateAndReplaceOperation",
+                "condition": "conditions.shouldSplit"
+                },
+                {
+                    "action": "effSplitElementsIfApplicable",
+                    "condition": "conditions.shouldSplit"
+                },
+                {
+                    "action": "duplicateAndReplaceSOA",
+                    "condition": "!conditions.shouldSplit"
+                }
+            ]
+        },
+        "effSplitElementsIfApplicable" : {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2021-12-OccurrenceManagement",
+            "method": "splitEffectivities",
+             "inputData": {
+               "effectivitySplitData": {
+                    "effSplitInputs": [{
+                        "sourceElement": "{{ctx.selected}}",
+                        "propertyNames": "{{function:getPropertyNameForSplit}}"
+                    }],
+                    "inputCtxt": {
+                        "productContext": "{{subPanelContext.occContext.productContextInfo}}"
+                    },
+                    "sortCriteria": {
+                        "propertyName": "{{ctx.aceActiveContext.context.sortCriteria[0].fieldName}}",
+                        "sortingOrder": "{{ctx.aceActiveContext.context.sortCriteria[0].sortDirection}}"
+                    }
+                }
+            },
+            "events": {
+                "success": [ {
+                    "name": "effSplitElementsIfApplicable_done"
+                } ]
+            },
+            "outputData": {
+                "addElementResponse": "",
+                "splitElement": "effSplitOutputs[0].newSplitElement"
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "saveAsReplaceSplitSuccess",
+                        "condition": "conditions.isSplitOccurrencePreferenceEnabled && !data.splitOccurrenceCheckBox.dbValue && data.addElementResponse.effSplitOutputs.length > 0"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "duplicateAndReplaceFailure"
+                    }
+                ]
+            },
+            "deps": "js/aceSplitEffectivityService"
+        },
+        "showOccurrenceSplitPopupActionBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "showOccurrenceSplitInfoModalAction",
+                    "condition": "data.splitOccurrenceCheckBox.dbValue"
+                }
+            ]
+        },
+
+        "showOccurrenceSplitInfoModalAction": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "infoMessageForSplitOccModalNotificationCommand"
+                    }
+                ]
+            }
+        }
+    },
+    "messages": {
+        "duplicateAndReplaceInBackgroundSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.duplicateAndReplaceInBackgroundSuccessMessage}}",
+            "messageTextParams": [
+                "{{data.targetObject.props.object_string.uiValues[0]}}"
+            ]
+        },
+        "duplicateAndReplaceFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "saveAsReplaceSplitSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.systemSplitMessage}}",
+            "messageTextParams": [
+                "{{ctx.userSession.props.cm0GlobalChangeContext.uiValue}}"
+            ]
+        },
+        "InfoMessageForSplitOccNotificationMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.occurrenceSplitPopupMessage}}",
+            "navigationOptions": [
+                {
+                    "option": "Ok",
+                    "text": "{{i18n.okText}}"
+                }
+            ]
+        },
+        "splitOccurrenceInfoMsg": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.splitOccurrenceInfoMessage}}"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "awPattern.newPatternSelected",
+            "cacheEventData": true,
+            "action": "autoAssignProperty"
+        },
+        {
+            "eventId": "effSplitElementsIfApplicable_done",
+            "action": "duplicateAndReplaceSOA",
+            "condition": "data.operation.name === 'duplicateAndReplaceOperation'"
+        },
+        {
+            "eventId": "saveAsAndReplace.duplicate",
+            "action": "duplicateAndReplace"
+        },
+        {
+            "eventId": "saveAsAndReplace.saveAs",
+            "cacheEventData": true,
+            "action": "saveAs"
+        },
+        {
+            "eventId": "effSplitElementsIfApplicable_done",
+            "action": "saveAsSOA",
+            "condition": "data.operation.name === 'saveAsOperation'"
+        },
+        {
+            "eventId": "saveAs.saveAsComplete",
+            "action": "replaceElement"
+        },
+        {
+            "eventId": "saveAsAndReplace.closePanel",
+            "action": "closePanel",
+            "condition": "!conditions.isPanelPinned"
+        },
+        {
+            "eventId": "replaceElement.elementReplacedSuccessfully",
+            "action": "addSplitElementsToTreeAndClosePanelBatchJob",
+            "condition": "data.splitElement"
+        },
+        {
+            "eventId": "infoMessageForSplitOccModalNotificationCommand",
+            "message": "InfoMessageForSplitOccNotificationMessage"
+        },
+        {
+            "eventId": "primaryWorkArea.selectionChangeEvent",
+            "action": "closePanel"
+        }
+    ],
+    "conditions": {
+        "shouldSplit": {
+            "expression": "((ctx.userSession.props.cm0GlobalChangeContext.dbValue && !ctx.occmgmtContext.currentState.incontext_uid) || (subPanelContext.occContext.persistentRequestPref.defaultClientScopeUri === 'ChangeBom')  || data.splitOccurrenceCheckBox.dbValue)"
+        },
+        "defaultIdsSectionVisible": {
+            "expression": "data.defaultIdsOrIdNamingRuleCheckBox.dbValue && !data.cloneChildrenCheckBox.dbValue"
+        },
+        "idNamingRuleSectionVisible": {
+            "expression": "!data.defaultIdsOrIdNamingRuleCheckBox.dbValue"
+        },
+        "isCopyChildrenChecked": {
+            "expression": "data.cloneChildrenCheckBox.dbValue"
+        },
+        "isPrefixPresent": {
+            "expression": "data.prefixTextBox.dbValue !== ''"
+        },
+        "isSuffixPresent": {
+            "expression": "data.suffixTextBox.dbValue !== ''"
+        },
+        "isValidReplaceStringPresent": {
+            "expression": "data.replaceTextBox.dbValue !== ''"
+        },
+        "isNamingRuleValid": {
+            "expression": "conditions.isPrefixPresent || conditions.isSuffixPresent || conditions.isValidReplaceStringPresent"
+        },
+        "isSaveAsAndReplaceButtonVisible": {
+            "expression": "data.defaultIdsOrIdNamingRuleCheckBox.dbValue || conditions.isNamingRuleValid"
+        },
+        "isPanelPinned": {
+            "expression": "subPanelContext.panelPinned"
+        },
+        "isPanelUnPinned": {
+            "expression": "!subPanelContext.panelPinned"
+        },
+        "isWithTextBoxFilledWithoutReplaceValue": {
+            "expression": "data.withTextBox.dbValue !== '' && data.replaceTextBox.dbValue === ''"
+        },
+        "isInputLineSplit": {
+            "expression": "(ctx.userSession.props.cm0GlobalChangeContext.dbValue || subPanelContext.occContext.persistentRequestPref.defaultClientScopeUri === 'ChangeBom') && data.splitOccurrenceCheckBox.dbValue && data.addElementResponse.effSplitOutputs.length === 0"
+        },
+        "isSplitOccurrencePreferenceEnabled": {
+            "expression": "ctx.preferences.EnableManualSplitOccurrence && ctx.preferences.EnableManualSplitOccurrence[0].toUpperCase() === 'TRUE'"
+        }
+    },
+    "ctx": {
+        "selected": {
+            "type": "object"
+        }
+    },
+    "functions": {
+        "getElementTobeReplaced":{
+            "functionName": "getElementTobeReplaced",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getAdaptedPropertyValueForSaveAsAndReplace": {
+            "functionName": "parseExpression",
+            "parameters": [
+                "{{data}}",
+                "{{ctx}}",
+                "",
+                "ctx.selected.props[data.adaptedPropForSaveAsReplace.dbValue].dbValues[0]",
+                ""
+            ]
+        },
+        "getDuplicateAndReplaceSOAInput": {
+            "functionName": "parseExpression",
+            "parameters": [
+                "{{data}}",
+                "",
+                "",
+                "data.splitElement?{uid:  data.splitElement.uid, type: data.splitElement.type} : {uid:  data.targetObject.uid, type: data.targetObject.type}"
+            ]
+        },
+        "getDuplicateFlags": {
+            "functionName": "parseExpression",
+            "parameters": [
+                "{{data}}",
+                "",
+                "",
+                "data.runInBackgroundCheckBox.dbValue && 8 || 0",
+                "INTEGER"
+            ]
+        },
+        "getSaveAsInput": {
+            "functionName": "getSaveAsInput",
+            "parameters": [
+                "{{data}}",
+                "{{data.saveAsContext}}",
+                "{{xrtState.deepCopyDatas}}",
+                "{{editHandlers.saveasPanelEditHandler}}",
+                "{{data.xrtState}}"
+            ]
+        },
+        "getPropertyNameForSplit": {
+            "functionName": "getPropertyNameForSplit",
+            "parameters": [
+                "{{data}}"
+            ]
+        }
+    },
+    "i18n": {
+        "saveAsAndReplace": [
+            "OccurrenceManagementConstants"
+        ],
+        "cloneChildren": [
+            "OccurrenceManagementConstants"
+        ],
+        "namingRule": [
+            "OccurrenceManagementConstants"
+        ],
+        "defaultIds": [
+            "OccurrenceManagementConstants"
+        ],
+        "idNamingRule": [
+            "OccurrenceManagementConstants"
+        ],
+        "properties": [
+            "OccurrenceManagementConstants"
+        ],
+        "id": [
+            "OccurrenceManagementConstants"
+        ],
+        "revision": [
+            "OccurrenceManagementConstants"
+        ],
+        "description": [
+            "OccurrenceManagementConstants"
+        ],
+        "runInBackground": [
+            "OccurrenceManagementConstants"
+        ],
+        "name": [
+            "OccurrenceManagementConstants"
+        ],
+        "prefix": [
+            "OccurrenceManagementConstants"
+        ],
+        "suffix": [
+            "OccurrenceManagementConstants"
+        ],
+        "replaceElementBtn": [
+            "OccurrenceManagementConstants"
+        ],
+        "with": [
+            "OccurrenceManagementConstants"
+        ],
+        "PROP_REQUIRED_ERROR": [
+            "BaseMessages"
+        ],
+        "duplicateAndReplaceInBackgroundSuccessMessage": [
+            "OccurrenceManagementMessages"
+        ],
+        "splitOccurrence": [
+            "OccurrenceManagementConstants"
+        ],
+        "systemSplitMessage": [
+            "OccurrenceManagementMessages"
+        ],
+        "occurrenceSplitPopupMessage": [
+            "OccurrenceManagementMessages"
+        ],
+        "okText": [
+            "OccurrenceManagementConstants"
+        ],
+        "splitOccurrenceInfoMessage": [
+            "OccurrenceManagementMessages"
+        ]
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeSaveAsAndReplacePanel",
+        "onUnmount": "clearCtxForSaveAsAndReplace",
+        "onUpdate": [
+            {
+                "action": "onUpdateWithTextBox",
+                "observers": [
+                    "fields.withTextBox"
+                ]
+            }
+        ]
+    }
+}

@@ -1,0 +1,169 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "initializeSubViewContent": {
+            "actionType": "JSFunction",
+            "method": "initializeSubViewData",
+            "inputData": {
+                "data": "{{data.data}}",
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "outputData": {
+                "contextKey": "contextKey",
+                "startDate": "startDate",
+                "endDate": "endDate",
+                "endDateOptions": "endDateOptions"
+            },
+            "deps": "js/Pca0DateEffectivityConfigurationService"
+        },
+        "applyDateRangeEffectivity": {
+            "actionType": "JSFunctionAsync",
+            "method": "applyDateRangeEffectivityFromSubPanel",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "previousView": "Pca0SettingsTab"
+            },
+            "deps": "js/Pca0DateEffectivityConfigurationService"
+        },
+        "onUpdateIsStartDateValid": {
+            "actionType": "JSFunction",
+            "method": "updateField",
+            "inputData": {
+                "fields": "{{fields}}",
+                "fieldName": "startDate"
+            },
+            "deps": "js/apsEffectivityAuthoringService"
+        },
+        "onUpdateIsEndDateValid": {
+            "actionType": "JSFunction",
+            "method": "updateField",
+            "inputData": {
+                "fields": "{{fields}}",
+                "fieldName": "endDate"
+            },
+            "deps": "js/apsEffectivityAuthoringService"
+        },
+        "validateEndDateCriteria":{
+            "actionType": "JSFunction",
+            "method": "validateDateCriteria",
+            "inputData": {
+                "startDate": "{{data.startDate}}",
+                "endDate": "{{data.endDate}}"
+            },
+            "outputData": {
+                "endDate.validationCriteria[0].value": "errorMsg",
+                "isInvalidEndDate": "isInvalidDate",
+                "isInvalidStartDate": "isInvalidDate"
+            },
+            "deps": "js/apsEffectivityAuthoringService"
+        },
+        "validateStartDateCriteria": {
+            "actionType": "JSFunction",
+            "method": "validateDateCriteria",
+            "inputData": {
+                "startDate": "{{data.startDate}}",
+                "endDate": "{{data.endDate}}",
+                "endDateOptions": "{{data.endDateOptions}}"
+            },
+            "outputData": {
+                "startDate.validationCriteria[0].value": "errorMsg",
+                "isInvalidStartDate": "isInvalidDate",
+                "isInvalidEndDate": "isInvalidDate"
+            },
+            "deps": "js/apsEffectivityAuthoringService"
+        }
+    },
+    "data": {
+        "contextKey": "",
+        "startDate": {
+            "dbValue": "",
+            "type": "DATE",
+            "isRequired": "false",
+            "displayName": "{{i18n.startDate}}",
+            "validationCriteria": [ {
+                "condition": "conditions.isStartDateValidationFailed",
+                "value": ""
+            } ]
+        },
+        "endDate": {
+            "dbValue": "",
+            "type": "DATE",
+            "isRequired": "false",
+            "displayName": "{{i18n.endDate}}",
+            "validationCriteria": [ {
+                "condition": "conditions.isEndDateValidationFailed",
+                "value": ""
+            } ]
+        },
+        "endDateList": {
+            "type": "STRING",
+            "dbValue": [
+                { "propDisplayValue": "{{i18n.dateEffectivity}}", "propInternalValue": "Date" },
+                { "propDisplayValue": "{{i18n.upText}}", "propInternalValue": "UP" },
+                { "propDisplayValue": "{{i18n.soText}}", "propInternalValue": "SO" }
+            ]
+        },
+        "endDateOptions": {
+            "displayName": "{{i18n.endDate}}",
+            "name": "endDateOptions",
+            "type": "STRING",
+            "isRequired": "false",
+            "dataProvider": "endDateOptionsDataProvider",
+            "uiValue": "{{i18n.dateEffectivity}}",
+            "dbValue": "Date"
+        },
+        "isInvalidStartDate": false,
+        "isInvalidEndDate": false
+    },
+    "conditions": {
+        "isStartDateValidationFailed": {
+            "expression": "data.isInvalidStartDate"
+        },
+        "isEndDateValidationFailed": {
+            "expression": "data.isInvalidEndDate"
+        }
+    },
+    "dataProviders": {
+        "endDateOptionsDataProvider": {
+            "response": "{{data.endDateList.dbValue}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeSubViewContent",
+        "onUpdate": [
+            {
+                "action": "validateStartDateCriteria",
+                "observers": [ "viewModel.data.startDate.dbValue", "viewModel.data.endDateOptions.dbValue" ]
+            },
+            {
+                "action": "validateEndDateCriteria",
+                "observers": [ "viewModel.data.endDate.dbValue" ]
+            },
+            {
+                "action": "onUpdateIsStartDateValid",
+                "observers": ["viewModel.data.isInvalidStartDate"]
+            },
+            {
+                "action": "onUpdateIsEndDateValid",
+                "observers": ["viewModel.data.isInvalidEndDate"]
+            }
+        ]
+    },
+    "i18n": {
+        "startDate": [ "ApsEffectivityMessages" ],
+        "endDate": [ "ApsEffectivityMessages" ],
+        "dateEffectivity": [ "ApsEffectivityMessages" ],
+        "upText": [ "ApsEffectivityMessages" ],
+        "soText": [ "ApsEffectivityMessages" ],
+        "set": [ "FullScreenConfigurationMessages" ],
+        "effectivityDateRange": [ "FullScreenConfigurationMessages" ],
+        "dateRange": [ "ConfiguratorCommonMessages" ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

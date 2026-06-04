@@ -1,0 +1,128 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports": [
+
+        "js/aw-include.directive",
+        "js/exist-when.directive",
+        "js/aw-command-bar.directive"
+    ],
+    "actions":
+    {
+        "initPanel":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "closePanel",
+                    "condition": "data.taskSelected && !conditions.isInboxLocation"
+                },
+                {
+                    "action": "updateSelectedTask",
+                    "condition": "!data.isDestroyed()"
+                },
+                {
+                    "action": "updateSelection",
+                    "condition": "!data.isDestroyed()"
+                }
+            ]
+        },
+        "updateSelectedTask": {
+            "actionType": "JSFunctionAsync",
+            "method": "updateSelectedTask",
+            "deps": "js/Awp0PerformTask",
+            "inputData": {
+               "selectedObject": "{{props.subPanelContext.selectionData.value.selected[0]}}",
+               "openedObject": "{{props.subPanelContext.openedObject}}"
+            },
+            "outputData": {
+                "taskSelected": "taskSelected"
+            }
+        },
+        "updateSelection": {
+            "actionType": "JSFunctionAsync",
+            "method": "updateSelection",
+            "deps": "js/Awp0PerformTask",
+            "inputData": {
+               "data": "{{data}}",
+               "taskSelected": "{{data.taskSelected}}",
+               "isPanelContext" : true
+            },
+            "outputData": {
+                "taskToPerform": "taskToPerform",
+                "activePerformTaskPanelId": "activePerformTaskPanelId"
+            }
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [
+                    {
+                        "name": "complete",
+                        "condition": "!data.isDestroyed()",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog",
+                        "condition": "!data.isDestroyed()"
+                    }
+                ]
+            }
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+
+    "functions":
+    {
+    },
+
+    "onEvent":
+    [
+        {
+            "eventId": "Workflow.closeOpenedPanel",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "closeDialog",
+            "condition": "conditions.isDialogPanelCase",
+            "action": "closePanelDialog"
+        }
+
+    ],
+
+    "lifecycleHooks":{
+        "onUpdate": [ {
+            "action": "initPanel",
+            "observers": [ "props.subPanelContext.selectionData.value.selected" ]
+        } ]
+    },
+
+    "conditions": {
+        "isInboxLocation": {
+            "expression": "ctx.locationContext['ActiveWorkspace:Location'] === 'com.siemens.splm.client.inbox.tasksLocation'"
+        },
+        "isDialogPanelCase": {
+            "expression": "!data.isDestroyed() && props.subPanelContext.popupOptions.popupId !== undefined"
+        }
+    },
+
+    "i18n":
+    {
+        "performTask":
+        [
+            "InboxMessages"
+        ]
+    }
+}

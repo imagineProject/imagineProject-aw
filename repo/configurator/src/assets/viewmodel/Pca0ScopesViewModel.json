@@ -1,0 +1,720 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "selectedTab": {
+            "initialValues": {
+                "tabId": null
+            },
+            "meta": {}
+        },
+        "filterBox": {
+            "displayName": "",
+            "type": "STRING",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "scopeInfo": {
+            "scopesList": [],
+            "isfilterBoxVisible": false,
+            "isSplit": "false",
+            "moduleHierarchy": ""
+        }
+    },
+    "dataProviders": {
+        "scopesListDataProvider": {
+            "action": "loadAndFilterScopesData",
+            "response": "{{data.scopeInfo.scopesList}}",
+            "showDecorators": "false",
+            "selectionModelMode": "single",
+            "totalFound": "{{data.scopeInfo.scopesList.length}}"
+        }
+    },
+    "actions": {
+        "loadAndFilterScopesDataBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearFilter"
+                },
+                {
+                    "action": "loadAndFilterScopesData"
+                }
+            ]
+        },
+        "loadAndFilterScopesData": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearCurrentScope",
+                    "condition": "conditions.shouldClearCurrentScope"
+                },
+                {
+                    "action": "loadScopesData",
+                    "condition": "conditions.needToLoadData"
+                },
+                {
+                    "action": "filterScopes",
+                    "condition": "conditions.isfilterBoxVisible"
+                },
+                {
+                    "action": "updateViolationIcon",
+                    "condition": "conditions.hasViolations"
+                }
+            ]
+        },
+        "filterScopes": {
+            "actionType": "JSFunction",
+            "method": "filterScopes",
+            "inputData": {
+                "filterBox": "{{data.filterBox}}",
+                "scopes": "{{data.scopeInfo}}",
+                "dataProvider": "{{data.dataProviders.scopesListDataProvider}}",
+                "selectedGroup": "{{ctx.fscContext.currentScope}}"
+            },
+            "outputData": {
+                "scopeInfo": "",
+                "scopesFiltered": true,
+                "afterConfigModuleChange": false
+            },
+            "deps": "js/pca0ScopesService"
+        },
+        "clearFilter": {
+            "actionType": "JSFunction",
+            "method": "clearFilter",
+            "inputData": {
+                "filterBox": "{{data.filterBox}}"
+            },
+            "outputData": {
+                "filterBox": ""
+            },
+            "deps": "js/pca0ScopesService"
+        },
+        "clearCurrentScope": {
+            "actionType": "JSFunction",
+            "method": "clearCurrentScope",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.scopesListDataProvider.selectionModel}}"
+            },
+            "outputData": {
+                "afterConfigModuleChange": ""
+            },
+            "deps": "js/pca0ScopesService"
+        },
+        "getConfigurationDataOnMount": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "getConfigurationData",
+                "condition": "props.fscState.value.unloadedVariant === true || props.fscState.value.isLayoutResize === true"
+            } ]
+        },
+        "getConfigurationData": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getConfigurationDataPrep"
+                },
+                {
+                    "action": "resetVariantState",
+                    "condition": "props.fscState.value.isLayoutResize === false"
+                },
+                {
+                    "action": "fireFetchActiveSettingsEvent",
+                    "condition": "conditions.shouldFetchAppliedSettings"
+                },
+                {
+                    "action": "doScopesListDataProvider",
+                    "condition": "conditions.areAppliedSettings"
+                },
+                {
+                    "action": "resetLayoutResize",
+                    "condition": "props.fscState.value.isLayoutResize === true"
+                },
+                {
+                    "action": "clearAllViolations",
+                    "condition": "conditions.hasViolations"
+                }
+            ]
+        },
+        "loadConfigurationDataOnUpdateLifecycleHook": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "getConfigurationData",
+                "condition": "!conditions.isOpenedFromConfiguratorCtx && conditions.shouldGetConfigurationData"
+            } ]
+        },
+        "updateDataProviderWithNewScopeInfo": {
+            "actionType": "JSFunction",
+            "method": "updateDataProviderWithNewScopeInfo",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.scopesListDataProvider}}",
+                "scopesList": "{{data.scopeInfo.scopesList}}"
+            },
+            "deps": "js/pca0ScopesService"
+        },
+        "getConfigurationDataPrep": {
+            "actionType": "JSFunction",
+            "method": "getConfigurationData",
+            "inputData": {
+                "data": "{{data}}",
+                "applySettings": true
+            },
+            "deps": "js/pca0ScopesService"
+        },
+        "resetVariantState": {
+            "actionType": "JSFunction",
+            "inputData": {
+                "fscState": "{{props.fscState}}"
+            },
+            "method": "resetVariantState",
+            "deps": "js/pca0ScopesService"
+        },
+        "resetLayoutResize": {
+            "actionType": "JSFunction",
+            "inputData": {
+                "fscState": "{{props.fscState}}"
+            },
+            "method": "resetLayoutResize",
+            "deps": "js/pca0ScopesService"
+        },
+        "fireFetchActiveSettingsEvent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0FullScreenConfiguration.fetchActiveSettings"
+                } ]
+            },
+            "outputData": {
+                "fetchedActiveSettings": true
+            }
+        },
+
+        "getConfigurationDataForApplySettings": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getConfigurationDataPrepForApplySettings",
+                    "condition": "conditions.isNoProductHierarchy"
+                },
+                {
+                    "action": "resetDataProvider",
+                    "condition": "!conditions.isNoProductHierarchy && !conditions.isLoadedVMObjectsEmpty"
+                },
+                {
+                    "action": "fireFetchActiveSettingsEvent",
+                    "condition": "conditions.shouldFetchAppliedSettingsNoProductHierarchy"
+                },
+                {
+                    "action": "clearSystemSelectionsFromSelectionsMap",
+                    "condition": "!conditions.shouldFetchAppliedSettingsNoProductHierarchy"
+                },
+                {
+                    "action": "doScopesListDataProviderBatch",
+                    "condition": "!conditions.shouldFetchAppliedSettingsNoProductHierarchy"
+                }
+            ]
+        },
+        "resetDataProvider": {
+            "actionType": "JSFunction",
+            "method": "resetDataProvider",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.scopesListDataProvider}}"
+            },
+            "deps": "js/configuratorUtils"
+        },
+        "getConfigurationDataPrepForApplySettings": {
+            "actionType": "JSFunction",
+            "method": "getConfigurationData",
+            "inputData": {
+                "data": "{{data}}",
+                "applySettings": true
+            },
+            "deps": "js/pca0ScopesService"
+        },
+        "determineFilterBoxVisibility": {
+            "actionType": "JSFunction",
+            "method": "determineIfShowFilterBox",
+            "inputData": {
+                "data": "{{data.scopesLength}}",
+                "isFullScreen": "{{props.subPanelContext.fullScreenState.value}}"
+            },
+            "outputData": {
+                "isfilterBoxVisible": ""
+            },
+            "deps": "js/configuratorUtils"
+        },
+        "clearSystemSelectionsFromSelectionsMap": {
+            "actionType": "JSFunction",
+            "method": "clearSystemSelectionsFromSelectionsMap",
+            "inputData": {
+                "data": "{{props.fscState}}"
+            },
+            "deps": "js/configuratorUtils"
+        },
+        "doScopesListDataProviderBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "doScopesListDataProvider",
+                "condition": "conditions.isNoProductHierarchy"
+            } ]
+        },
+        "doScopesListDataProvider": {
+            "actionType": "dataProvider",
+            "method": "scopesListDataProvider"
+        },
+        "loadScopesData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "policy": {
+                "types": "{{function:getPropertyPolicyForVCV}}",
+                "override":true
+            },
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{function:getConfigPerspective}}",
+                    "activeVariantRules": "{{function:getActiveVariantRules}}",
+                    "selectedContext": "{{function:getSelectionForVariantContext}}",
+                    "scopes": [ "{{function:getInputScope}}" ],
+                    "selectedExpressions": "{{function:convertSelectedExpressionJsonObjectToString}}",
+                    "payloadStrings": "{{ctx.fscContext.payloadStrings}}",
+                    "requestInfo": {
+                        "requestType": [ "getConfig" ],
+                        "isCompactMode": [ "{{ctx.fscContext.vcvLayoutSettings.showCompressedData === true ? 'true' : \"\"}}" ],
+                        "moduleHierarchy": [ "{{function:getConfigurationModuleHierarchy}}" ],
+                        "configurationControlMode": [ "{{function:getConfigurationMode}}" ],
+                        "switchingToGuidedMode": [ "{{function:getSwitchingToGuidedMode}}" ],
+                        "profileSettings": [ "{{function:getProfileSettings}}" ],
+                        "reassessSelections": [ "{{ctx.fscContext.reassessSelections === undefined ? \"\" : ctx.fscContext.reassessSelections}}" ],
+                        "fetchSummaryOfSelections": [ "{{props.fscState.isSwitchingFromGridToListView ? 'true' : \"\" }}" ],
+                        "statsCollectorScopeName": [ "{{ctx.state.urlAttributes.configuratorDebugMode !== undefined ? 'loadScopeData' : '' }}" ]
+                    }
+                }
+            },
+            "outputData": {
+                "scopeInfo": "{{function:getScopesData}}",
+                "renderToggleMode": "{{function:renderToggleMode}}",
+                "afterConfigModuleChange": false
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0Scopes.deleteIsSwitchingFromGridToListViewFlag"
+                },
+                {
+                    "name": "Pca0Scopes.syncNavigationScopeToDataProviderBatch"
+                },
+                {
+                    "name": "Pca0FullScreenConfiguration.Pca0SingleSVRFscShowGridViewDirectly",
+                    "condition": "data.scopeInfo.isSplit === 'true' && conditions.isOpenedFromConfiguratorCtx"
+                },
+                {
+                    "name": "Pca0SelectionSummaryDialog.navigateToSelection"
+                } ]
+            },
+            "deps": "js/pca0ScopesService"
+        },
+        "clearAllViolations": {
+            "actionType": "JSFunction",
+            "method": "updateViolationIcon",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.scopesListDataProvider}}",
+                "scopes": "{{data.scopeInfo}}",
+                "violation": "",
+                "clearViolation": true
+            },
+            "outputData": {
+                "scopesFiltered": false,
+                "scopeInfo":""
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0Scopes.updateGroups",
+                    "eventData": {
+                        "scopeInfoList": "{{data.scopeInfo.scopesList}}"
+                    },
+                    "condition": "conditions.isScopesLoaded"
+                } ]
+            },
+            "deps": "js/pca0ScopesService"
+        },
+        "updateViolationIcon": {
+            "actionType": "JSFunction",
+            "method": "updateViolationIcon",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.scopesListDataProvider}}",
+                "scopes": "{{data.scopeInfo}}",
+                "violations": "{{ctx.fscContext.violations}}"
+            },
+            "outputData": {
+                "scopesFiltered": false,
+                "scopeInfo": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0Scopes.updateGroups",
+                    "eventData": {
+                        "scopeInfoList": "{{data.scopeInfo.scopesList}}"
+                    },
+                    "condition": "conditions.isScopesLoaded"
+                } ]
+            },
+            "deps": "js/pca0ScopesService"
+        },
+        "clearScopesViolations": {
+            "actionType": "JSFunction",
+            "method": "updateViolationIcon",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.scopesListDataProvider}}",
+                "scopes": "{{data.scopeInfo}}",
+                "violation": "",
+                "clearViolation": true
+            },
+            "outputData": {
+                "scopesFiltered": false,
+                "scopeInfo":""
+            },
+            "deps": "js/pca0ScopesService"
+        },
+        "refreshGroups": {
+            "actionType": "JSFunction",
+            "method": "refreshGroupsInScopeView",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.scopesListDataProvider}}",
+                "fscState": "{{props.fscState}}",
+                "updatedGroupList": "{{parameters.eventData}}",
+                "scopeInfo": "{{data.scopeInfo}}",
+                "filterBox": "{{data.filterBox}}",
+                "selectedGroup": "{{ctx.fscContext.currentScope}}",
+                "showTab": "{{props.showTab}}"
+            },
+            "outputData": {
+                "scopeInfo": "result.newScopeInfo",
+                "fetchedActiveSettings": "result.fetchActiveSettings",
+                "filterBox": "result.filterBox",
+                "scopesFiltered": true
+            },
+            "deps": "js/pca0ScopesService"
+        },
+        "deleteIsSwitchingFromGridToListViewFlag": {
+            "actionType": "JSFunction",
+            "inputData": {
+                "fscState": "{{props.fscState}}"
+            },
+            "method": "resetIsSwitchingFromGridToListViewFlag",
+            "deps": "js/pca0ScopesService"
+        },
+        "handleScopeSelectionChangeBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "handleListScopeSelectionChange",
+                    "condition": "!conditions.showTabAsGroup"
+                },
+                {
+                    "action": "handleTabChange",
+                    "condition": "conditions.showTabAsGroup"
+                }
+            ]
+        },
+        "handleListScopeSelectionChange": {
+            "actionType": "JSFunction",
+            "method": "handleScopeSelectionChange",
+            "inputData": {
+                "listDataProvider": "{{data.dataProviders.scopesListDataProvider}}",
+                "eventData": "",
+                "vmSelectedTab": "",
+                "scopesList": "{{data.scopeInfo.scopesList}}"
+            },
+            "deps": "js/pca0ScopesService"
+        },
+        "handleTabChange": {
+            "actionType": "JSFunction",
+            "method": "handleScopeSelectionChange",
+            "inputData": {
+                "listDataProvider": "",
+                "eventData": "",
+                "vmSelectedTab": "{{data.atomicDataRef.selectedTab}}",
+                "scopesList": "{{data.scopeInfo.scopesList}}"
+            },
+            "deps": "js/pca0ScopesService"
+        },
+        "updateScopeSelectionChange":{
+            "actionType": "JSFunction",
+            "method": "updateScopeSelection",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.scopesListDataProvider}}",
+                "eventData": "{{parameters.eventData}}",
+                "vmSelectedTab": "{{data.atomicDataRef.selectedTab}}",
+                "scopesList": "{{data.scopeInfo.scopesList}}",
+                "isTabView": "{{props.showTab}}"
+            },
+            "deps": "js/pca0ScopesService"
+        },
+        "checkRequiredVariability": {
+            "actionType": "JSFunction",
+            "method": "navigateToNextIncompleteFamily",
+            "inputData": {
+                "goPrevious": "{{parameters.eventData.goPrevious}}",
+                "scopeInfo": "{{data.scopeInfo}}"
+            },
+            "deps": "js/Pca0IncompleteFamiliesService"
+        },
+        "syncNavigationScopeToDataProviderBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "selectScope",
+                    "condition": "!conditions.noCurrentScope"
+                }
+            ]
+        },
+        "selectScope": {
+            "actionType": "JSFunction",
+            "method": "selectScope",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.scopesListDataProvider}}",
+                "scopeSelectionUID": "{{ctx.fscContext.currentScope}}"
+            },
+            "deps": "js/pca0ScopesService"
+        }
+    },
+    "functions": {
+        "getSelectionForVariantContext": {
+            "functionName": "getSelectionForVariantContext",
+            "parameters": [ "fscContext", "{{props.configCtx}}" ]
+        },
+        "getConfigurationMode": {
+            "functionName": "getConfigurationMode",
+            "parameters": [ "fscContext", "{{props.fscState}}" ]
+        },
+        "getConfigPerspective": {
+            "functionName": "getConfigPerspective",
+            "parameters": [ "{{props.variantRuleData}}" ]
+        },
+        "getProfileSettings": {
+            "functionName": "getProfileSettings"
+        },
+        "getActiveVariantRules": {
+            "functionName": "getActiveVariantRules"
+        },
+        "getScopesData": {
+            "functionName": "getScopesData",
+            "parameters": [ "{{data.dataProviders.scopesListDataProvider}}", "{{data.scopeInfo}}", "{{props.subPanelContext.fullScreenState.value}}", "{{parameters.configurationModuleHierarchy}}", "{{props.variantRuleData}}","{{data.atomicDataRef.selectedTab}}"]
+
+        },
+        "getSwitchingToGuidedMode": {
+            "functionName": "getSwitchingToGuidedMode"
+        },
+        "renderToggleMode": {
+            "functionName": "renderToggleMode",
+            "parameters": [ "{{props.fscState}}" ]
+        },
+        "convertSelectedExpressionJsonObjectToString": {
+            "functionName": "convertSelectedExpressionJsonObjectToString",
+            "parameters": [ "{{ctx.fscContext.selectedExpressions}}" ]
+        },
+        "getConfigurationModuleHierarchy": {
+            "functionName": "getConfigurationModuleHierarchy",
+            "parameters": [ "{{parameters.configurationModuleHierarchy}}" ]
+        },
+        "getInputScope": {
+            "functionName": "getInputScope",
+            "parameters": [ "{{data.afterConfigModuleChange}}"]
+        },
+        "getPropertyPolicyForVCV": {
+            "functionName": "getPropertyPolicyForVCV"
+        }
+    },
+    "messages": {
+        "noVariabilityReasons": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.noVariabilityReasons}}"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "Pca0FullScreenConfiguration.activeSettingsLoaded",
+            "action": "doScopesListDataProviderBatch"
+        },
+        {
+            "eventId": "Pca0Scopes.loadedSVRChanged",
+            "cacheEventData": true,
+            "action": "getConfigurationData"
+        },
+        {
+            "eventId": "Pca0Settings.applySettings",
+            "action": "getConfigurationDataForApplySettings"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.ConfigModuleSelectionChanged",
+            "action": "doScopesListDataProvider"
+        },
+        {
+            "eventId": "Pca0Scopes.updateGroups",
+            "action": "refreshGroups",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Scopes.noVariabilityReasons",
+            "message": "noVariabilityReasons"
+        },
+        {
+            "eventId": "Pca0Scopes.deleteIsSwitchingFromGridToListViewFlag",
+            "action": "deleteIsSwitchingFromGridToListViewFlag"
+        },
+        {
+            "eventId": "Pca0Scopes.clearAllViolations",
+            "cacheEventData": true,
+            "action": "clearAllViolations"
+        },
+        {
+            "eventId": "Pca0Scopes.clearScopesViolations",
+            "action": "clearScopesViolations"
+        },
+        {
+            "eventId": "Pca0Scopes.updateViolations",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "updateViolations"
+        },
+        {
+            "eventId": "scopesListDataProvider.selectionChangeEvent",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "handleScopeSelectionChangeBatch"
+        },
+        {
+            "eventId": "Pca0Scopes.scopeSelectionUpdate",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "updateScopeSelectionChange"
+        },
+        {
+            "eventId": "Pca0Scopes.fscPreviousRequired",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "checkRequiredVariability"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.applyConfigModuleSelectionToServer",
+            "action": "loadAndFilterScopesDataBatch",
+            "inputArgs": {
+                "configurationModuleHierarchy": "{{eventData.configurationModuleHierarchy}}",
+                "isAfterConfigModuleChange": true
+            }
+        },
+        {
+            "eventId": "Pca0Scopes.syncNavigationScopeToDataProviderBatch",
+            "action": "syncNavigationScopeToDataProviderBatch"
+        }
+    ],
+    "conditions": {
+        "areAppliedSettings": {
+            "expression": "ctx.fscContext.appliedSettings !== undefined && Object.keys( ctx.fscContext.appliedSettings ).length !== 0"
+        },
+        "allowedToFetchSettings": {
+            "expression": "!props.fscState.value.savedVariant"
+        },
+        "isOpenedFromConfiguratorCtx": {
+            "expression": "ctx.ConfiguratorCtx.variantRuleData.isVCVOpenedFromConfigurator"
+        },
+        "shouldFetchAppliedSettings": {
+            "expression": "!conditions.areAppliedSettings && conditions.allowedToFetchSettings"
+        },
+        "notTreeDisplayMode": {
+            "expression": "props.fscState.value.treeDisplayMode=== false"
+        },
+        "treeDisplayMode": {
+            "expression": "props.fscState.value.treeDisplayMode=== true"
+        },
+        "noCurrentScope": {
+            "expression": "ctx.fscContext.currentScope === undefined || ctx.fscContext.currentScope === ''"
+        },
+        "isNoVariantRuleLoaded": {
+            "expression": "ctx.fscContext.initialVariantRule === undefined && props.variantRuleData.variantRulesToLoad.length === 0"
+        },
+        "isCustomConfiguration": {
+            "expression": "ctx.fscContext.initialVariantRule && ctx.fscContext.initialVariantRule.props.object_name.dbValue === 'Custom Configuration'"
+        },
+        "isOneVariantRuleLoaded": {
+            "expression": "(props.variantRuleData.variantRulesToLoad.length === 0 && ctx.fscContext.initialVariantRule !== undefined) || ( props.variantRuleData.variantRulesToLoad.length === 1 )"
+        },
+        "shouldGetConfigurationData": {
+            "expression": "(conditions.treeDisplayMode && props.variantRuleData.variantRulesToLoad.length > 0) || !conditions.areAppliedSettings || ctx.fscContext.initialVariantRule === undefined || props.fscState.value.isSwitchingFromGridToListView || (props.variantRuleData.variantRulesToLoad.length === 1 && props.variantRuleData.variantRulesToLoad[0].uid !== ctx.fscContext.initialVariantRule.uid)"
+        },
+        "isConfigModuleChange": {
+            "expression": "parameters.isAfterConfigModuleChange"
+        },
+        "isNoProductHierarchy": {
+            "expression": "!ctx.fscContext.appliedSettings.configSettings.props.pca0ProductHierarchyDepth || ctx.fscContext.appliedSettings.configSettings.props.pca0ProductHierarchyDepth.dbValues[0] === '1'"
+        },
+        "shouldFetchAppliedSettingsNoProductHierarchy": {
+            "expression": "conditions.isNoProductHierarchy && conditions.shouldFetchAppliedSettings"
+        },
+        "isFiltered": {
+            "expression": "conditions.isfilterBoxVisible && data.filterBox.dbValue !== undefined"
+        },
+        "shouldClearCurrentScope": {
+            "expression": "conditions.isConfigModuleChange && !conditions.isNoProductHierarchy || (conditions.needToLoadData && !conditions.isFiltered)"
+        },
+
+        "needToLoadData": {
+            "expression": "data.afterConfigModuleChange || (conditions.shouldGetConfigurationData && !conditions.isFiltered) || conditions.noCurrentScope || data.scopeInfo.scopesList.length === 0"
+        },
+        "hasViolations": {
+            "expression": "props.fscState.value.violationMessages && props.fscState.value.violationMessages !== ''"
+        },
+        "isfilterBoxVisible": {
+            "expression": "data.scopeInfo.isfilterBoxVisible"
+        },
+        "showTabAsGroup": {
+            "expression": "props.showTab"
+        },
+        "showCompressedData": {
+            "expression": "props.showTextUi"
+        },
+        "isLoadedVMObjectsEmpty": {
+            "expression": "data.dataProviders.scopesListDataProvider.viewModelCollection.loadedVMObjects.length === 0"
+        },
+        "isScopesLoaded": {
+            "expression": "data.scopeInfo.scopesList.length > 0"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "getConfigurationDataOnMount",
+        "onUpdate": [ {
+            "action": "loadConfigurationDataOnUpdateLifecycleHook",
+            "observers": [ "viewModel.ctx.fscContext.initialVariantRule" ]
+        },
+        {
+            "action": "handleScopeSelectionChangeBatch",
+            "observers": [ "fields.selectedTab" ]
+        }
+     ]
+    },
+    "ctx": {
+        "fscContext": {
+            "type": "object"
+        }
+    },
+    "props": {
+        "fsc-state": {
+            "type": "object"
+        },
+        "variant-rule-data": {
+            "type": "object"
+        },
+        "config-ctx": {
+            "type": "object"
+        },
+        "show-tab": {
+            "type": "boolean"
+        },
+        "show-text-ui": {
+            "type": "boolean"
+        }
+    },
+    "i18n": {
+        "noVariabilityReasons": [ "FullScreenConfigurationMessages" ]
+    }
+}

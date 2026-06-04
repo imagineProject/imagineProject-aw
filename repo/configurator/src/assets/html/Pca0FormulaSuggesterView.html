@@ -1,0 +1,70 @@
+<!--Editor with flex layout. Default layout with flex container for editor area-->
+<div class="sw-column w-12 aw-cfg-formulaSuggester flex-layout" visible-when="conditions.isFlexLayout">
+    <!--Object label and suggester command bar-->
+    <div class="sw-row h-3f aw-cfg-formulaSuggesterObjectLabelSection flex-layout">
+        <div class="sw-column w-6 justify-center aw-cfg-formulaSuggesterObjectLabel">
+            <label class="aw-cfg-formulaSuggesterObjectLabel">{{props.editorObject.propertyDisplayName}}</label>
+        </div>
+        <div class="sw-column w-6 align-right" exist-when="conditions.showSuggesterCommandBar">
+            <!--Command bar with full screen support-->
+            <aw-command-bar anchor="aw_FormulaSuggesterCommandBar,aw_fullScreen" alignment="HORIZONTAL"
+                overflow="props.editorObject.sharedCommandBarOverflow === false ? false : true"
+                context="{...props.formulaSuggesterContext, editorObject:props.editorObject}"
+                visible-when="conditions.isFullScreenSupported">
+            </aw-command-bar>
+            <!--Command bar without full screen support-->
+            <aw-command-bar anchor="aw_FormulaSuggesterCommandBar" alignment="HORIZONTAL"
+                overflow="props.editorObject.sharedCommandBarOverflow === false ? false : true"
+                context="{...props.formulaSuggesterContext, editorObject:props.editorObject}"
+                visible-when="!conditions.isFullScreenSupported">
+            </aw-command-bar>
+        </div>
+    </div>
+    <!-- Monaco editor-->
+    <div id='formulaSuggesterEditorArea' class="sw-row aw-cfg-formulaSuggesterEditorAreaContainer flex-layout">
+        <aw-source-editor content="data.editorContent" config="data.config" editor="fields.editorRef"
+            global-config="fields.monacoObject"></aw-source-editor>
+    </div>
+    <!-- Splitter for internal formula section-->
+    <aw-splitter visible-when="conditions.isIntellisenseOn && conditions.isInternalFormulaToggleButtonSelected"
+        min-size-1="6" min-size-2="6" direction="HORIZONTAL">
+    </aw-splitter>
+    <!-- Internal formula section-->
+    <div id='formulaSuggesterInternalFormulaContainer' class="sw-row aw-cfg-formulaSuggesterInternalFormulaContainer flex-layout" visible-when="conditions.isIntellisenseOn">
+        <div class ="sw-column w-12">
+            <aw-togglebutton class="sw-row aw-cfg-formulaSuggesterInternalFormulaButton" prop="data.showInternalFormulaToggleButton"
+                action='showInternalFormula'>
+            </aw-togglebutton>
+            <div class="sw-row aw-layout-flexbox aw-cfg-formulaSuggesterInternalFormulaLabel flex-layout">
+                <label class="aw-cfg-suggesterInternalFormulaLabel" prop="data.internalFormula"
+                    visible-when="conditions.isInternalFormulaToggleButtonSelected">{{data.internalFormula}}
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Editor without flex layout. Enabled only when  if editor object for this component as props contain flexLayout key with false value-->
+<div class="aw-cfg-formulaSuggester" visible-when="!conditions.isFlexLayout">
+    <!--Object label and suggester command bar-->
+    <div class="sw-row h-3f" >
+        <div class="sw-column w-6 justify-center aw-cfg-formulaSuggesterObjectLabel" >
+            <label class="aw-cfg-formulaSuggesterObjectLabel" >{{props.editorObject.propertyDisplayName}}</label>
+        </div>
+        <div class="sw-column align-right w-6" exist-when = "conditions.showSuggesterCommandBar">
+            <aw-command-bar anchor="aw_FormulaSuggesterCommandBar" alignment="HORIZONTAL"
+                overflow="props.editorObject.sharedCommandBarOverflow === false ? false : true"
+                context="{...props.formulaSuggesterContext, editorObject:props.editorObject}" >
+            </aw-command-bar>
+        </div>
+    </div>
+    <!-- Monaco editor-->
+    <div class="sw-row aw-cfg-formulaSuggesterEditorAreaContainer">
+        <aw-source-editor content="data.editorContent" config="data.config" editor="fields.editorRef" global-config="fields.monacoObject"></aw-source-editor>
+    </div>
+    <!-- Internal formula section-->
+    <div visible-when="conditions.isIntellisenseOn">
+        <aw-togglebutton class="aw-cfg-formulaSuggesterInternalFormulaButton" prop="data.showInternalFormulaToggleButton" action='showInternalFormula'></aw-togglebutton>
+        <label class="sw-component aw-cfg-suggesterInternalFormulaLabel" prop="data.internalFormula" visible-when="conditions.isInternalFormulaToggleButtonSelected">{{data.internalFormula}}</label>
+    </div>
+</div>

@@ -1,0 +1,276 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports": [],
+    "actions":
+    {
+        "createFormData": {
+            "actionType": "JSFunction",
+            "method": "setFileParameters",
+            "inputData": {
+                "fileName": "{{parameters.fileName}}",
+                "validFile": "{{parameters.validFile}}",
+                "fileNameNoExt":"{{parameters.fileNameNoExt}}",
+                "fileExt":"{{parameters.fileExt}}",
+                "formData": "{{parameters.formData}}"
+            },
+            "outputData":
+            {
+                "fileName": "fileName",
+                "validFile":"validFile",
+                "fileNameNoExt":"fileNameNoExt",
+                "fileExt":"fileExt",
+                "formData":"formData"
+            },
+            "deps": "js/fileUploadUtils"
+        },
+        "importSavedQuery": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Search-2024-12-SavedQuery",
+            "method": "createOrModifySavedQuery",
+            "inputData": {
+                "input" : {
+                    "queryName": "{{ctx.xmlValues[0].name}}",
+                    "queryDescription": "{{ctx.xmlValues[0].desc}}",
+                    "searchType": "{{ctx.xmlValues[0].searchType}}",
+                    "isICSType": false,
+                    "queryClauses": "{{function:getQueryClausesVector}}",
+                    "revisionRuleName": "{{function:getQueryRevRule}}",
+                    "sorter" : "{{function:getQuerySorter}}"
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "savedquery": "savedquery"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "setLocalizedProperties"
+                    }
+                ],
+                "failure":
+                [
+                    {
+                        "name" : "closePanel"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure":
+                [
+                    {
+                        "condition": "errorCode.code === 3038",
+                        "message": "importFailedInvalidSavedQuery"
+                    },
+                    {
+                        "condition": "errorCode.code === 3002 || errorCode.code === 3005",
+                        "message": "importFailed"
+                    }
+                ]
+            },
+            "deps": "js/AwSearchImportExportSavedQuery"
+        },
+        "setLocalizedProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-04-DataManagement",
+            "method": "setLocalizedPropertyValues",
+            "inputData":{
+                "info":
+                [
+                    {
+                        "object":"{{data.savedquery}}",
+                        "propertyValues": "{{function:setLocalePropertyValuesForName}}"
+                    },
+                    {
+                        "object":"{{data.savedquery}}",
+                        "propertyValues": "{{function:setLocalePropertyValuesForDescription}}"
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "updatesearchStateWithSavedQuery"
+                    },
+                    {
+                        "name": "closePanel"
+                    }
+                ],
+                "failure" : [
+                    {
+                        "name" : "closePanel"
+                    }
+                ]
+            },
+            "deps": "js/AwSearchImportExportSavedQuery"
+        },
+        "updatesearchStateWithSavedQuery" : {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.searchState}}",
+                "value": {
+                    "saveAsUid": "{{data.savedquery.uid}}"
+                }
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "primaryWorkarea.reset"
+                    },
+                    {
+                        "name": "importSuccessful"
+                    }
+                 ]
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "handleImportSavedQuery": {
+            "actionType": "JSFunction",
+            "method": "importSavedQueryHandleImportSavedQuery",
+            "inputData": {
+                "file": "{{data.formData}}",
+                "ctx" : "{{ctx}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "importSavedQuery"
+                    }
+                 ]
+            },
+            "deps": "js/AwSearchImportExportSavedQuery"
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events": [ {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+            }
+        },
+        "closeDialogPanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "data": {},
+    "functions": {
+        "getQueryClausesVector": {
+            "functionName": "getQueryClausesVector",
+            "parameters": [
+                "{{ctx.xmlValues[0].queryClause}}"
+            ]
+        },
+        "getQueryRevRule": {
+            "functionName": "getQueryRevRule",
+            "parameters": [
+                "{{ctx.xmlValues[0].queryClause}}"
+            ]
+        },
+        "getQuerySorter": {
+            "functionName": "getQuerySorter",
+            "parameters": [
+                "{{ctx.xmlValues[0].queryClause}}"
+            ]
+        },
+        "setLocalePropertyValuesForName": {
+            "functionName": "setLocalePropertyValuesForName",
+            "parameters": [
+                "{{ctx.xmlValues[0].propertyNameArray}}"            ]
+        },
+        "setLocalePropertyValuesForDescription": {
+            "functionName": "setLocalePropertyValuesForDescription",
+            "parameters": [
+                "{{ctx.xmlValues[0].propertyDescArray}}"            ]
+        }
+    },
+    "conditions":
+    {
+        "isValidToImport":
+        {
+            "expression": "data.fileName !== null && data.fileName !== undefined && data.fileName !== ''"
+        }
+    },
+    "messages": {
+        "importDone": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.importSavedQuerySuccessfulMessage}}",
+            "messageTextParams": [
+                "{{data.fileName}}"
+            ]
+        },
+        "importFailed": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.importSavedQueryFailedMessage}}",
+            "messageTextParams": [
+                "{{data.fileName}}"
+            ]
+        },
+        "importFailedInvalidSavedQuery": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.importInvalidSavedQueryMessage}}",
+            "messageTextParams": [
+                "{{data.fileName}}",
+                "{{errorCode.message}}"
+            ]
+        }
+    },
+    "lifecycleHooks": {
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "importSuccessful",
+            "message": "importDone"
+        },
+        {
+            "eventId": "setLocalizedProperties",
+            "action": "setLocalizedProperties"
+        },
+        {
+            "eventId": "updatesearchStateWithSavedQuery",
+            "action": "updatesearchStateWithSavedQuery"
+        },
+        {
+            "eventId": "importSavedQuery",
+            "action": "importSavedQuery"
+        },
+        {
+            "eventId": "closePanel",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closeDialogPanel"
+        }
+    ],
+    "i18n":
+    {
+        "Import": [ "SearchMessages" ],
+        "uploadFile": [ "awAddDirectiveMessages" ],
+        "Awp0ImportSavedQueryTitle": [ "SearchMessages" ],
+        "importSavedQuerySuccessfulMessage": [ "SearchMessages" ],
+        "importSavedQueryFailedMessage": [ "SearchMessages" ],
+        "importInvalidSavedQueryMessage": [ "SearchMessages" ]
+    }
+}

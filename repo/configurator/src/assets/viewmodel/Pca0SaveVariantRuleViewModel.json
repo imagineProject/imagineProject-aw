@@ -1,0 +1,336 @@
+{
+    "schemaVersion": "1.0.0",
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "actions": {
+        "createVariantRuleBatch": {
+            "actionType":"batchJob",
+            "steps": [ {
+                "action": "toggleSaveInProgressFlag"
+            },
+            {
+                "action": "createVariantRule"
+            }
+         ]
+        },
+        "toggleSaveInProgressFlag": {
+            "actionType": "JSFunction",
+            "method": "toggleBooleanProperty",
+            "inputData": {
+                "saveSVRinProgressFlag": "{{data.saveSVRinProgressFlag}}"
+            },
+            "outputData": {
+                "saveSVRinProgressFlag": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "createVariantRule": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Core-2012-10-DataManagement",
+            "method": "createRelateAndSubmitObjects",
+            "inputData": {
+                "inputs": "{{function:getConfigCreateInput}}"
+            },
+            "outputData": {
+                "variantRule": "{{function:getCreatedVariantRule}}",
+                "ServiceData": "ServiceData"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0FullScreenConfigurationContent.setCreationState"
+                    },
+                    {
+                        "name": "Pca0SaveVariantRule.internalNewVariantRuleCreated",
+                        "eventData": {
+                            "variantRule": "{{data.variantRule}}",
+                            "attachVariantRuleToContent": "{{data.attachVariantRuleToContent.dbValue}}"
+                        }
+                    }
+                ],
+                "failure": [ {
+                        "name": "Pca0FullScreenConfiguration.processPartialError",
+                        "eventData": {
+                            "ServiceData": "{{data.ServiceData}}"
+                        }
+                    },
+                    {
+                        "name": "Pca0SaveVariantRule.toggleSaveInProgressFlag"
+                    }
+                ]
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+
+        "setExpression": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "policy": {
+                "types": "{{function:getPropertyPolicy}}",
+                "override":true
+            },
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{function:getSaveVariantConfigPerspective}}",
+                    "selectedContext": "{{function:getSelectionForVariantContext}}",
+                    "activeVariantRules": [ "{{data.eventMap['Pca0SaveVariantRule.internalNewVariantRuleCreated'].variantRule}}" ],
+                    "scopes": [ "{{function:getCurrentGroup}}" ],
+                    "selectedExpressions": "{{function:getConvertedSelectedExpressionJsonObjectToString}}",
+                    "payloadStrings": "{{function:getPayloadStrings}}",
+                    "requestInfo": {
+                        "requestType": [ "createUpdateVariantRule" ],
+                        "configurationControlMode": [ "{{function:getConfigurationMode}}" ],
+                        "statsCollectorScopeName": [ "{{ctx.state.urlAttributes.configuratorDebugMode !== undefined ? 'createUpdateVariantRule' : '' }}" ],
+                        "profileSettings": [ "{{function:getProfileSettings}}" ],
+                        "attachVariantRuleToContent": [ "{{data.eventMap['Pca0SaveVariantRule.internalNewVariantRuleCreated'].attachVariantRuleToContent ? 'true' : 'false'}}" ],
+                        "ruleDateTranslationMode": [ "{{ctx.fscContext.appliedSettings.ruleDateTranslationMode === undefined ? \"\" : ctx.fscContext.appliedSettings.ruleDateTranslationMode}}" ],
+                        "expressionExpandedState": [ "{{function:getExpressionExpandedState}}" ]
+                    }
+                }
+            },
+            "outputData": {
+                "variantRuleVMO": "{{function:getVariantRuleVMO}}",
+                "ServiceData": "ServiceData"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "awConfigPanel.newVariantRuleCreated"
+                    },
+                    {
+                        "name": "Pca0SaveVariantRule.newVariantRuleCreated",
+                        "eventData": {
+                            "variantRule": "{{data.variantRule}}",
+                            "attachVariantRuleToContent": "{{data.attachVariantRuleToContent.dbValue}}",
+                            "formerNewVariantUid": "subPanelContext.newVariantUid",
+                            "shouldAppendToSelection": "{{subPanelContext.shouldAppendToSelection}}"
+                        }
+                    },
+
+                    {
+                        "name": "Pca0SaveVariant.addUidsOfNewSVRInSelectedObjectsOfSessionStorage",
+                        "eventData": {
+                            "createdSVRUids": "{{data.ServiceData.created}}"
+                        },
+                        "condition": "data.ctx.state.params.cfgSelectedItemsInPage === 'true'"
+                    },
+                    {
+                        "name": "Pca0SaveVariant.resetDirtyFlag",
+                        "eventData": {
+                            "variantRuleVMO": "{{data.variantRuleVMO}}",
+                            "variantContext": "fscContext"
+                        }
+                    },
+                    {
+                        "name": "Pca0SaveVariant.closePanel"
+                    }
+                ],
+                "failure": [ {
+                        "name": "Pca0FullScreenConfiguration.processPartialError",
+                        "eventData": {
+                            "ServiceData": "{{data.ServiceData}}"
+                        }
+                    },
+                    {
+                        "name": "Pca0SaveVariantRule.toggleSaveInProgressFlag"
+                    }
+                ]
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "initializeSaveVariantRulePanelBatchJob": {
+            "actionType":"batchJob",
+            "steps": [ {
+                "action": "initializeSaveVariantRulePanel",
+                "condition": "conditions.showAttachmentChoice"
+            },
+            {
+                "action": "initFromTitle"
+            }
+         ]
+        },
+        "initializeSaveVariantRulePanel": {
+            "actionType": "JSFunction",
+            "method": "initializeSaveVariantRulePanel",
+            "inputData": {
+                "attachVariantRuleToContent": "{{data.attachVariantRuleToContent}}"
+            },
+            "outputData": {
+                "attachVariantRuleToContent": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "initFromTitle": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "currentSVRName": "{{subPanelContext.columnDef.displayName}}"
+            },
+            "outputData": {
+                "fromTitle.dbValue": "",
+                "fromTitle.uiValue": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "addUidsOfNewSVRInSelectedObjectsOfSessionStorage": {
+            "actionType": "JSFunction",
+            "method": "addUidsOfNewSVRInSelectedObjectsOfSessionStorage",
+            "inputData": {
+                "createdSVRUids": "{{parameters.eventData}}"
+            },
+            "deps": "js/pca0CommonUtils"
+        }
+    },
+    "functions": {
+        "getSaveVariantConfigPerspective": {
+            "functionName": "getSaveVariantConfigPerspective",
+            "parameters": [ "{{subPanelContext.variantRuleData}}", "{{subPanelContext.configuratorPerspective}}"]
+        },
+        "getExpressionExpandedState": {
+            "functionName": "getExpressionExpandedState"
+        },
+        "getCurrentGroup": {
+            "functionName": "getCurrentGroup",
+            "parameters": [ "{{subPanelContext.variantContext}}" ]
+        },
+        "getPayloadStrings": {
+            "functionName": "getPayloadStrings"
+        },
+        "getSelectionForVariantContext": {
+            "functionName": "getSelectionForVariantContext",
+            "parameters": [ "{{subPanelContext.variantContext}}","{{subPanelContext.configCtx}}","{{data.eventMap['Pca0SaveVariantRule.internalNewVariantRuleCreated'].attachVariantRuleToContent}}" ]
+        },
+        "getConfigCreateInput": {
+            "functionName": "getConfigCreateInput",
+            "parameters": [
+                "{{data}}",
+                "{{props.subPanelContext.type}}",
+                "{{editHandlers.addPanelEditHandler}}"
+            ]
+        },
+        "getCreatedVariantRule": {
+            "functionName": "getCreatedVariantRule",
+            "parameters": []
+        },
+        "getConfigurationMode": {
+            "functionName": "getConfigurationMode",
+            "parameters": [ "{{subPanelContext.variantContext}}" ]
+        },
+        "getVariantRuleVMO": {
+            "functionName": "getVariantRuleVMO",
+            "parameters": [ "{{subPanelContext.variantContext}}", "{{subPanelContext.variantContext}}" ]
+        },
+        "getIsFscContext": {
+            "functionName": "getIsFscContext",
+            "parameters": [ "{{subPanelContext.variantContext}}" ]
+        },
+        "getProfileSettings": {
+            "functionName": "getProfileSettings",
+            "parameters": [ "{{subPanelContext.variantContext}}", "{{subPanelContext.profileSettings}}" ]
+        },
+        "getConvertedSelectedExpressionJsonObjectToString": {
+            "functionName": "getConvertedSelectedExpressionJsonObjectToString",
+            "parameters": [ "{{ctx.fscContext.selectedExpressions}}", "{{subPanelContext.selectedExpressionsToSaveAsString}}"]
+        },
+        "getPropertyPolicy": {
+            "functionName": "getPropertyPolicy",
+            "parameters": [ "variantConfigurationView" ]
+        }
+    },
+    "ctx": {
+        "fscContext": {
+            "type": "object"
+        },
+        "panelContext": {
+            "type": "object"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "Pca0SaveVariantRule.internalNewVariantRuleCreated",
+            "cacheEventData": true,
+            "action": "setExpression"
+        },
+        {
+            "eventId": "Pca0SaveVariant.addUidsOfNewSVRInSelectedObjectsOfSessionStorage",
+            "action": "addUidsOfNewSVRInSelectedObjectsOfSessionStorage",
+            "inputArgs": {
+                "eventData": "{{eventData.createdSVRUids}}"
+            }
+        },
+        {
+            "eventId": "Pca0SaveVariantRule.toggleSaveInProgressFlag",
+            "action": "toggleSaveInProgressFlag"
+        }
+    ],
+    "conditions": {
+        "showAttachmentChoice": {
+            "expression": "subPanelContext.showAttachmentChoice === undefined || subPanelContext.showAttachmentChoice !== false"
+        },
+        "showFromSection": {
+            "expression": "subPanelContext.showFromSection"
+        }
+    },
+    "data": {
+        "attachVariantRuleToContent": {
+            "displayName": "{{i18n.variantRuleScope}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": false,
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE",
+            "vertical": true,
+            "propertyRadioFalseText": "{{i18n.attachVariantRuleWithConfiguratorContext}}",
+            "propertyRadioTrueText": "{{i18n.attachVariantRuleWithProduct}}"
+        },
+        "fromTitle": {
+            "displayName": "{{i18n.fromTitle}}",
+            "uiValue": "",
+            "dbValue": ""
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "saveSVRinProgressFlag":false
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeSaveVariantRulePanelBatchJob"
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "i18n": {
+        "saveCmd": [
+            "ConfiguratorCommonMessages"
+        ],
+        "attachVariantRuleWithConfiguratorContext": [
+            "FullScreenConfigurationMessages"
+        ],
+        "saveAsCmd": [
+            "ConfiguratorCommonMessages"
+        ],
+        "fromTitle": [
+            "ConfiguratorMessages"
+        ],
+        "attachVariantRuleWithProduct": [
+            "FullScreenConfigurationMessages"
+        ],
+        "variantRuleScope": [
+            "FullScreenConfigurationMessages"
+        ]
+    }
+}

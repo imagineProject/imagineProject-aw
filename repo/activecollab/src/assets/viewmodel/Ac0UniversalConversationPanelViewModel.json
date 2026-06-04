@@ -1,0 +1,226 @@
+{
+    "schemaVersion" : "1.0.0",
+
+    "actions":
+    {
+
+        "doUnivConvPanelInit": {
+            "actionType": "JSFunction",
+            "method": "initUniversalConvPanel",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "panelContext":"{{subPanelContext}}"
+            },
+            "outputData":
+            {
+                "universalData": "universalData",
+                "sharedData": "sharedData"
+            },
+            "deps": "js/Ac0ConversationService"
+        },
+
+        "doUnivConvPanelUnmount": {
+            "actionType": "JSFunction",
+            "method": "teardownUniversalConvPanel",
+            "deps": "js/Ac0ConversationService"
+        },
+
+        "backToDiscussionsAction":{
+            "actionType": "JSFunction",
+            "method": "backToDiscussionsActionData",
+            "inputData": {
+                "sharedData": "{{data.sharedData}}"
+            },
+            "outputData": {
+                "sharedData":""
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+
+        "backToCreateAction":{
+            "actionType": "JSFunction",
+            "method": "backToCreateActionData",
+            "inputData": {
+                "sharedData": "{{data.sharedData}}",
+                "addUserPanelState": "{{addUserPanelState}}"
+            },
+            "outputData": {
+                "sharedData":""
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+        "addUserObjects": {
+            "actionType": "JSFunction",
+            "method": "updateSharedDataWithUsersAndActiveView",
+            "inputData": {
+                "sharedData": "{{data.sharedData}}",
+                "userObjects": "{{addUserPanelState.selectedUsers}}"
+            },
+            "outputData": {
+                "sharedData":""
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+        "Ac0ConvCreateNewConvPanel": {
+            "actionType": "JSFunction",
+            "method": "navigateToCreateCollabObjPanel",
+            "inputData": {
+                "sharedData": "{{data.sharedData}}"
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+        "resetPeoplePickerCriteria": {
+            "actionType": "JSFunction",
+            "method": "resetPeoplePickerCriteria",
+            "inputData": {
+                "userObjects": "{{addUserPanelState}}"
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+        "doAddPartcipantsToParticipantList": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "addUserObjects"
+            },
+            {
+                "action": "Ac0ConvCreateNewConvPanel"
+            },
+            {
+                "action": "resetPeoplePickerCriteria"
+            }
+        ]
+        }
+
+    },
+    "data": {
+        "sharedData": {
+            "initialValues": {
+                "activeView": "",
+                "addedSourceObjects": [],
+                "addedUserObjects": [],
+                "ckeText": "",
+                "isTracked": false,
+                "isPrivate": false,
+                "trackedStatus": "",
+                "trackedPriority": "",
+                "snapshotBeingEdit":null,
+                "renderTextbox":false,
+                "currentSelectedSnapshot":null,
+                "updateSnapshotOnDiscussion":false,
+                "beingEdited": false,
+                "replying": false
+            },
+            "meta": {
+                "activeView": {
+                    "field": "true",
+                    "type": "STRING"
+                },
+                "addedSourceObjects": {
+                    "field": true,
+                    "type": "OBJECTARRAY"
+                },
+                "addedUserObjects": {
+                    "field": true,
+                    "type": "OBJECTARRAY"
+                },
+                "ckeText": {
+                    "field": true,
+                    "type": "STRING"
+                },
+                "isTracked": {
+                    "field": true,
+                    "type": "BOOLEAN"
+                },
+                "isPrivate": {
+                    "field": true,
+                    "type": "BOOLEAN"
+                },
+                "trackedStatus": {
+                    "field": true,
+                    "type": "STRING"
+                },
+                "trackedPriority": {
+                    "field": true,
+                    "type": "STRING"
+                },
+                "beingEdited": {
+                    "field": true,
+                    "type": "BOOLEAN"
+                }
+            }
+        },
+        "addUserPanelState": {
+            "initialValues": {
+                "provider": "Awp0PeoplePickerProvider",
+                "selectionModelMode": "multiple",
+                "criteria": {
+                    "providerContentType": "GroupMember",
+                    "searchString": "*",
+                    "selectedObject": "",
+                    "searchSubGroup": "true",
+                    "participantType": "",
+                    "group": "",
+                    "role": ""
+                },
+                "selectedUsers": "",
+                "isAddButtonNeeded": true
+            },
+            "meta": {
+                "selectedUsers": {
+                    "field": "true",
+                    "type": "OBJECTARRAY"
+                }
+            }
+        },
+        "universalData": {
+            "selectedObj": {}
+        }
+    },
+
+    "functions":
+    {
+    },
+    "dataProviders":
+    {
+
+    },
+    "onEvent": [
+    ],
+
+    "lifecycleHooks": {
+        "onMount": "doUnivConvPanelInit",
+        "onUnmount": "doUnivConvPanelUnmount",
+        "onUpdate": {
+            "action": "doAddPartcipantsToParticipantList",
+            "observers": [ "viewModel.atomicData.addUserPanelState.selectedUsers" ]
+        }
+    },
+
+    "i18n":
+    {
+        "conversation": [ "ActiveCollabDeclarativeMessages" ],
+        "editProductSnapshot":[ "ActiveCollabDeclarativeMessages" ],
+        "addSource": [  "ActiveCollabDeclarativeMessages" ],
+        "addParticipant": [  "ActiveCollabDeclarativeMessages" ],
+        "newDiscussion": [ "ActiveCollabDeclarativeMessages" ],
+        "editHeaderDiscussion": [ "ActiveCollabDeclarativeMessages" ]
+    },
+    "conditions":{
+        "isHostedComponent": {
+            "expression": "ctx.plcomponent_site || ctx.aw_hosting_state.currentHostedComponentId === 'com.siemens.splm.clientfx.tcui.xrt.published.Discussion'"
+        },
+        "hideDiscussionBackButton":
+        {
+            "expression":"(ctx.sublocation.clientScopeURI === 'Ac0CollaborationFeed' || ctx.sublocation.clientScopeURI === 'Ac0CollaborationActions')"
+        },
+        "isEditDiscussion":
+        {
+            "expression":"ctx.Ac0ConvCtx.editConvCtx"
+        }
+    },
+    "ctx": {
+        "plcomponent_site": null
+    }
+
+}

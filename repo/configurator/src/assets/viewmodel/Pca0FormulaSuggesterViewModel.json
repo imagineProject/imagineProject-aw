@@ -1,0 +1,594 @@
+{
+    "schemaVersion": "1.0.0",
+    "props": {
+        "config-perspective-uid": {
+            "type": "string"
+        },
+        "config-context-uid": {
+            "type": "string"
+        },
+        "editor-object": {
+            "type": "object"
+        },
+        "formula": {
+            "type": "object"
+        },
+        "formula-suggester-context": {
+            "type": "object"
+        }
+    },
+    "data": {
+        "showInternalFormulaToggleButton": {
+            "displayName": "{{i18n.showInternalFormula}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": false,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "internalFormula": "",
+        "canUpdateInitialFormula": true,
+        "editorContent": {
+            "dbValue": " "
+        },
+        "config": {
+            "language": "tcFormulaLanguage",
+            "theme": "tcFormulaTheme",
+            "TextEditorCursorBlinkingStyle": "Blink",
+            "ScrollbarVisibility": "Auto",
+            "options": {
+                "autoClosingBrackets": "beforeWhitespace",
+                "automaticLayout": true,
+                "readOnly": true,
+                "lineNumbers": "off",
+                "domReadOnly": false,
+                "wordWrap": "on",
+                "minimap": {
+                    "enabled": false
+                },
+                "bracketPairColorization": {
+                    "enabled": true
+                },
+                "fontFamily": "system-ui",
+                "glyphMargin": false,
+                "folding": false,
+                "lineDecorationsWidth": 0,
+                "lineNumbersMinChars": 0,
+                "scrollBeyondLastLine": false,
+                "fixedOverflowWidgets": true,
+                "quickSuggestions": true,
+                "suggestOnTriggerCharacters": "{{editorObjectRef.value.useIntellisense === undefined ? true : editorObjectRef.value.useIntellisense}}"
+            }
+        },
+        "monacoObject": {
+            "initialValues": {
+                "globalConfig": null
+            },
+            "meta": {}
+        },
+        "editorRef": {
+            "initialValues": {
+                "editor": null
+            },
+            "meta": {}
+        }
+    },
+    "i18n": {
+        "showInternalFormula": [
+            "ConfiguratorCommonMessages"
+        ],
+        "formulaSyntaxCheckSuccessMessage": [
+            "ConfiguratorCommonMessages"
+        ]
+    },
+    "actions": {
+        "cachePrimaryBusinessRelevantAttribute": {
+            "actionType": "JSFunctionAsync",
+            "method": "cachePrimaryBusinessRelevantAttribute",
+            "inputData": {
+                "monacoObject": "{{fields.monacoObject}}"
+            },
+            "outputData": {
+                "isFormulaWithName": ""
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "initializeEditor": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "initializeEditorProps"
+                },
+                {
+                    "action": "cachePreferences"
+                },
+                {
+                    "action": "cachePrimaryBusinessRelevantAttribute"
+                },
+                {
+                    "action": "handleEditContextChange"
+                }
+            ]
+        },
+        "initializeEditorProps": {
+            "actionType": "JSFunction",
+            "method": "initializeEditorProps",
+            "inputData": {
+                "formula": "{{props.formula}}",
+                "monacoObject": "{{fields.monacoObject}}",
+                "monacoEditorInstance": "{{fields.editorRef}}",
+                "editorObject": "{{props.editorObject}}"
+            },
+            "outputData": {
+                "editorContent.dbValue": "result.editorString",
+                "internalFormula": "result.internalFormula",
+                "completionProviderHandle": "result.completionProviderHandle",
+                "initialDisplayFormula": "result.initialDisplayFormula",
+                "initialInternalFormula": "result.initialInternalFormula"
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "setTokenizerForTcFormulaLanguage": {
+            "actionType": "JSFunction",
+            "method": "setTokenizerForTcFormulaLanguage",
+            "inputData": {
+                "monacoObject": "{{fields.monacoObject}}",
+                "language": "tcFormulaLanguage",
+                "isIntellisenseOn": "{{props.editorObject.value.useIntellisense}}"
+            },
+            "outputData": {
+                "isTokenizerSetForEditor": ""
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "cachePreferences": {
+            "actionType": "JSFunction",
+            "method": "cachePreferences",
+            "inputData": {
+                "preferences": "{{ctx.preferences}}",
+                "monacoObject": "{{fields.monacoObject}}"
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "updateEditor": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "updateEditorContent",
+                "condition": "data.canUpdateInitialFormula === true"
+            } ]
+        },
+        "updateEditorContent": {
+            "actionType": "JSFunction",
+            "method": "updateEditorContent",
+            "inputData": {
+                "formula": "{{props.formula}}",
+                "editorRef": "{{fields.editorRef}}"
+            },
+            "outputData": {
+                "editorContent.dbValue": "result.editorString",
+                "internalFormula": "result.internalFormula",
+                "initialDisplayFormula": "result.initialDisplayFormula",
+                "initialInternalFormula": "result.initialInternalFormula"
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "saveFormula": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "changeCanUpdateInitialFormulaValue",
+                    "condition": "data.canUpdateInitialFormula === true"
+                },
+                {
+                    "action": "updateInternalFormula",
+                    "condition": "conditions.isVariabilityDataCached  || !conditions.isIntellisenseOn"
+                },
+                {
+                    "action": "updateFormulaObject",
+                    "condition": "data.internalFormulaUpdated === true"
+                },
+                {
+                    "action": "changeEditContextToEditing",
+                    "condition": "data.internalFormulaUpdated === false"
+                }
+            ]
+        },
+        "changeEditContextToEditing": {
+            "actionType": "JSFunction",
+            "method": "changeFormulaSuggesterEditContext",
+            "inputData": {
+                "editorObject":"{{props.editorObject}}",
+                "editContext":"editing"
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "processEditorContentChange": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "setIsFormulaDirty",
+                    "condition": "conditions.setIsFormulaDirty "
+                },
+                {
+                    "action": "updateInternalFormula",
+                    "condition": "( conditions.isVariabilityDataCached && conditions.isInternalFormulaToggleButtonSelected )  || !conditions.isIntellisenseOn "
+                },
+                {
+                    "action": "handleEditorContentFlag"
+                },
+                {
+                    "action": "removeErrorMarkers",
+                    "condition": "data.errorMarkers.length>0"
+                }
+            ]
+        },
+        "setIsFormulaDirty": {
+            "actionType": "JSFunction",
+            "method": "setIsFormulaDirty",
+            "inputData": {
+                "editorObject": "{{props.editorObject}}",
+                "editorString": "{{data.editorContent.dbValue}}",
+                "initialDisplayFormula": "{{data.initialDisplayFormula}}",
+                "initialInternalFormula": "{{data.initialInternalFormula}}"
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "removeErrorMarkers": {
+            "actionType": "JSFunction",
+            "method": "removeErrorMarkers",
+            "inputData": {
+                "monacoObject": "{{fields.monacoObject}}"
+            },
+            "outputData": {
+                "errorMarkers": ""
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "handleEditorContentFlag": {
+            "actionType": "JSFunction",
+            "method": "handleEditorContentFlag",
+            "inputData": {
+                "editorObject": "{{props.editorObject}}",
+                "editorString": "{{data.editorContent.dbValue}}"
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "showInternalFormula": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "updateEditorLayout",
+                "condition": "conditions.isFlexLayout"
+            },{
+                "action": "updateInternalFormula",
+                "condition": "conditions.isVariabilityDataCached && conditions.isInternalFormulaToggleButtonSelected"
+            } ]
+        },
+        "updateEditorLayout": {
+            "actionType": "JSFunction",
+            "method": "updateEditorLayout",
+            "inputData": {
+                "internalFormulaVisiblity": "{{data.showInternalFormulaToggleButton.dbValue}}"
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "changeCanUpdateInitialFormulaValue": {
+            "actionType": "JSFunction",
+            "method": "toggleBooleanProperty",
+            "inputData": {
+                "canUpdateInitialFormula": "{{data.canUpdateInitialFormula}}"
+            },
+            "outputData": {
+                "canUpdateInitialFormula": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "updateInternalFormula": {
+            "actionType": "JSFunction",
+            "method": "updateInternalFormula",
+            "inputData": {
+                "editorString": "{{data.editorContent.dbValue}}",
+                "isIntellisenseOn": "{{props.editorObject.value.useIntellisense}}",
+                "variabilityData": "{{data.variabilityData}}",
+                "displayStrings": "{{data.displayStrings}}",
+                "isFormulaWithName": "{{data.isFormulaWithName}}"
+            },
+            "outputData": {
+                "internalFormula": "result.internalFormula",
+                "internalToDisplayFormulaMap": "result.internalToDisplayFormulaMap",
+                "internalFormulaUpdated": "result.internalFormulaUpdated"
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "updateFormulaObject": {
+            "actionType": "JSFunction",
+            "method": "updateFormulaObject",
+            "inputData": {
+                "internalFormula": "{{data.internalFormula}}",
+                "editorString": "{{data.editorContent.dbValue}}",
+                "formulaRef": "{{props.formula}}"
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "cacheDisplayStrings": {
+            "actionType": "JSFunctionAsync",
+            "method": "cacheDisplayStrings",
+            "inputData": {
+                "monacoObject": "{{fields.monacoObject}}"
+            },
+            "outputData": {
+                "displayStrings": "result.displayStrings",
+                "isDisplayStringCached": "result.isDisplayStringCached"
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "cacheVariabilityData": {
+            "actionType": "JSFunctionAsync",
+            "method": "cacheVariabilityData",
+            "inputData": {
+                "monacoObject": "{{fields.monacoObject}}",
+                "displayStrings": "{{data.displayStrings}}",
+                "configPerspectiveUid": "{{props.configPerspectiveUid}}",
+                "configContextUid": "{{props.configContextUid}}"
+            },
+            "outputData": {
+                "variabilityData": "result.variabilityData",
+                "isVariabilityCached": "result.isVariabilityCached",
+                "configPerspectiveUid": "result.configPerspectiveUid"
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "disposeCompletionProviderHandle": {
+            "actionType": "JSFunction",
+            "method": "disposeCompletionProviderHandle",
+            "inputData": {
+                "completionProviderHandle": "{{data.completionProviderHandle}}"
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "validateFormulaSyntax": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "updateInternalFormula",
+                    "condition": "( conditions.isVariabilityDataCached || !conditions.isIntellisenseOn ) && props.editorObject.value.syntaxValidationInProgress === true"
+                },
+                {
+                    "action": "validateFormulaSyntaxUsingConvertVariantExpressionsSoa",
+                    "condition": "props.editorObject.value.syntaxValidationInProgress === true"
+                }
+            ]
+        },
+        "validateFormulaSyntaxUsingConvertVariantExpressionsSoa": {
+            "actionType": "TcSoaService",
+            "serviceName": "Configurator-2023-06-ConfiguratorManagement",
+            "method": "convertVariantExpressions",
+            "inputData": {
+                "perspective": "{{function:getPerspectiveForFormulaSyntaxCheck}}",
+                "variantExpressions": [
+                    "{{data.internalFormula}}"
+                ],
+                "expressionFormat": "json_grid",
+                "requestInfo": []
+            },
+            "outputData": {
+                "syntaxCheckResponse": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0FormulaSuggester.showFormulaSyntaxErrorInEditor"
+                } ],
+                "failure": [ {
+                    "name": "Pca0FormulaSuggester.showFormulaSyntaxErrorInEditor"
+                } ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "formulaSyntaxCheckSuccessMessage"
+                } ],
+                "failure": [ {
+                    "message": "displayErrorCode"
+                } ]
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "showFormulaSyntaxErrorInEditor": {
+            "actionType": "JSFunction",
+            "method": "showFormulaSyntaxErrorInEditor",
+            "inputData": {
+                "editorObject": "{{props.editorObject}}",
+                "monacoObject": "{{fields.monacoObject}}",
+                "internalToDisplayFormulaMap": "{{data.internalToDisplayFormulaMap}}",
+                "syntaxCheckErrors": "{{data.syntaxCheckResponse.ServiceData.partialErrors}}"
+            },
+            "outputData": {
+                "errorMarkers": ""
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "handleEditContextChange": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "handleEditContextChangeBatchJob",
+                "condition": "fields.monacoObject.editor !== undefined"
+            } ]
+        },
+        "handleEditContextChangeBatchJob": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "cacheDisplayStrings",
+                "condition": "conditions.cacheDisplayStrings"
+            }, {
+                "action": "cacheVariabilityData",
+                "condition": "conditions.cacheVariabilityData"
+            }, {
+                "action": "setTokenizerForTcFormulaLanguage",
+                "condition": "conditions.setTokenizerForTcFormulaLanguage"
+            }, {
+                "action": "handleEditorViewModeAndContent"
+            }, {
+                "action": "changeCanUpdateInitialFormulaValue",
+                "condition": "data.canUpdateInitialFormula === false && props.editorObject.value.editContext !== 'saveInProgress'"
+            }, {
+                "action": "saveFormula",
+                "condition": "props.editorObject.value.editContext === 'saveInProgress'"
+            } ]
+        },
+        "handleEditorViewModeAndContent": {
+            "actionType": "JSFunction",
+            "method": "handleEditorViewModeAndContent",
+            "inputData": {
+                "vmData": "{{data}}",
+                "editorObject": "{{props.editorObject}}"
+            },
+            "outputData": {
+                "suggesterEditContext": "result.suggesterEditContext",
+                "editorContent.dbValue": "result.editorString",
+                "internalFormula": "result.internalFormula"
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "clearFormula": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "clearFormulaInSuggester",
+                "condition": "props.editorObject.value.clearFormulaInProgress === true"
+            } ]
+        },
+        "clearFormulaInSuggester": {
+            "actionType": "JSFunction",
+            "method": "clearFormulaInSuggester",
+            "inputData": {
+                "editorObject": "{{props.editorObject}}"
+            },
+            "outputData": {
+                "editorContent.dbValue": ""
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "handleIntellisenseSettingChange": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "updateIntellisenseSetting"
+            }, {
+                "action": "setTokenizerForTcFormulaLanguage"
+            } ]
+        },
+        "updateIntellisenseSetting": {
+            "actionType": "JSFunction",
+            "method": "updateIntellisenseSetting",
+            "inputData": {
+                "vmData": "{{data}}",
+                "editorObject": "{{props.editorObject}}"
+            },
+            "deps": "js/pca0FormulaSuggesterService"
+        },
+        "reloadVariabilityData": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "cacheVariabilityData",
+                "condition": "data.isVariabilityCached === true"
+            } ]
+        }
+    },
+    "functions": {
+        "getPerspectiveForFormulaSyntaxCheck": {
+            "functionName": "getPerspectiveForFormulaSyntaxCheck",
+            "parameters": [ "{{props.configPerspectiveUid}}", "{{data.configPerspectiveUid}}}" ]
+        }
+    },
+    "conditions": {
+        "isInternalFormulaToggleButtonSelected": {
+            "expression": "data.showInternalFormulaToggleButton.dbValue"
+        },
+        "isVariabilityDataCached": {
+            "expression": "(data.variabilityData.familyNodes !== undefined && data.variabilityData.featureNodes !== undefined)"
+        },
+        "showSuggesterCommandBar": {
+            "expression": "props.editorObject.value.showFormulaSuggesterCommandBar === undefined || props.editorObject.value.showFormulaSuggesterCommandBar === true"
+        },
+        "isFullScreenSupported": {
+            "expression": "props.editorObject.value.isFullScreenSupported === true"
+        },
+        "setIsFormulaDirty": {
+            "expression": "(props.editorObject.value.editContext === 'editing' && props.editorObject.value.isDirtyFormula !== true) || (props.editorObject.value.editContext === 'readOnly' && props.editorObject.value.isDirtyFormula !== false)"
+        },
+        "cacheDisplayStrings": {
+            "expression": "data.isDisplayStringCached !== true && props.editorObject.value.editContext === 'editing' && conditions.isIntellisenseOn"
+        },
+        "cacheVariabilityData": {
+            "expression": "data.isVariabilityCached !== true && props.editorObject.value.editContext === 'editing' && conditions.isIntellisenseOn"
+        },
+        "setTokenizerForTcFormulaLanguage": {
+            "expression": "data.isTokenizerSetForEditor !== true && props.editorObject.value.editContext === 'editing'  && conditions.isIntellisenseOn"
+        },
+        "isIntellisenseOn": {
+            "expression": "props.editorObject.value.useIntellisense === undefined || props.editorObject.value.useIntellisense === true"
+        },
+        "isFlexLayout": {
+            "expression": "props.editorObject.value.flexLayout === undefined || props.editorObject.value.flexLayout === true"
+        }
+    },
+    "onEvent": [ {
+        "eventId": "Pca0FormulaSuggester.showFormulaSyntaxErrorInEditor",
+        "action": "showFormulaSyntaxErrorInEditor",
+        "condition": "props.editorObject.value.syntaxValidationInProgress === true"
+    } ],
+    "messages": {
+        "displayErrorCode": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "formulaSyntaxCheckSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.formulaSyntaxCheckSuccessMessage}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [ {
+                "action": "processEditorContentChange",
+                "observers": [
+                    "viewModel.data.editorContent.dbValue"
+                ]
+            },
+            {
+                "action": "initializeEditor",
+                "observers": [
+                    "fields.monacoObject.editor"
+                ]
+            },
+            {
+                "action": "updateEditor",
+                "observers": [
+                    "props.formula"
+                ]
+            }, {
+                "action": "handleEditContextChange",
+                "observers": [
+                    "props.editorObject.value.editContext"
+                ]
+            }, {
+                "action": "showFormulaSyntaxErrorInEditor",
+                "observers": [
+                    "props.editorObject.value.errors"
+                ]
+            }, {
+                "action": "validateFormulaSyntax",
+                "observers": [
+                    "props.editorObject.value.syntaxValidationInProgress"
+                ]
+            }, {
+                "action": "clearFormula",
+                "observers": [
+                    "props.editorObject.value.clearFormulaInProgress"
+                ]
+            }, {
+                "action": "handleIntellisenseSettingChange",
+                "observers": [
+                    "props.editorObject.value.useIntellisense"
+                ]
+            }, {
+                "action": "reloadVariabilityData",
+                "observers": [
+                    "props.editorObject.value.reloadVariabilityDataKey"
+                ]
+            }
+        ],
+        "onUnmount": "disposeCompletionProviderHandle"
+    }
+}

@@ -1,0 +1,147 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "revealAction":
+        {
+            "actionType": "dataProvider",
+            "method": "imageDataProvider"
+        },
+        "updateSelectAll": {
+            "actionType": "JSFunction",
+            "method": "updateSelectAll",
+            "inputData": {
+                "searchFolder": "{{subPanelContext.searchFolder}}"
+            },
+            "deps": "js/Awp0SearchFolderOverviewService"
+        },
+        "updateMultiSelect": {
+            "actionType": "JSFunction",
+            "method": "updateMultiSelectEnabled",
+            "inputData": {
+                "searchFolder": "{{subPanelContext.searchFolder}}"
+            },
+            "deps": "js/Awp0SearchFolderOverviewService"
+        },
+        "loadData":
+        {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "attributesToInflate": [ "object_name", "object_desc", "project", "project_id" ],
+                        "maxToLoad": "{{function:getDefaultPageSize}}",
+                        "maxToReturn": "{{function:getDefaultPageSize}}",
+                        "providerName": "{{subPanelContext.context.context.search.provider}}",
+                        "searchCriteria":{
+                            "objectSet": "contents.WorkspaceObject",
+                            "parentUid": "{{subPanelContext.selected.uid}}",
+                            "returnTargetObjs": "true",
+                            "showConfiguredRev":"true"
+                        },
+                        "startIndex": "{{data.dataProviders.imageDataProvider.startIndex}}"
+                    },
+                    "inflateProperties": true,
+                    "noServiceData": false
+                },
+                "1": {
+                    "types" : [
+                        {
+                            "name" : "Awp0ProjectFolder",
+                            "properties": [
+                                {
+                                    "name" : "project",
+                                    "modifiers": [ {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    } ]
+                                }
+                            ]
+                        }
+
+                    ]
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}"
+            }
+        }
+    },
+    "dataProviders":
+    {
+        "imageDataProvider":
+        {
+            "action": "loadData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple",
+            "inputData":{
+                "selectionData": "{{subPanelContext.selectionData}}",
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            },
+            "selectionModel": {
+                "multiSelectEnabled": true
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+    "data": {
+    },
+    "functions": {
+        "getSearchSortCriteria": {
+            "functionName": "getSearchSortCriteria",
+            "parameters": [
+                "{{data.columnProviders.clientScopeUI.sortCriteria}}",
+                "{{subPanelContext.context.searchState}}"
+            ]
+        },
+        "processSearchCriteria": {
+            "functionName": "processSearchCriteria",
+            "parameters": [
+                "{{subPanelContext.context.searchState}}"
+            ]
+        },
+        "getInternalPropertyName": {
+            "functionName": "getInternalPropertyName",
+            "parameters": [
+                "{{subPanelContext.context.context.search.provider}}"
+            ]
+        },
+        "processOutput": {
+            "functionName": "processOutput2",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.searchFolder}}"
+            ]
+        },
+        "getDefaultPageSize":
+        {
+            "functionName": "getDefaultPageSize",
+            "parameters":
+            [
+                 "{{ctx.preferences.AWC_DefaultPageSize}}"
+            ],
+            "deps": "js/awSearchService"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "imageDataProvider.selectAll",
+            "action": "updateSelectAll"
+        },
+        {
+            "eventId": "imageDataProvider.selectNone",
+            "action": "updateSelectAll"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "revealAction"
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

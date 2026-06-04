@@ -1,0 +1,176 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "navigateToAddRemChangeSchPrgView": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "Saw1AddRemoveSchedulesProgramViewDataset"
+            }
+        },
+        "reveal": {
+            "actionType": "dataProvider",
+            "methods": [
+                "availableSchedules"
+            ]
+        },
+        "getAvailableSchedules": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}"
+                    },
+                    "searchInput": {
+                        "attributesToInflate": "",
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0SavedQuerySearchProvider",
+                        "searchCriteria": {
+                            "queryName": "Schedules...",
+                            "searchID": "SCHEDULETEMPLATES",
+                            "totalObjectsFoundReportedToClient": "{{function:getTotalObjFound}}",
+                            "typeOfSearch": "ADVANCED_SEARCH",
+                            "utcOffset": "0",
+                            "lastEndIndex": "{{function:getLastIndex}}",
+                            "is_template": "false",
+                            "is_baseline": "false",
+                            "Schedule Name": "{{function:getFilterValue}}"
+                        },
+                        "searchFilterFieldSortType": "Priority",
+                        "searchFilterMap6": "{{ctx.search.activeFilterMap}}",
+                        "startIndex": "{{data.dataProviders.availableSchedules.startIndex}}"
+                    },
+                    "inflateProperties": false
+                }
+            },
+            "outputData": {
+                "searchResults": "{{function:filterSearchResults}}"
+            }
+        },
+        "isProgramViewUpdatedAction": {
+            "actionType": "JSFunction",
+            "method": "isProgramViewUpdated",
+            "inputData": {
+                "programViewConfiguration": "{{ctx.programViewConfiguration}}",
+                "dataCurrentSchedules": "{{data.currentSchedules}}"
+            },
+            "outputData": {
+                "isPrograViewUpdated": ""
+            },
+            "deps": "js/Saw1CreateProgramViewDatasetService"
+        },
+        "addSchedules": {
+            "actionType": "JSFunction",
+            "method": "addSchedules",
+            "inputData": {
+                "selectedScheduleObjects": "{{data.dataProviders.availableSchedules.selectedObjects}}",
+                "sharedData": "{{subPanelContext.sharedData}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "navigateToAddRemChangeSchPrgView"
+                    }
+                ]
+
+            },
+            "deps": "js/Saw1CreateProgramViewDatasetService"
+        }
+    },
+    "conditions": {
+        "showAddButton": {
+            "expression": "data.dataProviders.availableSchedules.selectedObjects.length > 0"
+        }
+    },
+    "functions": {
+        "getFilterValue": {
+            "functionName": "getFilterValue",
+            "parameters": [
+                "{{data.filterBox.dbValue}}"
+            ],
+            "deps": "js/Saw1CreateProgramViewDatasetService"
+        },
+        "isProgramViewUpdated": {
+            "functionName": "isProgramViewUpdated",
+            "parameters": [
+                "{{ctx}",
+                "{{data}}"
+            ]
+        },
+        "getLastIndex": {
+            "functionName": "getLastIndex",
+            "parameters": [
+                "{{data.dataProviders.availableSchedules.startIndex}}",
+                "{{data.lastEndIndex}}"
+            ],
+            "deps": "js/Saw1CreateProgramViewDatasetService"
+        },
+        "filterSearchResults": {
+            "functionName": "filterSearchResults",
+            "parameters": [
+                "{{subPanelContext.sharedData.selectedSchedules}}",
+                "{{data.totalFound}}",
+                "{{data.totalLoaded}}",
+                "{{data.lastEndIndex}}",
+                "{{data.dataProviders.availableSchedules.selectionModel}}"
+            ],
+            "deps": "js/Saw1CreateProgramViewDatasetService"
+        },
+        "getTotalObjFound": {
+            "functionName": "getTotalObjFound",
+            "parameters": [
+                "{{data.dataProviders.availableSchedules.startIndex}}",
+                "{{data.totalFound}}"
+            ],
+            "deps": "js/Saw1CreateProgramViewDatasetService"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "filterSearchResultsEvent",
+            "action": "filterSearchResultsAction"
+        },
+        {
+            "eventId": "navigateToAddRemChangeSchPrgView",
+            "action": "navigateToAddRemChangeSchPrgView"
+        }
+    ],
+    "data": {
+        "filterBox": {
+            "displayName": "{{i18n.filtersCommandTitle}}",
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "currentSchedules":[]
+    },
+    "dataProviders": {
+        "availableSchedules": {
+            "action": "getAvailableSchedules",
+            "selectionModelMode": "multiple",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "totalLoaded": "{{data.totalLoaded}}",
+            "noResultsFound" : "{{i18n.noResultsFound}}",
+            "commands": {}
+        }
+    },
+    "i18n": {
+        "add": [
+            "ScheduleManagerMessages"
+        ],
+        "filtersCommandTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "noResultsFound": [
+            "InboxMessages"
+        ]
+    },
+    "lifecycleHooks": {
+        "onMount": "reveal"
+    }
+}

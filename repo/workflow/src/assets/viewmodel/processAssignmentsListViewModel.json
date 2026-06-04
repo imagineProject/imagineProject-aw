@@ -1,0 +1,144 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports": [],
+    "actions":
+    {
+        "reveal":
+        {
+            "actionType": "dataProvider",
+            "method": "listDataProvider"
+        },
+        "search":
+        {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData":
+            {
+                "0": {
+                    "searchInput":
+                    {
+                        "attributesToInflate": [ "object_name", "owning_user", "resources", "shared", "task_templates", "state" ],
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "{{subPanelContext.provider.context.search.provider}}",
+                        "searchCriteria": "{{subPanelContext.provider.context.search.criteria}}",
+                        "searchFilterFieldSortType": "{{subPanelContext.provider.context.search.sortType}}",
+                        "searchFilterMap6": "{{subPanelContext.provider.context.search.activeFilterMap}}",
+                        "searchSortCriteria": "{{ctx.sublocation.sortCriteria}}",
+                        "focusObjUid": "{{ctx.newlyCreatedAssignmentListObjUid}}",
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.listDataProvider.startIndex}}"
+                        }
+                    }
+                },
+                "1": {
+                    "types": [ {
+                        "name": "BusinessObject",
+                        "properties": [ {
+                            "name": "awp0CellProperties"
+                        } ]
+                    } ]
+                }
+            },
+            "outputData":
+            {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "output": "{{function:processOutput}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "selectCreatedAssignmentListObject",
+                    "condition": "ctx.newlyCreatedAssignmentListObjUid"
+                } ],
+                "failure": [ {
+                    "name": "completedPerformSearch",
+                    "condition": "ctx.newlyCreatedAssignmentListObjUid"
+                } ]
+            }
+        },
+        "selectAssignmentListObject" : {
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.listDataProvider.selectionModel}}",
+                "newSelection": "{{ctx.newlyCreatedAssignmentListObjUid}}"
+            },
+            "deps": "js/selectionModelFactory"
+        },
+        "unregisterContext": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "newlyCreatedAssignmentListObjUid"
+            }
+        },
+        "createAssignmentListLinkCommand": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/command.service",
+            "method": "executeCommand",
+            "inputData": {
+                "0": "Awp0CreateProcessAssignmentList",
+                "1": "",
+                "2": "",
+                "3": "",
+                "4": "{{parameters.commandActionExecutor.runActionWithViewModel}}"
+            }
+        }
+    },
+
+    "dataProviders":
+    {
+        "listDataProvider":
+        {
+            "action": "search",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+    "conditions": {
+        "isMyPalListOrGroupList": {
+            "expression": "subPanelContext.provider.name === 'myPalLists' || subPanelContext.provider.name === 'myGroupPalLists'"
+        },
+        "isOtherPalList": {
+            "expression": "subPanelContext.provider.name === 'otherPalLists'"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount" : "reveal"
+    },
+    "functions": {
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.searchState}}"
+            ],
+            "deps": "js/awSearchService"
+        }
+    },
+    "onEvent": [{
+        "eventId": "dataProvider.reset",
+        "action": "reveal"
+    }, {
+        "eventId": "selectCreatedAssignmentListObject",
+        "action": "selectAssignmentListObject"
+    }, {
+        "eventId": "completedPerformSearch",
+        "action": "unregisterContext"
+    }],
+    "i18n": {
+        "createProcessAssignmentList": [ "WorkflowPalMgmtMessages" ],
+        "nothingAddedYet":["WorkflowPalMgmtMessages"],
+        "tryCreatingNewlist":["WorkflowPalMgmtMessages"],
+        "OtherPalListHint":["WorkflowPalMgmtMessages"],
+        "noResultsFound":["WorkflowPalMgmtMessages"]
+    }
+}

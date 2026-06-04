@@ -1,0 +1,346 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "executeTreeEditSummary",
+            "cacheEventData": true,
+            "action": "executeTreeEditSummaryBatchAction"
+        },
+        {
+            "eventId": "editHandlerStateChange",
+            "condition": "state === 'starting'",
+            "action": "setRulePropsEditable"
+        },
+        {
+            "eventId": "treeOverview.resetOnCancelEdits",
+            "action": "resetOnCancelEdits"
+        },
+        {
+            "eventId": "treeOverview.bindProperties",
+            "action": "bindProperties"
+        }
+    ],
+    "actions": {
+        "onRulePWASelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "bindProperties",
+                    "condition": "!ctx.ACCESS_EDIT_CONTEXT._editing"
+                },
+                {
+                    "action": "leaveEditConfirmation",
+                    "condition": "ctx.ACCESS_EDIT_CONTEXT._editing"
+                }
+            ]
+        },
+        "leaveEditConfirmation": {
+            "actionType": "JSFunctionAsync",
+            "method": "leaveConfirmation",
+            "events": {
+                "success": [
+                    {
+                        "name": "treeOverview.resetOnCancelEdits"
+                    }
+                ]
+            },
+            "deps": "js/editHandlerService"
+        },
+        "bindProperties": {
+            "actionType": "JSFunction",
+            "method": "bindProperties",
+            "inputData": {
+                "context": "{{props.subPanelContext}}",
+                "fields": "{{fields}}"
+            },
+            "deps": "js/Am0RuleTreeEditService"
+        },
+        "executeTreeEditSummaryBatchAction":{
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "executeTreeEditSummary"
+                },{
+                    "action":"callConditionArgsProvider"
+                },
+                {
+                    "action": "getRuleValueLovRequired"
+                }
+             ]
+        },
+        "executeTreeEditSummary": {
+            "actionType": "JSFunction",
+            "method": "execute",
+            "deps": "js/Am0RuleTreeEditService",
+            "inputData": {
+                "declViewModel": "{{data}}"
+            }
+        },
+        "loadConditionNames": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2022-06-AwAccessManager",
+            "method": "getAMConditionNames",
+            "inputData": {
+                "searchString": "{{function:getCondtionSearchString}}",
+                "startIndex": "{{data.dataProviders.conditionProvider.startIndex}}",
+                "pageSize": 50
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "conditionValues": "{{function:getConditionNames}}"
+            },
+            "deps": "js/Am0AddRuleCommandService"
+        },
+        "notifyConditionSelected": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearArgValue",
+                    "condition": "data.xrtState.xrtVMO.props.rule_name.dbValue !== data.selectedCondition"
+                },
+                {
+                    "action": "callConditionArgsProvider",
+                    "condition": "data.xrtState.xrtVMO.props.rule_name.dbValue !== data.selectedCondition"
+                },
+                {
+                    "action": "getRuleValueLovRequired"
+                },
+                {
+                    "action": "updateIsValidToSave"
+                }
+            ]
+        },
+        "getAMConditionArgsProvider": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2022-06-AwAccessManager",
+            "method": "getAMConditionArgs",
+            "inputData": {
+                "conditionName": "{{data.xrtState.xrtVMO.props.rule_name.dbValue}}",
+                "searchString": "{{function:getArgsSearchString}}",
+                "startIndex": "{{data.dataProviders.dataProviderConditionArgs.startIndex}}",
+                "pageSize": 50
+            },
+            "outputData": {
+                "isRuleArgLov": "{{function:isRuleArgLov}}",
+                "selectedCondition": "{{function:setSelectedCondition}}",
+                "argsTotalFound": "totalFound",
+                "conditionArgs": "{{function:getConditionArgs}}",
+                "argsTotalReturned": "totalReturned"
+            },
+            "deps": "js/Am0AddRuleCommandService"
+        },
+        "clearArgValue": {
+            "actionType": "JSFunction",
+            "method": "clearArgValue",
+            "inputData": {
+                "fields": "{{fields}}"
+            },
+            "deps": "js/Am0AddRuleCommandService"
+        },
+        "getRuleValueLovRequired": {
+            "actionType": "JSFunction",
+            "method": "getRuleValueLovRequired",
+            "inputData": {
+                "rule_name": "{{data.xrtState.xrtVMO.props.rule_name.dbValue}}"
+            },
+            "outputData": {
+                "isRuleValueLovRequired": ""
+            },
+            "deps": "js/Am0AddRuleCommandService"
+        },
+        "setRulePropsEditable": {
+            "actionType": "JSFunction",
+            "method": "setRulePropsEditable",
+            "inputData": {
+                "fields": "{{fields}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/Am0RuleTreeEditService"
+        },
+        "resetOnCancelEdits": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cancelEdits"
+                },
+                {
+                    "action": "onRulePWASelectionChange"
+                }
+            ]
+        },
+        "cancelEdits": {
+            "actionType": "JSFunction",
+            "method": "cancelEdits",
+            "deps": "js/Am0RuleTreeEditService"
+        },
+        "dummyAction": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": []
+            }
+        },
+        "callConditionArgsProvider": {
+            "actionType": "dataProvider",
+            "method": "dataProviderConditionArgs"
+        },
+        "setLocationChangeListener":{
+            "actionType": "JSFunction",
+            "method": "setLocationChangeListener",
+            "inputData": {
+                "subPanelContext":"{{props.subPanelContext}}"
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "updateIsValidToSave": {
+            "actionType": "JSFunction",
+            "method": "updateIsValidToSave",
+            "inputData": {
+                "isRuleValueLovRequired": "{{data.isRuleValueLovRequired}}",
+                "rule_arg_lov_required": "{{data.xrtState.xrtVMO.props.rule_arg_lov_required}}",
+                "sublocationState": "{{subPanelContext.context.pageContext.sublocationState}}"
+            },
+            "deps": "js/Am0RuleTreeEditService"
+        }
+    },
+    "editHandlers": {
+        "am0RuleEditHandler": {
+            "context": "ACCESS_EDIT_CONTEXT"
+        }
+    },
+    "ctx": {
+        "ACCESS_EDIT_CONTEXT": {
+            "type": "object"
+        },
+        "ACCESS_EDIT_CONTEXT._editing": {
+            "type": "boolean"
+        },
+        "ACCESS_EDIT_CONTEXT.canEdit": {
+            "type":"boolean"
+        },
+        "SELECTED_ACCESSORTYPES_ACCESSORS":{
+            "type": "object"
+        },
+        "ATTRIBUTE_ACCESSORS":{
+            "type": "object"
+        }
+    },
+    "data": {
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "namedAclState":{
+            "initialValues": {
+                "updatedAclEntries":[],
+                "updatedAttrEntries":[],
+                "origNamedAclEntries": [],
+                "origNamedAttrAclEntries": [],
+                "updatedAcl":"",
+                "aclType":"SYSTEM"
+            },
+            "meta": {}
+        }
+    },
+    "dataProviders": {
+        "conditionProvider": {
+            "action": "loadConditionNames",
+            "response": "{{data.conditionValues}}",
+            "totalFound": "{{data.totalFound}}"
+        },
+        "dataProviderConditionArgs": {
+            "action": "getAMConditionArgsProvider",
+            "response": "{{data.conditionArgs}}",
+            "totalFound": "{{data.argsTotalFound}}"
+        }
+    },
+    "functions": {
+        "setSelectedCondition": {
+            "functionName": "setSelectedCondition",
+            "parameters": [
+                "{{data.xrtState.xrtVMO.props.rule_name}}"
+            ]
+        },
+        "getCondtionSearchString": {
+            "functionName": "getSearchString",
+            "parameters": [
+                "{{data.xrtState.xrtVMO.props.rule_name.filterString}}"
+            ]
+        },
+        "getArgsSearchString": {
+            "functionName": "getRuleArgSearchString",
+            "parameters": [
+                "{{data.xrtState.xrtVMO.props.rule_name.dbValue}}",
+                "{{data.xrtState.xrtVMO.props.rule_arg_lov.filterString}}",
+                "{{data.xrtState.xrtVMO.props.rule_arg_lov_required.filterString}}"
+            ]
+        },
+        "getRuleValueLovRequired": {
+            "functionName": "getRuleValueLovRequired",
+            "parameters": [
+                "{{data.xrtState.xrtVMO.props.rule_name.dbValue}}"
+            ]
+        },
+        "isRuleArgLov": {
+            "functionName": "isRuleArgLov",
+            "parameters": [
+                "{{data.xrtState.xrtVMO}}"
+            ]
+        }
+    },
+    "conditions": {
+        "isRuleValueLov": {
+            "expression": "data.isRuleArgLov && data.isRuleValueLovRequired === false"
+        },
+        "isRuleValueLovRequiredCondition": {
+            "expression": "data.isRuleArgLov && data.isRuleValueLovRequired"
+        },
+        "isAclName": {
+            "expression": "data.xrtState.xrtVMO.props.acl.dbValue !== 'AAAAAAAAAAAAAA'"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount":"setLocationChangeListener",
+        "onUpdate": [
+            {
+                "action": "onRulePWASelectionChange",
+                "observers": [
+                    "props.subPanelContext.selection"
+                ]
+            },
+            {
+                "action": "updateIsValidToSave",
+                "observers": [
+                    "viewModel.atomicData.xrtState.xrtVMO.props.rule_arg_lov_required.dbValue"
+                ]
+            }
+        ]
+    },
+    "i18n": {
+        "condition": [
+            "AccessmgmtConstants"
+        ],
+        "value": [
+            "AccessmgmtConstants"
+        ],
+        "objectAclName": [
+            "AccessmgmtConstants"
+        ],
+        "propertiesSection": [
+            "AccessmgmtConstants"
+        ],
+        "namedAcl": [
+            "AccessmgmtConstants"
+        ]
+    }
+}

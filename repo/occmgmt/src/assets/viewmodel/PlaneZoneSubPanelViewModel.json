@@ -1,0 +1,239 @@
+{
+    "data": {
+        "searchOption": {
+            "type": "STRING",
+            "isRequired": "true",
+            "isEditable": "true",
+            "dbValue": "",
+            "hasLov": "true"
+        },
+        "searchOptionTrueShapeOn":[
+
+            {
+                "propDisplayValue": "{{i18n.AboveOrIntersecting}}",
+                "propInternalValue": "Above Or Intersects"
+            },
+            {
+                "propDisplayValue": "{{i18n.BelowOrIntersecting}}",
+                "propInternalValue": "Below Or Intersects"
+            },
+            {
+                "propDisplayValue": "{{i18n.AboveOnly}}",
+                "propInternalValue": "Above"
+            },
+            {
+                "propDisplayValue": "{{i18n.BelowOnly}}",
+                "propInternalValue": "Below"
+            },
+            {
+                "propDisplayValue": "{{i18n.IntersectOnly}}",
+                "propInternalValue": "Intersects"
+            }
+        ],
+        "searchOptionTrueShapeOff":[
+            {
+                "propDisplayValue": "{{i18n.AboveOrIntersecting}}",
+                "propInternalValue": "Above Or Intersects"
+            },
+            {
+                "propDisplayValue": "{{i18n.BelowOrIntersecting}}",
+                "propInternalValue": "Below Or Intersects"
+            }
+        ],
+        "planeZoneViewModelProperties":{
+            "type": "STRING"
+        },
+        "selectedPlaneZoneUids": [],
+        "filterBox":{
+            "displayName": "",
+            "type": "STRING",
+            "dbValue": "",
+            "isEditable": "true",
+            "requiredText": "Filter"
+        }
+    },
+    "actions": {
+        "getTopOrSubsetBomLineOverride": {
+            "actionType": "JSFunctionAsync",
+            "method": "getTopOrSubsetBomLine",
+            "inputData": {
+                "occContext": "{{props.subPanelContext.occContext}}",
+                "currentTopBomLime": "{{data.topOrSubsetBomLineUid}}",
+                "override": true
+            },
+            "outputData":{
+                "topOrSubsetBomLineUid": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "planeZonePanel.searchPlaneZone"
+                } ]
+            },
+            "deps": "js/zoneFilterService"
+        },
+        "getTopOrSubsetBomLineCurrent": {
+            "actionType": "JSFunctionAsync",
+            "method": "getTopOrSubsetBomLine",
+            "inputData": {
+                "occContext": "{{props.subPanelContext.occContext}}",
+                "currentTopBomLime": "{{data.topOrSubsetBomLineUid}}",
+                "override": false
+            },
+            "outputData":{
+                "topOrSubsetBomLineUid": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "planeZonePanel.searchPlaneZone"
+                } ]
+            },
+            "deps": "js/zoneFilterService"
+        },
+        "searchPlaneZone": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData":
+            {
+                "searchInput":
+                {
+                    "maxToLoad": 50,
+                    "maxToReturn": 50,
+                    "providerName": "{{function:getProviderName}}",
+                    "searchCriteria":
+                    {
+                        "uid": "{{data.topOrSubsetBomLineUid}}",
+                        "searchString": "{{data.filterBox.dbValue}}",
+                        "zoneType": "RDVPlaneZoneFormType"
+                    },
+                    "searchFilterFieldSortType": "Priority",
+                    "startIndex": "{{data.dataProviders.loadPlaneZonesUsingAction.startIndex}}"
+                }
+            },
+            "outputData": {
+                "planeZoneResult": "searchResults",
+                "totalFound": "totalFound",
+                "totalLoaded": "totalLoaded",
+                "planeZoneViewModelProperties" :"{{function:createCheckBoxViewModelPropertiesForPlaneZones}}",
+                "selectedPlaneZoneCount" :  "{{function:getSelectedZoneCount}}"
+            },
+            "deps": "js/zoneFilterService"
+        },
+        "addButtonAction": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "setActiveGroupIndexToZero",
+                "condition": "!conditions.isAdvFilterEnabled"
+            },
+            {
+                "action": "applyZoneFilter"
+            }]
+        },
+        "setActiveGroupIndexToZero":{
+            "actionType": "JSFunction",
+            "method": "setActiveGroupIndexToZero",
+            "inputData": {
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "subPanelNavigateBack": true
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "applyZoneFilter": {
+            "actionType": "JSFunction",
+            "method": "applyZoneFilter",
+            "inputData":
+            {
+                "selectedZoneUids" : "{{data.selectedPlaneZoneUids}}",
+                "selectedSearchOption" : "{{data.searchOption}}",
+                "zoneType" :"PlaneZone",
+                "loadedObjects" : "{{data.dataProviders.loadPlaneZonesUsingAction.viewModelCollection.loadedVMObjects}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "activeViewSharedData": "{{props.subPanelContext.activeViewSharedData}}"
+            },
+            "deps": "js/zoneFilterService"
+        },
+       "updateSelectedPlaneZoneList": {
+            "actionType": "JSFunction",
+            "method": "updateSelectedZoneList",
+            "inputData":
+            {
+                "selectedInputs" : "{{data.dataProviders.loadPlaneZonesUsingAction.viewModelCollection.loadedVMObjects}}"
+            },
+            "outputData":
+            {
+                "selectedPlaneZoneUids":"",
+                "selectedPlaneZoneCount" : "length"
+            },
+            "deps": "js/zoneFilterService"
+       }
+    },
+    "dataProviders": {
+        "loadPlaneZonesUsingAction": {
+            "action": "searchPlaneZone",
+            "response": "{{data.planeZoneViewModelProperties}}",
+            "totalFound":  "{{data.totalFound}}",
+            "totalLoaded": "{{data.totalLoaded}}",
+            "selectionModelMode": "none"
+        }
+    },
+    "i18n":
+    {
+        "AboveOnly" : ["OccurrenceManagementSubsetConstants"],
+        "BelowOnly": [ "OccurrenceManagementSubsetConstants" ],
+        "IntersectOnly" : [ "OccurrenceManagementSubsetConstants" ],
+        "AboveOrIntersecting" : [ "OccurrenceManagementSubsetConstants" ],
+        "BelowOrIntersecting" : [ "OccurrenceManagementSubsetConstants" ],
+        "Add": [ "OccurrenceManagementSubsetConstants" ]
+    },
+    "functions":
+    {
+        "createCheckBoxViewModelPropertiesForPlaneZones":
+        {
+            "functionName": "createCheckBoxViewModelPropertiesForZones",
+            "parameters": [
+                "{{data.selectedPlaneZoneUids}}", "{{response}}"
+            ]
+        },
+        "getSelectedZoneCount": {
+            "functionName": "getSelectedZoneCount",
+            "parameters": [
+                "{{data.selectedPlaneZoneUids}}", "{{response}}"
+            ]
+        },
+        "getProviderName": {
+            "functionName": "getProviderName",
+            "parameters": [
+                "ZoneProvider"
+            ]
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "getTopOrSubsetBomLineCurrent",
+                "observers": [ "viewModel.data.filterBox.dbValue" ]
+            }
+        ]
+    },
+    "conditions": {
+        "isAdvFilterEnabled": {
+            "expression": "ctx.preferences.AW_Discovery_Advanced_Filter[0] === 'true'"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "productContextChangedEvent",
+            "action": "getTopOrSubsetBomLineOverride",
+            "condition": "dataProviderActionType === 'productChangedOnSelectionChange'"
+        },
+        {
+            "eventId": "planeZonePanel.searchPlaneZone",
+            "action": "searchPlaneZone"
+        }
+    ]
+}

@@ -1,0 +1,865 @@
+{
+    "schemaVersion": "1.0.0",
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "selection-data": {
+            "type": "object"
+        },
+        "selected-variability": {
+            "type": "object"
+        }
+    },
+    "data": {
+        "variabilityProps": {
+            "initialValues": {
+                "expandAll": true,
+                "resetColumnProperties": true
+            },
+            "meta": {
+                "expandAll": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                },
+                "resetColumnProperties": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                },
+                "soaResponse": {
+                    "type": "OBJECT",
+                    "field": "true"
+                }
+            }
+        },
+        "noResultsImage": "graEmptySearch"
+    },
+    "ctx": {
+        "state": {
+            "type": "object"
+        },
+        "sublocation.clientScopeURI": {
+            "type": "string"
+        }
+    },
+    "actions": {      
+        "loadConfigPerspectiveForModules": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": [
+                    { "uid": "{{ctx.state.processed.uid}}" }
+                ],
+                "attributes": [
+                    "cfg0ConfigPerspective"
+                ]
+            },
+            "policy": {
+                "types": "{{function:getPropertyPolicyForModules}}",
+                "override":true
+            },
+            "outputData": {
+                "modulePerspective": "{{function:getConfigPerspectiveFromGetProperties}}"
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "expandBelowAction": {
+            "actionType": "JSFunction",
+            "method": "performExpandBelow",
+            "inputData": {
+                "selectedObject": "{{parameters.eventData.selectedObject}}",
+                "dataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "outputData": {
+                "nodeToBeExpand" : ""
+            },
+            "deps": "js/pca0VariabilityExplorerExpandService"
+        },
+        "collapseBelowAction": {
+            "actionType": "JSFunction",
+            "method": "performCollapseBelow",
+            "inputData": {
+                "data" : "{{data}}",
+                "gridId" : "{{data.grids.variabilityExplorerModulesGrid.gridid}}",
+                "selectedObject": "{{parameters.eventData.selectedObject}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "deps": "js/pca0VariabilityExplorerExpandService"
+        },
+        "setProductHierarchyDepth": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-09-DataManagement",
+            "method": "setProperties",
+            "inputData": {
+                "info": [
+                    {
+                        "object": "{{ctx.ConfiguratorCtx.modulePerspective}}",
+                        "vecNameVal": [
+                            {
+                                "name": "cfg0ProductHierarchyDepth",
+                                "values": [
+                                    "5"
+                                ]
+                            },
+                            {
+                                "name": "cfg0RuleSetEffectivity",
+                                "values": [
+                                    "{{ctx.ConfiguratorCtx.configPerspective.props.cfg0RuleSetEffectivity.dbValues[0] ? ctx.ConfiguratorCtx.configPerspective.props.cfg0RuleSetEffectivity.dbValues[0] : ''}}"
+                                ]
+                            },
+                            {
+                                "name": "cfg0RevisionRule",
+                                "values": [
+                                    "{{ctx.ConfiguratorCtx.configPerspective.props.cfg0RevisionRule.dbValues[0] ? ctx.ConfiguratorCtx.configPerspective.props.cfg0RevisionRule.dbValues[0] : ''}}"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "modulePerspective": "{{function:getConfigPerspectiveFromSetProperties}}"
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "loadVariabilityDataFromServer": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2024-06-ConfiguratorManagement",
+            "method": "getVariability3",
+            "policy": {
+                "types": "{{function:getConfigPerspectivePolicy}}"
+            },
+            "inputData": {
+                "configPerspective": "{{ctx.ConfiguratorCtx.modulePerspective}}",
+                "configContext": "",
+                "requestType": "{{function:populateRequestType}}",
+                "parentUids": "{{function:populateParentNode}}",
+                "level": -1,
+                "sortCriteria": "{{data.columnProviders.treeColumnProvider.sortCriteria}}",
+                "columnFilters": "{{data.columnProviders.treeColumnProvider.columnFilters}}",
+                "requestInfo": { "expandBelow" :[ "true" ] }
+            },
+            "outputData": {
+                "isModulesVisible": "{{function:getModulesFromResponse}}"
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "loadTreeProviderData": {
+            "actionType": "JSFunction",
+            "method": "loadTreeProviderData",
+            "inputData": {
+                "data": "{{data}}",
+                "viewModelAction": "loadVariabilityDataFromServer"
+            },
+            "outputData": {
+                "treeLoadResult": "result.treeLoadResult",
+                "variabilityProps": "result.variabilityProps",
+                "initialColumnFilters": "result.initialColumnFilters"
+            },
+            "deps": "js/Pca0VariabilityTreeDisplayService"
+        },
+        "loadTreeProviderDataBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadConfigPerspectiveForModules",
+                    "condition": "conditions.isModulePerspectiveUpdateRequired"
+                },
+                {
+                    "action": "setProductHierarchyDepth",
+                    "condition": "conditions.isSetPropertiesRequired"
+                },
+                {
+                    "action": "loadTreeProviderData"
+                }
+            ]
+        },
+        "loadTreeProviderDataForExpand": {
+            "actionType": "JSFunction",
+            "method": "loadTreeProviderDataForExpand",
+            "inputData": {
+                "data": "{{data}}",
+                "viewModelAction": "loadVariabilityDataFromServer",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "gridId" : "{{data.grids.variabilityExplorerModulesGrid.gridid}}",
+                "selectedObject": "{{parameters.eventData.selectedObject}}"
+            },
+            "deps": "js/pca0VariabilityExplorerExpandService"
+        },
+        "loadTreeProperties": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeProperties",
+            "inputData": {
+                "methodArgument": {
+                    "propertyLoadInput": "request.propertyLoadInput",
+                    "propertyLoadContext": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Pca0VariabilityExplorerModules",
+                        "typesForArrange": "{{data.dataProviders.treeDataProvider.columnConfig.typesForArrange}}"
+                    },
+                    "contextKey": "ConfiguratorCtx",
+                    "declViewModel": "{{data}}",
+                    "uwDataProvider": "{{data.dataProviders.treeDataProvider}}"
+                }
+            },
+            "outputData": {
+                "dataProviders.treeDataProvider.columnConfig": "result.propertyLoadResult.columnConfig",
+                "ctx.searchResponseInfo.columnConfig": "result.propertyLoadResult.columnConfig"
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "processPartialErrors": {
+            "actionType": "JSFunction",
+            "method": "processPartialErrors",
+            "inputData": {
+                "eventData": "{{parameters.eventData.ServiceData}}"
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "addNewModuleToGrid": {
+            "actionType": "JSFunction",
+            "method": "addNewModuleToGrid",
+            "inputData": {
+                "soaResponse": "{{data.createModuleResponse}}",
+                "selected": "{{data.ctx.selected}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "isSibling": "{{parameters.eventData.isSibling}}",
+                "isPanelPinned": "{{parameters.eventData.isPanelPinned}}"
+            },
+            "outputData": {
+                "isModulesVisible": ""
+            },
+            "deps": "js/pca0ConfigurationModulesService"
+        },
+        "openAddSiblingModuleDialog": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "fetchParentDetails"
+                },
+                {
+                    "action": "openAddModuleDialog"
+                }
+            ]
+        },
+        "fetchParentDetails": {
+            "actionType": "JSFunction",
+            "method": "fetchParentDetails",
+            "inputData": {
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}",
+                "selected": "{{data.ctx.selected}}"
+            },
+            "outputData": {
+                "parentVmoOfSelected": ""
+            },
+            "deps": "js/pca0ConfigurationModulesService"
+        },
+        "openAddModuleDialog": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view": "Pca0AddConfigurationModule",
+                    "parent": ".aw-layout-workarea",
+                    "width": "STANDARD",
+                    "height": "FULL",
+                    "subPanelContext": {
+                        "parentVmoOfSelected" : "{{data.parentVmoOfSelected}}",
+                        "isSibling": true
+                    },
+                    "isCloseVisible": false,
+                    "isPinUnpinEnabled": true
+                }
+            }
+        },
+        "plTableClientRefresh": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "variabilityExplorerModulesGrid.plTable.clientRefresh"
+                    }
+                ]
+            }
+        },
+        "plTableClientReload": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "variabilityExplorerModulesGrid.plTable.reload"
+                    }
+                ]
+            }
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{parameters.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "saveColumnConfigData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [
+                        {
+                            "clientScopeURI": "Pca0VariabilityExplorerModules",
+                            "columnConfigId": "{{data.dataProviders.treeDataProvider.columnConfig.columnConfigId}}",
+                            "columns": "{{data.dataProviders.treeDataProvider.newColumns}}",
+                            "scope": "LoginUser",
+                            "scopeName": ""
+                        }
+                    ]
+                }
+            },
+            "outputData": {}
+        },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [
+                        {
+                            "clientScopeURI": "Pca0VariabilityExplorerModules",
+                            "columnConfigId": "{{data.dataProviders.treeDataProvider.columnConfig.columnConfigId}}",
+                            "columns": "{{data.dataProviders.treeDataProvider.newColumns}}",
+                            "scope": "LoginUser",
+                            "scopeName": ""
+                        }
+                    ]
+                }
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "variabilityExplorerModulesGrid.plTable.reload"
+                    }
+                ]
+            }
+        },
+        "resetColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [
+                        {
+                            "scope": "LoginUser",
+                            "scopeName": "",
+                            "clientName": "AWClient",
+                            "resetColumnConfig": true,
+                            "columnConfigQueryInfos": [
+                                {
+                                    "clientScopeURI": "Pca0VariabilityExplorerModules",
+                                    "operationType": "union",
+                                    "typeNames": "{{data.dataProviders.treeDataProvider.columnConfig.typesForArrange}}",
+                                    "columnsToExclude": []
+                                }
+                            ],
+                            "businessObjects": [
+                                {}
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "dataProviders.treeDataProvider.columnConfig": "{{function:postResetFunction}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "variabilityExplorerModulesGrid.plTable.reload"
+                    }
+                ]
+            }   
+        },
+        "Pca0DeleteModulesAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "deleteObjects",
+            "deps": "js/pca0CommonUtils",
+            "inputData": {
+                "objects": "{{function:getObjectsForDelete}}"
+            },
+            "outputData": {
+                "response": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0ConfigurationModuleTree.setSelection",
+                    "eventData": {
+                        "ServiceData": "{{data.response}}",
+                        "selectedObjects": "{{data.eventData.selectedObjects}}"
+                    }
+                } ],
+                "failure": [ {
+                    "name": "Pca0ConfigurationModuleTree.processPartialErrors",
+                    "eventData": {
+                        "ServiceData": "{{data.response}}"
+                    }
+                },
+                {
+                    "name": "Pca0ConfigurationModuleTree.setSelection",
+                    "eventData": {
+                        "ServiceData": "{{data.response}}",
+                        "selectedObjects": "{{data.eventData.selectedObjects}}"
+                    }
+                }
+                 ]
+            }
+        },
+        "initializeColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetTableViewModelProperties",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "input": {
+                        "objectUids": [],
+                        "columnConfigInput": {
+                            "clientName": "AWClient",
+                            "hostingClientName": "",
+                            "clientScopeURI": "Pca0VariabilityExplorerModules",
+                            "operationType": "union",
+                            "columnsToExclude": []
+                        },
+                        "requestPreference": {
+                            "typesToInclude": []
+                        }
+                    }
+                }
+            },
+            "outputData": {
+                "initialColumnFilters": "{{function:updateInitialColumnfilters}}",
+                "dataProviders.treeDataProvider.columnConfig":"{{function:loadTreeColumns}}"
+            }
+        },
+        "createModuleBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "createModule"
+                },
+                {
+                    "action": "addNewModuleToGrid"
+                }
+            ]
+        },
+        "createModule": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "createAndAddObjects2",
+            "inputData": {
+                "configPerspective": "{{ctx.ConfiguratorCtx.modulePerspective}}",
+                "objectsToCreateAndAdd": "{{parameters.eventData.moduleCreateInput}}",
+                "sortCriteria": "{{data.columnProviders.treeColumnProvider.sortCriteria}}",
+                "columnFilters": "{{data.columnProviders.treeColumnProvider.columnFilters}}",
+                "requestInfo": ""
+            },
+            "outputData": {
+                "createModuleResponse": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0AddConfigurationModuleView.closeDialog",
+                        "condition": "!parameters.eventData.isPanelPinned"
+                    },
+                    {
+                        "name": "Pca0AddConfigurationModuleView.generateNextValues",
+                        "condition": "parameters.eventData.isPanelPinned"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "Pca0ConfigurationModuleTree.processPartialErrors",
+                        "eventData": {
+                            "ServiceData": "{{data.createModuleResponse.ServiceData}}"
+                        }
+                    },
+                    {
+                        "name": "Pca0AddConfigurationModuleView.closeDialog",
+                        "condition": "!parameters.eventData.isPanelPinned"
+                    },
+                    {
+                        "name": "Pca0AddConfigurationModuleView.generateNextValues",
+                        "condition": "parameters.eventData.isPanelPinned"
+                    }
+                ]
+            },
+            "deps": "js/pca0ConfigurationModulesService"
+        },
+        "setSelection": {
+            "actionType": "JSFunction",
+            "method": "setSelectedRowAfterNodesDeletion",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}",
+                "treeDataProvider": "{{data.dataProviders.treeDataProvider}}"
+            },
+            "outputData": {
+                "isModulesVisible": ""
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "getPerspectiveAndOpenModuleConditionEditor": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "Pca0GetPerspectiveForModuleConditionEditor"
+                },
+                {
+                    "action": "openModuleConditionEditor"
+                }
+            ]
+        },
+        "Pca0GetPerspectiveForModuleConditionEditor": {
+            "actionType": "JSFunctionAsync",
+            "method": "getPerspectiveForModuleConditionEditor",
+            "inputData": {
+                "contextUid": "{{parameters.eventData.contextUid}}"
+            },
+            "outputData": {
+                "moduleConditionEditorPerspective": ""
+            },
+            "deps": "js/pca0ConfigurationModulesService"
+        },
+        "openModuleConditionEditor": {
+            "actionType": "popup",
+            "inputData": {
+                "options": {
+                    "view": "Pca0ConstraintsEditorPopup",
+                    "height": "fill",
+                    "width": 500,
+                    "hasPadding": 5,
+                    "clickOutsideToClose": false,
+                    "draggable": true,
+                    "resizable": true,
+                    "autoFocus": true,
+                    "hasArrow": true,
+                    "forceCloseOthers": true,
+                    "configPerspective": "{{data.moduleConditionEditorPerspective}}",
+                    "popUpContext": "{{commandContext}}",
+                    "placement": "bottom-start"
+                }
+            }
+        }
+    },
+    "dataProviders": {
+        "treeDataProvider": {
+            "initializeAction": "loadTreeProviderDataBatch",
+            "action": "loadTreeProviderDataBatch",
+            "editContext": "TABLE_CONTEXT",
+            "treeLoadResult": "{{data.treeLoadResult}}",
+            "selectionModelMode": "multiple",
+            "cacheCollapse": true,
+            "inputData": {
+                "accessMode": "tree",
+                "topNodeUid": "variabilityTreeData",
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "selectionData": "{{props.selectionData}}",
+                "editSupportParamKeys": [
+                    "s_uid",
+                    "d_uids"
+                ]
+            },
+            "showDecorators": "true",
+            "contextMenuCommandsAnchor": "pca0ConfigurationModuleGridAnchor",
+            "commandsAnchor": "objNameCellAnchor"
+        },
+        "treePropertyProvider": {
+            "action": "loadTreeProperties",
+            "propertyLoadResult": "action.result.propertyLoadResult"
+        }
+    },
+    "columnProviders": {
+        "treeColumnProvider": {
+            "loadColumnAction": "initializeColumnConfig",
+            "columns": "{{data.columns}}",
+            "saveColumnAction": "saveColumnConfigData",
+            "saveColumnAndLoadAction": "saveColumnConfigLoadData",
+            "resetColumnAction": "resetColumnConfig"
+        }
+    },
+    "grids": {
+        "variabilityExplorerModulesGrid": {
+            "dataProvider": "treeDataProvider",
+            "propertyProvider": "treePropertyProvider",
+            "columnProvider": "treeColumnProvider",
+            "enableArrangeMenu": true,
+            "addIconColumn": false,
+            "gridOptions": {
+                "useStaticFirstCol": true,
+                "enableExpandAndPaginationInEdit": true,
+                "enableSorting": true,
+                "isFilteringEnabled": true
+            }
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "columnArrange",
+            "action": "doArrangeEvent",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "condition": "name === 'variabilityExplorerModulesGrid'"
+        },
+        {
+            "eventId": "Pca0ConfigurationModuleTree.setSelection",
+            "action": "setSelection",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0ConfigurationModuleTree.processPartialErrors",
+            "action": "processPartialErrors",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0ConfigurationModuleTree.openAddSiblingModuleDialog",
+            "action": "openAddSiblingModuleDialog"
+        },
+        {
+            "eventId": "Pca0FilterCriteriaSettings.filterCriteriaUpdated",
+            "action": "plTableClientReload"
+        },
+        {
+            "eventId": "Pca0ConfigurationModuleTree.createModule",
+            "action": "createModuleBatch",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0ConfigurationModuleTree.deleteSingleModule",
+            "message": "Pca0DeleteModulesConfirmationMessageForSingle",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0ConfigurationModuleTree.deleteMultipleModules",
+            "message": "Pca0DeleteModulesConfirmationMessageForMultiple",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0ConfigurationModuleTree.deleteSingleModulewithChildren",
+            "message": "Pca0DeleteModulesConfirmationMessageForSingleModuleWithChildren",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.loadVariabilityDataFromServer",
+            "action": "loadTreeProviderDataForExpand",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.collapseBelow",
+            "action": "collapseBelowAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityExplorerTree.expandBelow",
+            "action": "expandBelowAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0ConfigurationModuleTree.openModuleConditionEditor",
+            "action": "getPerspectiveAndOpenModuleConditionEditor",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+    ],
+    "functions": {
+        "populateConfigContext": {
+            "functionName": "populateConfigContext",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "populateParentNode": {
+            "functionName": "populateParentNode",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "populateRequestType": {
+            "functionName": "populateRequestType",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getConfigPerspectivePolicy": {
+            "functionName": "getConfigPerspectivePolicy"
+        },
+        "getConfigPerspectiveFromGetProperties": {
+            "functionName": "getConfigPerspectiveFromServerResponse",
+            "parameters": [
+                "getProperties"
+            ]
+        },
+        "getConfigPerspectiveFromSetProperties": {
+            "functionName": "getConfigPerspectiveFromServerResponse",
+            "parameters": [
+                "setProperties"
+            ]
+        },
+        "getObjectsForDelete": {
+            "functionName": "convertToArray",
+            "parameters": [
+                "{{data.eventData.selectedObjects}}"
+            ]
+        },
+        "getModulesFromResponse": {
+            "functionName": "getModulesFromResponse",
+            "parameters": [
+                "{{data.columnProviders.treeColumnProvider.columnFilters}}"
+            ]
+        },
+        "postResetFunction": {
+            "functionName": "postResetFunction",
+            "parameters": [
+                "{{data.dataProviders.treeDataProvider.columnConfig}}"
+            ],           
+            "deps": "js/tcarrange.service"          
+        },
+        "loadTreeColumns": {
+            "functionName": "loadTreeColumns",
+            "parameters": [],
+            "deps": "js/pca0VariabilityExplorerService"          
+        },
+        "updateInitialColumnfilters": {
+            "functionName": "updateInitialColumnfilters",
+            "parameters": [],
+             "deps": "js/pca0VariabilityExplorerService"
+        },
+        "getPropertyPolicyForModules": {
+            "functionName": "getPropertyPolicyForModules"  
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "plTableClientRefresh",
+                "observers": [
+                    "props.subPanelContext.pwaSelectionModel.multiSelectEnabled"
+                ]
+            }
+        ]
+    },
+    "i18n": {
+        "showNoModulesTitle": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "showNoModulesHint": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "confirmationToRemoveModuleWithChildren": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "singleObjDeleteConfirmationMessage": [
+            "ZeroCompileCommandMessages"
+        ],
+        "confirmationToRemoveMultipleModules": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "cancel": [
+            "ZeroCompileCommandMessages"
+        ],
+        "delete": [
+            "ZeroCompileCommandMessages"
+        ]
+    },
+    "conditions": {
+        "showNoModules": {
+            "expression": "data.isModulesVisible !== undefined && !data.isModulesVisible"
+        },
+        "isModulePerspectiveUpdateRequired": {
+            "expression": "!ctx.ConfiguratorCtx.modulePerspective"
+        },
+        "isSameRevisionRule":{
+            "expression": "ctx.ConfiguratorCtx.configPerspective.props.cfg0RevisionRule.uiValues[0] === ctx.ConfiguratorCtx.modulePerspective.props.cfg0RevisionRule.uiValues[0]"
+        },
+        "isSameEffectivity":{
+            "expression": "ctx.ConfiguratorCtx.configPerspective.props.cfg0RuleSetEffectivity.dbValues[0] === ctx.ConfiguratorCtx.modulePerspective.props.cfg0RuleSetEffectivity.dbValues[0]"
+        },
+        "isDepthAbsent":{
+            "expression": "ctx.ConfiguratorCtx.modulePerspective.props.cfg0ProductHierarchyDepth.dbValues[0] === '1'"
+        },
+        "isSetPropertiesRequired": {
+            "expression": "!conditions.isSameRevisionRule || !conditions.isSameEffectivity || conditions.isDepthAbsent"
+        }
+    },
+    "messages": {
+        "Pca0DeleteModulesConfirmationMessageForSingle": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.singleObjDeleteConfirmationMessage}}",
+            "messageTextParams": [
+                "{{data.eventData.selectedName}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}"
+                },
+                {
+                    "option": "Delete",
+                    "text": "{{i18n.delete}}",
+                    "action": "Pca0DeleteModulesAction"
+                }
+            ]
+        },
+        "Pca0DeleteModulesConfirmationMessageForSingleModuleWithChildren": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.confirmationToRemoveModuleWithChildren}}",
+            "messageTextParams": [
+                "{{data.eventData.selectedName}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}"
+                },
+                {
+                    "option": "Delete",
+                    "text": "{{i18n.delete}}",
+                    "action": "Pca0DeleteModulesAction"
+                }
+            ]
+        },
+        "Pca0DeleteModulesConfirmationMessageForMultiple": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.confirmationToRemoveMultipleModules}}",
+            "messageTextParams": [
+                "{{data.eventData.selectionCount}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}"
+                },
+                {
+                    "option": "Delete",
+                    "text": "{{i18n.delete}}",
+                    "action": "Pca0DeleteModulesAction"
+                }
+            ]
+        }
+    }
+}

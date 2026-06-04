@@ -1,0 +1,237 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports":
+    [
+        "js/aw-panel-section.directive",
+        "js/aw-toolbar.directive"
+    ],
+
+    "actions": {
+        "getPriviledgeInfo": {
+            "actionType": "JSFunction",
+            "method": "getObject",
+            "inputData": {
+                "current_group": "{{props.subPanelContext.session.current_group.uid}}"
+            },
+            "outputData": {
+                "isPrivilege": "props.privilege"
+            },
+            "deps": "soa/kernel/clientDataModel"
+        },
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "ResourcePool",
+                        "operationType": "as_arranged"
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0ObjectSetRowProvider",
+                        "searchCriteria": {
+                            "objectSet": "subscribed_resourcepools.ResourcePool",
+                            "parentUid": "{{props.subPanelContext.selected.uid}}"
+                        },
+                        "startIndex": "{{data.dataProviders.subscribeResourcePoolDataProvider.startIndex}}"
+                    },
+                    "inflateProperties": true,
+                    "noServiceData": false
+                }
+            },
+            "outputData": {
+                "resourcePoolTotalFound": "totalFound",
+                "resourcePoolTotalLoaded": "totalLoaded",
+                "resourcePoolSearchResults": "{{function:processResourcePoolObjects}}",
+                "dataProviders.subscribeResourcePoolDataProvider.columnConfig": "{{function:setNonModifiablePropForResourcePool}}"
+            }
+       },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "operationType": "as_arranged",
+                        "clientScopeURI": "ResourcePool"
+                    },
+                    "saveColumnConfigData": {
+                        "clientScopeURI": "ResourcePool",
+                        "columnConfigId": "{{data.dataProviders.subscribeResourcePoolDataProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.subscribeResourcePoolDataProvider.newColumns}}"
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0ObjectSetRowProvider",
+                        "searchCriteria": {
+                            "objectSet": "subscribed_resourcepools.ResourcePool",
+                            "parentUid": "{{props.subPanelContext.selected.uid}}"
+                        },
+                        "startIndex": "{{data.dataProviders.subscribeResourcePoolDataProvider.startIndex}}"
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "resourcePoolTotalFound": "totalFound",
+                "resourcePoolTotalLoaded": "totalLoaded",
+                "resourcePoolSearchResults": "{{function:processResourcePoolObjects}}",
+                "dataProviders.subscribeResourcePoolDataProvider.columnConfig": "{{function:setNonModifiablePropForResourcePool}}"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "serverError"
+                    }
+                ]
+            }
+        },
+      "resetColumnConfig": {
+        "actionType": "JSFunctionAsync",
+        "method": "baseGetOrResetUIColumnConfigs",
+        "deps": "js/tcDataManagementService",
+        "inputData": {
+            "0": {
+                "getOrResetUiConfigsIn": [ {
+                    "clientName": "AWClient",
+                    "resetColumnConfig": true,
+                    "columnConfigQueryInfos": [ {
+                            "clientScopeURI": "ResourcePool",
+                            "operationType": "configured",
+                            "typeNames": [ "WorkspaceObject" ],
+                            "columnsToExclude": []
+                        } ],
+                        "businessObjects": [ {} ]
+                    } ]
+            }
+            },
+            "outputData": {
+                "dataProviders.subscribeResourcePoolDataProvider.columnConfig": "columnConfigurations[0].columnConfigurations[0]"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "serverError"
+                    }
+                ]
+            }
+        },
+        "handleCdmRelatedModifiedResourcePoolSubscriptionAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "isRefreshTargetPanelNeeded",
+                    "condition": "parameters.eventData.refreshLocationFlag"
+                },
+                {
+                    "action": "resetDataProvider",
+                    "condition": "data.isRefreshTargetPanel"
+                }
+            ]
+        },
+        "isRefreshTargetPanelNeeded": {
+            "actionType": "JSFunction",
+            "method": "isRefreshLocationNeeded",
+            "deps": "js/Awp0WorkflowUtils",
+            "inputData": {
+                "eventdata": "{{parameters.eventData}}",
+                "selection": [ "{{props.subPanelContext.selected}}" ]
+            },
+            "outputData": {
+                "isRefreshTargetPanel": ""
+            }
+        },
+        "resetDataProvider": {
+            "actionType": "dataProvider",
+            "method": "subscribeResourcePoolDataProvider"
+        }
+    },
+
+    "data":
+    {
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "dataProviders":{
+        "subscribeResourcePoolDataProvider": {
+            "action": "loadData",
+            "editContext": "TABLE_CONTEXT",
+            "response": "{{data.resourcePoolSearchResults}}",
+            "totalFound": "{{data.resourcePoolTotalFound}}",
+            "selectionModelMode": "single",
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands",
+            "inputData": {
+                "selectionData": "{{fields.selectionData}}"
+            }
+        }
+    },
+
+    "columnProviders": {
+        "clientScopeUI": {
+            "saveColumnAndLoadAction" : "saveColumnConfigLoadData",
+            "resetColumnAction" : "resetColumnConfig",
+            "sortCriteria": []
+        }
+    },
+    "grids": {
+        "subscribeResourcePoolsGrid": {
+            "dataProvider": "subscribeResourcePoolDataProvider",
+            "columnProvider": "clientScopeUI",
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "enableGridMenu": true,
+                "enableSorting": false
+            }
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "getPriviledgeInfo"
+    },
+
+    "conditions": {
+        "isPrivilegedUser": {
+            "expression": "data.isPrivilege.dbValues[0] === '1' || subPanelContext.session.current_user.uid === subPanelContext.selected.uid"
+        }
+    },
+    "functions":
+    {
+        "processResourcePoolObjects":{
+            "functionName": "processResourcePoolObjects",
+            "parameters": [],
+            "deps": "js/Awp0AddResourcePool"
+        },
+        "setNonModifiablePropForResourcePool":{
+            "functionName": "setNonModifiablePropForResourcePool",
+            "parameters": [],
+            "deps": "js/Awp0AddResourcePool"
+        }
+    },
+
+    "onEvent": [
+        {
+            "eventId": "cdm.relatedModified",
+            "action": "handleCdmRelatedModifiedResourcePoolSubscriptionAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+    ],
+    "messages": {
+        "serverError": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n":  {
+        "resourcePoolSubscription": [ "InboxMessages" ]
+    }
+}

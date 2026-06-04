@@ -1,0 +1,198 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions":{
+        "countRelations": {
+            "actionType": "JSFunction",
+            "method": "countRelations",
+            "inputData": {
+                "eventData":"{{data.eventData}}",
+                "created": "{{data.created}}",
+                "modelObjects": "{{data.modelObjects}}",
+                "i18nProblem": "{{i18n.problemContent}}",
+                "i18nImpacted": "{{i18n.impactedContent}}",
+                "i18nSolution": "{{i18n.solutionContent}}",
+                "i18nReference": "{{i18n.referenceContent}}"
+            },
+            "outputData": {
+                "contentStrings": ""
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "condition": "data.contentStrings.count===1",
+                        "message": "propagateOperationPassedSingleContent"
+                    },
+                    {
+                        "condition": "data.contentStrings.count>1",
+                        "message": "propagateOperationPassedMultipleContent"
+                    }
+                ]
+            },
+            "deps": "js/Csi1PropagateOrRollupService"
+        },
+        "getSelectedChangeAndSchedule": {
+            "actionType": "JSFunction",
+            "method": "getSelectedChangeAndSchedule",
+            "inputData": {
+                "ctx": "{{ctx}}"
+            },
+            "outputData": {
+                "selectedChange": "selectedChange",
+                "selectedSchedule": "selectedSchedule"
+            },
+            "deps": "js/Csi1PropagateOrRollupService"
+        },
+        "propagate": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-CmSmInterface-2020-01-RelationManagement",
+            "method": "propagateOrRollupRelations",
+            "inputData": {
+                "relationships":"{{function:propagate}}",
+                "rollup":false
+            },
+            "outputData": {
+                "created": "created",
+                "modelObjects": "modelObjects",
+                "isRollupOp": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "csi1propagateRelations.propagated"
+                    },
+                    {
+                        "name": "scheduleTaskRelatedObjectsTable.plTable.reload"
+                    },
+                    {
+                        "name": "changeRelatedObjectsDataProvider.selectAction",
+                        "eventData": {
+                            "deselect": "{{data.relatedObjectsTable.selected}}"
+                        }
+                    },
+                    {
+                        "name": "scheduleTaskDataProvider.selectAction",
+                        "condition": "data.relatedSchTasksTable.selected.length > 1",
+                        "eventData": {
+                            "deselect": "{{data.relatedSchTasksTable.selected}}"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/Csi1PropagateOrRollupService"
+        },
+        "closePropagateView": {
+            "actionType": "Navigate",
+            "navigateTo": "showChanges",
+            "navigationParams": {}
+        }
+    },
+    "data":{
+        "relatedObjectsTable": {
+            "meta": {}
+        },
+        "relatedSchTasksTable": {
+            "meta": {}
+        },
+        "subPanelContext":{
+            "type":"object"
+        }
+    },
+    "functions": {
+        "propagate": {
+            "functionName": "propagate",
+            "parameters": [
+              "{{data}}"
+            ]
+        }
+    },
+    "conditions": {
+        "scheduleTaskReferences":{
+            "expression":"data.relatedSchTasksTable.selected[0].props.CMReferences.dbValues.length > 0"
+        },
+        "scheduleTaskHasImpacted":{
+            "expression":"data.relatedSchTasksTable.selected[0].props.CMHasImpactedItem.dbValues.length > 0"
+        },
+        "scheduleTaskHasProblem":{
+            "expression":"data.relatedSchTasksTable.selected[0].props.CMHasProblemItem.dbValues.length > 0"
+        },
+        "scheduleTaskHasSolution":{
+            "expression":"data.relatedSchTasksTable.selected[0].props.CMHasSolutionItem.dbValues.length > 0"
+        },
+        "isScheuleTaskSelected":{
+            "expression":"data.relatedSchTasksTable.selected.length ===1 && (conditions.scheduleTaskHasImpacted || conditions.scheduleTaskHasProblem || conditions.scheduleTaskHasSolution || conditions.scheduleTaskReferences)"
+        },
+        "propagateButtonActiveWhen":{
+            "expression":"data.relatedObjectsTable.selected.length > 0 && data.relatedSchTasksTable.selected.length > 0"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "getSelectedChangeAndSchedule"
+    },
+    "i18n": {
+        "propagateCC":[
+            "ChangeContentMessages"
+        ],
+        "close":[
+            "ChangeContentMessages"
+        ],
+        "Csi1PropagateChangeContentDesc": [
+            "ChangeContentMessages"
+        ],
+        "propagateRelationsTitle": [
+            "ChangeContentMessages"
+        ],
+        "problemContent": [
+            "ChangeContentMessages"
+        ],
+        "impactedContent": [
+            "ChangeContentMessages"
+        ],
+        "solutionContent": [
+            "ChangeContentMessages"
+        ],
+        "referenceContent": [
+            "ChangeContentMessages"
+        ],
+        "noContentPropagateMessage": [
+            "ChangeContentMessages"
+        ],
+        "propagateOperationPassedSingleContent": [
+            "ChangeContentMessages"
+        ],
+        "propagateOperationPassedMultipleContent": [
+            "ChangeContentMessages"
+        ]
+    },
+    "messages": {
+        "propagateOperationPassedSingleContent": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.propagateOperationPassedSingleContent}}",
+            "messageTextParams": [
+                "{{data.contentStrings.one}}",
+                "{{ctx.state.params.selectedChange}}",
+                "{{ctx.state.params.selectedSchedule}}"
+            ]
+        },
+        "propagateOperationPassedMultipleContent": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.propagateOperationPassedMultipleContent}}",
+            "messageTextParams": [
+                "{{data.contentStrings.one}}",
+                "{{data.contentStrings.two}}",
+                "{{ctx.state.params.selectedChange}}",
+                "{{ctx.state.params.selectedSchedule}}"
+            ]
+        },
+        "Csi1PropagateChangeContentDesc": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.Csi1PropagateChangeContentDesc}}"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "csi1propagateRelations.propagated",
+            "action": "countRelations",
+            "cacheEventData": true
+        }
+    ]
+}

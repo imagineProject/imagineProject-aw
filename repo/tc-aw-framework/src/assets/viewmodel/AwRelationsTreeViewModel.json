@@ -1,0 +1,216 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "_columns": [
+                {
+                    "displayName": "Object",
+                    "hiddenFlag": false,
+                    "pixelWidth": 350,
+                    "columnOrder": 100,
+                    "sortPriority": 1,
+                    "typeName": "BusinessObject",
+                    "associatedTypeName": "BusinessObject",
+                    "propertyName": "object_string",
+                    "sortDirection": "Ascending",
+                    "dataType": "String",
+                    "isTableCommand": true,
+                    "isFilteringEnabled": true,
+                    "isTextWrapped": false,
+                    "filters": []
+                }
+        ],
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "selectionCountI18nMessage": {
+            "dbValue": "{{i18n.SelectionCount}}"
+        },
+        "relationNotAvailableI18nMessage": {
+            "dbValue": "{{i18n.Awp0RelationNotAvailable}}"
+        },
+        "_objectSetData": {
+            "showConfiguredRev": "true",
+            "source": "contents.WorkspaceObject"
+        },
+        "_xrtContext": {
+            "relationsTree": true
+        }
+    },
+    "actions": {
+        "handleSelectionChange": {
+            "actionType": "JSFunction",
+            "method": "handleSelectionChange",
+            "inputData": {
+                "localSelectionData": "{{data.selectionData}}",
+                "parentSelectionData": "{{props.selectionData}}",
+                "parentSelection": "{{props.vmo}}"
+            },
+            "deps": "js/relationsTreeService"
+        },
+        "updateSelectionCount": {
+            "actionType": "JSFunction",
+            "method": "applyMessageParamsWithoutContext",
+            "inputData": {
+                "messageString": "{{data.selectionCountI18nMessage.dbValue}}",
+                "messageParams": [
+                    "{{props.selections.length}}"
+                ]
+            },
+            "outputData": {
+                "selectionCountMessage": ""
+            },
+            "deps": "js/messagingService"
+        },
+        "updateRelationsNotAvailableMessage": {
+            "actionType": "JSFunction",
+            "method": "applyMessageParamsWithoutContext",
+            "inputData": {
+                "messageString": "{{data.relationNotAvailableI18nMessage.dbValue}}",
+                "messageParams": [
+                    "{{props.selections[0].modelType.displayName}}"
+                ]
+            },
+            "outputData": {
+                "relationsNotAvailableMessage": ""
+            },
+            "deps": "js/messagingService"
+        }
+    },
+    "conditions": {
+        "isSingleSelection": {
+            "expression": "props.selections.length === 1"
+        },
+        "isSelectionAvailable": {
+            "expression": "props.selections.length > 0"
+        },
+        "isHeaderVisible": {
+            "expression": "props.showHeader !== false"
+        },
+        "isObjectSetTreeVisible":{
+            "expression": "conditions.isSingleSelection && props.objectSetState.totalFound !== 0"
+        },
+        "isEmptyViewVisible":{
+            "expression": "!conditions.isSingleSelection || (conditions.isSingleSelection && props.objectSetState.totalFound === 0)"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "handleSelectionChange",
+                "observers": [
+                    "viewModel.atomicData.selectionData"
+                ]
+            },
+            {
+                "action": "updateSelectionCount",
+                "observers": [
+                    "props.selections.length", "viewModel.data.selectionCountI18nMessage.dbValue"
+                ]
+            },
+            {
+                "action": "updateRelationsNotAvailableMessage",
+                "observers": [
+                    "props.objectSetState.dataFetchedForUid", "viewModel.data.relationNotAvailableI18nMessage.dbValue"
+                ]
+            }
+        ]
+    },
+    "props": {
+        "selection-data": {
+            "type": "object",
+            "doc": {
+                "type": "object",
+                "required": false,
+                "default": null,
+                "description": "The information of the selected object in Relations Tree and its updates using atomic data.",
+                "access": "public"
+            }
+        },
+        "show-root-node":{
+            "type": "boolean",
+            "doc": {
+                "type": "boolean",
+                "required": false,
+                "default": false,
+                "description": "This is used to configure whether to show root node as in Tree.",
+                "access": "public"
+            }
+        },
+        "selections": {
+            "type": "array",
+            "doc": {
+                "type": "array",
+                "required": true,
+                "default": null,
+                "description": "The input selections.",
+                "access": "public"
+            }
+        },
+        "vmo": {
+            "type": "viewModelObject",
+            "doc": {
+                "type": "viewModelObject",
+                "required": true,
+                "default": null,
+                "description": "The vmo for which Related objects are shown.",
+                "access": "public"
+            }
+        },
+        "sub-panel-context": {
+            "type": "object",
+            "doc": {
+                "type": "object",
+                "required": false,
+                "default": null,
+                "description": "The context object",
+                "access": "public"
+            }
+        },
+        "selection-model": {
+            "type": "object",
+            "doc": {
+                "type": "object",
+                "required": false,
+                "default": null,
+                "description": "The selection model object",
+                "access": "public"
+            }
+        },
+        "show-header": {
+            "type": "boolean",
+            "doc": {
+                "type": "boolean",
+                "required": false,
+                "default": true,
+                "description": "The flag to show/hide the header",
+                "access": "public"
+            }
+        },
+        "object-set-state":{
+            "type": "object",
+            "doc": {
+                "type": "object",
+                "required": false,
+                "default": null,
+                "description": "The results of the object set tree",
+                "access": "public"
+            }
+        }
+    },
+    "i18n": {
+        "MultiSelectMessage": [
+            "RelationsMessages"
+        ],
+        "SelectionCount": [
+            "UIMessages"
+        ],
+        "Awp0RelationNotAvailable": [
+            "RelationsMessages"
+        ]
+    },
+    "doc": {
+        "description": "A component used to display related objects in a tree format for a given input object.",
+        "access": "public"
+    }
+}

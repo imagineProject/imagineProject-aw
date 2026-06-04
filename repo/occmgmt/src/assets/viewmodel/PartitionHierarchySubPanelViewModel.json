@@ -1,0 +1,107 @@
+{
+    "schemaVersion" : "1.0.0",
+    "actions":
+    {
+        "navigateBackToPrevLocation":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "resizePanelWidthToNormal"
+                },
+                {
+                    "action": "navigateToPrevLocation"
+                }
+            ]
+        },
+        "resizePanelWidthToNormal":{
+            "actionType": "JSFunction",
+            "method": "resizePanelWidthToNormal",
+            "inputData":
+            {
+                "popupApi": "{{subPanelContext.activeViewSharedData.popupOptions.popupId}}"
+            },
+            "deps": "js/AwPartitionHierarchyPopupService"
+        },
+        "navigateToPrevLocation":{
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [
+                    {
+                        "name": "awb0.updateDiscoverySharedDataForPanelNavigation",
+                        "eventData":
+                        {
+                            "nextActiveView": "Awb0DiscoveryFilterCommandSubPanel",
+                            "recipeOperator": "Filter"
+                        }
+                    }
+                ]
+            }
+        },
+        "initializePartitionHierarchyView":{
+            "actionType": "JSFunction",
+            "method": "changePanelWidth",
+            "inputData":
+            {
+                "sharedData": "{{subPanelContext.activeViewSharedData.popupOptions.popupId}}"
+            },
+            "deps": "js/AwPartitionHierarchyPopupService"
+        },
+        "updateFilters":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "setActiveGroupIndexToZero",
+                "condition": "!conditions.isAdvFilterEnabled"
+            },
+            {
+                "action": "updateFiltersInRecipe"
+            }]
+        },
+        "setActiveGroupIndexToZero":{
+            "actionType": "JSFunction",
+            "method": "setActiveGroupIndexToZero",
+            "inputData": {
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "subPanelNavigateBack": true
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "updateFiltersInRecipe":{
+            "actionType": "JSFunction",
+            "method": "updateFiltersInRecipe",
+            "inputData":
+            {
+                "subPanelContext": "{{subPanelContext}}",
+                "partitionScheme": "{{subPanelContext.sharedData.clickedObj}}"
+            },
+
+            "deps": "js/AwPartitionHierarchyPopupService"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializePartitionHierarchyView"
+    },
+    "onEvent": [],
+    "messages": { },
+    "data":
+    {
+        "partitionFilterState":{
+            "initialValues":{
+                "loadedPartition" : 0,
+                "isFilterButtonEnable": false
+            },
+            "meta": {}
+        }
+    },
+    "conditions": {
+        "isAdvFilterEnabled": {
+            "expression": "ctx.preferences.AW_Discovery_Advanced_Filter[0] === 'true'"
+        }
+    },
+    "i18n":{
+        "Apply": [ "OccmgmtPartitionMessages" ],
+        "backButton": [ "OccmgmtPartitionMessages" ]
+    }
+}

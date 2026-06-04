@@ -1,0 +1,215 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "featureNamesList": {
+            "displayName": "{{i18n.selectFeature}}",
+            "type": "STRINGARRAY",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP",
+            "isArray": true,
+            "dataProvider": "featuresDataProvider",
+            "renderingHint": "checkboxoptionlov"
+        },
+        "advancedFeatureSelectorLink": {
+            "displayName": "{{i18n.advancedFeatureSelector}}",
+            "type": "STRING",
+            "isRequired": "false"
+        },
+        "operationRadioProp": {
+            "displayName": "{{i18n.featureOperator}}",
+            "type": "STRING",
+            "isEditable": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP"
+        },
+        "operationRadioPropValues": {
+            "type": "STRING",
+            "dbValue": [ {
+                    "propDisplayValue": "{{i18n.anyTitle}}",
+                    "propInternalValue": "or"
+                },
+                {
+                    "propDisplayValue": "{{i18n.allTitle}}",
+                    "propInternalValue": "and"
+                }
+            ]
+        },
+        "selectionsLabel": {
+            "type": "STRING",
+            "displayName": "{{i18n.selections}}",
+            "dispValue": ""
+        }
+    },
+    "dataProviders": {
+        "featuresDataProvider": {
+            "initializeAction": "loadFeaturesIntoIncrementalList",
+            "nextAction": "loadFeaturesIntoIncrementalList",
+            "response": "{{data.featuresIncrementalList}}",
+            "totalFound": "{{data.totalFound}}",
+            "moreValuesExist": "{{data.moreValuesExist}}"
+        }
+    },
+    "actions": {
+        "loadFeaturesIntoIncrementalList": {
+            "actionType": "JSFunction",
+            "method": "getIncrementalFeaturesList",
+            "inputData": {
+                "featureFacetValues": "{{props.subPanelContext.searchState.featuresFilterCategory.featureFacetValues}}",
+                "filter": "{{data.featureNamesList.filterString}}",
+                "listLoadInput": "request.listLoadInput"
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "featuresIncrementalList": "featuresIncrementalList",
+                "moreValuesExist": "moreValuesExist"
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "initializeFilterView": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "initializeFeaturesFilteringComponent"
+                },
+                {
+                    "action": "performFeatureFacetsSearch",
+                    "condition": "!conditions.featureFacetPopulated"
+                }
+            ]
+        },
+        "initializeFeaturesFilteringComponent": {
+            "actionType": "JSFunction",
+            "method": "initializeFeaturesFilteringComponent",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.searchState}}"
+            },
+            "outputData": {
+                "operationRadioProp.dbValue" : "featureFilteringOperator",
+                "featureNamesList.dbValue" : "featureFilteringListDbValue",
+                "featureNamesList.uiValue" : "featureFilteringUiValue",
+                "featureNamesList.displayValues" : "featureFilteringDisplayValues",
+                "featureNamesList.displayValsModel" : "featureFilteringDisplayValsModel",
+                "featureNamesList.value" : "featureFilteringUiValue"
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "performFeatureFacetsSearch": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2018-05-Finder",
+            "method": "performFacetSearch",
+            "inputData": {
+                "facetSearchInput": {
+                    "providerName": "Pca0SavedVariantsProvider",
+                    "maxToReturn": 100,
+                    "searchCriteria": "{{function:getPerformFacetSearchInput}}",
+                    "searchFilterMap": "",
+                    "startIndex": ""
+                }
+            },
+            "outputData": {
+                "updateResponseData": "{{function:cacheFeaturesDataFromSoa}}"
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "setSelectionsInPickAndChooseGrid": {
+            "actionType": "JSFunction",
+            "method": "setSelectionsInPickAndChooseGrid",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.searchState}}"
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "updateFilterValuesAsPerFeatureSelection": {
+            "actionType": "JSFunction",
+            "method": "selectFeatureFacetsFromFeaturesList",
+            "inputData": {
+                "featureNamesList": "{{data.featureNamesList}}",
+                "searchState": "{{props.subPanelContext.searchState}}"
+            },
+            "outputData": {
+                "featureNamesList" : ""
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "handleAndOrSelectionChange": {
+            "actionType": "JSFunction",
+            "method": "handleAndOrSelectionChange",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.searchState}}",
+                "searchOperationType": "{{data.operationRadioProp.dbValue}}"
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "updateStateForUnreferencedFiltering": {
+            "actionType": "JSFunction",
+            "method": "updateStateForUnreferencedFiltering",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.searchState}}",
+                "featureNamesList": "{{data.featureNamesList}}"
+            },
+            "outputData": {
+                "featureNamesList" : ""
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "functions": {
+        "getPerformFacetSearchInput": {
+            "functionName": "getPerformFacetSearchInput",
+            "parameters": [ "{{props.subPanelContext.variantRuleData}}"]
+        },
+        "cacheFeaturesDataFromSoa": {
+            "functionName": "cacheFeaturesDataFromSoa",
+            "parameters": [
+                "{{props.subPanelContext.searchState}}"
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeFilterView",
+        "onUpdate": [ {
+            "action": "initializeFeaturesFilteringComponent",
+            "observers": [ "props.subPanelContext.searchState.featuresFilterChipData",
+            "props.subPanelContext.searchState.featuresFilterChipData.children.length" ]
+        } ]
+     },
+    "onEvent": [
+        {
+            "eventId": "featureNamesList.lovValueChanged",
+            "action": "updateFilterValuesAsPerFeatureSelection"
+        }
+    ],
+    "messages": {},
+    "conditions": {
+        "unreferencedTypeFilterCategorySelected": {
+            "expression": "props.subPanelContext.searchState.activeFiltersInfo.showUnreferencedConstraints"
+        },
+        "featureFacetPopulated": {
+            "expression": "props.subPanelContext.searchState.featuresFilterCategory.isPopulated"
+        },
+        "multipleFeatureFacetsSelected": {
+            "expression": "props.subPanelContext.searchState.activeFiltersInfo.activeFilterMap['Cfg0AbsRule.features'].length > 1"
+        },
+        "enableFilterApply": {
+            "expression": "props.subPanelContext.searchState.featuresFilterCategory.filterValues.length > 0"
+        }
+    },
+    "i18n": {
+        "advancedFeatureSelector": [ "ConfiguratorExplorerMessages" ],
+        "anyTitle": [ "ConfiguratorExplorerMessages" ],
+        "allTitle": [ "ConfiguratorExplorerMessages" ],
+        "condition": [ "ConfiguratorExplorerMessages" ],
+        "familiesAndFeatures": [ "ConfiguratorExplorerMessages" ],
+        "featureOperator": [ "ConfiguratorExplorerMessages" ],
+        "filter": [ "ConfiguratorMessages" ],
+        "filterBy": [ "ConfiguratorExplorerMessages" ],
+        "filters": [ "ConfiguratorExplorerMessages" ],
+        "selections": [ "ConfiguratorExplorerMessages" ],
+        "selectFeature": [ "ConfiguratorExplorerMessages" ],
+        "subject": [ "ConfiguratorExplorerMessages" ],
+        "subjectOrCondition": [ "ConfiguratorExplorerMessages" ]
+    }
+}

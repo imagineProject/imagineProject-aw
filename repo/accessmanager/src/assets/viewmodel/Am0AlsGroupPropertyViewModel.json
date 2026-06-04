@@ -1,0 +1,174 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "onEvent": [
+        {
+            "eventId": "editHandlerStateChange",
+            "cacheEventData": true,
+            "action": "setPropAttributes",
+            "condition": "state === 'canceling'"
+        },
+        {
+            "eventId": "editHandlerStateChange",
+            "condition": "state === 'starting'",
+            "action": "setPropsLsd"
+        }
+    ],
+    "actions": {
+        "setPropAttributes": {
+            "actionType": "JSFunction",
+            "method": "setPropAttributes",
+            "inputData": {
+                "context": "{{props.subPanelContext}}",
+                "data": "{{data}}"
+            },
+            "deps": "js/propertyGroupsService"
+        },
+        "setPropParentUid": {
+            "actionType": "JSFunction",
+            "method": "setPropParentUid",
+            "inputData": {
+                "context": "{{props.subPanelContext}}",
+                "data": "{{data}}"
+            },
+            "deps": "js/propertyGroupsService"
+        },
+        "setPropsLsd": {
+            "actionType": "JSFunction",
+            "method": "setPropsLsd",
+            "inputData": {
+                "context": "{{props.subPanelContext}}",
+                "data": "{{data.fnd0AlsGroupProperties}}"
+            },
+            "outputData": {
+                "fnd0AlsGroupProperties": ""
+            },
+            "deps": "js/propertyGroupsService"
+        },
+        "addHtmlPanelData": {
+            "actionType": "JSFunction",
+            "method": "addHtmlPanelPropertiesInDataSource",
+            "inputData": {
+                "updatedProperties": [
+                    "{{data.fnd0AlsGroupProperties}}"
+                ],
+                "type": "SUMMARY"
+            },
+            "deps": "js/xrtUtilities"
+        },
+        "getAlsProps": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "startIndex": "{{data.dataProviders.ALSPropertiesProvider.startIndex}}",
+                        "providerName": "Am0AlsEnabledPropsProvider",
+                        "searchCriteria": {
+                            "type": "{{subPanelContext.selected.props.fnd0AlsGroupType.dbValue}}",
+                            "searchString": "{{data.fnd0AlsGroupProperties.filterString}}"
+                        }
+                    }
+                },
+                "1": {
+                    "types": [
+                        {
+                            "name": "PropertyInfo",
+                            "properties": [
+                                {
+                                    "name": "property_name"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "ImanType",
+                            "properties": [
+                                {
+                                    "name": "type_name"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "alsProps": "{{function:getPropGroupPropertyLovObjects}}",
+                "totalPropsLoaded": "totalLoaded",
+                "totalPropsFound": "totalFound"
+            }
+        },
+        "updateSearchStateForPropertyGroup": {
+            "actionType": "JSFunction",
+            "method": "updateSearchStateForPropertyGroup",
+            "inputData": {
+                "props": "{{props.subPanelContext.xrtState.xrtVMO.props}}",
+                "searchState": "{{props.subPanelContext.context.searchState}}"
+            },
+            "deps": "js/propertyGroupsService"
+        }
+    },
+    "data": {
+        "fnd0AlsGroupProperties": {
+            "displayName": "{{i18n.propertyGroupProperties}}",
+            "type": "CHECKBOX",
+            "isArray": true,
+            "isRequired": "true",
+            "labelPosition:": "PROPERTY_LABEL_AT_TOP",
+            "dataProvider": "ALSPropertiesProvider",
+            "renderingHint": "checkboxoptionlov",
+            "displayValue": "{{props.subPanelContext.selected.props.fnd0AlsGroupProperties.dbValue}}",
+            "dbValue": "{{props.subPanelContext.selected.props.fnd0AlsGroupProperties.dbValue}}"
+        },
+        "fnd0AlsGroupType": {
+            "displayName": "{{i18n.propertyGroupType}}",
+            "type": "STRING",
+            "displayValue": "{{props.subPanelContext.selected.props.fnd0AlsGroupType.dbValue}}",
+            "dbValue": "{{props.subPanelContext.selected.props.fnd0AlsGroupType.dbValue}}"
+        }
+    },
+    "dataProviders": {
+        "ALSPropertiesProvider": {
+            "action": "getAlsProps",
+            "response": "{{data.alsProps}}",
+            "totalFound": "{{data.totalPropsFound}}"
+        }
+    },
+    "functions": {
+        "getPropGroupPropertyLovObjects": {
+            "functionName": "getLovObjects",
+            "parameters": [
+                "property_name"
+            ],
+            "deps": "js/propertyGroupsService"
+        }
+    },
+    "i18n": {
+        "propertyGroupProperties": [
+            "AccessmgmtConstants"
+        ],
+        "propertyGroupType": [
+            "AccessmgmtConstants"
+        ]
+    },
+    "lifecycleHooks": {
+        "onMount": "setPropParentUid",
+        "onUpdate": [
+            {
+                "action": "addHtmlPanelData",
+                "observers": [
+                    "viewModel.data.fnd0AlsGroupProperties"
+                ]
+            },
+            {
+                "action": "updateSearchStateForPropertyGroup",
+                "observers": [
+                    "props.subPanelContext.xrtState.xrtVMO.props.fnd0AlsGroupName.value",
+                    "props.subPanelContext.xrtState.xrtVMO.props.fnd0AlsGroupProperties.value.length"
+                ]
+            }
+        ]
+    }
+}

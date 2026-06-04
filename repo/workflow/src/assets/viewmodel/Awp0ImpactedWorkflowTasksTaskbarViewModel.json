@@ -1,0 +1,453 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "notifyAssignees": {
+            "displayName": "{{i18n.notifyAssignees}}",
+            "dbValue": "false",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+"actions": {
+        "initialBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "populatePanelData"
+                },
+                {
+                    "action": "setUpdateTasksAndNotifyOnmount"
+                }
+            ]
+        },
+        "impactedWorkflowTasksNavigateToBack": {
+            "actionType": "JSFunction",
+            "method": "goBack",
+            "deps": "js/locationNavigation.service"
+        },
+        "populatePanelData": {
+            "actionType": "JSFunction",
+            "method": "populatePanelData",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "addUserPanelState" : "{{ctx.state.params.addUserPanelState}}",
+                "notifyAssignees": "{{fields.notifyAssignees}}"
+            },
+            "outputData": {
+                "notifyAssignees": "notifyAssignees"
+            },
+            "deps": "js/Awp0ImpactedWorkflowTasks"
+        },
+        "setUpdateTasksAndNotifyInBackground":{
+            "actionType": "JSFunction",
+            "method": "setUpdateTasksAndNotifyInBackground",
+            "inputData":
+            {
+                "addUserPanelState" : "{{ctx.state.params.addUserPanelState}}",
+                "data": "{{data}}",
+                "notifyAssignees": "{{fields.notifyAssignees}}"
+            },
+            "outputData": {
+                "sharedData":""
+            },
+            "deps": "js/Awp0ImpactedWorkflowTasks"
+        },
+        "setUpdateTasksAndNotifyOnmount":{
+            "actionType": "JSFunction",
+            "method": "setUpdateTasksAndNotifyOnmount",
+            "inputData":
+            {
+                "addUserPanelState" : "{{ctx.state.params.addUserPanelState}}",
+                "data": "{{data}}",
+                "notifyAssignees": "{{fields.notifyAssignees}}",
+                "ctx": "{{ctx}}"
+            },
+            "deps": "js/Awp0ImpactedWorkflowTasks"
+        },
+        "AddParticipantsInternal":{
+            "actionType": "JSFunctionAsync",
+            "method": "replaceParticipantsInternal",
+            "inputData": {
+                "updateParticipantInfo": "{{function:getMultipleAddParticipantInput}}",
+                "addUserPanelState" : "{{ctx.state.params.addUserPanelState}}",
+                "subPanelContext" : "{{subPanelContext}}",
+                "selParticipantObject" : "{{ctx.state.params.addUserPanelState.selParticipantObject}}",
+                "ctx": "{{ctx}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "dynamicParticipants.plTable.reload"
+                    },
+                    {
+                        "name": "closeDialog",
+                        "condition": "!subPanelContext.panelPinned"
+                    },
+                    {
+                        "name": "complete",
+                        "condition": "!data.isDestroyed()",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/Awp0ReplaceParticipant"
+        },
+        "removeParticipantsInternal":{
+            "actionType": "JSFunction",
+            "method": "replaceParticipantsInternal",
+            "inputData": {
+                "updateParticipantInfo": "{{function:getMultipleRemoveParticipantInput}}",
+                "addUserPanelState" : "{{ctx.state.params.addUserPanelState}}",
+                "subPanelContext" : "{{subPanelContext}}",
+                "selParticipantObject" : "{{ctx.state.params.addUserPanelState.selectionData.selected[0]}}",
+                "ctx": "{{ctx}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "workflow.resetParticipantTable",
+                        "excludeLocalDataCtx": true
+                    },
+                    {
+                        "name": "dynamicParticipants.plTable.reload"
+                    },
+                    {
+                        "name": "dynaParticipants.refreshSelectionData"
+                    },
+                    {
+                        "name": "closeDialog",
+                        "condition": "!subPanelContext.panelPinned"
+                    },
+                    {
+                        "name": "complete",
+                        "condition": "!data.isDestroyed()",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/Awp0ReplaceParticipant"
+        },
+        "replaceParticipantsInternal": {
+            "actionType": "JSFunction",
+            "method": "replaceParticipantsInternal",
+            "inputData": {
+                "updateParticipantInfo": "{{function:getReplaceParticipantInput}}",
+                "addUserPanelState" : "{{ctx.state.params.addUserPanelState}}",
+                "subPanelContext" : "{{subPanelContext}}",
+                "selParticipantObject" : "{{ctx.state.params.addUserPanelState.selParticipantObject}}",
+                "ctx": "{{ctx}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/Awp0ReplaceParticipant"
+        },
+        "replaceParticipantsInternalNew": {
+            "actionType": "JSFunctionAsync",
+            "method": "replaceParticipantsInternalNew",
+            "inputData": {
+                "updateParticipantInfo": "{{function:getReplaceParticipantInput}}",
+                "addUserPanelState" : "{{ctx.state.params.addUserPanelState}}",
+                "subPanelContext" : "{{subPanelContext}}",
+                "selParticipantObject" : "{{ctx.state.params.addUserPanelState.selParticipantObject}}",
+                "ctx": "{{ctx}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/Awp0ReplaceParticipant",
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "serverError"
+                    }
+                ],
+                "success": [
+                    {
+                        "message": "successSync"
+                    }
+                ]
+            }
+        },
+        "addParticipantsInternalNew": {
+            "actionType": "JSFunctionAsync",
+            "method": "replaceParticipantsInternalNew",
+            "inputData": {
+                "updateParticipantInfo": "{{function:getMultipleAddParticipantInput}}",
+                "addUserPanelState" : "{{ctx.state.params.addUserPanelState}}",
+                "subPanelContext" : "{{subPanelContext}}",
+                "selParticipantObject" : "{{ctx.state.params.addUserPanelState.selParticipantObject}}",
+                "ctx": "{{ctx}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/Awp0ReplaceParticipant",
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "serverError"
+                    }
+                ],
+                "success": [
+                    {
+                        "message": "successSync"
+                    }
+                ]
+            }
+        },
+        "removeParticipantsInternalNew": {
+            "actionType": "JSFunctionAsync",
+            "method": "replaceParticipantsInternalNew",
+            "inputData": {
+                "updateParticipantInfo": "{{function:getMultipleRemoveParticipantInput}}",
+                "addUserPanelState" : "{{ctx.state.params.addUserPanelState}}",
+                "subPanelContext" : "{{subPanelContext}}",
+                "selParticipantObject" : "{{ctx.state.params.addUserPanelState.selectionData.selected[0]}}",
+                "ctx": "{{ctx}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    },
+                    {
+                        "name": "workflow.resetParticipantTable",
+                        "excludeLocalDataCtx": true
+                    },
+                    {
+                        "name": "dynamicParticipants.plTable.reload"
+                    },
+                    {
+                        "name": "dynaParticipants.refreshSelectionData"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/Awp0ReplaceParticipant",
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "serverError"
+                    }
+                ],
+                "success": [
+                    {
+                        "message": "successSyncRemove"
+                    }
+                ]
+            }
+        }
+    },
+    "messages": {
+        "successSync": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.successSync}}"
+        },
+        "successSyncRemove": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.successSyncRemove}}"
+        }
+    },
+    "dataProviders": {},
+    "functions": {
+        "getRemoveDynaParticipantsObj": {
+            "functionName": "getRemoveDynaParticipantsObj",
+            "parameters": [
+                "{{ctx.state.params.addUserPanelState}}"
+            ]
+        },
+        "getItemRev": {
+            "functionName": "getItemRev",
+            "parameters": [
+                "{{ctx.state.params.addUserPanelState}}"
+            ]
+        },
+        "getReplaceItemRev":{
+            "functionName": "getReplaceItemRev",
+            "parameters": [
+                "{{ctx.state.params.addUserPanelState}}"
+            ]
+        },
+        "getReplaceParticipantType":{
+            "functionName": "getReplaceParticipantType",
+            "parameters": [
+                "{{ctx.state.params.addUserPanelState.selectionData.selected[0]}}"
+            ]
+        },
+        "getMultipleRemoveParticipantInput":{
+            "functionName": "getMultipleRemoveParticipantInput",
+            "parameters": [
+                "{{ctx.state.params.addUserPanelState}}",
+                "{{ctx.state.params.addUserPanelState.selectionData.selected}}",
+                "{{ctx}}"
+            ]
+        },
+        "getMultipleAddParticipantInput":{
+            "functionName": "getMultipleAddParticipantInput",
+            "parameters": [
+                "{{ctx.state.params.addUserPanelState}}",
+                "{{ctx.state.params.addUserPanelState.selectedUsers}}",
+                "{{ctx}}"
+            ]
+        },
+        "getReplaceParticipantInput":{
+            "functionName": "getReplaceParticipantInput",
+            "parameters": [
+                "{{ctx}}"
+            ]
+        },
+        "getParticipantRepositoryWSO":{
+            "functionName": "getParticipantRepositoryWSO",
+            "parameters": [
+                "{{ctx.state.params.addUserPanelState}}"
+            ]
+        },
+        "getAddParticipantType":{
+            "functionName": "getAddParticipantType",
+            "parameters": [
+                "{{ctx.state.params}}"
+            ]
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "closeDialog",
+            "action": "impactedWorkflowTasksNavigateToBack"
+        }
+    ],
+    "conditions": {
+        "isDynamicParticipantSyncNotification": {
+            "expression": "ctx.preferences.WRKFLW_dynamic_participant_sync_notification[0] !== '0'"
+        },
+        "showReplace": {
+            "expression": "ctx.state.params.toAssignee != undefined && ctx.state.params.oldAssigneeUid != undefined"
+        },
+        "showReplaceSync": {
+            "expression": "ctx.state.params.toAssignee != undefined && ctx.state.params.oldAssigneeUid != undefined && data.dataProviders.impactedWorkflowTasksInfoSearch.viewModelCollection.loadedVMObjects > 0"
+        },
+        "showRemove": {
+            "expression": "ctx.state.params.toAssignee === undefined"
+        },
+        "showRemoveSync": {
+            "expression": "ctx.state.params.toAssignee === undefined && data.dataProviders.impactedWorkflowTasksInfoSearch.viewModelCollection.loadedVMObjects > 0"
+        },
+        "showAdd": {
+            "expression": "ctx.state.params.oldAssigneeUid === undefined"
+        },
+        "showAddSync": {
+            "expression": "ctx.state.params.oldAssigneeUid === undefined && data.dataProviders.impactedWorkflowTasksInfoSearch.viewModelCollection.loadedVMObjects > 0"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initialBatchJob"
+    },
+    "i18n": {
+        "CancelText": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "ModifyParticipantsOnly": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "ModifyParticipantsReassignTasks": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "RemoveParticipantsOnly": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "RemoveParticipantsReassignTasks": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "AddParticipantsOnly": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "AddParticipantsReassignTasks": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "notifyAssignees": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "successSync" : [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "successSyncRemove" : [
+            "WorkflowCommandPanelsMessages"
+        ]
+    }
+}

@@ -1,0 +1,844 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions":{
+        "updateSelection": {
+            "actionType":"JSFunction",
+            "method":"updateSelection",
+            "inputData": {
+                "clickedChip": "{{parameters.chip}}",
+                "filteredOutChips": "{{data.filteredOutChips}}",
+                "data": "{{data}}"
+            },
+            "outputData":{
+                "filteredOutChips":""
+            },
+            "deps":"js/Pma1ImpactAnalysisService"
+        },
+        "loadUpdateSummaryData":{
+            "actionType":"JSFunction",
+            "method":"loadUpdateSummaryData",
+            "inputData":{
+                "data":"{{data}}"
+            },
+            "outputData":{
+                "updateSummaryState.updateSummaries":"updateSummaries",
+                "updateSummaryState.headerSummary":"headerSummary",
+                "updateSummaryState.chips":"chips",
+                "tileFilterOptions" : "tileFilterOptions",
+                "runInBackground" : "runInBackground",
+                "totalFound": "chips.length",
+                "searchResults": "chips",
+                "isHiddenTilesInPanel": "isHiddenTilesInPanel"
+            },
+            "deps":"js/Pma1ImpactAnalysisService",
+            "events": {
+                "success": [{
+                    "name": "Pma1ImpactAnalysis.headerTileSelected",
+                    "condition": "subPanelContext.cbaContext.isGuidedUpdateLaunchFromCba===false"
+                }]
+            }
+        },
+        "setSourceAndTargetOccForImpactAnalysis": {
+            "actionType":"JSFunction",
+            "method":"setSourceAndTargetOccForImpactAnalysis",
+            "inputData":{
+                "props":"{{props}}"
+            },
+            "outputData": {
+                "swapRequired":"swapRequired",
+                "srcViewKey":"srcViewKey",
+                "trgViewKey":"trgViewKey",
+                "sourceRootOcc":"sourceRootOcc",
+                "sourceRootElement":"sourceRootElement",
+                "targetRootOcc":"targetRootOcc",
+                "sourceOccContext": "sourceOccContext"
+            },
+            "events": {
+                "success": [{
+                    "name": "Pma1ImpactAnalysis.guidedUpdatepanelPostAction",
+                    "condition": "data.sourceRootOcc && data.targetRootOcc"
+                },{
+                    "name": "Pma1ImpactAnalysis.enableFocusMode",
+                    "condition": "data.sourceRootOcc"
+                }]
+            },
+            "deps":"js/Pma1ImpactAnalysisService"
+        },
+        "updateSelectedNodeOnCbaContext":{
+            "actionType": "JSFunction",
+            "method": "updateSelectedNodeOnCbaContext",
+            "deps": "js/Pma1ImpactAnalysisService",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "commandContext":"{{eventData.commandContext}}"
+            }
+        },
+        "cleanUp": {
+            "actionType":"JSFunction",
+            "method":"cleanUp",
+            "inputData":{
+                "data":"{{data}}"
+            },
+            "outputData": {
+                "updateSummaryState":""
+            },
+            "deps":"js/Pma1ImpactAnalysisService"
+        },
+        "onUpdateCBAFirstLaunch": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pma1ImpactAnalysis.onUpdateCBAFirstLaunch"
+                } ]
+            }
+        },
+        "invokeOldGuidedUpdate": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-BOMAutomation-2020-12-GenerateBOM",
+            "method": "getUpdateActionsSummary",
+            "inputData": {
+                "changeNoticeRevision": {
+                    "uid": "{{ctx.cadbomalignment.ImpactAnalysis.ECNForImpactAnalysis.uid}}",
+                    "type": "{{ctx.cadbomalignment.ImpactAnalysis.ECNForImpactAnalysis.type}}"
+                },
+                "sourceRootOcc": "{{data.sourceRootOcc}}",
+                "targetRootOcc": "{{data.targetRootOcc}}"
+            },
+            "outputData": {
+                "response": "",
+                "errorMessage": "{{function:processPartialErrors}}"
+            },
+            "events": {
+                "success": [{
+                    "name": "Pma1ImpactAnalysis.loadUpdateSummaryData"
+                }]
+            },
+            "actionMessages": {
+            "failure": [ {
+                "condition":"data.errorMessage.level > 1",
+                "message": "operationErrorMessage"
+            },
+            {
+                "condition":"data.errorMessage.level <= 1",
+                "message": "operationInfoMessage"
+            } ]
+            },
+            "deps": "js/Pma1ImpactAnalysisService"
+        },
+        "invokeNewGuidedUpdate": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-BOMAutomation-2024-06-GenerateBOM",
+            "method": "getUpdateActionsSummary2",
+            "inputData": {
+                "changeNoticeRevision": "{{function:getChangeNoticeRevision}}",
+                "sourceOccurrence": "{{data.sourceRootOcc}}",
+                "targetOccurrence": "{{data.targetRootOcc}}"
+            },
+            "outputData": {
+                "response": "",
+                "errorMessage": "{{function:processPartialErrors}}"
+            },
+            "events": {
+                "success": [{
+                    "name": "Pma1ImpactAnalysis.loadUpdateSummaryData"
+                }]
+            },
+            "actionMessages": {
+            "failure": [ {
+                "condition":"data.errorMessage.level > 1",
+                "message": "operationErrorMessage"
+            },
+            {
+                "condition":"data.errorMessage.level <= 1",
+                "message": "operationInfoMessage"
+            } ]
+            },
+            "deps": "js/Pma1ImpactAnalysisService"
+        },
+        "fetchUpdates": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "invokeOldGuidedUpdate",
+                    "condition": "conditions.isInvokeOldGuidedUpdate"
+
+                },
+                {
+                    "action": "invokeNewGuidedUpdate",
+                    "condition": "!conditions.isInvokeOldGuidedUpdate"
+                }
+            ]
+        },
+        "fireUpdateSummaryInProgress": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pma1ImpactAnalysis.clearUpdateProcessFlag",
+                    "eventData": {
+                        "isUpdateSummaryInProgress": true
+                    }
+                } ]
+            }
+        },
+        "setUpdateSummaryProgressState": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "inputData": {
+                "path": "isUpdateSummaryInProgress",
+                "value": "{{data.eventMap['Pma1ImpactAnalysis.clearUpdateProcessFlag'].isUpdateSummaryInProgress}}",
+                "target": "{{updateSummaryState}}"
+            },
+            "deps": "js/occmgmtUtils"
+        },
+        "fireUpdate": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "fireUpdateOld",
+                    "condition": "conditions.isInvokeOldGuidedUpdate"
+
+                },
+                {
+                    "action": "fireUpdateNew",
+                    "condition": "!conditions.isInvokeOldGuidedUpdate"
+                }
+            ]
+        },
+        "performUpdate":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "fireUpdateSummaryInProgress"
+                },
+                {
+                    "action": "fireUpdate"
+                }
+            ]
+        },
+        "showMissingActiveEcnMsg": {
+            "actionType":"JSFunction",
+            "method":"showError",
+            "inputData":{
+                "message":"{{data.i18n.Pma1MissingActiveEcnMsg}}"
+            },
+            "deps":"js/messagingService"
+        },
+        "fireUpdateOld": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-BOMAutomation-2020-05-GenerateBOM",
+            "method": "updateTargetBOM",
+            "inputData": {
+                "sourceOccurrence": "{{data.sourceRootOcc}}",
+                "input": "{{function:prepareUpdateTargetBOMInputOld}}",
+                "runInBackground": "{{data.runInBackground.dbValue}}"
+            },
+            "outputData": {
+                "response": "{{function:processUpdateTargetBOMOutput}}",
+                "errorMessage": "{{function:processPartialErrors}}"
+            },
+            "events": {
+                "success": [{
+                    "name": "Pma1ImpactAnalysis.disableImpactAnalysisModeInCBA"
+                }],
+                "failure": [{
+                    "name": "Pma1ImpactAnalysis.clearUpdateProcessFlag",
+                    "eventData": {
+                        "isUpdateSummaryInProgress": false
+                    }
+                }]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "condition":"data.srcViewKey==='CBASrcContext' && props.subPanelContext.occContext.supportedFeatures.Awb0DesignStructureFeature === true && data.runInBackground.dbValue === false",
+                    "message": "alignedPartUpdateCompleteNotification"
+                },
+                {
+                    "condition":"data.srcViewKey==='CBATrgContext' && props.subPanelContext.occContext2.supportedFeatures.Awb0PartStructureFeature === true && data.runInBackground.dbValue === false",
+                    "message": "alignedDesignUpdateCompleteNotification"
+                },
+                {
+                    "condition":"data.srcViewKey==='CBASrcContext' && props.subPanelContext.occContext.supportedFeatures.Awb0DesignStructureFeature === true && data.runInBackground.dbValue === true",
+                    "message": "partUpdateProgressNotification"
+                },
+                {
+                    "condition":"data.srcViewKey==='CBATrgContext' && props.subPanelContext.occContext2.supportedFeatures.Awb0PartStructureFeature === true && data.runInBackground.dbValue === true",
+                    "message": "designUpdateProgressNotification"
+                }],
+                "failure": [ {
+                    "condition":"data.errorMessage.level > 1",
+                    "message": "operationErrorMessage"
+                },
+                {
+                    "condition":"data.errorMessage.level <= 1",
+                    "message": "operationInfoMessage"
+                } ]
+            },
+            "deps": "js/Pma1ImpactAnalysisService"
+        },
+        "fireUpdateNew": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-BOMAutomation-2024-06-GenerateBOM",
+            "method": "updateTargetBOM2",
+            "inputData": {
+                "sourceOccurrence": "{{data.sourceRootOcc}}",
+                "updateActions": "{{function:prepareUpdateTargetBOMInput}}",
+                "runInBackground": "{{data.runInBackground.dbValue}}",
+                "updateOptions":{
+                    "Command" : "GuidedUpdate"
+                }
+            },
+            "outputData": {
+                "response": "{{function:processUpdateTargetBOMOutput}}",
+                "errorMessage": "{{function:processPartialErrors}}"
+            },
+            "events": {
+                "success": [{
+                    "name": "Pma1ImpactAnalysis.disableImpactAnalysisModeInCBA"
+                }],
+                "failure": [{
+                    "name": "Pma1ImpactAnalysis.clearUpdateProcessFlag",
+                    "eventData": {
+                        "isUpdateSummaryInProgress": false
+                    }
+                }]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "condition":"data.srcViewKey==='CBASrcContext' && props.subPanelContext.occContext.supportedFeatures.Awb0DesignStructureFeature === true && data.runInBackground.dbValue === false",
+                    "message": "alignedPartUpdateCompleteNotification"
+                },
+                {
+                    "condition":"data.srcViewKey==='CBATrgContext' && ( props.subPanelContext.occContext2.supportedFeatures.Awb0PartStructureFeature === true || props.subPanelContext.occContext2.supportedFeatures.ProductEBOMFeature === true ) && data.runInBackground.dbValue === false",
+                    "message": "alignedDesignUpdateCompleteNotification"
+                },
+                {
+                    "condition":"data.srcViewKey==='CBASrcContext' && props.subPanelContext.occContext.supportedFeatures.Awb0DesignStructureFeature === true && data.runInBackground.dbValue === true",
+                    "message": "partUpdateProgressNotification"
+                },
+                {
+                    "condition":"data.srcViewKey==='CBATrgContext' && ( props.subPanelContext.occContext2.supportedFeatures.Awb0PartStructureFeature === true || props.subPanelContext.occContext2.supportedFeatures.ProductEBOMFeature === true ) && data.runInBackground.dbValue === true",
+                    "message": "designUpdateProgressNotification"
+                }],
+                "failure": [ {
+                    "condition":"data.errorMessage.level > 1",
+                    "message": "operationErrorMessage"
+                },
+                {
+                    "condition":"data.errorMessage.level <= 1",
+                    "message": "operationInfoMessage"
+                } ]
+            },
+            "deps": "js/Pma1ImpactAnalysisService"
+        },
+        "setCBAPageTitleInIAMode": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cleanUp"
+                },
+                {
+                    "action": "initializeServiceForFocusMode"
+                },
+                {
+                    "action": "onUpdateCBAFirstLaunch"
+                }
+            ]
+        },
+        "initializeServiceForFocusMode": {
+            "actionType": "JSFunction",
+            "method": "initializeService",
+            "deps": "js/cbaFocusService"
+        },
+        "disableIAModeAndReloadCBA": {
+            "actionType":"JSFunction",
+            "method":"disableIAModeAndReloadCBA",
+            "inputData":{
+                "srcViewKey":"{{data.srcViewKey}}",
+                "trgViewKey":"{{data.trgViewKey}}",
+                "subPanelContext":"{{subPanelContext}}"
+            },
+            "deps":"js/Pma1ImpactAnalysisService"
+        },
+        "guidedUpdatepanelPostAction": {
+            "actionType":"JSFunction",
+            "method":"guidedUpdatepanelPostAction",
+            "inputData":{
+                "subPanelContext":"{{subPanelContext}}",
+                "swapRequired":"{{data.swapRequired}}"
+            },
+            "outputData": {
+                "sourceAlignedOcc":"sourceAlignedOcc",
+                "targetAlignedOcc":"targetAlignedOcc"
+            },
+            "events": {
+                "success": [{
+                    "name": "Pma1ImpactAnalysis.fetchUpdates"
+                }]
+            },
+            "deps":"js/Pma1ImpactAnalysisService"
+        },
+        "destroyGuideUpdatePanel":{
+            "actionType": "JSFunction",
+            "method": "destroyGuideUpdatePanel",
+            "inputData": {
+                "isImpactAnalysisMode": "{{ctx.cadbomalignment.ImpactAnalysis.isImpactAnalysisMode}}",
+                "commandContext": "{{subPanelContext}}",
+                "i18n": "{{data.i18n}}"
+            },
+            "deps": "js/Pma1ImpactAnalysisService"
+        },
+        "updateSelectionsInCBAView": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearSrcViewPrimaryWorkAreaSelection",
+                    "condition": "( data.sourceRootOcc.uid !== 'AAAAAAAAAAAAAA' &&  ((updateSummaryState.selectedTileSummary === undefined) || (updateSummaryState.selectedTileSummary && updateSummaryState.selectedTileSummary.srcInstances.length === 0)))"
+                },
+                {
+                    "action": "clearTrgViewPrimaryWorkAreaSelection",
+                    "condition": "( data.targetRootOcc.uid !== 'AAAAAAAAAAAAAA' && ((updateSummaryState.selectedTileSummary === undefined) || (updateSummaryState.selectedTileSummary && updateSummaryState.selectedTileSummary.trgInstances.length === 0)))"
+                },
+                {
+                    "action": "findInSrcView",
+                    "condition": "updateSummaryState.selectedTileSummary && updateSummaryState.selectedTileSummary.srcInstances.length > 0"
+                },
+                {
+                    "action": "findInTrgView",
+                    "condition": "updateSummaryState.selectedTileSummary && updateSummaryState.selectedTileSummary.trgInstances.length > 0"
+                }
+            ]
+        },
+        "clearSrcViewPrimaryWorkAreaSelection" : {
+            "actionType": "JSFunction",
+            "method": "selectionToModify",
+            "inputData": {
+                "elementsToSelect":[],
+                "subPanelContext": "{{subPanelContext}}",
+                "viewToReact": "{{data.srcViewKey}}"
+            },
+            "deps": "js/Pma1ImpactAnalysisService"
+        },
+        "clearTrgViewPrimaryWorkAreaSelection" : {
+            "actionType": "JSFunction",
+            "method": "selectionToModify",
+            "inputData": {
+                "elementsToSelect": [],
+                "subPanelContext": "{{subPanelContext}}",
+                "viewToReact": "{{data.trgViewKey}}"
+            },
+            "deps": "js/Pma1ImpactAnalysisService"
+        },
+        "findInSrcView": {
+            "actionType": "JSFunction",
+            "method": "selectionToModify",
+            "inputData": {
+                "elementsToSelect":  "{{updateSummaryState.selectedTileSummary.srcInstances}}",
+                "subPanelContext": "{{subPanelContext}}",
+                "viewToReact": "{{data.srcViewKey}}"
+            },
+            "deps": "js/Pma1ImpactAnalysisService"
+        },
+        "findInTrgView": {
+            "actionType": "JSFunction",
+            "method": "selectionToModify",
+            "inputData": {
+                "elementsToSelect": "{{updateSummaryState.selectedTileSummary.trgInstances}}",
+                "subPanelContext": "{{subPanelContext}}",
+                "viewToReact": "{{data.trgViewKey}}"
+            },
+            "deps": "js/Pma1ImpactAnalysisService"
+        },
+        "updateSrcSelectionsInSummaryPanel": {
+            "actionType":"JSFunction",
+            "method":"updateSelectionsInSummaryPanel",
+            "inputData":{
+                "data":"{{data}}",
+                "viewKey":"CBASrcContext"
+            },
+            "deps":"js/Pma1ImpactAnalysisService"
+        },
+        "updateTrgSelectionsInSummaryPanel": {
+            "actionType":"JSFunction",
+            "method":"updateSelectionsInSummaryPanel",
+            "inputData":{
+                "data":"{{data}}",
+                "viewKey":"CBATrgContext"
+            },
+            "deps":"js/Pma1ImpactAnalysisService"
+        },
+        "enableFocusMode": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "triggerEnableFocusModeEvent"
+                },
+                {
+                    "action": "updateFocusModeToggleState",
+                    "condition": "data.srcViewKey === 'CBASrcContext' || data.srcViewKey === 'CBATrgContext'"
+                }
+            ]
+        },
+        "triggerEnableFocusModeEvent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "cba.enableFocusMode",
+                    "eventData": {
+                        "srcViewKey":"{{data.srcViewKey}}",
+                        "sourceRootOcc":"{{data.sourceRootOcc}}",
+                        "sourceRootElement":"{{data.sourceRootElement}}",
+                        "sourceOccContext":"{{sourceOccContext}}"
+                    }
+                }
+            ]
+            }
+        },
+        "disableFocusMode": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [{
+                    "name": "cba.disableFocusMode",
+                    "eventData": {
+                        "occContexts": [
+                            "{{props.subPanelContext.occContext}}",
+                            "{{props.subPanelContext.occContext2}}"
+                        ]
+                    }
+                }]
+            }
+        },
+        "handleFocusModeToggleChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "enableFocusMode",
+                    "condition": "(data.srcViewKey === 'CBASrcContext' && data.focusModeToggleDBOM.dbValue) || (data.srcViewKey === 'CBATrgContext' && data.focusModeToggleEBOM.dbValue)"
+                },
+                {
+                    "action": "disableFocusMode",
+                    "condition": "!(data.srcViewKey === 'CBASrcContext' && data.focusModeToggleDBOM.dbValue) && !(data.srcViewKey === 'CBATrgContext' && data.focusModeToggleEBOM.dbValue)"
+                }
+            ]
+        },
+        "updateFocusModeToggleState": {
+            "actionType": "JSFunction",
+            "method": "getBooleanValue",
+            "inputData": {
+                "focusModeToggleState": "{{ctx.cbaContext.ImpactAnalysis.isFocusMode}}"
+            },
+            "outputData": {
+                "focusModeToggleDBOM.dbValue":"",
+                "focusModeToggleEBOM.dbValue":""
+            },
+            "deps": "js/CadBomAlignmentUtil"
+        },
+        "headerTileSelected": {
+            "actionType":"JSFunction",
+            "method":"headerTileSelected",
+            "inputData":{
+                "subPanelContext":"{{props.subPanelContext}}",
+                "updateSummaryState":"{{data.updateSummaryState}}",
+                "swapRequired":"{{data.swapRequired}}"
+            },
+            "deps":"js/Pma1ImpactAnalysisService"
+        }
+    },
+    "data":{
+        "focusModeToggleDBOM":{
+            "displayName": "{{i18n.Pma1FocusModeToggleDBOM}}",
+            "type": "BOOLEAN",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "isEditable": "true",
+            "dbValue": true
+        },
+        "focusModeToggleEBOM":{
+            "displayName": "{{i18n.Pma1FocusModeToggleEBOM}}",
+            "type": "BOOLEAN",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "isEditable": "true",
+            "dbValue": true
+        },
+        "tileFilterOptions": {
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": false,
+            "isEditable": false,
+            "isEnabled": false,
+            "dbValue": "ShowAll",
+            "vertical": false,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "tileFilterOptionValues": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.showAll}}",
+                    "propInternalValue": "ShowAll"
+                },
+                {
+                    "propDisplayValue": "{{i18n.showActionable}}",
+                    "propInternalValue": "ShowActionable"
+                }
+            ]
+        },
+        "showChipSet" :true,
+        "showTileFilterOption" :false,
+        "runInBackground": {
+            "displayName": "{{i18n.runInBackground}}",
+            "type": "BOOLEAN",
+            "dbValue": false,
+            "isEditable": false,
+            "isEnabled": false,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "sourceTopItem":"{{subPanelContext.cbaContext.ImpactAnalysis.sourceTopItem}}",
+        "updateSummaryState":{
+            "initialValues": {
+                "selectedTileSummary":"",
+                "updateSummaries":"",
+                "chips":""
+            },
+            "meta": {
+            }
+        },
+        "panelId":"PmaUpdateSummary",
+        "selectionChipModel": [],
+        "filteredSelectionChipModel": [],
+        "filteredOutChips": []
+    },
+    "dataProviders": {
+        "chipDataProvider": {
+            "type": "Static",
+            "response":"{{data.updateSummaryState.chips}}",
+            "totalFound": "{{data.updateSummaryState.chips.length}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+    "onEvent":[
+        {
+            "eventId": "productContextChangedEvent",
+            "condition":"props.subPanelContext.occContext.srcTopElement && props.subPanelContext.occContext2.trgTopElement && data.srcViewKey !== undefined && data.srcViewKey !== '' && (data.sourceRootOcc.uid !== props.subPanelContext.occContext.srcTopElement.uid || data.targetRootOcc.uid !== props.subPanelContext.occContext2.trgTopElement.uid)",
+            "action": "setSourceAndTargetOccForImpactAnalysis"
+        },
+        {
+            "eventId": "Pma1ImpactAnalysis.guidedUpdatepanelPostAction",
+            "action": "guidedUpdatepanelPostAction"
+        },
+        {
+            "eventId": "Pma1ImpactAnalysis.fetchUpdates",
+            "condition": "data.sourceAlignedOcc && data.targetAlignedOcc",
+            "action": "fetchUpdates"
+        },
+        {
+            "eventId": "Pma1ImpactAnalysis.loadUpdateSummaryData",
+            "action": "loadUpdateSummaryData"
+        },
+        {
+            "eventId": "Pma1ImpactAnalysis.disableImpactAnalysisModeInCBA",
+            "action": "disableIAModeAndReloadCBA"
+        },
+        {
+            "eventId": "Pma1ImpactAnalysis.clearUpdateProcessFlag",
+            "action": "setUpdateSummaryProgressState",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pma1ImpactAnalysis.onUpdateCBAFirstLaunch",
+            "action": "setSourceAndTargetOccForImpactAnalysis"
+        },
+        {
+            "eventId":"Pma1ImpactAnalysis.updateSelectedNodeOnCbaContext",
+            "cacheEventData": true,
+            "action" : "updateSelectedNodeOnCbaContext"
+
+        },
+        {
+            "eventId": "srcOccDataProvider.selectionChangeEvent",
+            "action": "updateSrcSelectionsInSummaryPanel",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "trgOccDataProvider.selectionChangeEvent",
+            "action": "updateTrgSelectionsInSummaryPanel",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pma1ImpactAnalysis.tileSelectedInUpdatePanel",
+            "action": "updateSelectionsInCBAView"
+        },
+        {
+            "eventId": "Pma1ImpactAnalysis.enableFocusMode",
+            "action": "enableFocusMode"
+        },
+        {
+            "eventId": "Pma1ImpactAnalysis.headerTileSelected",
+            "action": "headerTileSelected"
+        }
+    ],
+
+    "functions": {
+        "prepareUpdateTargetBOMInputOld": {
+            "functionName": "prepareUpdateTargetBOMInputOld",
+            "parameters": ["{{data.updateSummaryState.updateSummaries}}"]
+        },
+        "prepareUpdateTargetBOMInput": {
+            "functionName": "prepareUpdateTargetBOMInput",
+            "parameters": ["{{data.updateSummaryState.updateSummaries}}","{{data.response.updateActions}}"]
+        },
+        "processPartialErrors": {
+            "functionName": "processPartialErrors",
+            "parameters": ["{{response}}"]
+        },
+        "processUpdateTargetBOMOutput": {
+            "functionName": "processUpdateTargetBOMOutput",
+            "parameters": [ "{{subPanelContext}}" ]
+        },
+        "getChangeNoticeRevision": {
+            "functionName": "getChangeNoticeRevision",
+            "parameters": [ "{{ctx.cadbomalignment.ImpactAnalysis.ECNForImpactAnalysis}}" ]
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "setCBAPageTitleInIAMode",
+        "onUnmount":"destroyGuideUpdatePanel"
+    },
+
+    "messages": {
+        "partUpdateProgressNotification": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.partUpdateProgressNotification}}",
+            "messageTextParams": []
+        },
+        "designUpdateProgressNotification": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.designUpdateProgressNotification}}",
+            "messageTextParams": []
+        },
+        "alignedDesignUpdateCompleteNotification": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.alignedDesignUpdateCompleteNotification}}",
+            "messageTextParams": []
+        },
+        "alignedPartUpdateCompleteNotification": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.alignedPartUpdateCompleteNotification}}",
+            "messageTextParams": []
+        },
+        "operationErrorMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "operationInfoMessage": {
+            "messageType": "INFO",
+            "messageText": "{{errorCode}}"
+        }
+    },
+
+    "i18n": {
+        "update": [
+            "PMA1AutomationConstants"
+        ],
+        "showAll": [
+            "PMA1AutomationConstants"
+        ],
+        "showActionable": [
+            "PMA1AutomationConstants"
+        ],
+        "proposedUpdates": [
+            "PMA1AutomationConstants"
+        ],
+        "runInBackground": [
+            "PMA1AutomationConstants"
+        ],
+        "NewPart": [
+            "PMA1AutomationConstants"
+        ],
+        "NewDesign": [
+            "PMA1AutomationConstants"
+        ],
+        "NewPartID": [
+            "PMA1AutomationConstants"
+        ],
+        "NewDesignID": [
+            "PMA1AutomationConstants"
+        ],
+        "partUpdateProgressNotification": [
+            "PMA1AutomationMessages"
+        ],
+        "designUpdateProgressNotification": [
+            "PMA1AutomationMessages"
+        ],
+        "alignedDesignUpdateCompleteNotification": [
+            "PMA1AutomationMessages"
+        ],
+        "alignedPartUpdateCompleteNotification": [
+            "PMA1AutomationMessages"
+        ],
+        "Pma1MissingActiveEcnMsg": [
+            "PMA1AutomationMessages"
+        ],
+        "Pma1NoProposedUpdate":[
+            "PMA1AutomationMessages"
+        ],
+        "Pma1NoProposedUpdateTitle":[
+            "PMA1AutomationMessages"
+        ],
+        "Pma1AlignmentUpdate":[
+            "PMA1AutomationMessages"
+        ],
+        "Pma1AlignmentUpdateTitle":[
+            "PMA1AutomationMessages"
+        ],
+        "Pma1CBATitleForDBOMUpdate": [
+            "PMA1AutomationMessages"
+        ],
+        "Pma1CBATitleForEBOMUpdate": [
+            "PMA1AutomationMessages"
+        ],
+        "Awb0EntCBAModuleTitle": [
+            "CadBomAlignmentConstants"
+        ],
+        "Pma1FocusModeToggleDBOM":[
+            "PMA1AutomationMessages"
+        ],
+        "Pma1FocusModeToggleEBOM":[
+            "PMA1AutomationMessages"
+        ]
+    },
+    "props":{
+        "sub-panel-context":{
+            "type":"object"
+        }
+    },
+    "conditions": {
+        "isCallOldGuidedUpdate": {
+            "expression": "ctx.preferences.CBA_CALL_OLD_GUIDED_UPDATE_SOA && ctx.preferences.CBA_CALL_OLD_GUIDED_UPDATE_SOA[0] === 'true'"
+        },
+        "isImpactAnalysisModeOn":{
+            "expression": "ctx.state.params.ecn_uid"
+        },
+        "isInvokeOldGuidedUpdate": {
+            "expression":{
+                "$and": [
+                    {
+                        "$source": "conditions.isCallOldGuidedUpdate",
+                        "$query": {
+                            "$eq": true
+                        }
+                    },
+                    {
+                        "$source": "conditions.isImpactAnalysisModeOn",
+                        "$query": {
+                            "$eq": true
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

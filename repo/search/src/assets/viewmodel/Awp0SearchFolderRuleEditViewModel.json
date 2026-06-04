@@ -1,0 +1,158 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "awp0SavedSearchName": {
+            "displayName": "{{i18n.savedSearch}}",
+            "type": "STRING",
+            "vertical": false
+        },
+        "searchBox": {
+            "displayName": "",
+            "type": "STRING",
+            "requiredText": "{{i18n.searchBtn}}"
+        },
+        "ruleType": {
+            "type": "STRING",
+            "dbValue": "",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "ruleTypeValues": {
+            "type": "STRING",
+            "dbValue": [ {
+                    "propDisplayValue": "{{i18n.keyword}}",
+                    "propInternalValue": "Awp0FullTextSearchProvider"
+                },
+                {
+                    "propDisplayValue": "{{i18n.advancedText}}",
+                    "propInternalValue": "Awp0SavedQuerySearchProvider"
+                },
+                {
+                    "propDisplayValue": "{{i18n.searchesText}}",
+                    "propInternalValue": "saved"
+                }
+            ]
+        },
+        "projectDataTemplateRuleTypeValues": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.advancedText}}",
+                    "propInternalValue": "Awp0SavedQuerySearchProvider"
+                },
+                {
+                    "propDisplayValue": "{{i18n.projectReference}}",
+                    "propInternalValue": "projectSearchProvider"
+                }
+
+            ]
+        }
+    },
+    "actions":
+    {
+        "onMountBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "checkIfParentIsProjectTemplate"
+                },
+                {
+                    "action": "initRuleType"
+                },
+                {
+                    "action": "clearPropsForPropSpecificSearch"
+                }
+            ]
+        },
+        "checkIfParentIsProjectTemplate": {
+            "actionType": "JSFunction",
+            "method": "checkIfParentIsProjectTemplate",
+            "inputData": {
+                "awp0SearchDefinition": "{{subPanelContext.searchState.props.awp0SearchDefinition.dbValues[0]}}",
+                "searchFolder": "{{subPanelContext.searchState}}",
+                "ruleTypeValues": "{{data.ruleTypeValues}}",
+                "projectDataTemplateRuleTypeValues": "{{data.projectDataTemplateRuleTypeValues}}"
+            },
+            "outputData": {
+                "isParentProjectTemplate": "isParentProjectTemplate",
+                "ruleTypeValues": "ruleTypeValues"
+            },
+            "deps": "js/projectFolderUtils"
+        },
+        "initRuleType": {
+            "actionType": "JSFunction",
+            "method": "initRuleType",
+            "inputData": {
+                "ruleType": "{{data.ruleType}}",
+                "searchFolder": "{{subPanelContext.searchState}}"
+            },
+            "outputData": {
+                "ruleType": "",
+                "ruleTypeInitialized": true
+            },
+            "deps": "js/searchFolderService"
+        },
+        "clearPropsForPropSpecificSearch": {
+            "actionType": "JSFunction",
+            "method": "clearPropsForPropSpecificSearch",
+            "inputData": {
+                "searchState": "{{subPanelContext.searchState}}"
+            },
+            "deps": "js/searchFolderService"
+        },
+        "setRuleType": {
+            "actionType": "JSFunction",
+            "method": "setRuleType",
+            "inputData": {
+                "ruleType": "{{data.ruleType}}",
+                "searchFolder": "{{subPanelContext.searchState}}"
+            },
+            "deps": "js/searchFolderService"
+        },
+        "setSearchFolderRuleDirty": {
+            "actionType": "JSFunction",
+            "method": "setSearchFolderRuleDirty",
+            "inputData": {
+                "searchFolder": "{{subPanelContext.searchState}}"
+            },
+            "deps": "js/searchFolderService"
+        }
+    },
+    "functions": {
+    },
+    "selectionModels": {
+        "resultTabModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "dataProviders": {},
+    "lifecycleHooks": {
+        "onMount": "onMountBatchJob",
+        "onUpdate": [{
+            "action": "setSearchFolderRuleDirty",
+            "observers": [
+                "props.subPanelContext.searchState.criteria",
+                "props.subPanelContext.searchState.activeFilterMap",
+                "props.subPanelContext.searchState.referencingSavedQuery"
+            ]
+        }]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "i18n":
+    {
+        "advancedSearch": ["SearchMessages"],
+        "Name":[ "SearchMessages"],
+        "Description":[ "SearchMessages"],
+        "savedSearch": [ "SearchMessages" ],
+        "Awp0SearchTitle": ["SearchMessages"],
+        "searchBtn": [ "SearchMessages" ],
+        "keyword": [ "SearchMessages" ],
+        "advancedText": [ "SearchMessages" ],
+        "searchesText": [ "SearchMessages" ],
+        "projectReference": [ "SearchMessages" ]
+    }
+}
+

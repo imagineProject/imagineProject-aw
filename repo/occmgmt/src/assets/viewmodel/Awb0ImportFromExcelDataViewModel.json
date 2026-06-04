@@ -1,0 +1,1096 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "getMappingInfo":{
+            "actionType":"batchJob",
+            "steps":[
+                {
+                    "action": "getPropertiesFromExcel"
+                },
+                {
+                    "condition": "data.mappingGroupResponse",
+                    "action": "createPropertiesMap"
+                },
+                {
+                    "action": "setImportOptions"
+                },
+                {
+                    "condition": "conditions.isImportPreviewSublocation",
+                    "action": "restorePreviousMappingGroup"
+                },
+                {
+                    "condition": "conditions.isImportPreviewSublocation",
+                    "action": "populateMappingGroups"
+                }
+            ]
+        },
+        "postFileUploadActions":{
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action": "getDataProperties"
+                },
+                {
+                    "condition": "!conditions.isValidFile && data.fileName !== undefined",
+                    "action": "isLoadedFileValid"
+                },
+                {
+                    "action": "resetExcelImportData"
+                }
+            ]
+        },
+        "getDataProperties": {
+            "actionType":"JSFunction",
+            "method": "getDataProperties",
+            "inputData":{
+                "data":"{{subPanelContext.uploadFileSelectionData.selectedFileInfo}}"
+            },
+            "outputData":{
+                "fileName": "fileName",
+                "fileExt": "fileExt",
+                "fileNameNoExt": "fileNameNoExt",
+                "validFile": "validFile",
+                "formData": "formData"
+            },
+            "deps":"js/importBOMService"
+        },
+        "isLoadedFileValid":{
+            "actionType": "JSFunction",
+            "method": "isLoadedFileValid",
+            "inputData": {
+                "data":"{{subPanelContext.uploadFileSelectionData.selectedFileInfo.fileExt}}"
+            },
+            "deps": "js/importBOMService"
+        },
+        "resetExcelImportData": {
+            "actionType": "JSFunction",
+            "method": "resetExcelImportData",
+            "inputData": {
+                "mappingGroup": "{{data.mappingGroup}}",
+                "sharedData": "{{subPanelContext.sharedData}}"
+            },
+            "outputData": {
+                "showPropertiesMap": "showPropertiesMap",
+                "isAwb0ImportButtonIsVisible": "isAwb0ImportButtonIsVisible",
+                "isMultiSheetImport": "isMultiSheetImport",
+                "columnHeaders": "columnHeaders",
+                "secTypePropInfos": "secTypePropInfos",
+                "objectSubTypes": "objectSubTypes",
+                "viewModelPropertiesForHeader": "viewModelPropertiesForHeader",
+                "requiredColumnHeadersForAllSheets":"requiredColumnHeadersForAllSheets",
+                "mappingGroup": "mappingGroup"
+            },
+            "events": {
+                "success": [ {
+                    "name": "importBOM.localFileLoad",
+                    "condition": "conditions.isLocalFileImport && conditions.isValidFile"
+                },
+                {
+                    "name": "importBOM.xcShareFileLoad",
+                    "condition": "conditions.isFileImportFromXCShare && conditions.isValidFile"
+                }
+            ]
+            },
+            "deps": "js/importBOMService"
+        },
+        "localFileLoad": {
+            "actionType":"batchJob",
+            "steps":[
+                {
+                    "action": "getTransientFileTicketsForExcelUpload"
+                },
+                {
+                    "condition": "data.fmsTicket",
+                    "action": "updateExcelImportFormData"
+                },
+                {
+                    "action": "uploadExcelFile"
+                }
+            ]
+        },
+        "getTransientFileTicketsForExcelUpload": {
+            "actionType": "JSFunction",
+            "method": "callSOAWithUnitSysStateOverride",
+            "inputData": {
+                "serviceName": "Core-2007-01-FileManagement",
+                "method": "getTransientFileTicketsForUpload",
+                "unitSystemInput": "As Authored",
+                "soaInput": {
+                    "transientFileInfos": [ {
+                        "fileName": "{{data.fileName}}",
+                        "isBinary": true,
+                        "deleteFlag": true
+                    } ]
+                }
+            },
+
+            "outputData": {
+                "fmsTicket": "transientFileTicketInfos[0].ticket"
+            },
+
+            "events": {
+            },
+            "deps": "js/importBOMService"
+        },
+
+        "updateExcelImportFormData": {
+            "actionType": "JSFunction",
+            "method": "updateFormData",
+            "inputData": {
+                "formData": "{{data.formData}}",
+                "key": "fmsTicket",
+                "value": "{{data.fmsTicket}}"
+            },
+            "deps": "js/fileUploadUtils"
+        },
+
+        "uploadExcelFile": {
+            "actionType": "RESTService",
+            "serviceName": "",
+            "method": "POST",
+            "inputData": {
+                "request": {
+                    "method": "POST",
+                    "url": "{{Constants.fmsUrl}}",
+                    "headers": {
+                        "Content-type": "undefined"
+                    },
+
+                    "data": "{{data.formData}}"
+                }
+            },
+
+            "events": {
+                "success":[{
+                    "name": "import.getMappingInfo",
+                    "condition": "conditions.nonPreviewCall"
+                }]
+            }
+        },
+        "xcShareFileLoad":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "getCreateRequestJSONForImport"
+            },
+            {
+                "action": "XCUploadFile"
+            }
+            ]
+        },
+        "getCreateRequestJSONForImport": {
+            "actionType": "JSFunction",
+            "method": "getCreateRequestJSONForImport",
+            "inputData": {
+                "fileSelData": "{{subPanelContext.uploadFileSelectionData}}"
+            },
+            "outputData": {
+                "xcFileUploadRequest": ""
+            },
+            "deps": "js/importBOMService"
+        },
+        "XCUploadFile": {
+            "actionType": "JSFunction",
+            "method": "xcUploadFileToFMS",
+            "inputData": {
+                "addReqInp": "{{data.xcFileUploadRequest}}"
+            },
+            "outputData": {
+                "fmsTicket": "fmsTicket"
+            },
+            "events": {
+                "success":[{
+                    "name": "import.getMappingInfo",
+                    "condition": "conditions.nonPreviewCall"
+                }]
+            },
+            "deps": "js/importBOMService"
+        },
+        "getPropertiesFromExcel": {
+            "actionType": "JSFunction",
+            "method": "callSOAWithUnitSysStateOverride",
+            "inputData": {
+                "serviceName": "Internal-OccMgmt-2024-12-ImportExport",
+                "operationName": "getSheetMappingGroupInfo",
+                "unitSystemInput": "As Authored",
+                "soaInput": {
+                    "inputs": [ {
+                        "transientFileWriteTicket": "{{data.fmsTicket}}",
+                        "importOptions": [ "ParseHeader" ],
+                        "mappingGroupData": {
+                            "groupName": {
+                                "realName": "",
+                                "dispName": "",
+                                "isModifiable": true
+                            },
+                            "mappingInfo": [ {
+                                "propHeader": "",
+                                "realPropName": "",
+                                "dispPropName": "",
+                                "isRequired": false
+                            } ],
+                            "actionName": ""
+                        }
+                    } ]
+                }
+            },
+            "outputData": {
+                "mappingGroupResponse": "",
+                "isFileUpdated": true
+            },
+            "events": {
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "importFailureMessage"
+                } ]
+            },
+            "deps": "js/importBOMService"
+        },
+        "createPropertiesMap": {
+            "actionType": "JSFunction",
+            "method": "createPropertiesMap",
+            "inputData": {
+                "data": "{{data}}",
+                "sharedData": "{{subPanelContext.sharedData}}"
+            },
+            "outputData": {
+                "showPropertiesMap": "showPropertiesMap",
+                "viewModelPropertiesForHeader": "VMPropForHeader",
+                "columnHeaders": "columnHeaders",
+                "typePropInfos": "typePropInfos",
+                "secTypePropInfos": "secTypePropInfos",
+                "objectSubTypes": "objectSubTypes",
+                "secObjectSubTypes": "secObjectSubTypes",
+                "propertiesForMapping": "propertiesForMapping",
+                "requiredColumnHeadersForAllSheets":"requiredColumnHeadersForAllSheets",
+                "isMultiSheetImport":"isMultiSheetImport"
+            },
+            "events": {
+                "success": [ {
+                    "name": "LOVDataProvider.validSelectionEvent"
+                }]
+            },
+            "deps": "js/importBOMService"
+        },
+        "importFromExcel": {
+            "actionType": "JSFunction",
+            "method": "callSOAWithUnitSysStateOverride",
+            "inputData": {
+                "serviceName": "Internal-XlsBom-2020-12-Import",
+                "method": "importExcelAndUpdateMappingGrp",
+                "unitSystemInput": "As Authored",
+                "soaInput": {
+                    "importExcelData": {
+                        "selectedObject": { "uid": "{{ctx.awb0ImportBOMTargetFolder}}" },
+                        "transientFileWriteTicket": "{{data.fmsTicket}}",
+                        "mappingGroupData": "{{data.mappedGroupData}}",
+                        "importOptions": "{{data.importOptions}}",
+                        "propInfos": [ {} ],
+                        "typePropInfos": "{{data.headerPropertyMapping}}",
+                        "actionInfo": "{{data.actionInfo}}"
+                    }
+                }
+            },
+            "outputData": {
+                "response": ""
+            },
+            "events": {
+                "success": [ {
+                        "condition": "!data.runInBackgroundExcel.dbValue",
+                        "name": "importBOM.documentImported"
+                    },
+                    {
+                        "condition": "data.runInBackgroundExcel.dbValue",
+                        "name": "importBOMPreview.navigateToBack"
+                    },
+                    {
+                        "condition": "data.runInBackgroundExcel.dbValue",
+                        "name": "closePanel"
+                    }
+                ],
+                "failure": [ {
+                    "condition": "!data.runInBackgroundExcel.dbValue && !data.isMultiSheetImport",
+                    "name": "importBOM.setContextAndPreviewErrorReport"
+                },
+                {
+                    "condition": "!data.runInBackgroundExcel.dbValue",
+                    "name": "importBOM.getImportPreviewData"
+                }
+                ]
+            },
+            "actionMessages": {
+              "success": [
+                {
+                  "message": "notificationForImportBOMMsg",
+                  "condition": "data.runInBackgroundExcel.dbValue"
+                },
+                {
+                  "message": "successImportBOM",
+                  "condition": "!data.runInBackgroundExcel.dbValue"
+                }
+              ],
+                "failure": [ {
+                    "message": "importFailureMessage"
+                } ]
+            },
+            "deps": "js/importBOMService"
+        },
+        "getExcelImportInput": {
+            "actionType": "JSFunction",
+            "method": "getExcelImportInput",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "headerPropertyMapping": "headerPropertyMapping",
+                "mappedGroupData": "mappedGroupData",
+                "actionInfo": "actionInfo",
+                "importOptions": "importOptions"
+            },
+            "events": {
+                "success": [ {
+                    "condition": "conditions.mappedGroupDataNotUpdated",
+                    "name": "importBOM.importFromExcel"
+                } ]
+            },
+            "deps": "js/importBOMService"
+        },
+        "populateMappingInfoForGroup": {
+            "actionType": "JSFunction",
+            "method": "populateMappingInfoForGroup",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "viewModelPropertiesForHeader": "viewModelPropertiesForHeader",
+                "propertiesForMapping": "propertiesForMapping",
+                "isAwb0ImportButtonIsVisible": "isAwb0ImportButtonIsVisible"
+            },
+            "deps": "js/importBOMService"
+        },
+        "populateMappingGroups": {
+            "actionType": "JSFunction",
+            "method": "callSOAWithUnitSysStateOverride",
+            "inputData": {
+                "serviceName": "Internal-OccMgmt-2024-12-ImportExport",
+                "method": "getSheetMappingGroupInfo",
+                "unitSystemInput": "As Authored",
+                "soaInput": {
+                    "inputs": [ {
+                        "transientFileWriteTicket": "{{data.fmsTicket}}",
+                        "importOptions": [ "" ],
+                        "mappingGroupData": {
+                            "groupName": {
+                                "dispName": "{{data.mappingGroup.dbValue}}",
+                                "realName": "{{data.mappingGroup.dbValue}}",
+                                "isModifiable": true
+                            },
+                            "mappingInfo": [ {
+                                "propHeader": "",
+                                "realPropName": "",
+                                "dispPropName": "",
+                                "isRequired": false
+                            } ],
+                            "actionName": ""
+                        }
+                    } ]
+                }
+            },
+
+            "outputData": {
+                "selectedMapping": ""
+            },
+
+            "events": {
+                "success": [ {
+                    "name": "importBOM.populateMappingInfoForGroup"
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "importFailureMessage"
+                } ]
+            },
+            "deps": "js/importBOMService"
+        },
+        "updateCtxVariableFalse": {
+            "actionType": "JSFunction",
+            "method": "unRegisterExcelData",
+            "inputData": {
+            },
+
+            "deps": "js/importBOMService"
+        },
+        "updateCtxVariableFalseAndClose": {
+            "actionType": "JSFunction",
+            "method": "unRegisterExcelData",
+            "inputData": {
+            },
+            "events": {
+                "success": [ {
+                    "name": "importBOM.showObject",
+                    "condition": "!conditions.isChangeBomSubLocation && !conditions.isChangeContentImport"
+                }, {
+                    "name": "importBOM.showChangeContent",
+                    "condition": "conditions.isChangeBomSubLocation || conditions.isChangeContentImport"
+                } ]
+            },
+
+            "deps": "js/importBOMService"
+        },
+        "enableImportButtonAgainOnSOAFailure": {
+            "actionType": "JSFunction",
+            "method": "enableImportStructureButtonInPanel",
+            "inputData": {
+                "ctx": "{{ctx}}"
+            },
+            "deps": "js/importBOMService"
+        },
+        "showObject": {
+            "actionType": "JSFunction",
+            "method": "createURLAndLaunchContent",
+            "deps": "js/aceNavigationService",
+            "inputData": {
+                "productRevisionUid": "{{data.response.revObjects[0].uid}}",
+                "revisionRuleUid": "{{data.response.revisionRule.uid}}",
+                "variantRuleInfo": " ",
+                "effectivityInfo": "0",
+                "cloneStableIdChain": " ",
+                "cleanupBookmarkData": " ",
+                "reload": true
+            },
+            "events": {
+                "success": [ {
+                    "name": "resetPageForUpdateStructureCase",
+                    "condition": "data.response.revObjects[0].uid === ctx.state.params.uid"
+                } ]
+            }
+        },
+        "showChangeContent": {
+            "actionType": "JSFunction",
+            "method": "createURLAndLaunchChangeContent",
+            "deps": "js/importBOMService",
+            "inputData": {
+                "productRevisionUid": "{{ctx.state.params.uid}}",
+                "revisionRuleUid": "{{data.response.revisionRule.uid}}"
+            }
+        },
+        "setContextAndPreview": {
+            "actionType": "JSFunction",
+            "method": "setImportPreviewData",
+            "deps": "js/importBOMService",
+            "inputData": {
+                "data": "{{data}}",
+                "isChangeContentImport": "{{conditions.isChangeBomSubLocation}}",
+                "changeContentUID": "{{ctx.state.params.uid}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "importBOMPreview.launchImportPreview"
+                } ]
+            }
+        },
+        "setContextAndPreviewErrorReport": {
+            "actionType": "JSFunction",
+            "method": "setImportPreviewErrorReportData",
+            "deps": "js/importBOMService",
+            "inputData": {
+                "data": "{{data}}",
+                "isChangeContentImport": "{{conditions.isChangeBomSubLocation}}",
+                "changeContentUID": "{{ctx.state.params.uid}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "importBOMPreview.launchImportPreview"
+                } ]
+            }
+        },
+        "launchImportPreview": {
+            "actionType": "JSFunction",
+            "method": "launchImportBOMPreviewPage",
+            "deps": "js/importPreviewService",
+            "inputData": {
+                "data": "{{data}}"
+            }
+        },
+        "closeImportPreview": {
+            "actionType": "JSFunction",
+            "method": "closeImportPreview",
+            "deps": "js/importBOMService",
+            "inputData": {
+                "ctx": "{{ctx}}"
+            }
+        },
+        "loadData": {
+            "actionType": "JSFunction",
+            "method": "getLOVValues",
+            "inputData": {
+                "propertiesForMapping": "{{data.propertiesForMapping}}"
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "lovData": "lovData"
+            },
+            "deps": "js/importBOMService"
+        },
+        "loadMappingGroups": {
+            "actionType": "JSFunction",
+            "method": "loadMappingGroups",
+            "inputData": {
+                "mappingGroups": "{{data.mappingGroupResponse.mappingOutputs[0].mappingGroups}}",
+                "filterString": "{{data.mappingGroup.filterString}}"
+            },
+            "outputData": {
+                "mappingLOVs": ""
+            },
+            "deps": "js/importBOMService"
+        },
+        "switchView": {
+            "actionType": "JSFunction",
+            "method": "switchView",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.LOVDataProvider}}",
+                "viewModelPropertiesForHeader": "{{data.viewModelPropertiesForHeader}}",
+                "propertiesForMapping": "{{data.propertiesForMapping}}",
+                "requiredColumnHeadersForAllSheets":"{{data.requiredColumnHeadersForAllSheets}}",
+                "sharedData": "{{subPanelContext.sharedData}}"
+            },
+            "outputData": {
+                "viewModelPropertiesForHeader": "viewModelPropertiesForHeader",
+                "isAwb0ImportButtonIsVisible": "isAwb0ImportButtonIsVisible"
+            },
+            "deps": "js/importBOMService"
+        },
+        "getImportPanelData": {
+            "actionType": "batchJob",
+            "steps": [
+            {
+                "action": "getImportPreviewData"
+            },
+            {
+                "condition":"data.fmsTicket && !data.xcFileUploadRequest",
+                "action": "uploadExcelFile"
+            },
+            {
+                "condition": "data.fmsTicket && data.xcFileUploadRequest",
+                "action": "XCUploadFile"
+            },
+            {
+                "condition": "data.fmsTicket",
+                "action": "switchView"
+            },
+            {
+                "action": "getImportButtonTitle"
+            }
+            ]
+        },
+        "getImportPreviewData": {
+            "actionType": "JSFunction",
+            "method": "getImportPreviewData",
+            "inputData": {
+                "sharedData": "{{subPanelContext.sharedData}}"
+            },
+            "outputData": {
+                "showPropertiesMap": "showPropertiesMap",
+                "fileName": "fileName",
+                "fileExt": "fileExt",
+                "fileNameNoExt": "fileNameNoExt",
+                "files": "files",
+                "validFile": "validFile",
+                "formData": "formData",
+                "fmsTicket": "fmsTicket",
+                "response": "response",
+                "mappingGroupResponse": "mappingGroupResponse",
+                "selectedMapping": "selectedMapping",
+                "mappingGroup": "mappingGroup",
+                "objectSubTypes": "objectSubTypes",
+                "viewModelPropertiesForHeader": "viewModelPropertiesForHeader",
+                "columnHeaders": "columnHeaders",
+                "typePropInfos": "typePropInfos",
+                "secTypePropInfos": "secTypePropInfos",
+                "runInBackgroundExcel": "runInBackgroundExcel",
+                "propertiesForMapping": "propertiesForMapping",
+                "xcFileUploadRequest": "xcFileUploadRequest",
+                "requiredColumnHeadersForAllSheets":"requiredColumnHeadersForAllSheets",
+                "isMultiSheetImport" :"isMultiSheetImport",
+                "fileType": "fileType",
+                "showImportOptions": "showImportOptions",
+                "structureScope": "structureScope",
+                "relationsScope": "relationsScope",
+                "partsScope": "partsScope",
+                "structureOptions": "structureOptions"
+            },
+            "deps": "js/importBOMService"
+        },
+        "updatePropertiesForMapping": {
+            "actionType": "JSFunction",
+            "method": "updatePropertiesForMapping",
+            "inputData": {
+                "typePropInfos": "{{subPanelContext.sharedData.typePropInfos}}",
+                "subTypePropInfos": "{{subPanelContext.sharedData.secTypePropInfos}}"
+            },
+            "outputData": {
+                "propertiesForMapping": ""
+            },
+            "deps": "js/importBOMService"
+        },
+        "validateMappingGroup": {
+            "actionType": "JSFunction",
+            "method": "validateMappingGroup",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "viewModelPropertiesForHeader": "viewModelPropertiesForHeader",
+                "isAwb0ImportButtonIsVisible": "isAwb0ImportButtonIsVisible"
+            },
+            "deps": "js/importBOMService"
+        },
+        "resetPageForUpdateStructureCase": {
+            "actionType": "JSFunction",
+            "method": "resetView",
+            "inputData": {
+                "popupId": "{{subPanelContext.popupId}}"
+            },
+            "deps": "js/importBOMService"
+        },
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupId}}"
+            },
+
+            "deps": "js/dialogService"
+        },
+        "restorePreviousMappingGroup":{
+            "actionType":"JSFunction",
+            "method": "restorePreviousMappingGroup",
+            "inputData":{
+                "data":"{{data.mappingGroup}}"
+            },
+            "outputData":{
+                "mappingGroup": ""
+            },
+            "deps":"js/importBOMService"
+        },
+        "setImportOptions": {
+            "actionType":"JSFunction",
+            "method": "setImportOptions",
+            "inputData":{
+                "ctx":"{{ctx}}",
+                "showPropertiesMap": "{{data.showPropertiesMap}}",
+                "mappingGroupResponse": "{{data.mappingGroupResponse}}",
+                "structureScope": "{{data.structureScope}}",
+                "relationsScope": "{{data.relationsScope}}",
+                "partsScope": "{{data.partsScope}}"
+            },
+            "outputData":{
+                "showImportOptions": "enableImportActions",
+                "showPropertiesMap": "showPropertiesMap",
+                "structureScope": "structureScope",
+                "relationsScope": "relationsScope",
+                "partsScope": "partsScope",
+                "fileType": "fileType"
+            },
+            "deps":"js/importBOMService"
+        },
+        "getImportButtonTitle": {
+            "actionType": "JSFunction",
+            "method": "getImportButtonTitle",
+            "inputData": {
+                "i18n": "{{data.i18n}}",
+                "ctx": "{{ctx}}"
+            },
+            "outputData": {
+                "importButtonTitle":""
+            },
+            "deps": "js/importBOMService"
+        }
+    },
+    "dataProviders":
+    {
+        "LOVDataProvider": {
+            "action": "loadData",
+            "response": "{{data.lovData}}",
+            "totalFound": "{{data.totalFound}}"
+        },
+        "mappingGroupDataProvider": {
+            "action": "loadMappingGroups",
+            "response": "{{data.mappingLOVs}}",
+            "totalFound": "{{data.mappingGroups.length}}"
+        }
+    },
+
+    "data": {
+        "importTitle": {
+            "displayName": "{{i18n.importTitle}}",
+            "type": "STRING"
+        },
+        "update": {
+            "displayName": "{{i18n.update}}",
+            "type": "STRING"
+        },
+        "cancel": {
+            "displayName": "{{i18n.cancel}}",
+            "type": "STRING"
+        },
+        "required": {
+            "displayName": "{{i18n.required}}",
+            "type": "STRING"
+        },
+        "preview": {
+            "displayName": "{{i18n.preview}}",
+            "type": "STRING"
+        },
+        "headerMapping": {
+            "displayName": "{{i18n.excelHeader}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": false,
+            "dispValue": "{{i18n.mappedAttributes}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "scopeHeader": {
+            "displayName": "{{i18n.scope}}",
+            "type": "STRING"
+        },
+        "structureScope": {
+            "displayName": "{{i18n.structure}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "dbValue": false,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "relationsScope": {
+            "displayName": "{{i18n.relations}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "dbValue": false,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "partsScope": {
+            "displayName": "{{i18n.parts}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "dbValue": false,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "structureOptions": {
+            "displayName": "{{i18n.structureOptions}}",
+            "type": "STRING",
+            "vertical": true,
+            "dbValue": "importActionAddReplaceUpdate"
+        },
+        "importActionValues": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.merge}}",
+                    "propInternalValue": "importActionAddReplaceUpdate"
+                },
+                {
+                    "propDisplayValue": "{{i18n.overwrite}}",
+                    "propInternalValue": "importActionOverwrite"
+                }
+            ]
+        },
+        "savedMapping": {
+            "displayName": "{{i18n.savedMappings}}",
+            "type": "STRING"
+        },
+        "mappingGroup": {
+            "displayName": "{{i18n.savedMappings}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "uiValue": "",
+            "dbValue": "",
+            "dataProvider": "mappingGroupDataProvider",
+            "isSelectOnly": false
+        },
+        "runInBackgroundExcel": {
+            "displayName": "{{i18n.runinBG}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "dbValue": false,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+
+    "onEvent": [
+        {
+            "eventId": "importBOM.startPostFileUploadProcess",
+            "action": "postFileUploadActions"
+        },
+        {
+            "eventId": "onFileSelectionFromXcshare",
+            "action": "postFileUploadActions"
+        },
+        {
+            "eventId": "import.getMappingInfo",
+            "action": "getMappingInfo"
+        },
+        {
+            "eventId": "importBOM.localFileLoad",
+            "action": "localFileLoad"
+        },
+        {
+            "eventId": "importBOM.xcShareFileLoad",
+            "action": "xcShareFileLoad"
+        },
+        {
+            "eventId": "importBOM.populateMappingGroups",
+            "action": "populateMappingGroups"
+        },
+        {
+            "eventId": "importBOM.populateMappingInfoForGroup",
+            "action": "populateMappingInfoForGroup"
+        },
+        {
+            "eventId": "importBOM.importFromExcel",
+            "action": "importFromExcel"
+        },
+        {
+            "eventId": "importBOM.documentImported",
+            "action": "updateCtxVariableFalseAndClose"
+        },
+        {
+            "eventId": "importBOM.importDocumentFailed",
+            "action": "enableImportButtonAgainOnSOAFailure"
+        },
+        {
+            "eventId": "importBOM.setContextAndPreviewErrorReport",
+            "action": "setContextAndPreviewErrorReport"
+        },
+        {
+            "eventId": "importBOM.getImportPreviewData",
+            "action": "getImportPreviewData"
+        },
+        {
+            "eventId": "importBOM.showObject",
+            "action": "showObject"
+        },
+        {
+            "eventId": "importBOM.showChangeContent",
+            "action": "showChangeContent"
+        },
+        {
+            "eventId": "importBOMPreview.launchImportPreview",
+            "action": "launchImportPreview"
+        },
+        {
+            "eventId": "import.resetExcelImportData",
+            "action": "postFileUploadActions",
+            "condition":"data.showPropertiesMap"
+        },
+        {
+            "eventId": "importBOMPreview.closeImportPreview",
+            "action": "closeImportPreview"
+        },
+        {
+            "eventId": "LOVDataProvider.validSelectionEvent",
+            "action": "switchView"
+        },
+        {
+            "eventId": "importBOM.updatePropertiesForMapping",
+            "action": "updatePropertiesForMapping"
+        },
+        {
+            "eventId": "mappingGroupDataProvider.validSelectionEvent",
+            "action": "validateMappingGroup"
+        },
+        {
+            "eventId": "resetPageForUpdateStructureCase",
+            "action": "resetPageForUpdateStructureCase"
+        },
+        {
+            "eventId": "closePanel",
+            "action": "closePanel"
+        }
+    ],
+
+    "conditions": {
+        "isChangeContentImport": {
+            "expression": "conditions.isImportBOMContext && ctx.ImportBOMContext.isChangeContentImport"
+        },
+        "isChangeBomSubLocation": {
+            "expression": "ctx.sublocation.nameToken === 'com.siemens.splm.client.occmgmt:OccurrenceManagementSubLocation' && ctx.sublocation.clientScopeURI === 'ChangeBom'"
+        },
+        "isExcelImportAllowed": {
+            "expression": "data.isAwb0ImportButtonIsVisible && conditions.isValidFile "
+        },
+        "isValidFile": {
+            "expression": "data.fileName && data.validFile === true"
+        },
+        "notCompErrorReport": {
+            "expression": "data.fmsTicket && data.fmsTicket !== 'COMPREHENSIVE_ERROR_REPORT'"
+        },
+        "isExcelUploaded": {
+            "expression": "subPanelContext.uploadFileSelectionData.selectedFileInfo !== undefined"
+        },
+        "isScopeSet": {
+            "expression": "data.structureScope.dbValue === true || data.relationsScope.dbValue === true || data.partsScope.dbValue === true"
+        },
+        "enablePreviewButton": {
+            "expression": "conditions.isExcelImportAllowed && ( conditions.isExcelUploaded || conditions.notCompErrorReport )"
+        },
+        "enableImportButton": {
+            "expression": "conditions.isExcelImportAllowed && !ctx.awb0ImportFromExcelProgressing && ( conditions.isExcelUploaded || conditions.notCompErrorReport )"
+        },
+        "enableAwp0PreviewButton": {
+            "expression": "conditions.isExcelImportAllowed && ( conditions.isExcelUploaded || conditions.notCompErrorReport ) && conditions.isScopeSet"
+        },
+        "enableAwp0ImportButton": {
+            "expression": "conditions.isExcelImportAllowed && !ctx.awb0ImportFromExcelProgressing && ( conditions.isExcelUploaded || conditions.notCompErrorReport ) && conditions.isScopeSet"
+        },
+        "isImportPreviewSublocation": {
+            "expression": "ctx.sublocation.clientScopeURI === 'Awb0ImportPreview'"
+        },
+        "isNewEntry": {
+            "expression": "data.mappingGroup.dbValue === ''"
+        },
+        "isImportBOMContext": {
+            "expression": "ctx.ImportBOMContext !== undefined"
+        },
+        "mappedGroupDataNotUpdated": {
+            "expression": "data.mappedGroupData.actionName !== 'UPDATE'"
+        },
+        "nonPreviewCall": {
+            "expression": "subPanelContext.uploadFileSelectionData.selectedFileInfo"
+        },
+        "isFileImportFromXCShare": {
+            "expression" : "subPanelContext.uploadFileSelectionData.selectedFile.projectId"
+        },
+        "isLocalFileImport": {
+            "expression" : "!subPanelContext.uploadFileSelectionData.selectedFile"
+        },
+        "enableStructureScope": {
+            "expression" : "data.mappingGroupResponse.mappingOutputs[0].mappingGroups[0].realName === 'XLS_Structure'"
+        },
+        "enableRelationsScope": {
+            "expression" : "data.mappingGroupResponse.mappingOutputs[0].mappingGroups[0].realName === 'XLS_Relations'"
+        },
+        "enablePartsScope": {
+            "expression" : "data.mappingGroupResponse.mappingOutputs[0].mappingGroups[0].realName === 'XLS_Structure' || data.mappingGroupResponse.mappingOutputs[0].mappingGroups[0].realName === 'XLS_Relations'"
+        }
+    },
+    "messages": {
+        "notificationForImportBOMMsg": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.notificationForImportBOM}}",
+            "messageTextParams": [
+                "{{data.fileName}}"
+            ]
+        },
+        "successImportBOM": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.successImportBOM}}"
+        },
+        "importFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+
+    "i18n": {
+        "importTitle": [
+            "OccmgmtImportExportConstants"
+        ],
+        "preview": [
+            "OccmgmtImportExportConstants"
+        ],
+        "runinBG": [
+            "OccmgmtImportExportConstants"
+        ],
+        "savedMappings": [
+            "OccmgmtImportExportConstants"
+        ],
+        "mapProperties": [
+            "OccmgmtImportExportConstants"
+        ],
+        "addProperties": [
+            "OccmgmtImportExportConstants"
+        ],
+        "notificationForImportBOM": [
+            "OccmgmtImportExportConstants"
+        ],
+        "notificationForUpdateMsg": [
+            "OccmgmtImportExportConstants"
+        ],
+        "cancel": [
+            "OccmgmtImportExportConstants"
+        ],
+        "update": [
+            "OccmgmtImportExportConstants"
+        ],
+        "required": [
+            "OccmgmtImportExportConstants"
+        ],
+        "addNew": [
+            "OccmgmtImportExportConstants"
+        ],
+        "excelHeader": [
+            "OccmgmtImportExportConstants"
+        ],
+        "scope": [
+            "OccmgmtImportExportConstants"
+        ],
+        "structure": [
+            "OccmgmtImportExportConstants"
+        ],
+        "relations": [
+            "OccmgmtImportExportConstants"
+        ],
+        "parts": [
+            "OccmgmtImportExportConstants"
+        ],
+        "structureOptions": [
+            "OccmgmtImportExportConstants"
+        ],
+        "merge": [
+            "OccmgmtImportExportConstants"
+        ],
+        "overwrite": [
+            "OccmgmtImportExportConstants"
+        ],
+        "mappedAttributes": [
+            "OccmgmtImportExportConstants"
+        ],
+        "name": [
+            "TCUICommandPanelsMessages"
+        ],
+        "description": [
+            "TCUICommandPanelsMessages"
+        ],
+        "notificationForImportPreviewClose": [
+            "OccmgmtImportExportConstants"
+        ],
+        "closeTitle": [
+            "OccmgmtImportExportConstants"
+        ],
+        "stayTitle": [
+            "OccmgmtImportExportConstants"
+        ],
+        "successImportBOM": [
+            "OccmgmtImportExportConstants"
+        ],
+        "importOptions": [
+            "OccmgmtImportExportConstants"
+        ],
+        "importFromExcelButtonTitle": [
+            "OccmgmtImportExportConstants"
+        ]
+    },
+    "lifecycleHooks": {
+        "onMount": "getImportPanelData"
+    }
+}

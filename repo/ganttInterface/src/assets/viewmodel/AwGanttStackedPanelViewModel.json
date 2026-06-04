@@ -1,0 +1,55 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "callDataProvider": {
+            "actionType": "dataProvider",
+            "methods": [
+                "listDataProvider"
+            ]
+        },
+        "loadData": {
+            "actionType": "JSFunction",
+            "method": "getObjectsFromUids",
+            "inputData": {
+                "uids": "{{ctx.panelContext.stackedUids}}"
+            },
+            "outputData": {
+                "searchResults": ""
+            },
+            "deps": "js/AwGanttStackedPopupService"
+        },
+        "selectObjectOnGantt": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "AWGanttChart.selectObjectOnGantt",
+                    "eventData": {
+                        "objectUidToSelect": "{{dataProviders.listDataProvider.selectedObjects[0].uid}}"
+                    }
+                } ]
+            }
+        }
+    },
+    "dataProviders": {
+        "listDataProvider": {
+            "action": "loadData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.searchResults.length}}",
+            "selectionModelMode": "{{props.subPanelContext.selectionMode}}",
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "callDataProvider"
+    },
+    "onEvent": [ {
+        "eventId": "listDataProvider.selectionChangeEvent",
+        "action": "selectObjectOnGantt"
+    } ],
+    "i18n": {
+        "ganttInterfaceStackedObjects": [
+            "GanttInterfaceConstants"
+        ]
+    }
+}

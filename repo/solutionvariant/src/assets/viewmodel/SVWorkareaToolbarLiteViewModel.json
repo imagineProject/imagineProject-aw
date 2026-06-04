@@ -1,0 +1,182 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "initTaskbarLinkProps": {
+            "actionType": "JSFunction",
+            "method": "initTaskbarLinkProperties",
+            "inputData": {},
+            "outputData": {
+                "rootProduct": "rootProduct",
+                "selectedSourceStructure": "selectedSourceStructure"
+            },
+            "deps": "js/solutionVariantService"
+        },
+        "goBack": {
+            "actionType": "JSFunction",
+            "method": "goBack",
+            "deps": "js/locationNavigation.service"
+        },
+        "openSourceStructure": {
+            "actionType": "JSFunction",
+            "method": "openSourceStructure",
+            "inputData": {
+                "page": "{{i18n.occMgmtTitle}}",
+                "pageId": "tc_xrt_Content"
+            },
+            "deps": "js/solutionVariantService"
+        },
+        "createSolutionVariant": {
+            "actionType": "JSFunction",
+            "method": "createMultiLevelSolutionVariantInput",
+            "deps": "js/solutionVariantService"
+        },
+        "createPopup": {
+            "actionType": "popup",
+            "inputData": {
+                "options": {
+                    "view": "SVCreate",
+                    "autoFocus": true,
+                    "preset": "modal",
+                    "clickOutsideToClose": false,
+                    "draggable": false,
+                    "innerClassName": "aw-solutionvariantjs-popupColor",
+                    "hasMask": false
+                }
+            },
+            "outputData": {
+                "popupId": "id"
+            }
+        },
+        "postProcessSVCreateResponse": {
+            "actionType": "JSFunction",
+            "method": "postProcessSVCreateResponse",
+            "inputData": {
+                "response": "{{data.createSVResponse}}"
+            },
+            "deps": "js/solutionVariantService"
+        },
+        "aceShowObjectForSolutionVariant": {
+            "actionType": "JSFunction",
+            "method": "openSolutionVariant",
+            "inputData": {
+                "updatedObjs": "{{ctx.aceActiveContext.context.rootSVItemRev}}",
+                "page": "{{i18n.occMgmtTitle}}",
+                "pageId": "tc_xrt_Content"
+            },
+            "deps": "js/solutionVariantService"
+        },
+        "invokeMultilevelSVCreateSOA": {
+            "actionType": "TcSoaService",
+            "serviceName": "StructureManagement-2018-11-SolutionVariantManagement",
+            "method": "createMultilevelSolutionVariants3",
+            "inputData": {
+                "createMultilevelSVInputList": "{{ctx.aceActiveContext.context.createSVInput.createMultilevelSVInputList}}",
+                "createMultilevelSVConfigParam": "{{ctx.aceActiveContext.context.createSVInput.createMultilevelSVConfigParam}}"
+            },
+            "outputData": {
+                "createSVResponse": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "createSV.hidePopup"
+                    },
+                    {
+                        "name": "openCreatedSV",
+                        "eventData": {
+                            "response": "{{data.createSVResponse}}"
+                        }
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "createSV.hidePopup"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "svCreateFailureMessage"
+                    }
+                ]
+            }
+        },
+        "cancelPreview": {
+            "actionType": "JSFunction",
+            "method": "goBack",
+            "deps": "js/locationNavigation.service"
+        }
+    },
+    "data": {
+        "product": {
+            "type": "STRING",
+            "hasLov": false,
+            "displayName": "{{i18n.product}}",
+            "isEditable": "false",
+            "dbValue": ""
+        },
+        "sourceStructure": {
+            "type": "STRING",
+            "hasLov": false,
+            "displayName": "{{i18n.sourceStructure}}",
+            "isEditable": "false",
+            "dbValue": ""
+        },
+        "revRuleLabel": {
+            "type": "STRING",
+            "hasLov": false,
+            "displayName": "{{i18n.revRule}}",
+            "isEditable": "false",
+            "dbValue": ""
+        },
+        "variantRuleLabel": {
+            "type": "STRING",
+            "hasLov": false,
+            "displayName": "{{i18n.variantRule}}",
+            "isEditable": "false",
+            "dbValue": ""
+        }
+    },
+    "conditions": {
+        "showRunInBackground": {
+            "expression": "ctx.sublocation.clientScopeURI==='Smc1SolutionVariant'"
+        },
+        "isProductBeingOpenedAsRoot": {
+            "expression": "ctx.aceActiveContext.context.isProductBeingOpenedAsRoot===true"
+        }
+    },
+    "lifecycleHooks": {
+        "onInit": "initTaskbarLinkProps"
+    },
+    "onEvent": [
+        {
+            "eventId": "aceShowObjectForSV",
+            "action": "aceShowObjectForSolutionVariant"
+        },
+        {
+            "eventId": "invokeCreateSVSoa",
+            "action": "invokeMultilevelSVCreateSOA"
+        },
+        {
+            "eventId": "openCreatedSV",
+            "action": "postProcessSVCreateResponse"
+        }
+    ],
+    "messages": {
+        "svCreateFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n": {
+        "createSolutionVariant": ["SolutionVariantConstants"],
+        "cancelPreview": ["SolutionVariantConstants"],
+        "revRule": ["SolutionVariantConstants"],
+        "variantRule": ["SolutionVariantConstants"],
+        "product": ["SolutionVariantConstants"],
+        "sourceStructure": ["SolutionVariantConstants"],
+        "occMgmtTitle": ["OccurrenceManagementConstants"],
+        "createPopup": ["SolutionVariantConstants"]
+    }
+}

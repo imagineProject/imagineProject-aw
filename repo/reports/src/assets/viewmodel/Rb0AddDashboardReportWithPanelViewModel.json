@@ -1,0 +1,97 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "checkForDashboardConfigCommand":{
+            "actionType": "JSFunction",
+            "method": "checkForDashboardConfigCommand",
+            "inputData": {
+                "selectedReport": "{{data.reportsContext.selectedReport.reportdefinition}}",
+                "sourceObj": "{{props.subPanelContext.selectionData.selected[0]}}",
+                "preferenceName": "{{props.subPanelContext.dashboardListPreference}}",
+                "tabObject": ["{{props.subPanelContext.searchState.dashboardTabObject}}"]
+            },
+            "deps": "js/reportsCommonService"
+        },
+        "isReportAlreadyAddedToDashboard":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "checkForDashboardConfigCommand",
+                "condition": "data.searchState.criteria.searchString.length > 0 && props.subPanelContext.selectionData.selected.length>0"
+            }]
+        },
+        "addItemSelected": {
+            "actionType": "JSFunction",
+            "deps": "js/showMyDashboardService",
+            "method": "addItemSelected",
+            "inputData": {
+                "reportsContext": "{{data.reportsContext}}",
+                "destPanelId": "AddReportsTabPage",
+                "selected": "{{props.subPanelContext.selectionData.selected}}"
+            },
+            "outputData": {
+                "reportsContext": ""
+            }
+        },
+        "updateActiveView":{
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{fields.reportsContext}}",
+                "value": {
+                    "activeView": "AddReportsTabPage"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "data": {
+        "reportsContext": {
+            "initialValues": {
+                "activeView": "AddReportsTabPage",
+                "itemSource": []
+            },
+            "meta": {
+            }
+        },
+        "searchState": {
+            "initialValues": {
+                "autoApplyFilters": true
+            },
+            "meta": {
+                "categories": [ {
+                    "filterValues": [ {
+                        "selected": {
+                            "field": "true",
+                            "type": "BOOLEAN"
+                        }
+                    } ]
+                } ],
+                "searchFilterCategories": [{"internalName":{"field": true,"type": "STRING"}}],
+                "searchFilterMap": ""
+            }
+        }
+    },
+    "conditions": {
+        "isSelected": {
+            "expression": "data.searchState.criteria.searchString.length > 0 && ctx.selected && ctx.showAddToDashboardCommand === true"
+        }
+    },
+    "onEvent": [],
+    "i18n": {
+        "addDashboardReportWithPanel": [
+            "ReportChartMessages"
+        ],
+        "addItem":[
+            "ReportChartMessages"
+        ],
+        "addDashboardReportWithPanelTitle":[
+            "ReportChartMessages"
+        ]
+    },
+    "lifecycleHooks": {
+        "onUpdate": [ {
+            "action": "isReportAlreadyAddedToDashboard",
+            "observers": [ "props.subPanelContext.selectionData.selected" ]
+        }]
+    }
+}

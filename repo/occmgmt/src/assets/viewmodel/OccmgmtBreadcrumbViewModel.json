@@ -1,0 +1,47 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-list.directive",
+        "js/aw-occmgmt-cell.directive",
+        "js/aw-scrollpanel.directive"
+    ],
+    "actions": {
+        "buildCrumbs": {
+            "actionType": "JSFunction",
+            "method": "buildNavigateBreadcrumb",
+            "inputData": {
+                "selectedObjects": "{{props.occContext.pwaSelection}}",
+                "occContext": "{{props.occContext}}",
+                "data": "{{data}}",
+                "selectionCrumbOnly":"{{props.selectionCrumbOnly}}"
+            },
+            "deps": "js/aceBreadcrumbService"
+        }
+    },
+    "dataProviders": {
+        "aceBreadCrumbDataProvider": {
+            "action": "buildCrumbs",
+            "response": "{{data.crumbs}}",
+            "totalFound": "{{data.crumbs.length}}"
+        }
+    },
+    "props": {
+        "occ-context": {
+            "type": "object"
+        },
+        "selection-crumb-only": {
+            "type": "boolean"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "buildCrumbs",
+        "onUpdate": [ {
+            "action": "buildCrumbs",
+            "observers": [ "props.occContext.pwaSelection" ]
+        } ]
+    },
+    "onEvent": [ {
+        "eventId": "viewModelObject.propsUpdated",
+        "action": "buildCrumbs"
+    }]
+}

@@ -1,0 +1,405 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "render": {
+            "method": "awCopyOptionsRenderFunction",
+            "deps": "js/AwCopyOptions2Service",
+            "options": {
+                "elementRefList": [
+                    "dpRef"
+                ]
+            }
+        },
+        "loadDataProvider": {
+            "actionType": "dataProvider",
+            "method": "copyOptionsDataProvider"
+        },
+        "startEditAction": {
+            "actionType": "dataProvider",
+            "method": "copyOptionsDataProvider",
+            "inputData": {
+                "action": "startEdit"
+            }
+        },
+        "copyOptionsStartEdit": {
+            "actionType": "JSFunction",
+            "method": "copyOptionsStartEdit",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.copyOptionsDataProvider}}"
+            },
+            "deps": "js/AwCopyOptions2Service"
+        },
+        "copyOptionsSaveEdit": {
+            "actionType": "JSFunction",
+            "method": "saveEdits",
+            "deps": "js/AwCopyOptions2Service"
+        },
+        "initCopyOptions": {
+            "actionType": "JSFunctionAsync",
+            "inputData": {
+                "xrtData": "{{props.xrtData}}",
+                "dataProvider": "{{data.dataProviders.copyOptionsDataProvider}}",
+                "columnProviders": "{{data.columnProviders}}",
+                "i18n": "{{data.i18n}}",
+                "treeLoadInput": "request.treeLoadInput",
+                "xrtState": "{{props.xrtState}}",
+                "type": "{{props.type}}"
+            },
+            "outputData": {
+                "searchResultsFound": "result.totalFound",
+                "namingRules": "namingRules"
+            },
+            "method": "initCopyOptions",
+            "deps": "js/AwCopyOptions2Service"
+
+        },
+        "loadTreeTableData": {
+            "actionType": "JSFunctionAsync",
+            "inputData": {
+                "treeLoadInput": "request.treeLoadInput",
+                "i18n": "{{data.i18n}}",
+                "xrtState": "{{props.xrtState}}",
+                "type": "{{props.type}}"
+            },
+            "outputData": {
+                "searchResultsFound": "result.totalFound",
+                "namingRules": "namingRules"
+            },
+            "method": "loadTreeTableData",
+            "deps": "js/AwCopyOptions2Service"
+        },
+
+        "onCopyActionChangeBatchJob": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "expandCollapseDeepCopyChildren"
+            }, {
+                "action": "startEditAction"
+            } ]
+        },
+        "expandCollapseDeepCopyChildren": {
+            "actionType": "JSFunctionAsync",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.copyOptionsDataProvider}}",
+                "lovValue": "{{parameters.eventData.lovValue}}",
+                "xrtState": "{{props.xrtState}}",
+                "type": "{{props.type}}",
+                "i18n": "{{data.i18n}}",
+                "treeLoadInput": "request.treeLoadInput"
+
+            },
+            "outputData": {
+                "searchResultsFound": "result.totalFound"
+            },
+            "method": "expandCollapseDeepCopyChildren",
+            "deps": "js/AwCopyOptions2Service"
+        },
+        "syncXRTVMOBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "syncXRTVMO",
+                    "condition": "props && props.xrtState && props.xrtState.xrtVMO"
+                }
+            ]
+        },
+        "syncXRTVMO": {
+            "actionType": "JSFunction",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.copyOptionsDataProvider}}",
+                "xrtState": "{{props.xrtState}}"
+            },
+            "method": "syncXRTVMO",
+            "deps": "js/AwCopyOptions2Service"
+        },
+        "setPropertyPolicy": {
+            "actionType": "JSFunction",
+            "method": "setPropertyPolicy",
+            "inputData": {
+                "type": "{{props.type}}"
+            },
+            "outputData": {
+                "policyId": ""
+            },
+            "deps": "js/AwCopyOptions2Service"
+        },
+        "unSetPropertyPolicy": {
+            "actionType": "JSFunction",
+            "method": "unSetPropertyPolicy",
+            "inputData": {
+                "policyId": "{{data.policyId}}"
+            },
+            "outputData": {},
+            "deps": "js/AwCopyOptions2Service"
+        }
+    },
+    "dataProviders": {
+        "copyOptionsDataProvider": {
+            "action": "loadTreeTableData",
+            "initializeAction": "initCopyOptions",
+            "treeLoadResult": "action.result.treeLoadResult",
+            "inputData": {
+                "accessMode": "tree",
+                "topNodeUid": "{{props.xrtData.data._selectedObject.uid}}"
+            },
+            "editConfig": {
+                "startEditAction": "copyOptionsStartEdit",
+                "saveEditAction": "copyOptionsSaveEdit",
+                "identifier": "uid"
+            }
+        }
+    },
+    "columnProviders": {
+        "copyOptionsSaveAsColumnProvider": {
+            "frozenColumnIndex": 1,
+            "columns": [
+                {
+                    "name": "object_source",
+                    "displayName": "{{i18n.source}}",
+                    "minWidth": 50,
+                    "width": 200,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true,
+                    "isTreeNavigation": true
+                },
+                {
+                    "name": "relation",
+                    "displayName": "{{i18n.relation}}",
+                    "minWidth": 50,
+                    "width": 150,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true
+                },
+                {
+                    "name": "action",
+                    "displayName": "{{i18n.action}}",
+                    "minWidth": 100,
+                    "width": 100,
+                    "renderingHint": "AwCopyOptionsLovEdit",
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true
+                },
+                {
+                    "name": "item_id",
+                    "displayName": "{{i18n.id}}",
+                    "minWidth": 50,
+                    "width": 100,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true
+                },
+                {
+                    "name": "item_id_naming_rule",
+                    "displayName": "{{i18n.idNamingRule}}",
+                    "minWidth": 50,
+                    "width": 100,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true,
+                    "renderingHint": "AwNamingRuleLov"
+                },
+                {
+                    "name": "object_name",
+                    "displayName": "{{i18n.name}}",
+                    "minWidth": 50,
+                    "width": 150,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true
+                },
+                {
+                    "name": "object_desc",
+                    "displayName": "{{i18n.description}}",
+                    "minWidth": 50,
+                    "width": 100,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true
+                }
+            ]
+        },
+        "copyOptionsReviseColumnProvider": {
+            "frozenColumnIndex": 1,
+            "columns": [
+                {
+                    "name": "object_source",
+                    "displayName": "{{i18n.source}}",
+                    "minWidth": 50,
+                    "width": 200,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true,
+                    "isTreeNavigation": true
+                },
+                {
+                    "name": "relation",
+                    "displayName": "{{i18n.relation}}",
+                    "minWidth": 50,
+                    "width": 150,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true
+                },
+                {
+                    "name": "action",
+                    "displayName": "{{i18n.action}}",
+                    "minWidth": 100,
+                    "width": 100,
+                    "renderingHint": "AwCopyOptionsLovEdit",
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true
+                },
+                {
+                    "name": "item_id",
+                    "displayName": "{{i18n.id}}",
+                    "minWidth": 50,
+                    "width": 100,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true
+                },
+                {
+                    "name": "item_id_naming_rule",
+                    "displayName": "{{i18n.idNamingRule}}",
+                    "minWidth": 50,
+                    "width": 100,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true,
+                    "renderingHint": "AwNamingRuleLov"
+                },
+                {
+                    "name": "item_revision_id",
+                    "displayName": "{{i18n.revisionId}}",
+                    "minWidth": 50,
+                    "width": 100,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true
+                },
+                {
+                    "name": "item_revision_id_naming_rule",
+                    "displayName": "{{i18n.revisionIdNamingRule}}",
+                    "minWidth": 50,
+                    "width": 100,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true,
+                    "renderingHint": "AwNamingRuleLov"
+                },
+                {
+                    "name": "object_name",
+                    "displayName": "{{i18n.name}}",
+                    "minWidth": 50,
+                    "width": 150,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true
+                },
+                {
+                    "name": "object_desc",
+                    "displayName": "{{i18n.description}}",
+                    "minWidth": 50,
+                    "width": 100,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true
+                }
+            ]
+        }
+    },
+    "grids": {
+        "copyOptionsSaveAsTable": {
+            "dataProvider": "copyOptionsDataProvider",
+            "columnProvider": "copyOptionsSaveAsColumnProvider",
+            "gridOptions": {
+                "enablePinning": true,
+                "enableSorting": false
+            },
+            "addIconColumn": false
+        },
+        "copyOptionsReviseTable": {
+            "dataProvider": "copyOptionsDataProvider",
+            "columnProvider": "copyOptionsReviseColumnProvider",
+            "gridOptions": {
+                "enablePinning": true,
+                "enableSorting": false
+            },
+            "addIconColumn": false
+        }
+    },
+    "lifecycleHooks": {
+        "render": "render",
+        "onMount": "setPropertyPolicy",
+        "onUpdate": [ {
+            "action": "syncXRTVMOBatchJob",
+            "observers": [
+                "props.xrtState.xrtVMO"
+            ]
+        } ],
+        "onUnmount": "unSetPropertyPolicy"
+    },
+    "props": {
+        "copy-options": {
+            "type": "array"
+        },
+        "xrt-state": {
+            "type": "object"
+        },
+        "xrt-data": {
+            "type": "object"
+        },
+        "type": {
+            "type": "string"
+        }
+    },
+    "onEvent": [ {
+        "eventId": "copyOptionsDataProvider.modelObjectsUpdated",
+        "action": "startEditAction"
+        },
+        {
+        "eventId": "action.lovValueChanged",
+        "action": "onCopyActionChangeBatchJob",
+        "inputArgs": {
+            "eventData": "{{eventData}}"
+        }
+    } ],
+    "i18n": {
+        "advancedCopyOptions": [
+            "TCUICommandPanelsMessages"
+        ],
+        "noCopy": [
+            "TCUICommandPanelsMessages"
+        ],
+        "saveas": [
+            "TCUICommandPanelsMessages"
+        ],
+        "copyAsReference": [
+            "TCUICommandPanelsMessages"
+        ],
+        "relateToLatest": [
+            "TCUICommandPanelsMessages"
+        ],
+        "revise": [
+            "TCUICommandPanelsMessages"
+        ],
+        "source": [
+            "TCUICommandPanelsMessages"
+        ],
+        "relation": [
+            "TCUICommandPanelsMessages"
+        ],
+        "action": [
+            "TCUICommandPanelsMessages"
+        ],
+        "id": [
+            "TCUICommandPanelsMessages"
+        ],
+        "name": [
+            "TCUICommandPanelsMessages"
+        ],
+        "description": [
+            "TCUICommandPanelsMessages"
+        ],
+        "revisionId": [
+            "TCUICommandPanelsMessages"
+        ],
+        "idNamingRule": [
+            "TCUICommandPanelsMessages"
+        ],
+        "revisionIdNamingRule": [
+            "TCUICommandPanelsMessages"
+        ],
+        "pendingString": [
+            "TCUICommandPanelsMessages"
+        ]
+    }
+}

@@ -1,0 +1,436 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports":
+    [
+        "js/aw-command-panel.directive",
+        "js/visible-when.directive",
+        "js/aw-command-panel-section.directive",
+        "js/aw-widget.directive",
+        "js/aw-numeric.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-i18n.directive",
+        "js/aw-checkbox.directive",
+        "js/aw-button.directive"
+    ],
+
+    "actions":
+    {
+        "populateProfileInfo": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "revealProfilePanel"
+                },
+                {
+                    "action": "initializeDataProvider"
+                }
+            ]
+        },
+        "revealProfilePanel": {
+            "actionType": "JSFunction",
+            "method": "populateProfilePanelData",
+            "inputData": {
+                "data": "{{data}}",
+                "profileObject": "{{props.subPanelContext.selectedObjects[0]}}",
+                "isTemplateInEditMode": "{{props.subPanelContext.isTemplateInEditMode}}"
+            },
+            "outputData":{
+                "allowSubGroupMembers":"allowSubGroupMembers",
+                "numberOfReviewers":"numberOfReviewers",
+                "profileObjects": "profileObjects"
+            },
+            "deps": "js/Awp0WorkflowTemplateProfileService"
+        },
+        "initializeDataProvider": {
+            "actionType": "dataProvider",
+            "methods": [ "assignmentsDataProvider" ]
+        },
+        "addUsers": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "addSelectedProfiles",
+                    "condition": "conditions.isSelectedUsersPresent"
+                },
+                {
+                    "action": "navigateToMainPage",
+                    "condition": "conditions.isSelectedUsersPresent"
+                }
+            ]
+        },
+        "addSelectedProfiles": {
+            "actionType": "JSFunction",
+            "method": "addSelectedProfiles",
+            "inputData": {
+                "data": "{{data}}",
+                "selectedUsers": "{{props.subPanelContext.addUserPanelState.selectedUsers}}",
+                "dataProvider": "{{data.dataProviders.assignmentsDataProvider}}"
+            },
+            "outputData": {
+                "isValidToUpdate": ""
+            },
+            "deps": "js/Awp0WorkflowTemplateProfileService"
+        },
+        "navigateToMainPage": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.subPanelContext.activeState}}",
+                "destPanelId": "Awp0TemplateEditProfileInfoSub"
+            }
+        },
+        "closeCurrentOpenedPanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+            }
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "createOrUpdateProfile": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getCreateOrUpdateProfileInfo"
+                },
+                {
+                    "action": "createProfileObject",
+                    "condition": "data.createProfileInputData && !data.updateProfileInputVector"
+                },
+                {
+                    "action": "deleteProfileObject",
+                    "condition": "data.createProfileInputData && !data.updateProfileInputVector"
+                },
+                {
+                    "action": "saveProfileObject",
+                    "condition": "data.updateProfileInputVector && !data.createProfileInputData"
+                },
+                {
+                    "action": "closeCurrentOpenedPanel",
+                    "condition": "!data.updateProfileInputVector && !data.createProfileInputData"
+                }
+            ]
+        },
+        "getCreateOrUpdateProfileInfo": {
+            "actionType": "JSFunction",
+            "method": "getCreateOrUpdateProfileInfo",
+            "inputData": {
+                "data": "{{data}}",
+                "selectedTemplate": "{{props.subPanelContext.subPanelContext.selectionData.selected[0]}}",
+                "previousProfile": "{{props.subPanelContext.profileObject}}",
+                "newProfile": "{{data.dataProviders.assignmentsDataProvider.viewModelCollection.loadedVMObjects[0]}}"
+            },
+            "outputData": {
+                "createProfileInputData": "createProfileInputData",
+                "updateProfileInputVector": "updateProfileInputVector"
+            },
+            "deps": "js/Awp0WorkflowTemplateProfileService"
+        },
+        "saveProfileObject": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-09-DataManagement",
+            "method": "setProperties",
+            "inputData":
+            {
+                "info":
+                [
+                    {
+                        "object": "{{props.subPanelContext.profileObject}}",
+                        "timestamp": "",
+                        "vecNameVal": "{{data.updateProfileInputVector}}"
+                    }
+                ]
+            },
+            "policy": {
+                "types": [ {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "signoff_profiles",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "EPMSignoffProfile",
+                        "properties":
+                        [
+                            {
+                                "name": "number_of_signoffs"
+                            },
+                            {
+                                "name": "allow_subgroups"
+                            },
+                            {
+                                "name": "group",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "role",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Role",
+                        "properties": [ {
+                            "name": "role_name"
+                        } ]
+                    },
+                    {
+                        "name": "Group",
+                        "properties": [ {
+                            "name": "object_full_name"
+                        } ]
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "closePanel"
+                    },
+                    {
+                        "name": "workflowDesigner.tabReload"
+                    }
+                ]
+            },
+            "deps": "js/Awp0WorkflowTemplateProfileService"
+        },
+        "createProfileObject": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2019-06-Workflow",
+            "method": "createOrUpdateTemplate",
+            "inputData": {
+                "input": "{{data.createProfileInputData}}"
+            },
+            "policy": {
+                "types": [ {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "signoff_profiles",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "EPMSignoffProfile",
+                        "properties":
+                        [
+                            {
+                                "name": "number_of_signoffs"
+                            },
+                            {
+                                "name": "allow_subgroups"
+                            },
+                            {
+                                "name": "group",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "role",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Role",
+                        "properties": [ {
+                            "name": "role_name"
+                        } ]
+                    },
+                    {
+                        "name": "Group",
+                        "properties": [ {
+                            "name": "object_full_name"
+                        } ]
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "workflowDesigner.tabReload"
+                    }
+                ]
+            },
+            "deps": "js/Awp0WorkflowDesignerUtils"
+        },
+        "deleteProfileObject": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "deleteObjects",
+            "inputData": {
+                "objects": [
+                    "{{props.subPanelContext.profileObject}}"
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "closePanel"
+                    },
+                    {
+                        "name": "workflowDesigner.tabReload"
+                    }
+                ]
+            }
+        }
+    },
+
+    "data": {
+        "allowSubGroupMembers": {
+            "displayName": "{{i18n.allowSubGroupMembers}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "dbValue": "",
+            "isEditable": "false",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "numberOfReviewers": {
+            "displayName": "{{i18n.number_of_signoffs}}",
+            "type": "INTEGER",
+            "dbValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP",
+            "isEditable": "false",
+            "validationCriteria": [
+                {
+                    "condition": "conditions.noOfReviewersOnlyPositiveInteger",
+                    "value": "{{i18n.noOfReviewersInvalidError}}"
+                }
+            ]
+        },
+        "profilesSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+
+    "dataProviders": {
+        "assignmentsDataProvider": {
+            "response": "{{data.profileObjects}}",
+            "totalFound": "{{data.profileObjects.totalFound}}",
+            "selectionModelMode": "single",
+            "inputData": {
+                "selectionData": "{{fields.profilesSelectionData}}"
+            }
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount":"populateProfileInfo",
+        "onUpdate": [
+            {
+                "action": "addUsers",
+                "observers": [ "props.subPanelContext.addUserPanelState.selectedUsers" ]
+            }
+        ]
+    },
+
+    "functions":
+    {
+    },
+
+    "conditions": {
+        "isValidToSave": {
+            "expression": "data.allowSubGroupMembers.valueUpdated || ( data.numberOfReviewers.valueUpdated && data.numberOfReviewers.dbValue > 0)|| data.isValidToUpdate"
+        },
+        "isTemplateInEditMode": {
+            "expression": "props.subPanelContext.isTemplateInEditMode"
+        },
+        "isSelectedUsersPresent": {
+            "expression": "props.subPanelContext.addUserPanelState.selectedUsers && props.subPanelContext.addUserPanelState.selectedUsers.length > 0"
+        },
+        "noOfReviewersOnlyPositiveInteger": {
+            "expression": "data.numberOfReviewers.dbValue && data.numberOfReviewers.dbValue <= 0"
+        }
+    },
+
+    "onEvent": [
+
+        {
+            "eventId": "closePanel",
+            "action": "closeCurrentOpenedPanel"
+        },
+        {
+            "eventId": "workflowGraph.selectionChanged",
+            "action": "closeCurrentOpenedPanel"
+        },
+        {
+            "eventId": "Awp0WorkflowDesignerGraph.contentUnloaded",
+            "action": "closeCurrentOpenedPanel"
+        },
+        {
+            "eventId": "workflowDesigner.saveEdit",
+            "action": "closeCurrentOpenedPanel"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+
+    "i18n":
+    {
+        "objectInformationLabel": [ "TCUICommandPanelsMessages"],
+        "Awp0StartEditTableTitle": [ "ZeroCompileCommandMessages"],
+        "save": [ "TCUICommandPanelsMessages" ],
+        "allowSubGroupMembers": [ "WorkflowDesignerMessages" ],
+        "number_of_signoffs": [ "WorkflowDesignerMessages" ],
+        "required": [ "InboxMessages" ],
+        "noOfReviewersInvalidError": [ "WorkflowDesignerMessages" ]
+    }
+
+}

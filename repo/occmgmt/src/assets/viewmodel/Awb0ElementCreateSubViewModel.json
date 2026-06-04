@@ -1,0 +1,153 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "numberOfElements": {
+            "displayName": "{{i18n.numberOfElements}}",
+            "type": "INTEGER",
+            "isRequired": "true",
+            "isEditable": "true",
+            "dbValue": 1,
+            "dispValue": 1,
+            "labelPosition": "PROPERTY_LABEL_AT_TOP",
+            "validationCriteria": [ {
+                "condition": "!conditions.areNumberOfElementsValid",
+                "value": "{{i18n.invalidNoOfElements}}"
+            } ]
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_SUB_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions": {
+        "render": {
+            "method": "addElementCreateSubViewRenderFunction",
+            "deps": "js/aceAddElementCreateSubViewService"
+        },
+        "addPropertiesAndSetCreateInputContext": {
+            "actionType": "JSFunction",
+            "method": "buildElementCreateInputAndUpdateState",
+            "inputData": {
+                "value": "{{data}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "outputData": {},
+            "events": {
+                "success": [
+                    {
+                        "name": "setCreateInputContextSuccess",
+                        "excludeLocalDataCtx": true
+                    }
+                ]
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "initializePanelProperties": {
+            "actionType": "JSFunction",
+            "method": "initializePanelProperties",
+            "inputData": {
+                "value": "{{data}}",
+                "occurrenceTypeName":"{{props.subPanelContext.addElementState.occurrenceTypeName}}"
+            },
+            "outputData": {
+                "createSubType": "createSubType",
+                "numberOfElements" : "numberOfElements"
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "assignInitialValuesToXrtProperties": {
+            "actionType": "JSFunction",
+            "method": "assignInitialValuesToXrtProperties",
+            "inputData": {
+                "createType": "{{data.createSubType.props.type_name.dbValues[0]}}",
+                "editHandler" : "{{editHandlers.addPanelEditHandler}}"
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "resetElementProperties": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "initializePanelProperties"
+                },
+                {
+                    "action": "assignInitialValuesToXrtProperties"
+                }
+            ]
+        },
+        "initializePanel": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "inputData": {
+                "pathOnCtxOrState, ": "Awb0ElementCreateSubView",
+                "value": true,
+                "target" : "{{props.subPanelContext.addElementState}}"
+            },
+            "deps": "js/occmgmtUtils",
+            "events": {
+                "success": [{
+                    "name": "awb0Element.initializePanelProperties"
+                }]
+            }
+        },
+        "destroyPanel": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "inputData": {
+                "pathOnCtxOrState, ": "Awb0ElementCreateSubView",
+                "value": false,
+                "target" : "{{props.subPanelContext.addElementState}}"
+            },
+            "deps": "js/occmgmtUtils"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "awb0Element.addElementProperties",
+            "action": "addPropertiesAndSetCreateInputContext"
+        },
+        {
+            "eventId": "awb0Element.resetCreateInputPropertiesToDefault",
+            "action": "resetElementProperties"
+        },
+        {
+            "eventId": "awb0Element.initializePanelProperties",
+            "action": "resetElementProperties"
+        }
+    ],
+    "conditions": {
+        "areElementPropertiesSupported": {
+            "expression": "!(subPanelContext.addPanelState.value.sourceObjects.length > 0 && subPanelContext.addPanelState.value.sourceObjects[0].modelType && props.subPanelContext.addPanelState.value.sourceObjects[0].modelType.typeHierarchyArray.indexOf('Awb0Element') > -1)"
+        },
+        "isNewTabSelected" : {
+            "expression" : "subPanelContext.addPanelState.value.selectedTab.view==='NewTabPageSub'"
+        },
+        "areNumberOfElementsValid": {
+            "expression": "data.numberOfElements.dbValue>=1 && data.numberOfElements.dbValue<=10000"
+        }
+    },
+    "lifecycleHooks": {
+        "render":"render",
+        "onMount": "initializePanel",
+        "onUnmount": "destroyPanel"
+    },
+    "i18n": {
+        "numberOfElements": [
+            "OccurrenceManagementConstants"
+        ],
+        "invalidNoOfElements": [
+            "OccurrenceManagementMessages"
+        ]
+    }
+}

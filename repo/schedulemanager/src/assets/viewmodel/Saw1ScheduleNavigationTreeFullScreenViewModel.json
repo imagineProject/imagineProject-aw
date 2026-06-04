@@ -1,0 +1,145 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "data": {
+        "treeSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "ganttSelectionData": {
+            "initialValues": {
+                "id": "ganttSelectionModel"
+            },
+            "meta": {}
+        },
+        "treeTableData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "actions": {
+        "loadScheduleMembers": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getScheduleMembers"
+                },
+                {
+                    "action": "refreshObjects"
+                }
+            ]
+        },
+        "getScheduleMembers": {
+            "actionType": "JSFunctionAsync",
+            "method": "getProperties",
+            "deps": "soa/dataManagementService",
+            "inputData": {
+                "uids": [
+                    "{{props.subPanelContext.provider.baseSelection.uid}}"
+                ],
+                "propNames": [
+                    "saw1ScheduleMembers"
+                ]
+            }
+        },
+        "refreshObjects": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-01-DataManagement",
+            "method": "refreshObjects",
+            "inputData": {
+                "objects": "{{function:getObjectsToRefresh}}"
+            },
+            "deps": "js/Saw1ScheduleNavigationTreeService"
+        },
+        "handleTreeSelectionChange": {
+            "actionType": "JSFunction",
+            "method": "handleTreeSelectionChange",
+            "inputData": {
+                "treeSelectionData": "{{data.treeSelectionData}}",
+                "parentSelectionData": "{{props.subPanelContext.selectionData}}",
+                "atomicDataRef": "{{data.atomicDataRef}}"
+            },
+            "deps": "js/Saw1ScheduleNavigationTreeService"
+        },
+        "handleGanttSelectionChange": {
+            "actionType": "JSFunction",
+            "method": "handleGanttSelectionChange",
+            "inputData": {
+                "ganttSelectionData": "{{data.ganttSelectionData}}",
+                "parentSelectionData": "{{props.subPanelContext.selectionData}}",
+                "treeSelectionModel": "{{props.subPanelContext.selectionModel}}"
+            },
+            "deps": "js/Saw1ScheduleNavigationTreeService"
+        },
+        "updateSWAInfoToScheduleAction": {
+            "actionType": "JSFunction",
+            "method": "updateSWAInfoToSchedule",
+            "deps": "js/scheduleNavigationTreeUtils"
+        },
+        "setBaselinesToView": {
+            "actionType": "JSFunction",
+            "method": "setBaselinesToView",
+            "inputData": {
+                "scheduleNavigationContext": "{{subPanelContext.provider.scheduleNavigationContext}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/Saw1ScheduleNavigationTreeService"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "loadScheduleMembers",
+        "onUpdate": [ {
+                "action": "handleTreeSelectionChange",
+                "observers": [ "viewModel.atomicData.treeSelectionData" ]
+            },
+            {
+                "action": "handleGanttSelectionChange",
+                "observers": [ "viewModel.atomicData.ganttSelectionData" ]
+            }
+        ]
+    },
+    "ctx": {
+        "preferences": null,
+        "userSession": null
+    },
+    "functions": {
+        "getObjectsToRefresh": {
+            "functionName": "getObjectsToRefresh",
+            "parameters": [
+                "{{props.subPanelContext.provider.baseSelection}}"
+            ]
+        }
+    },
+    "conditions": {
+        "isGanttChartPrefOn": {
+            "expression": "!(ctx.preferences.AW_SubLocation_ScheduleNavigationSubLocation_ShowGanttChart && ctx.preferences.AW_SubLocation_ScheduleNavigationSubLocation_ShowGanttChart[0] === 'false')"
+        },
+        "isScheduleLocked": {
+            "expression": "props.subPanelContext.provider.openedObject.props.fnd0Schmgt_Lock.dbValue && props.subPanelContext.provider.openedObject.props.fnd0Schmgt_Lock.dbValue !== ''"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "scheduleNavigationTree.updateSWAInfoToSchedule",
+            "action": "updateSWAInfoToScheduleAction"
+        },
+        {
+            "eventId": "scheduleNavigationTree.loadBaselines",
+            "cacheEventData": true,
+            "action": "setBaselinesToView"
+        }
+    ],
+    "messages": {
+        "lockedByUserMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.scheduleLockedByUserMsg}}",
+            "messageTextParams": [
+                "{{subPanelContext.provider.openedObject.props.fnd0Schmgt_Lock.uiValues[0]}}"
+            ]
+        }
+    },
+    "i18n": {
+        "scheduleLockedByUserMsg": [
+            "ScheduleManagerMessages"
+        ]
+    }
+}

@@ -1,0 +1,345 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "launchDateRangeGroupEffectivityPanelBatchJob":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setselectedTabCtx"
+                },
+                {
+                    "action": "launchDateRangeGroupEffectivityPanel"
+                }
+            ]
+        },
+
+        "launchDateRangeGroupEffectivityPanel": {
+            "actionType": "JSFunction",
+            "method": "launchCustomDialogPanel",
+            "deps": "js/occmgmtCustomDialogService",
+            "inputData": {
+                "customDialogAction": "{{subPanelContext.customDialogAction}}",
+                "options": {
+                    "view": "Awb0DateRangeGroupEffectivity",
+                    "placement": "left",
+                    "parent": ".aw-layout-workarea",
+                    "width": "STANDARD",
+                    "height": "FULL",
+                    "subPanelContext": "{{subPanelContext}}",
+                    "isCloseVisible": false,
+                    "push": true
+                }
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "awPopupWidget.close"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "awPopupWidget.close"
+                    }
+                ]
+            }
+        },
+        "closePopupWindow": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "inputData": {
+                "popupId": "{{data.popupId}}"
+            },
+            "deps": "js/popupService"
+        },
+        "navigateToDateGroupEffectivityPanelBatchJob":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setselectedTabCtx"
+                },
+                {
+                    "action": "initializeDateRangeState"
+                },
+                {
+                    "action": "navigateToDateGroupEffectivityPanel"
+                }
+            ]
+        },
+        "setselectedTabCtx": {
+            "actionType": "JSFunction",
+            "method": "registerCtx",
+            "inputData": {
+                "name": "dateRange.selectedTab",
+                "value": true
+            },
+            "deps": "js/appCtxService"
+        },
+        "initializeDateRangeState":{
+            "actionType": "JSFunction",
+            "method": "updateSubPanelContextOfView",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "key": "dateRangeState",
+                "value":
+                {
+                    "endItemValForDateRange":{
+                        "dbValue":"",
+                        "uiValue":""
+                    },
+                    "nameBox":"",
+                    "startDateTime":"",
+                    "endDateTime":"",
+                    "endDateOptions":{
+                        "dbValue":"Date",
+                        "uiValue":"{{i18n.dateEffectivity}}"
+                    }
+                }
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "navigateToDateGroupEffectivityPanel": {
+            "actionType": "JSFunction",
+            "method": "navigateToView",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "view": {
+                    "panelId": "AddDateRangeGroupEffectivity",
+                    "title": "{{i18n.dateRangeGroupEffectivityTitle}}"
+                }
+            },
+            "events": {},
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "selectDateEffectivity": {
+            "actionType": "JSFunction",
+            "method": "selectDateEffInList",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/dateEffectivityConfigurationService"
+        },
+        "changeConfiguration":{
+            "actionType": "JSFunction",
+            "method": "changeConfiguration",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/dateEffectivityConfigurationService"
+        },
+        "handleDateOrTimeChange":{
+            "actionType": "JSFunction",
+            "method": "handleDateOrTimeChange",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/dateEffectivityConfigurationService"
+        },
+        "updateDateEffectivity": {
+            "actionType": "JSFunction",
+            "method": "updateDateEffWhenSelectedFromList",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "data": "{{data}}"
+            },
+            "outputData":{
+                "isGroupEffectivity":"isGroupEffectivity"
+            },
+            "deps": "js/dateEffectivityConfigurationService"
+        },
+        "initializeDateEffectivityView": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "initializeDateEffectivityInfo"
+                },
+                {
+                    "action": "initializeDateEffectivity"
+                }
+            ]
+        },
+        "initializeDateEffectivityInfo":{
+            "actionType": "JSFunction",
+            "method": "initializeDateEffectivityInfo",
+            "inputData": {
+                "data": "{{data}}",
+                "occContext":"{{data.subPanelContext.occContext}}"
+            },
+            "outputData":{
+                "dateTimeDetails":"dateTimeDetails",
+                "currentEffectiveDate":"currentEffectiveDate",
+                "isTimeEnabled":"isTimeEnabled",
+                "dateTimeFormat":"dateTimeFormat"
+            },
+            "deps": "js/dateEffectivityConfigurationService"
+        },
+        "initializeDateEffectivity": {
+            "actionType": "dataProvider",
+            "method": "getPreferredDateEffectivities"
+        },
+        "getPreferredDateEffectivities":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2019-12-OccurrenceConfiguration",
+            "method": "getConfigurationRules2",
+            "inputData":
+            {
+                "input":
+                {
+                    "maxToLoad": 20,
+                    "startIndex": 0,
+                    "searchCriteria": "",
+                    "productContext":
+                    {
+                        "type": "Awb0ProductContextInfo",
+                        "uid": "{{data.subPanelContext.occContext.productContextInfo.uid}}"
+                    },
+
+                    "typeToFetch": "RevisionRule",
+                    "fetchOnlyPreferredConfiguration": true
+                }
+            },
+
+            "outputData":
+            {
+                "dateEffectivities": "{{function:processDateEffectivity}}"
+            },
+            "actionMessages": {
+                "failure":
+                [
+                    {
+                        "message": "errorInGettingPreferredConfigInfo"
+                    }
+                ]
+            },
+        "deps": "js/dateEffectivityConfigurationService"
+        },
+        "applyEffectivityDateChange":
+        {
+            "actionType": "JSFunction",
+            "method": "applyEffectivityDateChange",
+            "inputData":  {
+                "data": "{{data}}",
+                "occContext":"{{data.subPanelContext.occContext}}"
+            },
+            "deps": "js/dateEffectivityConfigurationService"
+        },
+        "changeEffectiveDateConfiguration":{
+            "actionType": "JSFunction",
+            "method": "changeConfiguration",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/dateEffectivityConfigurationService"
+        }
+    },
+    "dataProviders":
+    {
+        "getPreferredDateEffectivities":
+        {
+            "action": "getPreferredDateEffectivities",
+            "response": "{{data.dateEffectivities}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeDateEffectivityView",
+        "onUpdate": [ {
+            "action": "handleDateOrTimeChange",
+            "observers": [ "viewModel.data.dateTimeDetails.dateApi.isNotLov" ]
+        }]
+    },
+    "onEvent": [
+        {
+            "eventId": "getPreferredDateEffectivities.selectionChangeEvent",
+            "cacheEventData": true,
+            "action": "updateDateEffectivity"
+        },
+        {
+            "eventId": "awConfigPanel.dateGroupEffectivityClicked",
+            "condition": "!data.subPanelContext.nestedNavigationState",
+            "action": "launchDateRangeGroupEffectivityPanelBatchJob"
+        },
+        {
+            "eventId": "awConfigPanel.dateGroupEffectivityClicked",
+            "condition": "data.subPanelContext.nestedNavigationState.views.length>=0",
+            "action": "navigateToDateGroupEffectivityPanelBatchJob"
+        },
+        {
+            "eventId": "getPreferredDateEffectivities.modelObjectsUpdated",
+            "action": "selectDateEffectivity"
+        },
+        {
+            "eventId": "awConfigPanel.effectivityDateChanged",
+            "cacheEventData": true,
+            "action": "applyEffectivityDateChange"
+        },
+        {
+            "eventId":"changeEffectiveDateConfiguration",
+            "action":"changeEffectiveDateConfiguration"
+        },
+        {
+            "eventId": "condition.expressionValueChanged",
+            "action": "handleDateOrTimeChange",
+            "criteria": {
+                "condition": "conditions.isDateTimeChanged"
+            },
+            "cacheEventData": true
+        },
+        {
+            "eventId": "awPopupWidget.close",
+            "action": "closePopupWindow"
+        }
+    ],
+    "functions": {
+        "processDateEffectivity": {
+            "functionName": "processDateEffectivity",
+            "parameters": ["{{data}}"]
+        }
+    },
+    "messages":
+    {
+        "errorInGettingPreferredConfigInfo":
+        {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.errorInGettingPreferredConfigInfo}}"
+        }
+    },
+    "conditions": {
+        "isDateTimeChanged": {
+            "expression": "data.dateTimeDetails.dbValue",
+            "trackValues": true
+        }
+    },
+    "data": {
+        "dateRange": {
+            "uiValue": "{{i18n.dateRange}}",
+            "type": "STRING"
+        },
+        "occurrenceManagementTodayTitle":
+        {
+            "dbValue": "{{i18n.occurrenceManagementTodayTitle}}",
+            "uiValue": "{{i18n.occurrenceManagementTodayTitle}}",
+            "displayName": "{{i18n.occurrenceManagementTodayTitle}}",
+            "type": "STRING"
+        },
+        "dateTimeDetails":{
+            "type": "DATE",
+            "dbValue": ""
+        }
+    },
+
+    "i18n": {
+        "errorInGettingPreferredConfigInfo": ["OccurrenceManagementMessages"],
+        "occurrenceManagementTodayTitle": ["OccurrenceManagementConstants"],
+        "dateRange": ["PSConstants"],
+        "dateRangeGroupEffectivityTitle":[ "PSConstants"],
+        "dateEffectivity":["OccurrenceManagementConstants"]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "location":{
+            "type": "string"
+        }
+    }
+}

@@ -1,0 +1,387 @@
+{
+    "schemaVersion" : "1.0.0",
+
+    "data" :
+    {
+        "nameBox":{
+            "displayName": "{{i18n.name}}",
+            "type": "STRING",
+            "dbValue": "{{props.subPanelContext.nestedNavigationState.nameBox}}",
+            "uiValue": "{{props.subPanelContext.nestedNavigationState.nameBox}}",
+            "isRequired": "true",
+            "maxLength":128
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AuthorGroupEffectivity",
+                "context": {}
+            },
+            "meta": { }
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "unitgroupeffTable.plTable.loadMorePages",
+            "action": "setTableEditable"
+        },
+        {
+            "eventId": "updateRowIdxAndNavigateToEndItemGroupEffPanel",
+            "cacheEventData": true,
+            "action": "updateRowIdxAndNavigateToEndItemPanelAction"
+        },
+        {
+            "eventId": "removeEndItemUnitGroupEffPanel",
+            "cacheEventData": true,
+            "action": "removeEndItemUnitGroupEffAction"
+        },
+        {
+            "eventId": "authorGrp.unitGroupCreated",
+            "cacheEventData": true,
+            "action": "addEffectivitiesToGroup"
+        },
+        {
+            "eventId": "authorGrp.applyGroupEffectivity",
+            "action": "applyAuthoredGroupEffectivity"
+        },
+        {
+            "eventId": "navigateToUnitGroupEffectivitiesView",
+            "action": "navigateToUnitGroupEffectivitiesViewAction"
+        },
+        {
+            "eventId": "updateStateOrCtxBeforeBack",
+            "cacheEventData": true,
+            "action": "updateEndItemAndNavigateToAuthorEGOPanel"
+        }
+    ],
+    "actions": {
+        "createRowDataAction": {
+            "actionType": "JSFunction",
+            "method": "createRowData",
+            "inputData": {
+                "columnProviderInfo": "{{data.columnProviders.unitGroupEffColumnProvider}}",
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "message": "{{data.i18n.errorMessageEndItemGroupEff}}",
+                "activeView": "{{data.activeState.activeView}}"
+            },
+            "outputData": {
+                "loadResult": ""
+            },
+            "deps": "js/effectivityUnitGroupTableService"
+        },
+        "UpdateNameValueOnStateAction": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "inputData": {
+                "path": "",
+                "value": {
+                    "nameBox": "{{data.nameBox.dbValue}}"
+                },
+                "target": "{{props.subPanelContext.nestedNavigationState}}"
+            },
+            "deps": "js/occmgmtUtils"
+        },
+        "updateRowIdxAndNavigateToEndItemPanelAction": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "updateRowIdxBeforeNavigateAction"
+                },
+                {
+                    "action": "navigateToEndItemPanelAction"
+                }
+            ]
+        },
+        "updateEndItemAndNavigateToAuthorEGOPanel":
+        {
+            "actionType": "JSFunction",
+            "method": "updateEndItemOnState",
+            "inputData":
+            {
+                "eventData": "{{data.eventData}}",
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "columnProviderInfo": "{{data.columnProviders.unitGroupEffColumnProvider}}",
+                "message": "{{data.i18n.errorMessageEndItemGroupEff}}"
+            },
+            "deps": "js/effectivityUnitGroupTableService"
+        },
+        "updateRowIdxBeforeNavigateAction":{
+            "actionType": "JSFunction",
+            "method": "updateRowIdxBeforeNavigate",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}"
+            },
+            "deps": "js/effectivityUnitGroupTableService"
+        },
+        "navigateToEndItemPanelAction":{
+            "actionType": "JSFunction",
+            "method": "navigateToView",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "view": {
+                    "panelId": "AddReferenceSub",
+                    "title": "{{i18n.addEndItem}}",
+                    "additionalSubPanelContext": {
+                        "activeState": "{{fields.activeState}}",
+                        "selectionMode": "single",
+                        "filterTypes": "ItemRevision"
+                    }
+                }
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "removeEndItemUnitGroupEffAction":{
+            "actionType": "JSFunction",
+            "method": "removeEndItem",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "endItemMessage": "{{data.i18n.endItemMessage}}"
+            },
+            "deps": "js/effectivityUnitGroupTableService"
+        },
+        "navigateToUnitGroupEffectivitiesViewAction":{
+            "actionType": "JSFunction",
+            "method": "goToPrevPanel",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}"
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "AuthorGroupEffectivityAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2016-09-DataManagement",
+            "method": "createAttachAndSubmitObjects",
+            "inputData":
+            {
+                "inputs": [
+                    {
+                    "clientId": "CreateObject",
+                    "createData": {
+                        "boName": "Fnd0EffectvtyGrp",
+                        "propertyNameValues": {
+                            "object_name": ["{{data.nameBox.dbValue}}"]
+                        }
+                    },
+                    "dataToBeRelated": {},
+                    "pasteProp": ""
+                   }
+                ]
+            },
+            "policy":
+            {
+                "types":
+                [
+                    {
+                        "name": "Item",
+                        "properties":
+                        [
+                            {
+                                "name": "revision_list"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData":
+            {
+                "groupRevision": "{{function:getEffectivityGroupRevision}}"
+            },
+
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "authorGrp.unitGroupCreated"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "createObjectFailureMessage"
+                    }
+                ]},
+            "deps": "js/effectivityGroupTableService"
+        },
+        "addEffectivitiesToGroup": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-StructureManagement-2009-10-EffectivitiesManagement",
+            "method": "createOrUpdateEffectivites",
+            "inputData":
+            {
+                "effectivitiesInfo": "{{function:getUnitEffectivitiesInfo}}",
+                "effectivityGroupRevision": {
+                    "uid": "{{data.groupRevision.uid}}",
+                    "type": "ItemRevision"
+                }
+           },
+           "outputData": {
+                "effResp" : ""
+            },
+           "events":
+           {
+               "success":
+               [
+                   {
+                       "name": "authorGrp.applyGroupEffectivity"
+                   }
+               ]
+           },
+           "deps": "js/effectivityUnitGroupTableService",
+           "actionMessages": {
+                "failure": [
+                    {
+                        "message": "addFailureMessage"
+                    }
+                ]}
+        },
+        "applyAuthoredGroupEffectivity": {
+            "actionType": "JSFunction",
+            "method": "applyConfiguration",
+            "inputData":{
+                "value": {
+                    "configContext": {
+                        "r_uid": "{{props.subPanelContext.occContext.productContextInfo.props.awb0CurrentRevRule.dbValues[0]}}",
+                        "eg_uids": "{{function:appendAndGetExistingGroupEffectivities}}",
+                        "de": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EffDate.dbValues[0]}}",
+                        "var_uids": "{{props.subPanelContext.occContext.productContextInfo.props.awb0VariantRules.dbValues}}",
+                        "iro_uid": "{{props.subPanelContext.occContext.productContextInfo.props.awb0VariantRuleOwningRev.dbValues[0]}}",
+                        "startDate": "{{props.subPanelContext.occContext.productContextInfo.props.awb0StartEffDates.dbValues[0]}}",
+                        "endDate": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EndEffDates.dbValues[0]}}",
+                        "startFreshNavigation": true
+                    },
+                    "transientRequestPref": {
+                        "jitterFreePropLoad" : true,
+                        "userGesture": "EFFECTIVITY_CHANGE"
+                    }
+                },
+                "occContext":"{{props.subPanelContext.occContext}}"
+            },
+            "events": {
+                "success": [{
+                    "name": "navigateToUnitGroupEffectivitiesView"
+                }]
+            },
+            "deps": "js/effectivityUnitGroupTableService"
+        },
+        "setTableEditable": {
+            "actionType": "JSFunction",
+            "method": "setTableEditable",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.unitGroupEffDataProvider}}"
+            },
+            "deps": "js/effectivityUnitGroupTableService"
+        }
+    },
+
+    "dataProviders": {
+        "unitGroupEffDataProvider":{
+            "action": "createRowDataAction",
+            "response": "{{data.loadResult.searchResults}}",
+            "totalFound": "{{data.loadResult.totalFound}}",
+            "commandsAnchor": "Awb0EndItemCommandAnchor",
+            "editContext": "TABLE_CONTEXT",
+            "inputData": {
+                "selectionModelMode": "single"
+            }
+        }
+    },
+
+    "columnProviders": {
+        "unitGroupEffColumnProvider": {
+            "frozenColumnIndex": -1,
+            "columns": [
+            {
+                "name": "units",
+                "displayName": "{{i18n.units}}",
+                "minWidth": 60,
+                "width": 120,
+                "pinnedLeft": false,
+                "enableColumnMenu": false
+            },
+            {
+                "name": "enditem",
+                "displayName": "{{i18n.endItemMessage}}",
+                "maxWidth": 300,
+                "minWidth": 80,
+                "width": 202,
+                "pinnedLeft": false,
+                "enableColumnMenu": false,
+                "isTableCommand": true
+            }
+        ] }
+    },
+
+    "grids": {
+        "unitgroupeffTable": {
+            "dataProvider": "unitGroupEffDataProvider",
+            "columnProvider": "unitGroupEffColumnProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enablePinning": false,
+                "enableSorting": false,
+                "enableGridMenu": false
+            }
+        }
+    },
+    "functions": {
+        "getEffectivityGroupRevision": {
+            "functionName": "getEffectivityGroupRevision",
+            "parameters":
+            [
+            ]
+        },
+        "getUnitEffectivitiesInfo": {
+            "functionName": "getUnitEffectivitiesInfo",
+            "parameters":[
+                "{{props.subPanelContext.nestedNavigationState}}"
+             ]
+        },
+        "appendAndGetExistingGroupEffectivities":{
+            "functionName":"appendAndGetExistingGroupEffectivities",
+            "parameters":[
+                "{{data.groupRevision}}","{{props.subPanelContext.occContext}}"
+            ]
+        }
+    },
+    "i18n":
+    {
+        "name":[ "OccurrenceManagementConstants" ],
+        "endItemMessage":[ "OccurrenceManagementConstants" ],
+        "addEndItem":[ "OccurrenceManagementConstants" ],
+        "units":[ "OccurrenceManagementConstants" ],
+        "addElementBtn":[ "OccurrenceManagementConstants" ],
+        "errorMessageEndItemGroupEff":["OccurrenceManagementMessages"],
+        "genericServerError":["OccurrenceManagementMessages"]
+    },
+    "lifecycleHooks": {
+        "onMount": "setTableEditable",
+        "onUpdate": [
+            {
+                "action": "UpdateNameValueOnStateAction",
+                "observers": [ "viewModel.data.nameBox.dbValue" ]
+            } ]
+    },
+    "messages": {
+        "addFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.genericServerError}}",
+            "messageTextParams": [
+                "{{data.effResp.partialErrors[0].errorValues[0].message}}"
+            ]
+        },
+        "createObjectFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.genericServerError}}",
+            "messageTextParams": [
+                "{{data.groupRevision.ServiceData.partialErrors[0].errorValues[0].message}}"
+            ]
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

@@ -1,0 +1,161 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "dayDisp": {
+            "displayName": "{{i18n.day}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "",
+            "displayValue": ""
+        },
+        "totalHoursDisp": {
+            "displayName": "{{i18n.totalHours}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "",
+            "displayValue": ""
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "total-ranges": {
+            "type": "object"
+        },
+        "selected-day": {
+            "type": "object"
+        },
+        "edit-mode": {
+            "type": "boolean"
+        },
+        "aw-calendar-atomic-data": {
+            "type": "object"
+        }
+    },
+    "actions": {
+        "callTotalHoursDataProvider": {
+            "actionType": "dataProvider",
+            "method": "totalHoursDataProvider"
+        },
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTotalHrsTableData",
+            "inputData": {
+                "totalHoursColumnProvider": "{{data.columnProviders.totalHoursColumnProvider}}",
+                "day": "{{props.selectedDay}}",
+                "totalRanges": "{{props.totalRanges}}",
+                "dayDisp": "{{data.dayDisp}}",
+                "totalHoursDisp": "{{data.totalHoursDisp}}",
+                "startIndex": "{{data.dataProviders.totalHoursDataProvider.startIndex}}"
+            },
+            "outputData": {
+                "loadResult": ""
+            },
+            "deps": "js/AwTotalHoursService"
+        },
+        "updateTotalHoursDisplay": {
+            "actionType": "JSFunction",
+            "method": "updateTotalHoursDisplay",
+            "inputData": {
+                "totalHoursDataObjs": "{{data.dataProviders.totalHoursDataProvider.viewModelCollection.loadedVMObjects}}",
+                "totalHoursDisp": "{{data.totalHoursDisp}}",
+                "fields": "{{fields}}",
+                "sharedData": "{{subPanelContext.sharedData}}",
+                "awCalendarAtomicData": "{{props.awCalendarAtomicData}}"
+            },
+            "deps": "js/AwTotalHoursService"
+        },
+        "TotalHoursTableReload": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "TotalHoursTable.plTable.reload"
+                } ]
+            }
+        }
+    },
+    "dataProviders": {
+        "totalHoursDataProvider": {
+            "action": "loadData",
+            "response": "{{data.loadResult.searchResults}}",
+            "totalFound": "{{data.loadResult.totalFound}}",
+            "searchIndex": "{{data.loadResult.searchIndex}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionData": "{{subPanelContext.selectionData}}",
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            }
+        }
+    },
+    "columnProviders": {
+        "totalHoursColumnProvider": {
+            "frozenColumnIndex": -1,
+            "sortCriteria": [],
+            "columns": [ {
+                    "name": "from",
+                    "displayName": "{{i18n.from}}",
+                    "maxWidth": 155,
+                    "pinnedLeft": false,
+                    "enableColumnMenu": false,
+                    "enableColumnMoving": false
+                },
+                {
+                    "name": "to",
+                    "displayName": "{{i18n.to}}",
+                    "maxWidth": 155,
+                    "pinnedLeft": false,
+                    "enableColumnMenu": false,
+                    "enableColumnMoving": false
+                }
+            ]
+        }
+    },
+    "grids": {
+        "TotalHoursTable": {
+            "dataProvider": "totalHoursDataProvider",
+            "columnProvider": "totalHoursColumnProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableGridMenu": false,
+                "enablePinning": false,
+                "enableSorting": false
+            }
+        }
+    },
+    "onEvent": [ {
+            "eventId": "updateTotalHoursDisplay",
+            "action": "updateTotalHoursDisplay"
+        },
+        {
+            "eventId": "callTotalHoursDataProviderEvent",
+            "action": "callTotalHoursDataProvider"
+        }
+    ],
+    "i18n": {
+        "day": [
+            "CalendarManagementMessages"
+        ],
+        "totalHours": [
+            "CalendarManagementMessages"
+        ],
+        "from": [
+            "CalendarManagementMessages"
+        ],
+        "to": [
+            "CalendarManagementMessages"
+        ]
+    },
+    "lifecycleHooks": {
+        "onUpdate": [ {
+            "action": "callTotalHoursDataProvider",
+            "observers": [
+                "props.selectedDay",
+                "props.totalRanges"
+            ]
+        } ]
+    }
+}

@@ -1,0 +1,187 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "closeSettingsPanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            }
+        },
+        "initSvrSettings": {
+            "actionType": "JSFunction",
+            "method": "initSvrSettings",
+            "inputData": {
+                "propsSvrSettings": "{{subPanelContext.fetchedSettings}}",
+                "svrSettings": "{{data.atomicDataRef.svrSettings}}",
+                "currentSVRName": "{{subPanelContext.columnDef.displayName}}"
+            },
+            "outputData": {
+                "settingsTitle.dbValue": "",
+                "settingsTitle.uiValue": ""
+            },
+            "deps": "js/pca0SvrSettingsService"
+        },
+        "updateSvrSettingsDialog": {
+            "actionType": "JSFunction",
+            "method": "initSvrSettings",
+            "inputData": {
+                "propsSvrSettings": "{{parameters.eventData.fetchedSettings}}",
+                "svrSettings": "{{data.atomicDataRef.svrSettings}}",
+                "currentSVRName": "{{parameters.eventData.columnDef.displayName}}"
+            },
+            "outputData": {
+                "settingsTitle.dbValue": "",
+                "settingsTitle.uiValue": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0SvrSettings.updateSettingsContent"
+                    }
+                ]
+            },
+            "deps": "js/pca0SvrSettingsService"
+        },
+        "navigateToView": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "inputData": {
+                "subView": "{{parameters.eventData.subView}}"
+            },
+            "outputData": {
+                "activeView": ""
+            },
+            "deps": "js/pca0SvrSettingsService"
+        },
+        "updateFilterCriteriaComponentsFromMultiVariantsGridSettingsPanel": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "navigateBackToSettings"
+                },
+                {
+                    "action": "clearChangedFlags"
+                },
+                {
+                    "action": "triggerFilterCriteriaUpdate"
+                }
+            ]
+        },
+        "clearChangedFlags": {
+            "actionType": "JSFunction",
+            "method": "clearChangedFlags",
+            "inputData": {
+                "svrSettings": "{{data.atomicDataRef.svrSettings}}"
+            },
+            "deps": "js/pca0SvrSettingsService"
+        },
+        "navigateBackToSettings": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "inputData": {
+                "subView": "Pca0SvrSettingsContent"
+            },
+            "outputData": {
+                "activeView": ""
+            },
+            "deps": "js/pca0SvrSettingsService"
+        },
+        "triggerFilterCriteriaUpdate": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0FilterCriteriaSettings.refreshContent"
+                } ]
+            }
+        }
+    },
+    "lifecycleHooks": {
+        "onUnmount": "closeSettingsPanel",
+        "onUpdate": [
+            {
+                "action": "updateFilterCriteriaComponentsFromMultiVariantsGridSettingsPanel",
+                "observers": [
+                    "viewModel.atomicData.svrSettings.settingsCache.effectivityChanged",
+                    "viewModel.atomicData.svrSettings.settingsCache.ruleDateChanged"
+                ]
+            }
+        ],
+        "onMount": "initSvrSettings"
+    },
+    "data": {
+        "settingsTitle": {
+            "displayName": "{{i18n.for}}",
+            "uiValue": "",
+            "dbValue": ""
+        },
+        "activeView": "Pca0SvrSettingsContent",
+        "svrSettings": {
+            "initialValues": {
+                "settingsMO": {},
+                "isLOVRevRuleDataCached": false
+            },
+            "meta": {
+                "settingsMO": {
+                    "type": "OBJECT"
+                },
+                "isLOVRevRuleDataCached": {
+                    "type": "STRING"
+                },
+                "settingsCache": {
+                    "type": "OBJECT"
+                }
+            }
+        }
+    },
+    "i18n": {
+        "profileSettings": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "effectivity": [
+            "FullScreenConfigurationMessages"
+        ],
+        "ruleDateSubPanelTitle": [
+            "FullScreenConfigurationMessages"
+        ],
+        "for": [
+            "ConfiguratorMessages"
+        ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "gwt.SubLocationContentSelectionChangeEvent",
+            "action": "closeSettingsPanel"
+        },
+        {
+            "eventId": "Pca0SvrSettings.closeDialog",
+            "action": "closeSettingsPanel"
+        },
+        {
+            "eventId": "Pca0FilterCriteria.navigateToSubView",
+            "action": "navigateToView",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.updateSvrSettingsDialog",
+            "action": "updateSvrSettingsDialog",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+    ]
+}

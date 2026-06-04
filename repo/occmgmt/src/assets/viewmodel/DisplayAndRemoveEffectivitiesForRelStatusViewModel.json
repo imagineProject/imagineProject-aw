@@ -1,0 +1,365 @@
+{
+    "schemaVersion" : "1.0.0",
+
+    "i18n":
+    {
+        "failedToRemoveEffectivity":["OccurrenceManagementConstants"],
+        "relStatusffectivities": ["OccurrenceManagementConstants"],
+        "edit":["OccurrenceManagementConstants"],
+        "upTextForUnit": ["OccurrenceEffectivityConstants"]
+    },
+    "data":
+    {
+        "releaseStatus":
+        {
+            "type": "STRING",
+            "hasLov":true,
+            "isEditable": "true",
+            "dataProvider": "relStatusDataProvider",
+            "emptyLOVEntry": false,
+            "dbValue": "{{props.subPanelContext.sharedData.releaseStatus.dbValue}}",
+            "uiValue": "{{props.subPanelContext.sharedData.releaseStatus.uiValue}}"
+        },
+        "commandDisplayAndRemoveEffectivityForRelnStatus":"awb0_displayAndRemoveEffectivityForRelnStatus"
+    },
+
+    "dataProviders":
+    {
+        "getRelStatusEffectivities":
+        {
+            "action": "getRelStatusEffectivitiesAction",
+            "response": "{{data.effectivityObjectsFound}}",
+            "totalFound" : "{{data.effectivityObjectsFound.length}}",
+            "selectionModelMode": "multiple",
+            "commandsAnchor": "occmgmt_effectivity_cell_commands"
+        },
+        "relStatusDataProvider": {
+            "action": "setReleaseStatusListFromSelectedObjectInPWAAction",
+            "response": "{{data.relStatusTypes}}",
+            "totalFound": "{{data.relStatusTypes.length}}"
+        }
+    },
+
+    "actions":
+    {
+        "setReleaseStatusListFromSelectedObjectInPWAAction" : {
+            "actionType": "JSFunctionAsync",
+            "method": "setReleaseStatusListFromSelectedObjectInPWA",
+            "inputData":
+            {
+                "data" : "{{data}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "outputData":
+            {
+                "relStatusTypes": "releaseStatusList",
+                "releaseStatus.dbValue": "releaseStatusDbValue",
+                "releaseStatus.uiValue": "releaseStatusUiValue"
+            },
+            "deps": "js/sharedEffectivityService"
+        },
+
+        "setEffectivityTypeOncontext" : {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData":
+            {
+                "path" : "elementEffectivity.currentEffectivityType",
+                "value" : "Release"
+            },
+            "deps": "js/appCtxService"
+        },
+
+        "setReleaseStatusToAppContextAction" :
+        {
+            "actionType": "JSFunction",
+            "method": "setReleaseStatusToAppContext",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/sharedEffectivityService"
+        },
+
+        "getRelStatusEffectivitiesDPAction":
+        {
+            "actionType": "dataProvider",
+            "method": "getRelStatusEffectivities"
+        },
+
+        "getRelStatusEffectivitiesAction":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData":
+            {
+                "objects":
+                [
+                    { "uid" : "{{props.subPanelContext.sharedData.releaseStatus.dbValue}}"}
+                ],
+
+                "attributes":
+                [
+                    "effectivities"
+                ]
+            },
+
+            "outputData":
+            {
+                "effectivityObjectsFound" : "{{function:getEffectivitiesArray}}"
+            },
+
+            "deps": "js/sharedEffectivityService"
+        },
+
+        "removeEffectivitiesForRelnStatus":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2017-06-EffectivityManagment",
+            "method": "addOrRemoveRelStatusEffectivities",
+            "inputData":
+            {
+                "input": {
+                    "addOrRemove": false,
+                    "effectivities": "{{data.dataProviders.getRelStatusEffectivities.selectedObjects}}",
+                    "status": {
+                        "uid" : "{{props.subPanelContext.sharedData.releaseStatus.dbValue}}"
+                    }
+                }
+            },
+            "outputData":
+            {
+                "occurrenceConfigured": "updated",
+                "occurrenceUnconfigured": "deleted",
+                "error": "error",
+                "errorValues":"errorValues"
+            },
+            "events":
+            {
+                "success": [
+                    {
+                        "name": "releaseStatusUpdatedByEffectivityEvent"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "releaseStatusUpdatedByEffectivityEvent"
+                    }
+                ]
+            },
+             "actionMessages":
+             {
+                 "failure":
+                 [
+                    {
+                        "condition": "errorCode.code==126225",
+                        "message": "failedToRemoveEffectivityMessage"
+                    }
+                ]
+             },
+
+             "deps": "js/sharedEffectivityService"
+        },
+        "refreshSelectedObject":{
+            "actionType":"JSFunction",
+            "method":"updateEffectivities",
+            "inputData":{
+                "selectedModelObject":"{{ctx.selected}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/sharedEffectivityService"
+        },
+
+        "populateEffPropertiesAndNavigateBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "populateEditEffectivityPropertiesAction"
+                },
+                {
+                    "action": "navigateToEditPanelAction"
+                }
+            ]
+        },
+
+        "populateEditEffectivityPropertiesAction" :
+        {
+            "actionType": "JSFunction",
+            "method": "populateEditEffectivityProperties",
+            "deps": "js/editEffectivityCommandHandler",
+            "inputData": {
+                "vmo": "{{parameters.eventData}}",
+                "sharedData" : "{{props.subPanelContext.sharedData}}",
+                "upTextForUnit": "{{i18n.upTextForUnit}}"
+            }
+        },
+
+        "navigateToEditPanelAction": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "inputData": {
+                "path": "",
+                "value": {
+                    "previousView": "{{props.subPanelContext.sharedData.activeView}}",
+                    "activeView": "EditEffectivities"
+                },
+                "target": "{{props.subPanelContext.sharedData}}"
+            },
+            "deps": "js/occmgmtUtils"
+        },
+
+        "getDateUnitEffSharedStateToDefaultFromPref":{
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-04-Session",
+            "method": "getPreferences2",
+            "inputData": {
+                "preferenceNames": "{{function:getPreferenceNameInput}}"
+            },
+            "outputData": {
+                "getPreferenceValueResponse": "{{function:getSupportedEffectivityFeatures}}"
+            },
+            "deps": "js/aceEffectivityService"
+        },
+
+        "getDateUnitEffSharedStateToDefaultFromPCI":{
+            "actionType": "JSFunction",
+            "method": "getDateUnitEffSharedStateToDefaultFromPCI",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/aceEffectivityService"
+        },
+
+        "setInitialValues": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setEffectivityTypeOncontext"
+                },
+                {
+                    "action": "getInitialDateEffectivityConfigurationData"
+                },
+                {
+                    "action": "setReleaseStatusListFromSelectedObjectInPWAAction"
+                },
+                {
+                    "action": "getDateUnitEffSharedStateToDefaultFromPCI",
+                    "condition": "props.subPanelContext.occContext !== undefined"
+                },
+                {
+                    "action": "getDateUnitEffSharedStateToDefaultFromPref",
+                    "condition": "props.subPanelContext.occContext === undefined"
+                }
+            ]
+        },
+
+        "getInitialDateEffectivityConfigurationData": {
+            "actionType": "JSFunction",
+            "method": "getInitialDateEffectivityConfigurationData",
+            "inputData": {
+                "data": "{{data}}",
+                "occContext": "{{props.subPanelContext.occContext}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "outputData": {
+                "currentEffectiveDate": "currentEffectiveDate",
+                "isTimeEnabled": "isTimeEnabled",
+                "dateTimeFormat": "dateTimeFormat"
+            },
+            "deps": "js/aceEffectivityService"
+        },
+
+        "updateDateWidgetTypeAction": {
+            "actionType": "JSFunction",
+            "method": "updateDateWidgetType",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "data": "{{data}}"
+            },
+            "deps": "js/aceEffectivityService"
+        }
+    },
+
+    "functions":
+    {
+        "getEffectivitiesArray":
+        {
+            "functionName": "getEffectivitiesArray",
+            "parameters":
+            [
+                "{{data.sharedData}}"
+            ]
+        },
+        "getSupportedEffectivityFeatures": {
+            "functionName": "getDateUnitEffSharedStateToDefaultFromPreference",
+            "parameters": [
+                "{{props.subPanelContext.sharedData}}"
+            ]
+        },
+        "getPreferenceNameInput":{
+            "functionName": "getPreferenceNameInput",
+            "parameters": [ "{{props.subPanelContext}}" ]
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "setInitialValues",
+        "onUpdate": [
+        {
+            "action": "setReleaseStatusToAppContextAction",
+            "observers": [ "viewModel.data.releaseStatus.dbValue" ]
+        },
+        {
+            "action": "updateDateWidgetTypeAction",
+            "observers": ["viewModel.data.isTimeEnabled"]
+        }]
+    },
+
+    "onEvent": [
+        {
+            "eventId": "releaseStatusUpdatedByEffectivityEvent",
+            "action" : "getRelStatusEffectivitiesDPAction"
+        },
+        {
+            "eventId": "editEffectivityContext.selectedReleaseStatusUpdated",
+            "action": "getRelStatusEffectivitiesDPAction"
+        },
+        {
+            "eventId": "removeEffectivitiesForRelnEvent",
+            "action": "removeEffectivitiesForRelnStatus"
+        },
+        {
+            "eventId": "releaseStatusUpdatedByEffectivityEvent",
+            "action":  "refreshSelectedObject",
+            "condition": "props.subPanelContext.sharedData.activeView === 'DisplayAndRemoveEffectivitiesForRelStatus'"
+        },
+        {
+            "eventId": "navigateToEditPanel",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "populateEffPropertiesAndNavigateBatchJob"
+        }
+    ],
+
+     "messages":
+     {
+         "failedToRemoveEffectivityMessage":
+         {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.failedToRemoveEffectivity}}",
+            "messageTextParams":
+            [
+                "{{ctx.editEffectivityContext.selectedReleaseStatus.uiValue}}"
+            ]
+         }
+     },
+
+        "props": {
+           "sub-panel-context": {
+               "type": "object"
+           }
+       }
+}

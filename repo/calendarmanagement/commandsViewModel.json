@@ -1,0 +1,148 @@
+{
+  "commands": {
+    "TotalHoursRemoveRow": {
+      "iconId": "cmdDelete",
+      "title": "{{i18n.deleteButtonText}}",
+      "description": "{{i18n.removeTimeRange}}",
+      "scope": {
+        "condition": "conditions.hasAuthorAccess"
+      }
+    },
+    "TotalHoursAddRow": {
+      "iconId": "cmdAdd",
+      "title": "{{i18n.addButtonText}}",
+      "description": "{{i18n.addTimeRange}}",
+      "scope": {
+        "condition": "conditions.hasAuthorAccess"
+      }
+    },
+    "AwPopupCloseCommand": {
+      "iconId": "cmdClosePanel",
+      "isGroup": false,
+      "description": "{{i18n.closeCommandDesc}}",
+      "scope": {
+        "condition": "conditions.hasAuthorAccess"
+      }
+    }
+  },
+  "commandHandlers": {
+    "TotalHoursRemoveRowCommandHandler": {
+      "id": "TotalHoursRemoveRow",
+      "action": "TotalHoursRemoveRow",
+      "activeWhen": true,
+      "visibleWhen": true,
+      "enableWhen": {
+        "condition": "conditions.TotalHoursRemoveRowCmdVisibility"
+      }
+    },
+    "TotalHoursAddRowCommandHandler": {
+      "id": "TotalHoursAddRow",
+      "action": "TotalHoursAddRowPopup",
+      "activeWhen": true,
+      "visibleWhen": true,
+      "enableWhen": {
+        "condition": "conditions.TotalHoursAddRowCmdVisibility"
+      }
+    },
+    "AwPopupCloseCommandHandler": {
+      "id": "AwPopupCloseCommand",
+      "action": "popupCloseAction",
+      "activeWhen": true,
+      "visibleWhen": true
+    }
+  },
+  "commandPlacements": {
+    "TotalHoursRemoveRowCommandPlacement": {
+      "id": "TotalHoursRemoveRow",
+      "uiAnchor": "totalHoursCmdAnchor",
+      "priority": 100
+    },
+    "TotalHoursAddRowCommandPlacement": {
+      "id": "TotalHoursAddRow",
+      "uiAnchor": "totalHoursCmdAnchor",
+      "priority": 100
+    },
+    "AwPopupCloseCommandPlacement": {
+      "id": "AwPopupCloseCommand",
+      "uiAnchor": "awClosePopupAnchor",
+      "priority": 300
+    }
+  },
+  "actions": {
+    "TotalHoursAddRowPopup": {
+      "actionType": "popup",
+      "inputData": {
+        "options": {
+          "view": "AwAddTotalHours",
+          "clickOutsideToClose": false,
+          "placement": "right-start",
+          "width": 330,
+          "height": 290,
+          "caption": "{{i18n.addHours}}",
+          "subPanelContext": "{{commandContext}}",
+          "anchor": "awClosePopupAnchor",
+          "draggable": true
+        },
+        "context": "{{commandContext}}"
+      }
+    },
+    "TotalHoursRemoveRow": {
+      "actionType": "JSFunction",
+      "deps": "js/AwTotalHoursService",
+      "method": "removeRow",
+      "inputData": {
+        "dataProviders": "{{commandContext.dataProviders.totalHoursDataProvider}}"
+      },
+      "events": {
+        "success": [
+          {
+            "name": "updateTotalHoursDisplay"
+          }
+        ]
+      }
+    },
+    "popupCloseAction": {
+      "actionType": "Event",
+      "method": "Event",
+      "inputData": {
+        "events": [
+          {
+            "name": "hideAddRowPopup"
+          }
+        ]
+      }
+    }
+  },
+  "functions": {},
+  "ctx": {},
+  "conditions": {
+    "TotalHoursRemoveRowCmdVisibility": {
+      "expression": "commandContext.dataProviders.totalHoursDataProvider.selectedObjects[0].selected"
+    },
+    "TotalHoursAddRowCmdVisibility": {
+      "expression": "!commandContext.dataProviders.totalHoursDataProvider.selectedObjects[0].selected"
+    }
+  },
+  "messages": {},
+  "onEvent": [],
+  "i18n": {
+    "addHours": [
+      "CalendarManagementMessages"
+    ],
+    "closeCommandDesc": [
+      "CalendarManagementMessages"
+    ],
+    "removeTimeRange": [
+      "CalendarManagementMessages"
+    ],
+    "addTimeRange": [
+      "CalendarManagementMessages"
+    ],
+    "addButtonText": [
+      "CalendarManagementMessages"
+    ],
+    "deleteButtonText": [
+      "CalendarManagementMessages"
+    ]
+  }
+}

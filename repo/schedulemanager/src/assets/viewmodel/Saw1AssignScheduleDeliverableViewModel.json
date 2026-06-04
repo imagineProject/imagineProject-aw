@@ -1,0 +1,290 @@
+{
+    "schemaVersion" : "1.0.0",
+    "actions":
+    {
+        "revealAndInitialise": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "reveal"
+                },
+                {
+                    "action": "callScheduleDeliverableSearch"
+                }
+            ]
+        },
+        "callScheduleDeliverableSearch": {
+            "actionType": "dataProvider",
+            "methods": [
+                "scheduleDeliverableSearch"
+            ]
+        },
+        "reveal":
+        {
+            "actionType": "JSFunction",
+            "method": "createListModelObjectsFromStrings",
+            "inputData":
+            {
+                "input":
+                    [
+                        "{{i18n.target}}",
+                        "{{i18n.reference}}",
+                        "{{i18n.doNotSubmit}}"
+                    ]
+            },
+            "outputData":
+            {
+                "submitTypeArray": ""
+            },
+            "deps": "js/listBoxService"
+        },
+        "searchScheduleDeliverable": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData": {
+                "searchInput": {
+                    "maxToLoad": 50,
+                    "maxToReturn": 50,
+                    "providerName": "Saw1TaskSearchProvider",
+                    "searchCriteria": {
+                        "searchContentType": "SchDeliverable",
+                        "searchProperty": "deliverable_name",
+                        "searchString": "{{data.filterBox.dbValue}}",
+                        "parentUid": "{{ctx.mselected[0].props.schedule_tag.dbValues[0]}}"
+                    },
+                    "startIndex": "{{data.dataProviders.Saw1TaskSearchProvider.startIndex}}",
+                    "searchFilterFieldSortType": "Alphabetical",
+                    "searchFilterMap": {},
+                    "searchSortCriteria": []
+                }
+            },
+            "policy": {
+                "types": [ {
+                    "name": "SchDeliverable",
+                    "properties": [ {
+                            "name": "deliverable_name"
+                        },
+                        {
+                            "name": "deliverable_type"
+                        },
+                        {
+                            "name": "object_name"
+                        }
+                    ]
+                } ]
+            },
+            "events": {
+                "failure": [
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+            },
+            "actionMessages":
+            {
+                "failure": [
+                    {
+                        "condition": "errorCode=='deliverableDiffSchError'",
+                        "message": "deliverableDiffSchError"
+                    },
+                    {
+                        "condition": "errorCode=='deliverableWorkflowError'",
+                        "message": "deliverableWorkflowError"
+                    },
+                    {
+                        "condition": "errorCode=='deliverableTaskTypeError'",
+                        "message": "deliverableTaskTypeError"
+                    },
+                    {
+                        "condition": "errorCode!='deliverableDiffSchError' && errorCode!='deliverableWorkflowError' && errorCode!='deliverableTaskTypeError'",
+                        "message": "displayError"
+                    }
+                ]
+            },
+            "outputData": {
+                "SOAResults": "{{function:processProviderResponse}}"
+            },
+            "deps": "js/Saw1AssignScheduleDeliverableService"
+        },
+        "checkSchDeliverableName":
+        {
+            "actionType": "JSFunction",
+            "method": "checkSchDeliverableName",
+            "inputData":
+            {
+                "data":"{{data}}",
+                "ctx": "{{ctx}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "assignSoa"
+                    }
+                ]
+            },
+            "deps": "js/Saw1AssignScheduleDeliverableService"
+        },
+      "assign":{
+         "actionType":"TcSoaService",
+         "serviceName":"ProjectManagement-2007-06-ScheduleManagement",
+         "method":"createTaskDeliverableTemplates",
+         "inputData":{
+            "taskDeliverableData":"{{function:getSchTaskDeliverable}}"
+         },
+         "deps":"js/Saw1AssignScheduleDeliverableService",
+          "actionMessages":
+            {
+            "failure": [
+                    {
+                         "condition": "errorCode=='deliverableDiffSchError'",
+                         "message": "deliverableDiffSchError"
+                    },
+                    {
+                         "condition": "errorCode=='deliverableWorkflowError'",
+                         "message": "deliverableWorkflowError"
+                    },
+                    {
+                         "condition": "errorCode=='deliverableTaskTypeError'",
+                         "message": "deliverableTaskTypeError"
+                    },
+                    {
+                         "condition": "errorCode=='taskDeliverableNameError'",
+                         "message": "taskDeliverableNameError"
+                    }
+                ]
+            },
+         "events":{
+            "success":[
+                {
+                    "name":"cdm.relatedModified",
+                    "eventData": {
+                        "relatedModified": [
+                            "{{ctx.selected}}"
+                        ]
+                    }
+                },
+                    {
+                        "name": "closeDialog"
+                    }
+                  ],
+            "failure":[
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+         }
+      },
+      "closePanelDialog":{
+        "actionType": "JSFunction",
+        "method": "closeDialog",
+        "inputData": {
+            "editContext": "INFO_PANEL_CONTEXT",
+            "popupId": "{{subPanelContext.popupOptions.popupId}}"
+        },
+        "deps": "js/dialogService"
+    }
+    },
+    "dataProviders": {
+        "scheduleDeliverableSearch": {
+         "action": "searchScheduleDeliverable",
+         "response": "{{data.SOAResults.searchResults}}",
+         "totalFound": "{{data.SOAResults.totalFound}}",
+         "totalLoaded": "{{data.SOAResults.totalLoaded}}",
+         "selectionModelMode": "single",
+         "commands": {
+         }
+      }
+   },
+    "data": {
+     "filterBox": {
+         "displayName": "",
+         "type": "STRING",
+         "dbValue": ""
+      },
+      "submitType": {
+         "displayName": "{{i18n.submitType}}",
+         "type": "STRING",
+         "isRequired": "false",
+         "hasLov": true,
+         "uiValue": "{{i18n.target}}"
+      }
+   },
+    "onEvent":
+    [
+        {
+            "eventId": "assignSoa",
+            "action": "assign"
+        },
+        {
+            "eventId":"closeDialog",
+            "action":"closePanelDialog"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "revealAndInitialise"
+    },
+    "functions":
+    {
+        "getSchTaskDeliverable":
+        {
+            "functionName": "getSchTaskDeliverable",
+            "parameters":
+            [
+                "{{data}}",
+                "{{ctx}}"
+            ]
+        },
+        "processProviderResponse": {
+            "functionName": "processProviderResponse",
+            "parameters": [
+                "{{data}}"
+            ]
+        }
+    },
+   "messages": {
+       "deliverableDiffSchError": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.deliverableDiffSchError}}"
+        },
+        "deliverableWorkflowError": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.deliverableWorkflowError}}"
+        },
+        "deliverableTaskTypeError": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.deliverableTaskTypeError}}"
+        },
+        "taskDeliverableNameError": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.taskDeliverableNameError}}"
+        },
+        "displayError": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+     },
+    "conditions":
+    {
+      "isValidToAdd": {
+         "expression": "data.dataProviders.scheduleDeliverableSearch.selectedObjects.length > 0"
+      }
+    },
+    "i18n":
+     {
+         "assignScheduledeliverableTitle" : ["ScheduleManagerMessages"],
+         "assignButtonText": ["ScheduleManagerMessages"],
+         "submitType": ["ScheduleManagerMessages"],
+         "target": ["ScheduleManagerMessages"],
+         "reference": ["ScheduleManagerMessages"],
+         "doNotSubmit": ["ScheduleManagerMessages"],
+         "taskDeliverableNameError":["ScheduleManagerMessages"],
+         "deliverableDiffSchError":["ScheduleManagerMessages"],
+         "deliverableWorkflowError":["ScheduleManagerMessages"],
+         "deliverableTaskTypeError":["ScheduleManagerMessages"],
+         "sameInstanceNameErrorMsg":["ScheduleManagerMessages"]
+     }
+
+}

@@ -1,0 +1,101 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "addTotalHoursRow": {
+            "actionType": "JSFunction",
+            "method": "addTotalHoursRow",
+            "inputData": {
+                "timeFrom": "{{data.timeFrom}}",
+                "timeTo": "{{data.timeTo}}",
+                "totalHoursDataProvider": "{{subPanelContext.dataProviders.totalHoursDataProvider}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "updateTotalHoursDisplay"
+                    },
+                    {
+                        "name": "hideAddRowPopup"
+                    }
+                ]
+            },
+            "deps": "js/AwTotalHoursService"
+        },
+        "hideAddRowPopup": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "deps": "js/popupService"
+        }
+    },
+    "data": {
+        "dayDisp": {
+            "displayName": "{{i18n.day}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "{{subPanelContext.dayDisp.dbValue}}",
+            "dispValue": "{{subPanelContext.dayDisp.dispValue}}"
+        },
+        "timeFrom": {
+            "displayName": "{{i18n.from}}",
+            "type": "DATETIME",
+            "isRequired": "true",
+            "isEditable": "true",
+            "dispValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP",
+            "validationCriteria": [{
+                "condition": "!conditions.isValidNextTime",
+                "value": "{{i18n.timeRangeExistError}}"
+              }]
+        },
+        "timeTo": {
+            "displayName": "{{i18n.to}}",
+            "type": "DATETIME",
+            "isRequired": "true",
+            "isEditable": "true",
+            "dispValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP",
+            "validationCriteria": [{
+                "condition": "!conditions.isValidTime",
+                "value": "{{i18n.invalidTimeRangeError}}"
+              }]
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "hideAddRowPopup",
+            "action": "hideAddRowPopup"
+        }
+    ],
+    "conditions": {
+        "isValidTime": {
+            "expression": "data.timeTo.dateApi.dateValue === '' || data.timeFrom.dateApi.dateValue === ''  || data.timeTo.dbValue > data.timeFrom.dbValue"
+        },
+        "isValidNextTime": {
+            "expression": "(subPanelContext.dataProviders.totalHoursDataProvider.viewModelCollection.loadedVMObjects.length === 0) || ((subPanelContext.dataProviders.totalHoursDataProvider.viewModelCollection.loadedVMObjects.length > 0) && ((data.timeFrom.dbValue >= (subPanelContext.dataProviders.totalHoursDataProvider.viewModelCollection.loadedVMObjects[subPanelContext.dataProviders.totalHoursDataProvider.viewModelCollection.loadedVMObjects.length - 1].props.to.toSecValue)) || (data.timeFrom.dbValue >= (subPanelContext.dataProviders.totalHoursDataProvider.viewModelCollection.loadedVMObjects[subPanelContext.dataProviders.totalHoursDataProvider.viewModelCollection.loadedVMObjects.length - 1].props.to.dbValue))))"
+        }
+    },
+    "i18n": {
+        "day": [
+            "CalendarManagementMessages"
+        ],
+        "addHours": [
+            "CalendarManagementMessages"
+        ],
+        "from": [
+            "CalendarManagementMessages"
+        ],
+        "to": [
+            "CalendarManagementMessages"
+        ],
+        "addButtonText": [
+            "CalendarManagementMessages"
+        ],
+        "timeRangeExistError": [
+            "CalendarManagementMessages"
+        ],
+        "invalidTimeRangeError": [
+            "CalendarManagementMessages"
+        ]
+    }
+}

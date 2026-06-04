@@ -1,0 +1,221 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "doExportDocument": {
+            "actionType": "openFile",
+            "inputData": {
+                "fileTicket": "{{data.fileTicket}}",
+                "openFileName": "{{data.exportTableConfigsFileName}}"
+            }
+        },
+        "closeDialog": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "inputData": {
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/popupService"
+        },
+        "doExportDocumentAndClose": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "doExportDocument"
+                },
+                {
+                    "action": "closeDialog"
+                }
+            ]
+        },
+        "exportToXMLFile": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2024-12-UiConfig",
+            "method": "exportTableConfigurations",
+            "inputData": {
+                "exportOptions": "{{function:getExportOptions}}"
+            },
+            "outputData": {
+                "fileTicket": "fileTicket",
+                "exportTableConfigsFileName" : "{{function:getExportTableConfigsFileName}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "exportTableConfigs.doExportDocumentEvent"
+                    }
+                ],
+                "failure": [ {
+                    "name": "exportTableConfigs.doExportDocumentEvent"
+                } ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "exportTableConfigsSuccessfulInfoMessage"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "exportTableConfigsFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/ImportExportTableConfigs"
+        }
+    },
+
+    "data": {
+        "scopeState": {
+            "initialValues": {
+              "columnConfigScope": {
+                "columnConfigScopeObject": {
+                  "dbValue": "Site",
+                  "type": "STRING"
+                }
+              },
+              "selectedListItem": {
+                "dbValue": "",
+                "type": "STRING"
+              }
+            },
+            "meta": {
+              "columnConfigScope": {
+                "columnConfigScopeObject": {
+                  "field": "true",
+                  "type": "STRING"
+                }
+              },
+              "selectedListItem": {
+                "field": "true",
+                "type": "STRING"
+              }
+            }
+        },
+        "exportSelectedAsDefault": {
+            "type": "STRING",
+            "isEditable": "true",
+            "dbValue": "Export Selected"
+        },
+        "exportSelectedOrAll": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.exportSelected}}",
+                    "propInternalValue": "Export Selected"
+                },
+                {
+                    "propDisplayValue": "{{i18n.exportAll}}",
+                    "propInternalValue": "Export All"
+                }
+            ]
+        },
+        "allConfigurations": {
+            "displayName": "{{i18n.allConfigurations}}",
+            "type": "STRING",
+            "dbValue": "All configurations"
+        },
+        "selectedObj": {
+            "displayName": "{{props.subPanelContext.selectedObjHierarchyName}}",
+            "type": "STRING",
+            "labelPosition": "NO_PROPERTY_LABEL",
+            "dispValue": "{{props.subPanelContext.selectedObjHierarchyName}}"
+        },
+        "exporting": {
+            "displayName": "{{i18n.exporting}}",
+            "type": "STRING",
+            "dbValue": "exporting"
+        },
+        "columnConfigIdValue": {
+            "dbValue": "dummyValue"
+        }
+    },
+
+    "dataProviders": {},
+
+    "onEvent": [
+        {
+            "eventId": "exportTableConfigs.doExportDocumentEvent",
+            "action": "doExportDocumentAndClose"
+        },
+        {
+            "eventId": "exportTableConfigs.exportToXMLFile",
+            "action": "exportToXMLFile"
+        },
+        {
+            "eventId": "primaryWorkArea.selectionChangeEvent",
+            "action": "closeDialog"
+        }
+    ],
+
+    "functions": {
+        "getExportTableConfigsFileName": {
+            "functionName": "getExportTableConfigsFileName",
+            "parameters": [
+                "{{data}}",
+                "{{props}}"
+            ]
+        },
+        "getExportOptions": {
+            "functionName": "getExportOptions",
+            "parameters": [
+                "{{data}}",
+                "{{props}}"
+            ]
+        }
+    },
+    "conditions": {
+        "showOnNoSelection": {
+            "expression": "props.subPanelContext.selectionData.selected.length === 0"
+        },
+        "rootScopeNodes": {
+            "expression": "props.subPanelContext.selectionData.selected[0].type === 'Fnd0ClientScope' || props.subPanelContext.selectionData.selected[0].props.typeDisplayName.dbValue === 'Site' || props.subPanelContext.selectionData.selected[0].props.typeDisplayName.dbValue === 'Group' || props.subPanelContext.selectionData.selected[0].props.typeDisplayName.dbValue === 'Role' || props.subPanelContext.selectionData.selected[0].props.typeDisplayName.dbValue === 'Workspace'"
+        },
+        "showOnSingleSelection": {
+            "expression": "props.subPanelContext.selectionData.selected.length === 1 && ( props.subPanelContext.selectionData.selected[0].type !== 'Fnd0ClientScope' && props.subPanelContext.selectionData.selected[0].props.typeDisplayName.dbValue !== 'Site' && props.subPanelContext.selectionData.selected[0].props.typeDisplayName.dbValue !== 'Group' && props.subPanelContext.selectionData.selected[0].props.typeDisplayName.dbValue !== 'Role' && props.subPanelContext.selectionData.selected[0].props.typeDisplayName.dbValue !== 'Workspace' )"
+        },
+        "showAllSelected": {
+            "expression": "props.subPanelContext.selectionData.selected.length === 0 || data.exportSelectedAsDefault.dbValue === 'Export All' || conditions.rootScopeNodes"
+        },
+        "exportAllOptionSelected": {
+            "expression": "data.exportSelectedAsDefault.dbValue === 'Export All'"
+        },
+        "siteScopeSelectedFromExport": {
+            "expression": "data.atomicData.scopeState.columnConfigScope.columnConfigScopeObject.dbValue === 'Site'"
+        },
+        "noSiteScopeSelectedFromExport": {
+            "expression": "data.atomicData.scopeState.columnConfigScope.columnConfigScopeObject.dbValue === 'Group' || data.atomicData.scopeState.columnConfigScope.columnConfigScopeObject.dbValue === 'Role' || data.atomicData.scopeState.columnConfigScope.columnConfigScopeObject.dbValue === 'Workspace'"
+        },
+        "scopeValueSelectedForNoSiteScopeFromExport": {
+            "expression": "data.atomicData.scopeState.selectedListItem.dbValue !== ''"
+        },
+        "showExportButton": {
+            "expression": "conditions.siteScopeSelectedFromExport || ( conditions.noSiteScopeSelectedFromExport && conditions.scopeValueSelectedForNoSiteScopeFromExport )"
+        }
+    },
+    "messages": {
+        "exportTableConfigsSuccessfulInfoMessage": {
+            "messageType": "INFO",
+            "messageText":  "{{i18n.Awp0ExportTableConfigsSuccessfulInfoMessage}}"
+        },
+        "exportTableConfigsFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+
+    "i18n": {
+        "Awp0ExportTableConfigsTitle": [ "tableConfigsMessages" ],
+        "Awp0ExportTableConfigsSuccessfulInfoMessage": [ "tableConfigsMessages" ],
+        "exportSelected": [ "tableConfigsMessages" ],
+        "exportAll": [ "tableConfigsMessages" ],
+        "exporting": [ "tableConfigsMessages" ],
+        "allConfigurations": [ "tableConfigsMessages" ]
+    },
+
+    "props": {
+        "selection-data": {
+            "type": "object"
+        }
+    },
+
+    "lifecycleHooks": {}
+}

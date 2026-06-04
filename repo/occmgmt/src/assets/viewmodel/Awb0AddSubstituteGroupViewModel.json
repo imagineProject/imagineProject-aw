@@ -1,0 +1,350 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "addPanelState": {
+            "initialValues": {
+                "creationType": "",
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {}
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub",
+                "context": {}
+            },
+            "meta": {}
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {
+                "selectedProjects": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "triggerAssign": {
+                    "field": "true",
+                    "type": "BOOLEAN"
+                }
+            }
+        },
+        "allowedTypeInfo": {
+            "objectTypeName": "Fnd0SubstituteGroup",
+            "searchTypeName": "Fnd0SubstituteGroup",
+            "preferredType": "Fnd0SubstituteGroup"
+        },
+        "preferredType": "Fnd0SubstituteGroup",
+        "includeTypes": "Fnd0SubstituteGroup"
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions": {
+        "setActiveView": {
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "createInterchangeableGroups": {
+            "actionType": "TcSoaService",
+            "serviceName": "StructureManagement-2018-11-Structure",
+            "method": "createInterchangeableGroups",
+            "inputData": {
+                "inputs": "{{function:getCreateInput}}"
+            },
+            "outputData": {
+                "createdObject": "created[0]"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailure"
+                    }
+                ]
+            },
+            "deps": "js/aceSubstituteGroupService"
+        },
+        "createSubstituteGroup": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "createInterchangeableGroups"
+                },
+                {
+                    "action": "getObject"
+                },
+                {
+                    "action": "getBomLinesForSOAInput"
+                },
+                {
+                    "action": "getBomWindow"
+                },
+                {
+                    "action": "setPropertiesOnBomline"
+                },
+                {
+                    "action": "getBomLineObject"
+                },
+                {
+                    "action": "saveBomWindow"
+                }
+            ]
+        },
+        "getBomLinesForSOAInput": {
+            "actionType": "JSFunctionAsync",
+            "method": "getBackingObjects",
+            "inputData": {
+                "viewModelObjects": "{{props.subPanelContext.occContext.pwaSelection}}"
+            },
+            "outputData": {
+                "inputBomLines": ""
+            },
+            "deps": "js/aceBackingObjectProviderService"
+        },
+        "setPropertiesOnBomline": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-09-DataManagement",
+            "method": "setProperties",
+            "inputData": {
+                "info": "{{function:getPropertiesInput}}"
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "Awb0ConditionalElement",
+                        "properties": [
+                            {
+                                "name": "awb0HasSubstitues"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailure"
+                    }
+                ]
+            },
+            "deps": "js/aceSubstituteGroupService"
+        },
+        "getBomWindow": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": "{{function:getPropertiesInputUIDs}}",
+                "attributes": [
+                    "bl_window"
+                ]
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "BOMLine",
+                        "properties": [
+                            {
+                                "name": "fnd0bl_substitute_groups"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "deps": "js/aceSubstituteGroupService"
+        },
+        "getBomLineObject": {
+            "actionType": "JSFunction",
+            "method": "getObject",
+            "inputData": {
+                "uid": "{{data.inputBomLines[0].uid}}"
+            },
+            "outputData": {
+                "bomLineObj": ""
+            },
+            "deps": "soa/kernel/clientDataModel"
+        },
+        "saveBomWindow": {
+            "actionType": "TcSoaService",
+            "serviceName": "Cad-2008-06-StructureManagement",
+            "method": "saveBOMWindows",
+            "inputData": {
+                "bomWindows": [
+                    {
+                        "uid": "{{data.bomLineObj.props.bl_window.dbValues[0]}}",
+                        "type": ""
+                    }
+                ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "reloadsubstituteGroupTable"
+                    },
+                    {
+                        "name": "closePanelAfterAddingSubstituteGroup",
+                        "condition": "!conditions.isPanelPinned"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "closePanelAfterAddingSubstituteGroup",
+                        "condition": "!conditions.isPanelPinned"
+                    }
+                ]
+
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "createSubstituteGroupSuccess"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "soaFailure"
+                    }
+                ]
+            }
+        },
+        "getObject": {
+            "actionType": "JSFunction",
+            "method": "getObject",
+            "inputData": {
+                "uid": "{{data.createdObject}}"
+            },
+            "outputData": {
+                "createdObj": ""
+            },
+            "deps": "soa/kernel/clientDataModel"
+        },
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "CREATE_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "initializeAddSubstituteGroupVars": {
+            "actionType": "JSFunction",
+            "method": "initAddSubstituteGroupVars",
+            "inputData": {
+                "data": "{{data}}",
+                "pwaSelection": "{{props.subPanelContext.occContext.pwaSelection}}"
+            },
+            "outputData": {
+                "headerSectionElement": ""
+            },
+            "deps": "js/aceSubstituteGroupService"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeAddSubstituteGroupVars"
+    },
+    "onEvent": [
+        {
+            "eventId": "primaryWorkArea.selectionChangeEvent",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "closePanelAfterAddingSubstituteGroup",
+            "action": "closePanel"
+        }
+    ],
+    "functions": {
+        "getCreateInput": {
+            "functionName": "getCreateInput",
+            "parameters": [
+                "{{data}}",
+                "{{addPanelState.creationType}}",
+                "{{editHandlers.addPanelEditHandler}}"
+            ]
+        },
+        "getPropertiesInput": {
+            "functionName": "getPropertiesInput",
+            "parameters": [
+                "{{data.createdObject}}",
+                "{{inputBomLines}}"
+            ]
+        },
+        "getPropertiesInputUIDs": {
+            "functionName": "getPropertiesInputUIDs",
+            "parameters": [
+                 "{{data.inputBomLines}}"
+            ]
+        }
+    },
+    "conditions": {
+        "shouldShowAddOnNewTab": {
+            "expression": "addPanelState.selectedTab.view==='NewTabPageSub' && addPanelState.creationType"
+        },
+        "isPanelPinned": {
+            "expression": "subPanelContext.panelPinned"
+        }
+    },
+    "messages": {
+        "soaFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "createSubstituteGroupSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.createSubstituteGroupSuccess}}",
+            "messageTextParams": [
+                "{{data.createdObj.props.object_name.dbValues[0]}}"
+            ]
+        }
+    },
+    "i18n": {
+        "addElementBtn": [
+            "OccurrenceManagementConstants"
+        ],
+        "createAndAddElementBtn": [
+            "OccurrenceManagementConstants"
+        ],
+        "createSubstituteGroupSuccess": [
+            "OccurrenceManagementMessages"
+        ],
+        "addSubstituteGroup": [
+            "OccurrenceManagementConstants"
+        ],
+        "Elements": [
+            "OccurrenceManagementConstants"
+        ],
+        "objectsString": [
+            "OccurrenceManagementConstants"
+        ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

@@ -1,0 +1,154 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "addReport":{
+            "actionType": "JSFunctionAsync",
+            "deps": "js/command.service",
+            "method": "executeCommandIfVisibleAndEnabled",
+            "inputData": {
+                "commandId": "Rb0AddDashboardReportWithPanel",
+                "commandContext": {
+                    "dashboardListPreference": "{{subPanelContext.preferenceName}}",
+                    "searchState": "{{subPanelContext.searchState}}"
+                },
+                "runActionWithViewModel": "{{parameters.commandActionExecutor.runActionWithViewModel}}"
+            }
+        },
+        "initAction":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "startDashboardLoading",
+                "condition": "!props.dashboardTabObject"
+            },{
+                "action": "updateSearchStateWithReportingDashboardInUse"
+            } ]
+        },
+        "startDashboardLoading": {
+            "actionType": "dataProvider",
+            "method": "imageDataProvider"
+        },
+        "getReportDefinitionsForTileView": {
+            "actionType": "JSFunction",
+            "method": "getReportDefinitionsForTileView",
+            "inputData": {
+                "startIndex": "{{data.dataProviders.imageDataProvider.startIndex}}",
+                "searchState": "{{subPanelContext.searchState}}",
+                "subPanelContext" : {
+                    "preferenceName": "{{subPanelContext.preferenceName}}",
+                    "showLastUpdateTime": "{{subPanelContext.showLastUpdateTime}}"
+                },
+                "dashboardTemplateList": "{{props.dashboardTabObject.props.rb0DashboardTemplatesList.dbValues}}"
+            },
+            "outputData": {
+                "searchResults": "reportdefinitions",
+                "totalFound": "totalFound",
+                "showLastUpdateTime": "showLastUpdateTm",
+                "moreValuesToRender": "rendering"
+            },
+            "deps": "js/showMyDashboardService"
+        },
+        "myDashboardUpdateEvent": {
+            "actionType": "JSFunction",
+            "method": "myDashboardUpdate",
+            "inputData": {
+                "data": "{{data.dataProviders.imageDataProvider}}",
+                "reportId":"{{parameters.reportDef}}",
+                "operation":"{{parameters.operation}}",
+                "tileIndex": "{{parameters.tileIndex}}",
+                "searchState":  "{{subPanelContext.searchState}}"
+            },
+            "outputData":{
+                "totalFound": "totalFound"
+            },
+            "deps": "js/showMyDashboardService"
+        },
+        "myDashboardUpdateByState": {
+            "actionType": "JSFunction",
+            "method": "myDashboardUpdate",
+            "inputData": {
+                "data": "{{data.dataProviders.imageDataProvider}}",
+                "reportId":"{{subPanelContext.searchState.reportDashboard.reportDef}}",
+                "operation":"{{props.subPanelContext.searchState.reportDashboard.operation}}",
+                "tileIndex":"{{props.subPanelContext.searchState.reportDashboard.tileIndex}}",
+                "searchState":  "{{subPanelContext.searchState}}"
+            },
+            "outputData":{
+                "totalFound": "totalFound"
+            },
+            "deps": "js/showMyDashboardService"
+        },
+        "updateReportDashboard": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.searchState}}",
+                "value": {
+                    "reportDashboard": {}
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateSearchStateWithReportingDashboardInUse":{
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{subPanelContext.searchState}}",
+                "value": {
+                    "reportingDashboardInUse": true,
+                    "dashboardListPreference": "{{subPanelContext.preferenceName}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "data": {
+        "listOfReportConfigs": [],
+        "moreValuesToRender": "true"
+    },
+    "dataProviders": {
+        "imageDataProvider": {
+            "action": "getReportDefinitionsForTileView",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "none",
+            "moreValuesExist": "{{data.moreValuesToRender}}"
+        }
+    },
+    "preferences": [
+        "REPORT_AW_MyDashboard_TC_Report",
+        "REPORT_AW_MyDashboard_PageSize"
+    ],
+    "lifecycleHooks": {
+        "onMount" : "initAction",
+        "onUpdate": [ {
+            "action": "myDashboardUpdateByState",
+            "observers": [ "props.subPanelContext.searchState.reportDashboard" ]
+        },{
+            "action": "startDashboardLoading",
+            "observers": [ "props.dashboardTabObject" ]
+        }],
+        "onUnmount": "updateReportDashboard"
+    },
+    "i18n": {
+        "noReports": ["ReportChartMessages"],
+        "reportsDashboardHint": ["ReportChartMessages"],
+        "addDashboardReportWithPanelTitle": ["ReportChartMessages"]
+    },
+    "onEvent": [ {
+        "eventId": "reportDashboard.update",
+        "action": "myDashboardUpdateEvent",
+        "inputArgs": {
+            "reportDef": "{{eventData.reportDef}}",
+            "operation": "{{eventData.operation}}",
+            "tileIndex": "{{eventData.tileIndex}}"
+        }
+    }],
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "dashboard-tab-object": {
+            "type": "array"
+        }
+    }
+}

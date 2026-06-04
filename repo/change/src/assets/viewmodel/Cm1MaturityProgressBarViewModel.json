@@ -1,0 +1,115 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-step-progress.directive"
+    ],
+    "actions": {
+        "reveal":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-LOV",
+            "method": "getInitialLOVValues",
+            "inputData": {
+                    "initialData": {
+                        "propertyName" : "{{data.propName}}",
+                        "lovInput": {
+                            "owningObject": {
+                                "type": "{{function:getSelectedChangeType}}",
+                                "uid": "{{ctx.xrtSummaryContextObject.uid}}"
+                            },
+                            "operationName": "Edit",
+                            "boName": "{{function:getSelectedChangeType}}"
+                        }
+                   }
+            },
+            "outputData":
+            {
+                "loadedStates": "lovValues"
+            },
+            "events": {
+                "success": [ {
+                    "name": "statesLoaded"
+                } ]
+            },
+            "deps": "js/Cm1MaturityProgressBarService"
+        },
+        "handleUpdatedEvent":
+        {
+            "actionType": "JSFunction",
+            "method": "handleUpdatedEvent",
+            "deps": "js/Cm1MaturityProgressBarService",
+            "inputData":
+            {
+                "modelObjects": "{{data.eventMap['cdm.updated'].updatedObjects}}"
+            }
+        },
+        "getStates": {
+            "actionType": "JSFunction",
+            "method": "showSteps",
+            "inputData": {
+                "selectedUid": "{{ctx.xrtSummaryContextObject.uid}}",
+                "propName": "{{data.propName}}",
+                "loadedStates": "{{data.loadedStates}}"
+            },
+            "outputData": {
+                "steps": "states",
+                "currStep": "currState"
+            },
+            "events": {
+                "success": [ {
+                    "name": "updateUserSession",
+                    "condition": "conditions.isActiveChangeReleased"
+                } ]
+            },
+            "deps": "js/Cm1MaturityProgressBarService"
+        },
+        "updateUserSessionOnContext": {
+            "actionType": "JSFunction",
+            "method": "createViewModelObject",
+            "inputData": {
+                "userSession": "{{ctx.userSession.uid}}"
+            },
+            "outputData": {
+                "ctx.userSession": ""
+            },
+            "deps": "js/viewModelObjectService"
+        }
+    },
+    "functions": {
+        "getSelectedChangeType": {
+            "functionName": "getSelectedChangeType"
+        }
+    },
+    "data": {
+        "propName": "CMMaturity"
+    },
+    "lifecycleHooks": {
+        "onMount":"reveal"
+    },
+    "onEvent": [
+        {
+            "eventId":"updateMaturityProgressBar",
+            "action": "reveal"
+        },
+        {
+            "eventId": "cdm.updated",
+            "action": "handleUpdatedEvent",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "statesLoaded",
+            "action": "getStates"
+        },
+        {
+            "eventId": "updateUserSession",
+            "action": "updateUserSessionOnContext"
+        }
+    ],
+    "conditions":
+    {
+            "isActiveChangeReleased":{
+                "expression": "ctx.xrtSummaryContextObject.uid === ctx.userSession.props.cm0GlobalChangeContext.value && ctx.xrtSummaryContextObject.props.CMClosure.dbValue === 'Closed'"
+            }
+    }
+
+}

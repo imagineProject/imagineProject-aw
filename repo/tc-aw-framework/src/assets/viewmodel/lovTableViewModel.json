@@ -1,0 +1,272 @@
+{
+    "schemaVersion": "1.0.0",
+    "data" : {
+        "onMountCodefulSelection": false,
+        "lovOpened": {
+            "dbValue": false
+        },
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "actions": {
+        "loadLOVData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-LOV",
+            "method": "getInitialLOVValues",
+            "inputData": {
+                "initialData": {
+                    "propertyName": "{{function:processPropertyName}}",
+                    "lovInput": {
+                        "owningObject": "{{props.subPanelContext.vmo}}",
+                        "boName":"{{function:decideBOName}}",
+                        "operationName": "{{subPanelContext.vmo.operationName}}"
+                    },
+                    "filterData": {
+                        "filterString": "{{props.subPanelContext.filterString}}",
+                        "maxResults": 1000,
+                        "numberToReturn": 50,
+                        "sortPropertyName": "{{data.columnProviders.lovTableColumnProvider.sortCriteria[0].fieldName ? data.columnProviders.lovTableColumnProvider.sortCriteria[0].fieldName : lov_values }}",
+                        "order": "{{function:getSortOrder}}"
+                    }
+                }
+            },
+            "outputData": {
+                "results": "{{function:getViewModelRows}}",
+                "moreValuesExist": "moreValuesExist"
+            },
+            "deps": "js/awTableLovService"
+        },
+        "getNextLOVValues": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-LOV",
+            "method": "getNextLOVValues",
+            "inputData": {
+                "lovData": "{{data.results.lovData}}"
+            },
+            "outputData": {
+              "results": "{{function:getViewModelRows}}",
+              "moreValuesExist": "moreValuesExist"
+            },
+            "deps": "js/awTableLovService"
+        },
+        "validateLOVData" : {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-LOV",
+            "method": "validateLOVValueSelections",
+            "inputData": {
+                "lovInput": {
+                    "owningObject": "{{props.subPanelContext.vmo}}",
+                    "boName":"{{props.subPanelContext.vmo.type}}",
+                    "operationName": "Edit",
+                    "propertyValues": "{{function:getPropertyValuesForLOV}}"
+                },
+                "propName": "{{props.subPanelContext.propertyName}}"
+            },
+            "deps": "js/awTableLovService"
+        },
+         "reloadDataProvider":{
+            "actionType": "JSFunction",
+            "method": "reloadDataProvider",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "dataProvider": "{{data.dataProviders.performLOVTableData}}",
+                "lovOpened": "{{fields.lovOpened}}",
+                "viewModel": "{{data}}"
+            },
+            "deps": "js/awTableLovService"
+        },
+        "loadDataProviderAndUpdateSelection":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadLOVData"
+                },
+                {
+                    "action": "updateDataProviderEntries"
+                },
+                {
+                    "action": "setSelection",
+                    "condition": "props.subPanelContext.filterString === null || props.subPanelContext.filterString === '' "
+                },
+                {
+                    "action": "updateRowAttention",
+                    "condition": "props.subPanelContext.filterString !== null"
+                }
+
+            ]
+        },
+        "setSelection":{
+            "actionType": "JSFunction",
+            "method": "setSelectedRow",
+            "inputData": {
+                "onMountCodefulSelection": "{{data.onMountCodefulSelection}}",
+                "selectionModel": "{{data.dataProviders.performLOVTableData.selectionModel}}",
+                "selectedObject": "{{data.selectedRow}}"
+            },
+            "outputData" : {
+                "onMountCodefulSelection": ""
+            },
+            "deps": "js/awTableLovService"
+        },
+        "updateRowAttention":{
+            "actionType": "JSFunction",
+            "method": "updateRowAttention",
+            "inputData" : {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "viewModel": "{{data}}"
+            },
+            "deps": "js/awTableLovService"
+        },
+        "updateDataProviderEntries":{
+            "actionType": "JSFunction",
+            "method": "updateDataProviderEntries",
+            "inputData": {
+                "selectionModel": "{{data.results.lovTableData}}",
+                "updateSelection": "{{props.subPanelContext.updateSelectionData}}"
+            },
+            "outputData": {
+                "selectedRow": ""
+            },
+            "deps": "js/awTableLovService"
+        },
+        "updateSelectedObject":{
+            "actionType": "JSFunction",
+            "method": "updateSelectedObject",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.performLOVTableData.selectionModel}}",
+                "selectedObject": "{{props.subPanelContext.selectedObject}}"
+            },
+            "deps": "js/awTableLovService"
+        },
+        "setLovEntry":{
+            "actionType": "JSFunction",
+            "method": "commitValue",
+            "inputData": {
+                "setLovEntry": "{{props.subPanelContext.setLovEntry}}",
+                "dataProvider": "{{data.dataProviders.performLOVTableData}}",
+                "onMountCodefulSelection": "{{data.onMountCodefulSelection}}"
+            },
+            "outputData" : {
+                "onMountCodefulSelection": ""
+            },
+            "deps": "js/awTableLovService"
+        },
+        "setLovValueFromTable":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setLovEntry",
+                    "condition": "data.results.lovTableData.length>0"
+                }
+
+            ]
+        }
+    },
+    "dataProviders": {
+        "performLOVTableData": {
+            "action": "loadDataProviderAndUpdateSelection",
+            "response": "{{data.results.lovTableData}}",
+            "moreValuesExist": "{{data.moreValuesExist}}",
+            "nextAction": "getNextLOVValues",
+            "validateAction": "validateLOVData",
+            "inputData": {
+                "selectionData": "{{fields.selectionData}}"
+            }
+        }
+    },
+    "columnProviders": {
+        "lovTableColumnProvider": {
+            "columns": []
+        }
+    },
+    "grids": {
+        "lovTableProvier": {
+            "dataProvider": "performLOVTableData",
+            "columnProvider": "lovTableColumnProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enablePinning": true,
+                "maxRowsToShow": 7
+            }
+        }
+    },
+    "functions": {
+        "getSortOrder":{
+            "functionName": "getSortOrder",
+            "parameters":[
+                "{{data.columnProviders.lovTableColumnProvider.sortCriteria}}"
+            ]
+        },
+        "getViewModelRows": {
+            "functionName": "getViewModelRows",
+            "parameters": [
+                "{{data.dataProviders.performLOVTableData}}",
+                "{{props.subPanelContext.filterString}}",
+                "{{data.columnProviders.lovTableColumnProvider}}",
+                "{{props.subPanelContext}}"
+            ]
+        },
+        "getPropertyValuesForLOV": {
+            "functionName": "getPropertyValuesForLOV",
+            "parameters":[
+                "{{props.subPanelContext}}",
+                "{{data.dataProviders.performLOVTableData}}"
+            ]
+        },
+        "processPropertyName": {
+            "functionName": "processPropertyName",
+            "parameters":[
+                "{{props.subPanelContext.propertyName}}"
+            ]
+        },
+        "decideBOName": {
+            "functionName": "decideBOName",
+            "parameters": [
+                "{{props.subPanelContext}}"
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [ {
+            "action": "reloadDataProvider",
+            "observers": [ "props.subPanelContext.filterString" ]
+        },
+        {
+            "action": "updateSelectedObject",
+            "observers": [ "props.subPanelContext.selectedObject" ]
+        },
+        {
+            "action": "updateRowAttention",
+            "observers": [ "props.subPanelContext.selectIndex.current", "props.subPanelContext.suggLinkAttn.current"]
+        },
+        {
+            "action": "setLovValueFromTable",
+            "observers": [ "viewModel.atomicData.selectionData" ]
+        }
+     ]
+    },
+    "conditions": {
+        "displayLoading": {
+            "expression": "data.results === undefined"
+        },
+        "isEmptyTable":{
+            "expression": "data.results.lovTableData.length === 0"
+        },
+        "showSuggestionLink": {
+            "expression": "data.results.lovUsage==='SUGGESTIVE_LOV' && props.subPanelContext.filterString"
+        },
+        "focusLink": {
+            "expression": "data.results.lovUsage==='SUGGESTIVE_LOV' && props.subPanelContext.filterString && data.results.lovTableData.length === 0 || props.subPanelContext.suggLinkAttn.current === true"
+        },
+        "showNoVals": {
+            "expression": "data.results.lovTableData.length === 0 && data.results.lovUsage !=='SUGGESTIVE_LOV'"
+        }
+    },
+    "i18n": {
+        "NO_LOV_VALUES": [
+            "BaseMessages"
+        ]
+    }
+}

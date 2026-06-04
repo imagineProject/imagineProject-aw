@@ -1,0 +1,648 @@
+
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-label.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-command-panel-section.directive",
+        "js/aw-list.directive",
+        "js/exist-when.directive",
+        "js/aw-include.directive",
+        "js/aw-i18n.directive"
+    ],
+
+    "actions":
+    {
+        "loadProfileInfo": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2018-05-Workflow",
+            "method": "getWorkflowTaskViewModel",
+            "inputData":
+            {
+                "input":
+                [
+                    {
+                        "selection": "{{data.taskTemplateObject}}",
+                        "typeToPropertiesMap":
+                        {
+                            "Signoff":
+                            [
+                                "REF(group_member,GroupMember).group",
+                                "REF(group_member,GroupMember).role",
+                                "REF(group_member,GroupMember).user",
+                                "REF(resource_pool,ResourcePool).group",
+                                "REF(resource_pool,ResourcePool).role",
+                                "resource_pool",
+                                "group_member"
+                            ],
+                            "GroupMember":
+                            [
+                                "group",
+                                "role"
+                            ],
+                            "EPMSignoffProfile":
+                            [
+                                "REF(group,Group).object_full_name",
+                                "REF(role,Role).role_name",
+                                "number_of_signoffs",
+                                "allow_subgroups"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "outputData":
+            {
+                "reviewProfiles": "output[0].taskJSONStrings.EPMSelectSignoffTaskTemplate_profiles",
+                "profileSignoffs": "output[0].taskJSONStrings.EPMReviewTask_profile_signoffs",
+                "adhocSignoffs": "output[0].taskJSONStrings.EPMReviewTask_adhoc_signoffs",
+                "ackReviewProfiles": "output[0].taskJSONStrings.EPMAcknowledgeTask_profiles",
+                "ackProfileSignoffs": "output[0].taskJSONStrings.EPMAcknowledgeTask_profile_signoffs",
+                "ackAdhocSignoffs": "output[0].taskJSONStrings.EPMAcknowledgeTask_adhoc_signoffs",
+                "taskTemplateQuorumValue": "output[0].additionalData.review_task_quorum[0]"
+            },
+            "policy":
+            {
+                "types":
+                [
+                    {
+                        "name": "EPMSignoffProfile",
+                        "properties":
+                        [
+                            {
+                                "name": "number_of_signoffs"
+                            },
+                            {
+                                "name": "allow_subgroups"
+                            }
+                        ]
+                    },
+
+                    {
+                        "name": "GroupMember",
+                        "properties":
+                        [
+                            {
+                                "name": "group"
+                            },
+                            {
+                                "name": "role"
+                            }
+
+                        ]
+                    },
+                    {
+                        "name": "Signoff",
+                        "properties":
+                        [
+                            {
+                                "name": "group_member"
+                            },
+                            {
+                                "name": "resource_pool"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "populateAssignmentPanelData": {
+            "actionType": "JSFunction",
+            "method": "populateAssignmentPanelData",
+            "inputData": {
+                "data": "{{data}}",
+                "taskTemplateObject": "{{data.taskTemplateObject}}",
+                "workflowPalState": "{{props.subPanelContext.workflowPalState}}",
+                "nampProp": "{{data.name}}"
+            },
+            "outputData": {
+                "name": "nameProp",
+                "selectedOption": "selectedOption",
+                "isTemplateAssignmentInProgress": "isTemplateAssignmentInProgress",
+                "profileObjects": "profileObjects"
+            },
+            "deps": "js/Awp0TemplateAssignmentPanelService"
+        },
+        "updateTemplatePalData": {
+            "actionType": "JSFunction",
+            "method": "updateTemplatePalData",
+            "inputData": {
+                "data": "{{data}}",
+                "palDataMap": "{{props.subPanelContext.workflowPalState.palDataMap}}",
+                "selTemplate": "{{data.taskTemplateObject}}",
+                "workflowPalState": "{{props.subPanelContext.workflowPalState}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "closePanel"
+                    }
+                ]
+            },
+            "deps": "js/Awp0TemplateAssignmentPanelService"
+        },
+        "updateOrCloseAssignmentPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "showUnsaveEditMessageAction",
+                    "condition": "conditions.isValidSelectionModified"
+                },
+                {
+                    "action": "updateSelectedTaskAssignmentTable",
+                    "condition": "data.selectedOption ==='saveOperation' && conditions.isValidSelectionModified"
+                },
+                {
+                    "action": "populateSelectionContextData"
+                },
+                {
+                    "action": "closeCurrentOpenedPanel",
+                    "condition": "conditions.isEmptySelection"
+                },
+                {
+                    "action": "loadProfileInfo",
+                    "condition": "conditions.isMultiUserTaskTemplateSelected"
+                },
+                {
+                    "action": "populateAssignmentPanelData",
+                    "condition": "conditions.isOnlyTaskTemplateObjectSelected"
+                }
+            ]
+        },
+        "populateSelectionContextData": {
+            "actionType": "JSFunction",
+            "method": "populateSelectionContextData",
+            "inputData": {
+                "selectionObject": "{{props.subPanelContext.selectionData.selected[0]}}",
+                "nameProp": "{{data.name}}"
+            },
+            "outputData": {
+                "taskTemplateObject": "taskTemplateObject",
+                "name": "nameProp"
+            },
+            "deps": "js/Awp0TemplateAssignmentPanelService"
+        },
+        "updateSelectedTaskAssignmentTable": {
+            "actionType": "JSFunction",
+            "method": "updateTemplatePalData",
+            "inputData": {
+                "data": "{{data}}",
+                "palDataMap": "{{props.subPanelContext.workflowPalState.palDataMap}}",
+                "selTemplate": "{{data.taskTemplateObject}}",
+                "workflowPalState": "{{props.subPanelContext.workflowPalState}}"
+            },
+            "deps": "js/Awp0TemplateAssignmentPanelService"
+        },
+        "showUnsaveEditMessageAction": {
+            "actionType": "JSFunctionAsync",
+            "method": "showUnsaveEditMessageAction",
+            "inputData": {
+                "taskObject": "{{data.taskTemplateObject}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "selectedOption": ""
+            },
+            "deps": "js/Awp0WorkflowAssignmentPanelService"
+        },
+        "closeCurrentOpenedPanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [
+                    {
+                        "name": "complete",
+                        "condition": "!data.isDestroyed()",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            }
+        },
+        "updateReviewersSelectionBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateProfileReviewersSelection"
+                }
+            ]
+        },
+        "updateProfileReviewersSelection": {
+            "actionType":"JSFunction",
+            "method":"updateProfileReviewerSelection",
+            "inputData":{
+                "selectedObjects": "{{dataProviders.reviewersDataProvider.selectedObjects}}",
+                "contextObject": "{{props.addUserPanelState}}",
+                "criteria" : "{{props.addUserPanelState.defaultCriteria}}"
+            },
+            "deps":"js/Awp0WorkflowAssignmentPanelService"
+        },
+        "updateDataOnDropAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "addDropUsersOnPanel",
+                    "condition": "props.subPanelContext.taskInfoObject.updateDropPropContext"
+                },
+                {
+                    "action": "resetPropContext",
+                    "condition": "props.subPanelContext.taskInfoObject.updateDropPropContext"
+                }
+            ]
+        },
+
+        "addDropUsersOnPanel": {
+            "actionType": "JSFunction",
+            "method": "addDropUsersOnPanel",
+            "inputData": {
+                "data": "{{data}}",
+                "sourceVMOs": "{{props.subPanelContext.taskInfoObject.updateDropPropContext.sourceVMOs}}",
+                "dataProvider": "{{props.subPanelContext.taskInfoObject.updateDropPropContext.dataProvider}}",
+                "addUserPanelState": "{{props.subPanelContext.addUserPanelState}}"
+            },
+            "outputData": {
+                "isTemplateAssignmentInProgress": ""
+            },
+            "deps": "js/Awp0TemplateAssignmentPanelService"
+        },
+        "resetPropContext": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.taskInfoObject}}",
+                "value" : {
+                    "updateDropPropContext": null
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "performRemoveBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "performRemoveAction",
+                    "condition": "props.subPanelContext.taskInfoObject.removePropContextObject"
+                },
+                {
+                    "action": "resetRemovePropContext",
+                    "condition": "props.subPanelContext.taskInfoObject.removePropContextObject"
+                }
+            ]
+        },
+        "performRemoveAction": {
+            "actionType": "JSFunction",
+            "method": "removeUsersTemplateAssignment",
+            "inputData": {
+                "data": "{{data}}",
+                "selectedObjects": "{{props.subPanelContext.taskInfoObject.removePropContextObject.selected}}",
+                "propName": "{{props.subPanelContext.taskInfoObject.removePropContextObject.propName}}"
+            },
+            "outputData": {
+                "isTemplateAssignmentInProgress": ""
+            },
+            "deps": "js/Awp0TemplateAssignmentPanelService"
+        },
+        "resetRemovePropContext": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.taskInfoObject}}",
+                "value" : {
+                    "removePropContextObject": null
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "performAddBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getSelectedUsers",
+                    "condition": "props.subPanelContext.taskInfoObject.addPropContextObject"
+                },
+                {
+                    "action": "performAddAction",
+                    "condition": "props.subPanelContext.taskInfoObject.addPropContextObject"
+                },
+                {
+                    "action": "resetAddPropContext",
+                    "condition": "props.subPanelContext.taskInfoObject.addPropContextObject"
+                }
+            ]
+        },
+        "performAddAction": {
+            "actionType": "JSFunction",
+            "method": "addSelectedUsers",
+            "inputData": {
+                "data": "{{data}}",
+                "selectedUsers": "{{data.selectedUsers}}",
+                "propName": "{{props.subPanelContext.taskInfoObject.addPropContextObject.propName}}",
+                "addUserPanelState": "{{props.subPanelContext.addUserPanelState}}"
+            },
+            "outputData": {
+                "isTemplateAssignmentInProgress": ""
+            },
+            "deps": "js/Awp0TemplateAssignmentPanelService"
+        },
+        "resetAddPropContext": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.taskInfoObject}}",
+                "value" : {
+                    "addPropContextObject": null
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "addSelectedUsersNarrowMode": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getSelectedUsers",
+                    "condition": "conditions.isAddUsersNarrowMode"
+                },
+                {
+                    "action": "addSelectedUsersInternal",
+                    "condition": "conditions.isAddUsersNarrowMode"
+                },
+                {
+                    "action": "navigateToMainPanel",
+                    "condition": "conditions.isAddUsersNarrowMode"
+                },
+                {
+                    "action": "resentUserPanelContextData",
+                    "condition": "props.subPanelContext.sidenavMode === 'mobile' && conditions.isAddUsersNarrowMode"
+                },
+                {
+                    "action": "resentUserPanelWithAdditionalContextData",
+                    "condition": "props.subPanelContext.sidenavMode !== 'mobile' && props.addUserPanelState.isAddButtonNeeded && conditions.isAddUsersNarrowMode"
+                }
+            ]
+        },
+        "getSelectedUsers": {
+            "actionType": "JSFunctionAsync",
+            "method": "getValidObjectsToAdd",
+            "inputData": {
+                "propName": "{{props.subPanelContext.addUserPanelState.criteria}}",
+                "selectedUsers": "{{props.subPanelContext.addUserPanelState.selectedUsers}}"
+            },
+            "outputData": {
+                "selectedUsers": ""
+            },
+            "deps": "js/Awp0WorkflowAssignmentUtils"
+        },
+        "addSelectedUsersInternal": {
+            "actionType": "JSFunction",
+            "method": "addSelectedUsers",
+            "inputData": {
+                "data": "{{data}}",
+                "selectedUsers": "{{data.selectedUsers}}",
+                "propName": "{{props.subPanelContext.addUserPanelState.propName}}",
+                "addUserPanelState": "{{props.subPanelContext.addUserPanelState}}"
+            },
+            "deps": "js/Awp0TemplateAssignmentPanelService"
+        },
+        "resentUserPanelContextData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.addUserPanelState}}",
+                "value" : {
+                    "propName": null,
+                    "selectedUsers": []
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "resentUserPanelWithAdditionalContextData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.addUserPanelState}}",
+                "value" : {
+                    "propName": null,
+                    "selectedUsers": [],
+                    "isAddButtonNeeded": false
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "navigateToMainPanel": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.activeState}}",
+                "value": {
+                    "activeView": "{{props.activeState.prePanelId}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        }
+
+    },
+
+    "data": {
+        "name":{
+            "displayName": "{{i18n.Workflow_Name}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "uiValue": "",
+            "renderingHint": "label"
+         },
+         "assignmentPanelAnchor": "awp0_templateAssignmentPanelAnchor",
+         "isAddButtonVisible": true,
+         "assignerSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "reviewersSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "adhocReviewersSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "acknowledgersSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "notifyeesSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "dataProviders": {
+        "assignerDataProvider":{
+            "selectionModelMode": "single",
+            "inputData": {
+                "selectionData": "{{fields.assignerSelectionData}}"
+            }
+        },
+        "reviewersDataProvider":{
+            "selectionModelMode": "multiple",
+            "commandsAnchor"  : "aw_templateProfileCellCommand",
+            "inputData": {
+                "selectionData": "{{fields.reviewersSelectionData}}",
+                "selectionModel": "{{data.selectionModels.reviewersSelectionModel}}"
+            }
+        },
+        "adhocReviewersDataProvider":{
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionData": "{{fields.adhocReviewersSelectionData}}"
+            }
+        },
+        "acknowledgersDataProvider":{
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionData": "{{fields.acknowledgersSelectionData}}"
+            }
+        },
+        "notifyeesDataProvider":{
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionData": "{{fields.notifyeesSelectionData}}"
+            }
+        }
+    },
+    "selectionModels": {
+        "reviewersSelectionModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "updateReviewersSelectionBatchAction",
+                "observers": [ "viewModel.atomicData.reviewersSelectionData.selected" ]
+            },
+            {
+                "action": "updateDataOnDropAction",
+                "observers":["props.subPanelContext.taskInfoObject.updateDropPropContext"]
+            },
+            {
+                "action": "performRemoveBatchAction",
+                "observers":["props.subPanelContext.taskInfoObject.removePropContextObject"]
+            },
+            {
+                "action": "performAddBatchAction",
+                "observers":["props.subPanelContext.taskInfoObject.addPropContextObject"]
+            },
+            {
+                "action": "addSelectedUsersNarrowMode",
+                "observers": [ "props.subPanelContext.addUserPanelState.value.selectedUsers" ]
+            },
+            {
+                "action": "updateOrCloseAssignmentPanel",
+                "observers": [ "props.subPanelContext.selectionData.selected[0].uid" ]
+            }
+        ]
+    },
+
+    "onEvent":
+    [
+        {
+            "eventId": "closePanel",
+            "condition": "!data.isDestroyed()",
+            "action": "closeCurrentOpenedPanel"
+        }
+    ],
+    "messages": {
+    },
+
+    "conditions": {
+        "isOnlyTaskTemplateObjectSelected": {
+            "expression": "data.taskTemplateObject.modelType.typeHierarchyArray.indexOf('EPMTaskTemplate') > -1"
+        },
+        "isReviewOrAckOrRouteTaskTemplateSelected": {
+            "expression": "data.taskTemplateObject.modelType.typeHierarchyArray.indexOf('EPMReviewTaskTemplate') >= 0 || data.taskTemplateObject.modelType.typeHierarchyArray.indexOf('EPMAcknowledgeTaskTemplate') >= 0 || data.taskTemplateObject.modelType.typeHierarchyArray.indexOf('EPMRouteTaskTemplate') >= 0"
+        },
+        "isRouteTaskTemplateSelected": {
+            "expression": "data.taskTemplateObject.modelType.typeHierarchyArray.indexOf('EPMRouteTaskTemplate') > -1"
+        },
+        "isAcknowledgeTaskTemplateSelected": {
+            "expression": "data.taskTemplateObject.modelType.typeHierarchyArray.indexOf( 'EPMAcknowledgeTaskTemplate' ) > -1"
+        },
+        "isMultiUserTaskTemplateSelected": {
+            "expression": "conditions.isReviewOrAckOrRouteTaskTemplateSelected"
+        },
+        "isSingleUserTaskSelected": {
+            "expression": "data.taskTemplateObject.modelType.typeHierarchyArray.indexOf('EPMReviewTaskTemplate') <= -1 && data.taskTemplateObject.modelType.typeHierarchyArray.indexOf('EPMAcknowledgeTaskTemplate') <= -1 && data.taskTemplateObject.modelType.typeHierarchyArray.indexOf('EPMRouteTaskTemplate') <= -1"
+        },
+        "isValidSelectionModified": {
+            "expression": "data.taskTemplateObject && data.isTemplateAssignmentInProgress && subPanelContext.workflowPalState.isPriviledgeToModify"
+        },
+        "isValidSelectionMultiTaskModified": {
+            "expression": "data.taskTemplateObject && data.isTemplateAssignmentInProgress && subPanelContext.workflowPalState.isPriviledgeToModify && conditions.isReviewOrAckOrRouteTaskTemplateSelected"
+        },
+        "isInvalidSelection": {
+            "expression": "conditions.isEmptySelection || ( props.subPanelContext.selectionData.selected[0].modelType.typeHierarchyArray.indexOf('EPMTask') <= -1 || props.subPanelContext.selectionData.selected[0].modelType.typeHierarchyArray.indexOf('EPMTaskTemplate') <= -1)"
+        },
+        "isEmptySelection": {
+            "expression": "!props.subPanelContext.selectionData.selected || props.subPanelContext.selectionData.selected.length <=0 || !props.subPanelContext.selectionData.selected[0].modelType || ( props.subPanelContext.selectionData.selected[0].modelType.typeHierarchyArray.indexOf('EPMTask') <= -1 && props.subPanelContext.selectionData.selected[0].modelType.typeHierarchyArray.indexOf('EPMTaskTemplate') <= -1)"
+        },
+        "isValidInitialSelection": {
+            "expression": "data.taskTemplateObject && data.taskTemplateObject.modelType.typeHierarchyArray.indexOf('EPMTaskTemplate') > -1"
+        },
+        "isReviewTaskTemplateSelected":
+        {
+            "expression": "data.taskTemplateObject.modelType.typeHierarchyArray.indexOf( 'EPMReviewTaskTemplate' ) > -1"
+        },
+        "isReviewOrAckTaskTemplateSelected":
+        {
+            "expression": "data.taskTemplateObject.modelType.typeHierarchyArray.indexOf( 'EPMReviewTaskTemplate' ) > -1 || data.taskTemplateObject.modelType.typeHierarchyArray.indexOf( 'EPMAcknowledgeTaskTemplate' ) > -1"
+        },
+        "isProfileExist": {
+            "expression": "data.reviewProfiles && data.reviewProfiles.length > 0"
+        },
+        "isValidToModify": {
+            "expression": "data.isTemplateAssignmentInProgress && conditions.isPriviledgeToModify"
+        },
+        "isPriviledgeToModify": {
+            "expression": "subPanelContext.workflowPalState.isPriviledgeToModify"
+        },
+        "isAddUsersNarrowMode": {
+            "expression": "((props.subPanelContext.sidenavMode === 'mobile' && props.addUserPanelState.propName && !props.addUserPanelState.participantType && props.addUserPanelState.selectedUsers && props.addUserPanelState.selectedUsers.length > 0)||(props.subPanelContext.sidenavMode !== 'mobile' && props.addUserPanelState.isAddButtonNeeded && props.addUserPanelState.propName && !props.addUserPanelState.participantType && props.addUserPanelState.selectedUsers && props.addUserPanelState.selectedUsers.length > 0))"
+        }
+    },
+
+    "i18n": {
+        "taskAssignments": [ "WorkflowCommandPanelsMessages" ],
+        "modify": [ "WorkflowCommandPanelsMessages" ],
+        "task": [ "WorkflowCommandPanelsMessages" ],
+        "Workflow_Name": [ "WorkflowCommandPanelsMessages" ],
+        "status": [ "WorkflowCommandPanelsMessages" ],
+        "assignments": [ "WorkflowCommandPanelsMessages" ],
+        "Assigner": [ "WorkflowCommandPanelsMessages" ],
+        "addReviewerLabelText": [ "InboxMessages" ],
+        "additionalReviewers": [ "InboxMessages" ],
+        "assignee" : [ "WorkflowCommandPanelsMessages" ],
+        "Acknowledgers": [ "WorkflowCommandPanelsMessages" ],
+        "Notifyees": [ "WorkflowCommandPanelsMessages" ],
+        "required": [ "WorkflowCommandPanelsMessages" ],
+        "duplicateReviewerMsg": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "wasNotAdded": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "multipleDuplicateMsg": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "panelModificationWarningMsg" :  [ "WorkflowCommandPanelsMessages" ],
+        "discard": ["InboxMessages"]
+    }
+
+}
+

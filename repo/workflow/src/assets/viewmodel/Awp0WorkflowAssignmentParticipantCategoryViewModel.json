@@ -1,0 +1,236 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-list.directive",
+        "js/aw-default-cell.directive",
+        "js/aw-panel.directive",
+        "js/aw-flex-row.directive",
+        "js/aw-command-panel-section.directive",
+        "js/aw-scrollpanel.directive"
+    ],
+    "actions": {
+        "initDataProvider": {
+            "actionType": "dataProvider",
+            "methods": ["dpDataProvider"]
+        },
+        "updateParticipantDataProvider": {
+            "actionType":"JSFunction",
+            "method":"updateDataProvider",
+            "inputData":{
+                "dataProvider": "{{dataProviders.dpDataProvider}}",
+                "modelObjects": "{{props.participantTypeInfo.modelObjects}}"
+            },
+            "deps":"js/Awp0WorkflowAssignmentPanelService"
+        },
+        "addSelectedParticipantsNarrowMode": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getSelectedParticipants",
+                    "condition": "conditions.isAddParticipantsNarrowMode"
+                },
+                {
+                    "action": "addSelectedParticipantsInternal",
+                    "condition": "conditions.isAddParticipantsNarrowMode"
+                },
+                {
+                    "action": "navigateToMainPanel",
+                    "condition": "conditions.isAddParticipantsNarrowMode"
+                },
+                {
+                    "action": "resentUserParticipantContextData",
+                    "condition": "props.subPanelContext.sidenavMode === 'mobile' && conditions.isAddParticipantsNarrowMode"
+                },
+                {
+                    "action": "resentUserParticipantAdditionalContextData",
+                    "condition": "props.subPanelContext.sidenavMode !== 'mobile' && props.addUserPanelState.isAddButtonNeeded && conditions.isAddParticipantsNarrowMode"
+                }
+            ]
+        },
+        "getSelectedParticipants": {
+            "actionType": "JSFunctionAsync",
+            "method": "getValidObjectsToAdd",
+            "inputData": {
+                "propName": "{{props.addUserPanelState.criteria}}",
+                "selectedUsers": "{{props.addUserPanelState.selectedUsers}}"
+            },
+            "outputData": {
+                "selectedUsers": ""
+            },
+            "deps": "js/Awp0WorkflowAssignmentUtils"
+        },
+        "addSelectedParticipantsInternal": {
+            "actionType": "JSFunction",
+            "method": "addSelectedUsers",
+            "inputData": {
+                "propName": "{{props.addUserPanelState.propName}}",
+                "userPanelContext": "{{props.addUserPanelState}}",
+                "selectedUsers": "{{data.selectedUsers}}",
+                "subPanelContext": "{{props.taskInfoObject}}"
+            },
+            "deps": "js/Awp0WorkflowAssignmentPanelService"
+        },
+        "resentUserParticipantContextData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.addUserPanelState}}",
+                "value" : {
+                    "propName": null,
+                    "selectedUsers": []
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "resentUserParticipantAdditionalContextData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.addUserPanelState}}",
+                "value" : {
+                    "propName": null,
+                    "selectedUsers": [],
+                    "isAddButtonNeeded": false
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "navigateToMainPanel": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.activeState}}",
+                "value": {
+                    "activeView": "{{props.activeState.prePanelId}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "addTaskParticipantAssignment": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getSelectedParticipants",
+                    "condition": "conditions.isAddParticipantCase"
+                },
+                {
+                    "action": "addTaskParticipantAssignmentInternal",
+                    "condition": "conditions.isAddParticipantCase"
+                }
+            ]
+        },
+        "addTaskParticipantAssignmentInternal": {
+            "actionType": "JSFunction",
+            "method": "addSelectedUsersOnPanel",
+            "inputData": {
+                "propName": "{{commandContext.internalName}}",
+                "isParticipantProp": "{{commandContext.isParticipantProp}}",
+                "commandContext": "{{commandContext}}",
+                "selectedObjects": "{{data.selectedUsers}}",
+                "subPanelContext": "{{props.taskInfoObject}}"
+            },
+            "deps": "js/Awp0WorkflowAssignmentPanelService"
+        },
+        "updateParticipantSelectionBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateParticipantDataProvider",
+                    "condition": "data.initialSelection !== undefined && data.initialSelection !== props.taskObject.uid"
+                },
+                {
+                    "action": "cacheParticipantInitialSelection"
+                }
+            ]
+        },
+        "cacheParticipantInitialSelection":{
+            "actionType": "JSFunction",
+            "method": "cacheSelection",
+            "inputData": {
+                "selectedUid": "{{props.taskObject.uid}}"
+            },
+            "outputData": {
+                "initialSelection": ""
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        }
+    },
+    "data": {
+        "dpAnchor": "awp0_addTaskParticipantAssignmentOnPanelAnchor",
+        "dpSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "dataProviders": {
+        "dpDataProvider": {
+            "response": "{{props.participantTypeInfo.modelObjects}}",
+            "totalFound": "{{props.participantTypeInfo.modelObjects.length}}",
+            "totalLoaded": "{{props.participantTypeInfo.modelObjects.length}}",
+            "selectionModelMode": "{{props.participantTypeInfo.selectionModelMode}}",
+            "inputData": {
+                "selectionData": "{{fields.dpSelectionData}}"
+            }
+        }
+    },
+
+
+    "messages": {
+    },
+    "functions": {
+    },
+    "onEvent": [
+        {
+            "eventId": "workflow.addTaskAssignment",
+            "action": "addTaskParticipantAssignment",
+            "cacheEventData": true
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "initDataProvider",
+        "onUpdate": [
+            {
+                "action": "updateParticipantDataProvider",
+                "observers": [ "props.participantTypeInfo.updateUids" ]
+            },
+            {
+                "action": "addSelectedParticipantsNarrowMode",
+                "observers": [ "props.addUserPanelState.value.selectedUsers" ]
+            },
+            {
+                "action": "updateParticipantSelectionBatchAction",
+                "observers": [ "props.taskObject.uid" ]
+            }
+        ]
+    },
+    "conditions": {
+        "isAddParticipantsNarrowMode": {
+            "expression": "((props.subPanelContext.sidenavMode === 'mobile' && props.participantTypeInfo.internalName === props.addUserPanelState.participantType && props.addUserPanelState.participantType && props.addUserPanelState.selectedUsers && props.addUserPanelState.selectedUsers.length > 0) || (props.subPanelContext.sidenavMode !== 'mobile' && props.addUserPanelState.isAddButtonNeeded && props.participantTypeInfo.internalName === props.addUserPanelState.participantType && props.addUserPanelState.participantType && props.addUserPanelState.selectedUsers && props.addUserPanelState.selectedUsers.length > 0))"
+        },
+        "isAddParticipantCase": {
+            "expression": "commandContext.internalName && commandContext.isParticipantProp && props.participantTypeInfo.internalName === commandContext.internalName"
+        }
+    },
+    "props": {
+        "participant-type-info": {
+            "type": "object"
+        },
+        "task-info-object": {
+            "type": "object"
+        },
+        "sub-panel-context":{
+            "type":"object"
+        },
+        "task-object": {
+            "type":"object"
+        },
+        "active-state": {
+            "type": "object"
+        },
+        "add-user-panel-state": {
+            "type":"object"
+        }
+    },
+    "i18n": {
+    }
+}

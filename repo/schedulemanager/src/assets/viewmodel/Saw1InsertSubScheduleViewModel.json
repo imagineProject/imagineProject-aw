@@ -1,0 +1,160 @@
+{
+    "schemaVersion" : "1.0.0",
+    "data": {
+        "addPanelState": {
+            "initialValues": {
+                "creationType": "",
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {}
+        }
+    },
+    "actions":
+    {
+        "getInsertScheduleContainer":
+        {
+            "actionType": "JSFunction",
+            "method": "getInsertContainer",
+            "inputData": {
+                "masterScheduleTask" : "{{ctx.object.masterScheduleTask}}",
+                "masterSchedule" : "{{ctx.object.masterSchedule}}",
+                "data" : "{{data}}",
+                "sourceObjects": "{{addPanelState.sourceObjects}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "insertSchedule.callSoa"
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": false,
+                            "relatedModified": [
+                                "{{props.subPanelContext.openedObject}}"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "actionMessages":
+            {
+             "failure": [
+                    {
+                         "condition": "errorCode=='sameSubScheduleErrorMsg'",
+                         "message": "sameSubScheduleErrorMsg"
+                    }
+                ]
+            },
+             "deps": "js/Saw1InsertSubScheduleService"
+        },
+        "insertSchedules":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2014-10-ScheduleManagement",
+            "method": "insertSchedule",
+            "inputData":
+            {
+                 "insertScheduleContainer": "{{function:getInsertContainer}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "resetScheduleGanttChart"
+                    },
+                    {
+                        "name": "refreshSchedulePWA"
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+             },
+            "actionMessages":
+            {
+             "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            },
+             "deps": "js/Saw1InsertSubScheduleService"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+
+    "messages": {
+        "sameSubScheduleErrorMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.sameSubScheduleErrorMsg}}",
+            "messageTextParams": [
+            "{{ctx.object.masterSchedule}}"
+         ]
+        },
+        "soaFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+
+    "onEvent": [
+        {
+            "eventId": "insertSchedule.callSoa",
+            "action": "insertSchedules"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+    "conditions":
+    {
+        "isPaletteTabAddButtonVisible":
+        {
+          "expression":"addPanelState.selectedTab.view==='PaletteTabPageSub' && addPanelState.sourceObjects.length > 0"
+        },
+        "isSearchTabAddButtonVisible":
+        {
+          "expression":"addPanelState.selectedTab.view!='NewTabPageSub' && addPanelState.selectedTab.view!='PaletteTabPageSub' && addPanelState.sourceObjects.length > 0"
+        }
+    },
+    "functions":
+    {
+        "getInsertContainer":
+        {
+            "functionName": "getInsertContainer",
+            "parameters":
+            [
+                "{{ctx.object.masterScheduleTask}}",
+                "{{ctx.object.masterSchedule}}",
+                "{{data}}",
+                "{{addPanelState.sourceObjects}}"
+            ]
+        }
+    },
+    "ctx": {
+        "panelContext": {
+            "type": "Object"
+        }
+    },
+    "i18n":
+    {
+        "insertSubSchedule":[ "ScheduleManagerMessages"],
+        "insert":[ "ScheduleManagerMessages"],
+        "sameSubScheduleErrorMsg": [ "ScheduleManagerMessages"]
+    }
+
+}

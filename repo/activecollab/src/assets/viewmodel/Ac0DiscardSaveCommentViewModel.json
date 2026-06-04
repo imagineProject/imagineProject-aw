@@ -1,0 +1,76 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "data": {
+
+    },
+
+    "actions": {
+
+        "noop": {
+            "actionType": "JSFunction",
+            "method": "getRandObjId",
+            "deps": "js/Ac0ConversationService"
+        },
+
+        "saveComment":{
+            "actionType": "JSFunctionAsync",
+            "method": "saveEditComment",
+            "deps": "js/Ac0EditCollabObjectService",
+
+            "inputData": {
+                "commentObject": "{{subPanelContext.commentDetails}}",
+                "sharedData": "{{subPanelContext.sharedData}}"
+            }
+        },
+
+        "discardComment":{
+            "actionType": "JSFunction",
+            "method": "discardEditComment",
+            "deps": "js/Ac0EditCollabObjectService",
+
+            "inputData": {
+                "commentObject": "{{subPanelContext.commentDetails}}",
+                "sharedData": "{{subPanelContext.sharedData}}"
+            }
+        },
+        "isInputTextValidAction":
+        {
+            "actionType": "JSFunction",
+            "method": "isInputTextValid",
+            "inputData": {
+                "data": "{{data}}",
+                "isInputTextValidVal": "{{data.eventData.isTextValid}}",
+                "ckEditorType": "{{data.eventData.ckeditorTypeEvent}}",
+                "sharedData": "{{subPanelContext.sharedData}}"
+            },
+            "outputData": {
+                "isInputTextValid": ""
+            },
+            "deps": "js/Ac0CreateCollabObjectService"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "isInputTextValidEvent.SaveDiscard",
+            "cacheEventData": true,
+            "action": "isInputTextValidAction"
+        }
+    ],
+
+    "conditions": {
+        "isDiscussionLocation":
+        {
+            "expression":"ctx.sublocation.historyNameToken==='feed' || ctx.sublocation.historyNameToken==='actionableFeed'"
+        },
+        "validInputDataForSaveDiscardComment":
+        {
+            "expression":"( !conditions.isDiscussionLocation && ( (data.isInputTextValid && ctx.Ac0ConvCtx.ckEditorRef === 'saveDiscardEditor') || (ctx.Ac0ConvCtx.cmtEdit.removedSnapshotObj !== null && ctx.Ac0ConvCtx.validForSave === true ))) || ( conditions.isDiscussionLocation && (ctx.Ac0ConvCtx.isInputTextValid && ctx.Ac0ConvCtx.ckEditorRef === 'saveDiscardEditor') )"
+        }
+    },
+
+    "i18n": {
+        "save": [ "ActiveCollabDeclarativeMessages" ],
+        "cancel": [ "ZeroCompileCommandMessages" ]
+    }
+}

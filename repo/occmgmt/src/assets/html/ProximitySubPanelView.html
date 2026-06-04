@@ -1,0 +1,70 @@
+
+<aw-panel-body>
+    <div class="sw-row">
+        <div class="sw-column">
+            <div class="aw-proximity-target aw-proximity-targetColor">*</div>
+        </div>
+        <div class="sw-column">
+            <aw-label prop="data.target"></aw-label>
+        </div>
+    </div>
+    <!--When selection is upto 5. Show the cell-list-->
+    <div exist-when="data.validTargetsForProximity && data.validTargetsForProximity.length > 0 && data.validTargetsForProximity.length < 6">
+        <aw-list dataprovider="data.dataProviders.selectedObjects">
+            <aw-default-cell vmo="item"> </aw-default-cell>
+        </aw-list>
+    </div>
+    <div exist-when="!conditions.areValidTargetsSet">
+        <aw-i18n class=aw-filter-italicText>i18n.proximityTargetMissing</aw-i18n>
+    </div>
+
+
+<!--When selection is more than 5. Show the n Selected link-->
+    <div exist-when="data.validTargetsForProximity && data.validTargetsForProximity.length > 5">
+        <aw-link prop="displayNSelected" action="expandSelection"></aw-link>
+        <aw-break></aw-break>
+        <div aw-repeat="selectedObj : data.validTargetsForProximity" exist-when="data.isExpanded.dbValue">
+            <div class="aw-subset-subsetInnerRecipeValue">{{selectedObj.props.awb0ArchetypeRevName.dbValues[0]}}</div>
+        </div>
+    </div>
+
+
+    <div exist-when="data.elementNotFound">
+        <aw-break></aw-break>
+        <div class="sw-row">
+            <div class="sw-column">
+                <aw-i18n class=aw-filter-italicText>i18n.elementNotFoundMessage</aw-i18n>
+            </div>
+
+            <div class="sw-column">
+                <aw-icon-button command="data.missingTargetInfoButton" class="aw-commands-commandIconButton aw-proximity-missingTargetInfo" extended-tooltip="data.tooltipForElementNotFound" extended-tooltip-options="data.extendedTooltipOptions" ></aw-icon-button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <aw-break></aw-break>
+    <!--To give proxmity distance-->
+    <div class="sw-row">
+        <div class="sw-column w-9">
+            <aw-numeric prop="data.distance"></aw-numeric>
+        </div>
+        <div class="sw-column w-3">
+            <div class ="aw-subset-spatial">
+                <aw-label prop="data.unitOfMeasurement"></aw-label>
+            </div>
+        </div>
+    </div>
+
+</aw-panel-body>
+
+<!--Add button -->
+<aw-panel-footer>
+    <aw-button size="auto"  visible-when="props.subPanelContext.sharedData.recipeTermToAdd === undefined" enable-when="conditions.isDistanceSpecified && conditions.areValidTargetsSet" action="invokeProximityAction">
+        <aw-i18n>i18n.Add</aw-i18n>
+    </aw-button>
+    <aw-button size="auto"  visible-when="props.subPanelContext.sharedData.recipeTermToAdd !== undefined" enable-when="(conditions.isDistanceSpecified && conditions.areValidTargetsSet && conditions.isInputChanged) || (conditions.isDistanceSpecified && data.elementNotFound && conditions.isInputChanged)" action="invokeProximityAction">
+        <aw-i18n>i18n.Update</aw-i18n>
+    </aw-button>
+</aw-panel-footer>

@@ -1,0 +1,195 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "imports": [
+        "js/aw-panel.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-label.directive",
+        "js/aw-widget.directive",
+        "js/aw-checkbox.directive",
+        "js/aw-break.directive",
+        "js/aw-listbox.directive"
+    ],
+
+    "data": {
+        "recipients": {
+            "displayName": "{{i18n.recipients}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "",
+            "dispValue": ""
+        },
+        "subject": {
+            "displayName": "{{i18n.subject}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "",
+            "dispValue": ""
+        },
+        "message": {
+            "displayName": "{{i18n.message}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "",
+            "uiValue":"",
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE"
+        },
+        "isActive": {
+            "displayName": "{{i18n.isActive}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": false,
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE"
+        },
+        "daysBeforeFinishDate": {
+            "displayName": "{{i18n.daysBeforeFinishDate}}",
+            "type": "INTEGER",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "",
+            "uiValue":"",
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE"
+        },
+        "workReady": {
+            "name": "workReady",
+            "displayName": "{{i18n.workReadyLabels}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "hasLov": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE"
+        },
+        "workReadyList": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.StartDate}}",
+                    "dispValue": "{{i18n.StartDate}}",
+                    "propInternalValue": "StartDate"
+                },
+                {
+                    "propDisplayValue": "{{i18n.PredComplete}}",
+                    "dispValue": "{{i18n.PredComplete}}",
+                    "propInternalValue": "PredComplete"
+                },
+                {
+                    "propDisplayValue": "{{i18n.StartDateAndPredComplete}}",
+                    "dispValue": "{{i18n.StartDateAndPredComplete}}",
+                    "propInternalValue": "StartDateAndPredComplete"
+                },
+                {
+                    "propDisplayValue": "{{i18n.StartDateOrPredComplete}}",
+                    "dispValue": "{{i18n.StartDateOrPredComplete}}",
+                    "propInternalValue": "StartDateOrPredComplete"
+                }
+            ]
+        }
+    },
+
+    "actions": {
+        "initPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadProperties"
+                },
+                {
+                    "action": "populateNotificationData"
+                }
+            ]
+        },
+        "loadProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": ["{{ctx.selected}}"],
+                "attributes":[
+                    "expiration_date"
+                ]
+            },
+            "deps": "js/Saw1SubscriptionSummaryNotificationService"
+        },
+        "populateNotificationData": {
+            "actionType": "JSFunctionAsync",
+            "method": "populateNotificationData",
+            "inputData": {
+                "subscription": "{{ctx.selected}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "recipients": "recipients",
+                "subject": "subject",
+                "message": "message",
+                "isActive": "isActive",
+                "daysBeforeFinishDate": "daysBeforeFinishDate",
+                "workReady": "workReady",
+                "eventType": "eventType"
+            },
+            "deps": "js/Saw1SubscriptionSummaryNotificationService"
+        },
+        "updateIsActive": {
+            "actionType": "JSFunction",
+            "method": "updateIsActive",
+            "inputData": {
+                "vmo": "{{data.eventData.dataSource.vmo}}"
+            },
+            "deps": "js/Saw1SubscriptionSummaryNotificationService"
+        },
+        "editEventAction": {
+            "actionType": "JSFunction",
+            "method": "editEventAction",
+            "inputData": {
+                "state": "{{data.eventData.state}}",
+                "data": "{{data}}",
+                "vmo" : "{{data.eventData.dataSource.vmo}}"
+            },
+            "outputData": {
+                "message": "message",
+                "isActive": "isActive"
+            },
+            "deps": "js/Saw1SubscriptionSummaryNotificationService"
+        }
+    },
+
+    "onEvent":
+    [
+        {
+            "eventId": "editHandlerStateChange",
+            "condition": "dataSource.vmo.xrtType === 'INFO'",
+            "cacheEventData": true,
+            "action": "editEventAction"
+        }
+    ],
+
+    "lifecycleHooks": {
+        "onMount": "initPanel"
+    },
+
+    "conditions": {
+        "isWorkReadyEvent": {
+            "expression": "data.eventType.props.eventtype_id.dbValues[0] === '__Work_Ready'"
+        },
+        "isNearDueDateEvent": {
+            "expression": "data.eventType.props.eventtype_id.dbValues[0] === '__Near_Due'"
+        }
+    },
+
+    "i18n" : {
+        "recipients" : ["ScheduleManagerMessages"],
+        "subject" : ["ScheduleManagerMessages"],
+        "message" : ["ScheduleManagerMessages"],
+        "isActive" : ["ScheduleManagerMessages"],
+        "daysBeforeFinishDate": ["ScheduleManagerMessages"],
+        "workReadyLabels": ["ScheduleManagerMessages"],
+        "StartDate": ["ScheduleManagerMessages"],
+        "PredComplete": ["ScheduleManagerMessages"],
+        "StartDateAndPredComplete": ["ScheduleManagerMessages"],
+        "StartDateOrPredComplete": ["ScheduleManagerMessages"],
+        "Notification": ["ScheduleManagerMessages"]
+    }
+}

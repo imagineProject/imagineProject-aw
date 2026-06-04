@@ -1,0 +1,507 @@
+{
+    "schemaVersion": "1.0.0",
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "selection-data": {
+            "type": "object"
+        },
+        "selected-variability": {
+            "type": "object"
+        },
+        "selected-families": {
+            "type": "object"
+        },
+        "display-properties": {
+            "type": "object"
+        },
+        "client-scope": {
+            "type": "string"
+        },
+        "config-perspective": {
+            "type": "object"
+        }
+    },
+    "data": {
+        "gridEditorSelections": [],
+        "variabilityPickerFromGrid": true,
+        "variabilityProps": {
+            "initialValues": {
+                "expandAll": true,
+                "resetColumnProperties": true
+            },
+            "meta": {
+                "expandAll": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                },
+                "resetColumnProperties": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                },
+                "soaResponse": {
+                    "type": "OBJECT",
+                    "field": "true"
+                }
+            }
+        }
+    },
+    "ctx": {
+        "sublocation.clientScopeURI": {
+            "type": "string"
+        },
+        "editInProgress": null
+    },
+    "actions": {
+        "setSelectionOnTree": {
+            "actionType": "JSFunction",
+            "method": "setSelectionOnTree",
+            "inputData": {
+                "presentSelections": "{{data.presentSelections}}",
+                "selectionModel": "{{data.dataProviders.variabilityPickerTreeDataProvider.selectionModel}}"
+            },
+            "deps": "js/Pca0VariabilityTreeDisplayService"
+        },
+        "updateVariabilitySelection": {
+            "actionType": "JSFunction",
+            "method": "updateVariabilitySelection",
+            "inputData": {
+                "selectedData": "{{props.selectionData}}",
+                "selectedVariability": "{{props.selectedVariability}}",
+                "tabKey": "{{subPanelContext.tabKey}}",
+                "variabilityPickerTreeDataProvider": "{{data.dataProviders.variabilityPickerTreeDataProvider}}",
+                "viewMode": "{{props.displayProperties.viewMode}}",
+                "familiesSelected": "{{props.selectedFamilies}}"
+            },
+            "outputData": {
+                "presentSelections": ""
+            },
+            "deps": "js/pca0AddVariabilityService"
+        },
+        "populatePickAndChooseInitialSelections": {
+            "actionType": "JSFunction",
+            "method": "populatePickAndChooseInitialSelections",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext.selectedData}}",
+                "selectedVariability": "{{props.selectedVariability}}",
+                "configPerspective": "{{props.configPerspective}}"
+            },
+            "outputData": {
+                "gridEditorSelections": "gridEditorSelections",
+                "configPerspective": "configPerspective"
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "initComponentAndUpdateXrtContext": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "populatePickAndChooseInitialSelections",
+                "condition": "props.selectionData && props.displayProperties.viewMode !== 'advancedReuse'"
+            } ]
+        },
+        "requestFeaturesOfNonExpandedFamilyFromServer": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2024-06-ConfiguratorManagement",
+            "method": "getVariability3",
+            "policy": {
+                "types": "{{function:getConfigPerspectivePolicy}}"
+            },
+            "inputData": {
+                "configPerspective": "{{function:populateConfigPerspective}}",
+                "configContext": "{{function:populateConfigContext}}",
+                "requestType": "{{function:populateRequestType}}",
+                "parentUids": "{{function:populateFamiliesNotExpanded}}",
+                "level": 0,
+                "sortCriteria": "{{data.columnProviders.treeColumnProvider.sortCriteria}}",
+                "columnFilters": "{{data.columnProviders.treeColumnProvider.columnFilters}}",
+                "requestInfo": ""
+            },
+            "outputData": {
+                "0": "{{function:getInfoAboutNonExpandedFamilies}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0AddVariability.addVariabilityFromPickAndChoosePanel"
+                } ]
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "loadVariabilityDataFromServer": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2024-06-ConfiguratorManagement",
+            "method": "getVariability3",
+            "policy": {
+                "types": "{{function:getConfigPerspectivePolicy}}"
+            },
+            "inputData": {
+                "configPerspective": {
+                    "uid": "{{props.configPerspective.uid}}",
+                    "type": "{{props.configPerspective.type}}"
+                },
+                "configContext": "{{function:populateConfigContext}}",
+                "requestType": "{{function:populateRequestType}}",
+                "parentUids": "{{function:populateParentNode}}",
+                "level": 0,
+                "sortCriteria": "{{data.columnProviders.treeColumnProvider.sortCriteria}}",
+                "columnFilters": "{{data.columnProviders.treeColumnProvider.columnFilters}}",
+                "requestInfo": "{{function:populateRequestInfo}}"
+
+            },
+            "events": {
+                "success": [ {
+                    "name": "variabilityPickerTreeDataProvider.multiSelectModeAction",
+                    "condition": "subPanelContext.showMultiSelectOnLoad",
+                    "eventData": {
+                        "multiSelect": true
+                    }
+                } ]
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "addVariabilityOrLoadFeaturesFromServer": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                        "name": "Pca0VariabilityCreator.requestFeaturesOfNonExpandedFamilyFromServer",
+                        "condition": "props.selectedVariability.value.familiesNotExpanded.length > 0"
+                    },
+                    {
+                        "name": "Pca0AddVariability.addVariabilityFromPickAndChoosePanel",
+                        "condition": "props.selectedVariability.value.familiesNotExpanded.length === 0"
+
+                    }
+                ]
+            }
+        },
+        "loadTreeProviderData": {
+            "actionType": "JSFunction",
+            "method": "loadTreeProviderData",
+            "inputData": {
+                "data": "{{data}}",
+                "viewModelAction": "loadVariabilityDataFromServer",
+                "contextKey": "{{ctx.ConfiguratorCtx !== undefined? 'ConfiguratorCtx': 'fscContext'}}",
+                "fscState": "undefined",
+                "variantRuleData": "{{props.subPanelContext.variantRuleData}}",
+                "userSelection": "{{props.selectedVariability.value.userSelectionsPickAndChooseGrid}}",
+                "consumerData": {
+                    "configCtx": "undefined",
+                    "isHostedMode": "undefined",
+                    "configPerspective": "{{props.configPerspective}}"
+                }
+            },
+            "outputData": {
+                "treeLoadResult": "result.treeLoadResult",
+                "variabilityProps": "result.variabilityProps",
+                "presentSelections": "result.treeLoadResult.presentSelections"
+            },
+            "deps": "js/Pca0VariabilityTreeDisplayService"
+        },
+        "loadTreeColumns": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeColumns",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.variabilityPickerTreeDataProvider}}",
+                "viewName": "variabilityPicker"
+            },
+            "outputData": {
+                "dataProviders.variabilityPickerTreeDataProvider.columnConfig": ""
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "loadTreeProperties": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeProperties",
+            "inputData": {
+                "methodArgument": {
+                    "propertyLoadInput": "request.propertyLoadInput",
+                    "propertyLoadContext": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "{{props.clientScope}}",
+                        "typesForArrange": "{{data.dataProviders.variabilityPickerTreeDataProvider.columnConfig.typesForArrange}}"
+                    },
+                    "contextKey": "{{ctx.ConfiguratorCtx !== undefined? 'ConfiguratorCtx': 'fscContext'}}",
+                    "declViewModel": "{{data}}",
+                    "uwDataProvider": "{{data.dataProviders.variabilityPickerTreeDataProvider}}",
+                    "gridId": "variabilityPickAndChooseGrid",
+                    "variabilityPickerTreeDataProvider": "{{data.dataProviders.variabilityPickerTreeDataProvider}}"
+                }
+            },
+            "outputData": {
+                "dataProviders.variabilityPickerTreeDataProvider.columnConfig": "result.propertyLoadResult.columnConfig",
+                "ctx.searchResponseInfo.columnConfig": "result.propertyLoadResult.columnConfig"
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "selectAllInReusePickerView": {
+            "actionType": "JSFunction",
+            "method": "selectAllInReusePickerView",
+            "inputData": {
+                "selectedVariability": "{{props.selectedVariability}}",
+                "variabilityPickerTreeDataProvider": "{{data.dataProviders.variabilityPickerTreeDataProvider}}"
+            },
+            "deps": "js/pca0AdvancedReuseService"
+        },
+        "clearSelectionsInReusePickerView": {
+            "actionType": "JSFunction",
+            "method": "clearSelectionsInReusePickerView",
+            "inputData": {
+                "selectedVariability": "{{props.selectedVariability}}",
+                "variabilityPickerTreeDataProvider": "{{data.dataProviders.variabilityPickerTreeDataProvider}}"
+            },
+            "deps": "js/pca0AdvancedReuseService"
+        },
+        "disableSelectionsInReusePickerView": {
+            "actionType": "JSFunction",
+            "method": "disableSelectionsInReusePickerView",
+            "inputData": {
+                "variabilityPickerTreeDataProvider": "{{data.dataProviders.variabilityPickerTreeDataProvider}}",
+                "soaResponse": "{{parameters.eventData.soaResponse}}",
+                "selectedVariability": "{{props.selectedVariability}}",
+                "selectedData": "{{props.selectionData}}"
+            },
+            "deps": "js/pca0AdvancedReuseService"
+        },
+        "enableSelectionsInReusePickerView": {
+            "actionType": "JSFunction",
+            "method": "enableSelectionsInReusePickerView",
+            "inputData": {
+                "variabilityPickerTreeDataProvider": "{{data.dataProviders.variabilityPickerTreeDataProvider}}",
+                "response": "{{parameters.eventData.response}}",
+                "allocationUidMap": "{{parameters.eventData.allocationUidMap}}"
+            },
+            "deps": "js/pca0AdvancedReuseService"
+        },
+        "expandBelowAction": {
+            "actionType": "JSFunction",
+            "method": "performExpandBelow",
+            "inputData": {
+                "selectedObject": "{{parameters.eventData.selectedObject}}",
+                "dataProvider": "{{data.dataProviders.variabilityPickerTreeDataProvider}}"
+            },
+            "outputData": {
+                "nodeToBeExpand": ""
+            },
+            "deps": "js/pca0VariabilityExplorerExpandService"
+        },
+        "collapseBelowAction": {
+            "actionType": "JSFunction",
+            "method": "performCollapseBelow",
+            "inputData": {
+                "data": "{{data}}",
+                "gridId": "{{data.grids.variabilityPickAndChooseGrid.gridid}}",
+                "selectedObject": "{{parameters.eventData.selectedObject}}",
+                "treeDataProvider": "{{data.dataProviders.variabilityPickerTreeDataProvider}}"
+            },
+            "deps": "js/pca0VariabilityExplorerExpandService"
+        },
+        "loadTreeProviderDataForExpand": {
+            "actionType": "JSFunction",
+            "method": "loadTreeProviderDataForExpand",
+            "inputData": {
+                "data": "{{data}}",
+                "viewModelAction": "loadVariabilityDataFromServerForExpand",
+                "treeDataProvider": "{{data.dataProviders.variabilityPickerTreeDataProvider}}",
+                "gridId": "{{data.grids.variabilityPickAndChooseGrid.gridid}}",
+                "selectedObject": "{{parameters.eventData.selectedObject}}"
+            },
+            "deps": "js/pca0VariabilityExplorerExpandService"
+        },
+        "loadVariabilityDataFromServerForExpand": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2024-06-ConfiguratorManagement",
+            "method": "getVariability3",
+            "policy": {
+                "types": "{{function:getConfigPerspectivePolicy}}"
+            },
+            "inputData": {
+                "configPerspective": {
+                    "uid": "{{data.configPerspective.uid ? data.configPerspective.uid : ctx.ConfiguratorCtx.configPerspective.uid}}",
+                    "type": "{{data.configPerspective.type ? data.configPerspective.type : ctx.ConfiguratorCtx.configPerspective.type}}"
+                },
+                "configContext": "{{function:populateConfigContext}}",
+                "requestType": "{{function:populateRequestTypeForExpand}}",
+                "parentUids": "{{function:populateParentNodeForExpand}}",
+                "level": "{{function:populateLevelIndex}}",
+                "sortCriteria": "{{data.columnProviders.treeColumnProvider.sortCriteria}}",
+                "columnFilters": "{{data.columnProviders.treeColumnProvider.columnFilters}}",
+                "requestInfo": "{{function:populateRequestInfo}}"
+            },
+            "deps": "js/pca0VariabilityExplorerService"
+        }
+    },
+    "dataProviders": {
+        "variabilityPickerTreeDataProvider": {
+            "initializeAction": "loadTreeProviderData",
+            "action": "loadTreeProviderData",
+            "treeLoadResult": "{{data.treeLoadResult}}",
+            "selectionModelMode": "multiple",
+            "cacheCollapse": true,
+            "inputData": {
+                "accessMode": "tree",
+                "topNodeUid": "variabilityTreeData",
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "selectionData": "{{props.selectionData}}"
+            },
+            "showDecorators": "true",
+            "commandsAnchor": "pca0VariabilityPickerObjNameCellAnchor"
+        },
+        "treePropertyProvider": {
+            "action": "loadTreeProperties",
+            "propertyLoadResult": "action.result.propertyLoadResult"
+        }
+    },
+    "columnProviders": {
+        "treeColumnProvider": {
+            "loadColumnAction": "loadTreeColumns",
+            "columns": "{{data.columns}}"
+        }
+    },
+    "grids": {
+        "variabilityPickAndChooseGrid": {
+            "dataProvider": "variabilityPickerTreeDataProvider",
+            "propertyProvider": "treePropertyProvider",
+            "columnProvider": "treeColumnProvider",
+            "enableArrangeMenu": false,
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableExpandAndPaginationInEdit": true,
+                "enableSorting": true,
+                "isFilteringEnabled": true,
+                "enablePinning": false,
+                "enableDragAndDrop": false
+            }
+        }
+    },
+    "onEvent": [ {
+            "eventId": "Pca0VariabilityCreator.requestFeaturesOfNonExpandedFamilyFromServer",
+            "action": "requestFeaturesOfNonExpandedFamilyFromServer",
+            "condition": "props.selectedVariability.value.familiesNotExpanded.length > 0"
+        },
+        {
+            "eventId": "Pca0VariabilityPicker.addVariabilityOrLoadFeaturesFromServer",
+            "action": "addVariabilityOrLoadFeaturesFromServer"
+        },
+        {
+            "eventId": "Pca0VariabilityPicker.selectAllInReusePickerView",
+            "action": "selectAllInReusePickerView"
+        },
+        {
+            "eventId": "Pca0VariabilityPicker.clearSelectionsInReusePickerView",
+            "action": "clearSelectionsInReusePickerView"
+        },
+        {
+            "eventId": "Pca0VariabilityPicker.disableSelectionsInReusePickerView",
+            "action": "disableSelectionsInReusePickerView",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityPicker.enableSelectionsInReusePickerView",
+            "action": "enableSelectionsInReusePickerView",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityPicker.expandBelow",
+            "action": "expandBelowAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityPicker.collapseBelow",
+            "action": "collapseBelowAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityPicker.loadVariabilityDataFromServer",
+            "action": "loadTreeProviderDataForExpand",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+    ],
+    "functions": {
+        "populateConfigPerspective": {
+            "functionName": "populateConfigPerspective",
+            "parameters": ["{{props.subPanelContext}}"]
+        },
+        "populateConfigContext": {
+            "functionName": "populateConfigContext",
+            "parameters": ["{{data}}"]
+        },
+        "populateParentNode": {
+            "functionName": "populateParentNode",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "populateRequestType": {
+            "functionName": "populateRequestType",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "populateRequestTypeForExpand": {
+            "functionName": "populateRequestTypeForExpand",
+            "parameters": [
+                "{{data}}",
+                "{{data.nodeToBeExpand}}"
+            ]
+        },
+        "populateParentNodeForExpand": {
+            "functionName": "populateParentNodeForExpand",
+            "parameters": [
+                "{{data.nodeToBeExpand}}"
+            ]
+        },
+        "populateLevelIndex": {
+            "functionName": "populateLevelIndex",
+            "parameters": [
+                "{{data.nodeToBeExpand}}"
+            ]
+        },
+        "getConfigPerspectivePolicy": {
+            "functionName": "getConfigPerspectivePolicy"
+        },
+        "populateRequestInfo": {
+            "functionName": "populateRequestInfoForVariabilityPicker",
+            "parameters": [
+                "{{subPanelContext.contextUidInAdvancedReuse}}",
+                "{{data.dataProviders.variabilityPickerTreeDataProvider}}"
+            ]
+        },
+        "getInfoAboutNonExpandedFamilies": {
+            "functionName": "getInfoAboutNonExpandedFamilies",
+            "parameters": [
+                "{{props.selectedVariability}}",
+                "{{props.familiesNotExpanded}}"
+            ]
+        },
+        "populateFamiliesNotExpanded": {
+            "functionName": "populateFamiliesNotExpanded",
+            "parameters": [
+                "{{props.selectedVariability.value.familiesNotExpanded}}"
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initComponentAndUpdateXrtContext",
+        "onUpdate": [ {
+                "action": "updateVariabilitySelection",
+                "observers": [ "props.selectionData.selected[0].uid", "props.selectionData.selected.length", "props.selectionData.selected" ]
+            },
+            {
+                "action": "setSelectionOnTree",
+                "observers": [ "viewModel.dataProviders.variabilityPickerTreeDataProvider.viewModelCollection.loadedVMObjects" ]
+            }
+
+        ]
+    }
+}

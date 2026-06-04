@@ -1,0 +1,95 @@
+{
+    "schemaVersion": "1.0.0",
+    "data":{
+        "commandContext": {
+            "tableDataProviderName": "Awp0ObjectSetRowProvider",
+            "clientScopeURI": "CSIPropagateRelationScheduleTaskTable"
+        }
+    },
+
+    "columnProviders": {
+        "scheduleTaskColumnProvider": {
+            "saveColumnAndLoadAction" : "loadObjects",
+            "resetColumnAction" : "resetColumnConfig",
+            "saveColumnAction": "saveColumnConfig"
+        }
+    },
+
+    "dataProviders":{
+        "scheduleTaskDataProvider":
+        {
+            "action": "loadObjects",
+            "response": "{{data.searchResults.loadResult.searchResults}}",
+            "totalFound": "{{data.searchResults.loadResult.totalFound}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionData":"{{subPanelContext.selectionData}}"
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+
+    "grids": {
+        "scheduleTaskTable": {
+            "dataProvider": "scheduleTaskDataProvider",
+            "columnProvider": "scheduleTaskColumnProvider",
+            "addIconColumn": true,
+            "enableArrangeMenu": false,
+            "gridOptions": {
+                "enablePinning": true,
+                "maxRowsToShow": 10,
+                "enableSorting": true,
+                "isFilteringEnabled": true
+            }
+        }
+    },
+
+    "actions":
+    {
+        "loadObjects": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "CSIPropagateRelationScheduleTaskTable"
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0ObjectSetRowProvider",
+                        "searchCriteria": {
+                            "objectSet":"Saw1TaskSearchProvider.ScheduleTask",
+                            "parentUid": "{{ctx.state.params.uid2}}"
+                        },
+                        "searchFilterFieldSortType": "Alphabetical",
+                        "startIndex": "{{data.dataProviders.scheduleTaskDataProvider.startIndex}}",
+                        "searchSortCriteria": "{{data.columnProviders.scheduleTaskColumnProvider.sortCriteria}}",
+                        "columnFilters": "{{data.columnProviders.scheduleTaskColumnProvider.columnFilters}}"
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{function:processScheduleTasks}}",
+                "dataProviders.scheduleTaskDataProvider.columnConfig": "columnConfig",
+                "commandContext.dataProvider.columnConfig": "columnConfig"
+            }
+        }
+    },
+    "functions": {
+        "processScheduleTasks": {
+            "functionName": "processScheduleTasks",
+            "parameters": [],
+            "deps": "js/Csi1PropagateOrRollupService"
+        }
+    },
+    "props": {
+        "sub-panel-context":{
+            "type":"object"
+        }
+    }
+}

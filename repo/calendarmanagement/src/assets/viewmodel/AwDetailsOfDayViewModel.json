@@ -1,0 +1,199 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "sharedData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "dateDetails": {
+            "displayName": "{{i18n.date}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "",
+            "dispValue": ""
+        },
+        "dayType": {
+            "displayName": "{{i18n.type}}",
+            "type": "STRING",
+            "isEditable": "{{props.editMode}}",
+            "dbValue": ""
+        },
+        "dayTypes": {
+            "type": "STRING",
+            "dbValue": [ {
+                "propDisplayValue": "{{i18n.workingDayDefault}}",
+                "propInternalValue": "wdd"
+            },
+            {
+                "propDisplayValue": "{{i18n.nonWorkingDay}}",
+                "propInternalValue": "nwd"
+            },
+            {
+                "propDisplayValue": "{{i18n.workingDayCustom}}",
+                "propInternalValue": "wdc"
+            }
+            ]
+        }
+    },
+    "props": {
+        "selected-date": {
+            "type": "object"
+        },
+        "selected-calendar-data": {
+            "type": "object"
+        },
+        "edit-mode": {
+            "type": "boolean"
+        },
+        "aw-calendar-atomic-data": {
+            "type": "object"
+        },
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "event-info": {
+            "type": "object"
+        }
+    },
+    "actions": {
+        "getSelectedDateDetails": {
+            "actionType": "JSFunction",
+            "method": "getSelectedDateDetails",
+            "inputData": {
+                "dateDetails": "{{data.dateDetails}}",
+                "date": "{{props.selectedDate.dateApi}}",
+                "selectedCalendarData": "{{props.selectedCalendarData}}",
+                "calendarEvent": "{{props.eventInfo}}",
+                "updatedEventRanges": "{{subPanelContext.updatedEventRanges}}"
+            },
+            "outputData": {
+                "totalRanges": "totalRanges",
+                "defaultRanges": "defaultRanges"
+            },
+            "events": {
+                "success": [ {
+                    "name": "updateRadioSelection"
+                } ]
+            },
+            "deps": "js/AwTotalHoursService"
+        },
+        "changeSelectionAction": {
+            "actionType": "JSFunction",
+            "method": "changeSelection",
+            "inputData": {
+                "dayType": "{{data.dayType.dbValue}}",
+                "defaultRanges": "{{data.defaultRanges}}",
+                "exceptionDate":"{{props.selectedDate.dateApi}}",
+                "awCalendarAtomicData": "{{props.awCalendarAtomicData}}",
+                "updatedEventRanges": "{{subPanelContext.updatedEventRanges}}"
+            },
+            "outputData": {
+                "totalRanges": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "callTotalHoursDataProviderEvent"
+                } ]
+            },
+            "deps": "js/AwTotalHoursService"
+        },
+        "updateRadioSelection": {
+            "actionType": "JSFunction",
+            "method": "updateRadioSelection",
+            "inputData": {
+                "dayType": "{{data.dayType}}",
+                "totalRanges": "{{data.totalRanges}}",
+                "defaultRanges": "{{data.defaultRanges}}",
+                "updatedRanges": "{{data.sharedData.newSharedData.updatedRanges}}",
+                "fields": "{{fields}}",
+                "awCalendarAtomicData": "{{props.awCalendarAtomicData}}",
+                "updatedEventRanges": "{{subPanelContext.updatedEventRanges}}",
+                "exceptionDate":"{{props.selectedDate.dateApi}}",
+                "eventInfo": "{{props.eventInfo}}"
+            },
+            "outputData": {
+                "totalRanges": "updatedRanges",
+                "type": "type",
+                "sharedData": "sharedData"
+            },
+            "events": {
+                "success": [ {
+                    "name": "callTotalHoursDataProviderEvent"
+                } ]
+            },
+            "deps": "js/AwTotalHoursService"
+        },
+        "updateEditModeAction": {
+            "actionType": "JSFunction",
+            "method": "updateEditMode",
+            "inputData": {
+                "dayType": "{{data.dayType}}",
+                "editMode": "{{props.editMode}}"
+            },
+            "outputData": {
+                "dayType": "dayType"
+            },
+            "deps": "js/AwTotalHoursService"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "updateRadioSelection",
+            "action": "updateRadioSelection"
+        },
+        {
+            "eventId": "getSelectedDateDetails",
+            "action": "getSelectedDateDetails"
+        }
+    ],
+    "lifecycleHooks": {
+        "onUpdate": [ {
+                "action": "updateRadioSelection",
+                "observers": [ "viewModel.atomicData.sharedData.newSharedData.updatedRanges" ]
+            },
+            {
+                "action": "getSelectedDateDetails",
+                "observers": [
+                    "props.selectedDate.dbValue",
+                    "props.eventInfo.eventDateToRangeMap"
+                ]
+            },
+            {
+                "action": "updateEditModeAction",
+                "observers": ["props.editMode"]
+            }
+        ]
+    },
+    "i18n": {
+        "date": [
+            "CalendarManagementMessages"
+        ],
+        "type": [
+            "CalendarManagementMessages"
+        ],
+        "nonWorkingDay": [
+            "CalendarManagementMessages"
+        ],
+        "workingDayDefault": [
+            "CalendarManagementMessages"
+        ],
+        "workingDayCustom": [
+            "CalendarManagementMessages"
+        ],
+        "dayDetails": [
+            "CalendarManagementMessages"
+        ],
+        "day": [
+            "CalendarManagementMessages"
+        ],
+        "from": [
+            "CalendarManagementMessages"
+        ],
+        "to": [
+            "CalendarManagementMessages"
+        ],
+        "totalHours": [
+            "CalendarManagementMessages"
+        ]
+    }
+}

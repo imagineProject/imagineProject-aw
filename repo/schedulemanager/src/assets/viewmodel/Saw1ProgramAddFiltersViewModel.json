@@ -1,0 +1,959 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "actions": {
+        "performLoadingPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "checkForEditCondition"
+                },
+                {
+                    "action": "validateIfTypePropIsPresent"
+                }
+            ]
+        },
+        "fetchPriorties": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "fetchPriortiesFromSoa"
+                },
+                {
+                    "action": "getPriorities"
+                }
+            ]
+        },
+        "fetchState": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "fetchStateFromSoa"
+                },
+                {
+                    "action": "getState"
+                }
+            ]
+        },
+        "fetchStatus": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateExistingStates"
+                },
+                {
+                    "action": "getStatus"
+                }
+            ]
+        },
+        "fetchStateAndStatus": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "fetchStateFromSoa"
+                },
+                {
+                    "action": "updateExistingStates"
+                },
+                {
+                    "action": "getStatus"
+                }
+            ]
+        },
+        "validateIfTypePropIsPresent": {
+            "actionType": "JSFunction",
+            "method": "validateIfTypePropIsPresent",
+            "deps": "js/Saw1ProgramAddFilterService",
+            "outputData": {
+                "isTypePropMapExist" : ""
+            },
+            "events": {
+                "success":[
+                    {
+                        "name": "Saw1.fetchPrefValues",
+                        "condition": "data.isTypePropMapExist === false"
+                    },
+                    {
+                        "name": "Saw1.updateEnteriesInPanel",
+                        "condition": "data.isTypePropMapExist === true"
+                    }
+                ]
+            }
+        },
+        "updateTypePropMap": {
+            "actionType": "JSFunction",
+            "method": "updateTypePropMap",
+            "inputData": {
+                "response": "{{data.preferenceResult}}"
+            },
+            "outputData": {
+                "objs" : ""
+            },
+            "deps": "js/Saw1ProgramAddFilterService"
+        },
+
+        "processPropDesc": {
+            "actionType": "JSFunction",
+            "method": "processPropDesc",
+            "inputData": {
+                "descResult": "{{data.descResult}}",
+                "noDisplay": true,
+                "objs": "{{data.objs}}",
+                "data": "{{data}}",
+                "fields": "{{fields}}"
+            },
+            "deps": "js/Saw1ProgramAddFilterService"
+        },
+        "selectionChangeOfTypeContext": {
+            "actionType": "JSFunction",
+            "method": "populateTypeNames",
+            "inputData": {
+                "typeContext": "{{data.typeContext.dbValue}}",
+                "ctx":"{{ctx}}",
+                "propertyContextValues": "{{data.propertyContextValues}}",
+                "propertyContext": "{{data.propertyContext}}"
+            },
+            "outputData": {
+                "propertyContextValues": "lovValues",
+                "propertyContext": "displayValue",
+                "isPrevPropRetained": "isPrevPropRetained"
+            },
+            "events": {
+                "success": [
+                    {
+                        "condition": "data.isPrevPropRetained",
+                        "name": "selectionChangeOfPropertyContext"
+                    }
+                ]
+            },
+            "deps": "js/Saw1ProgramAddFilterService"
+        },
+        "selectionChangeOfPropertyContext": {
+            "actionType": "JSFunction",
+            "method": "propUpdated",
+            "inputData": {
+                "data": "{{data}}",
+                "genericWidget": "{{data.genericWidget}}",
+                "currentFieldValueType": "{{data.currentFieldValueType}}",
+                "operatorTypeContextValues": "{{data.operatorTypeContextValues}}",
+                "operatorTypeContext": "{{data.operatorTypeContext}}",
+                "currentConditionValueType": "{{data.currentConditionValueType}}",
+                "genericEndWidget": "{{data.genericEndWidget}}",
+                "genericValueContext": "{{data.genericValueContext}}",
+                "genericValueContextValues": "{{data.genericValueContextValues}}",
+                "genericEndValueContextValues": "{{data.genericEndValueContextValues}}",
+                "genericEndValueContext": "{{data.genericEndValueContext}}",
+                "filterResourceValue": "{{data.filterResourceValue}}",
+                "propContext": "{{data.propertyContext}}"
+            },
+            "deps": "js/Saw1ProgramAddFilterService",
+            "outputData": {
+                "genericWidget": "widget",
+                "currentFieldValueType": "feildType",
+                "operatorTypeContextValues": "operatorContextValues",
+                "operatorTypeContext": "operatorValues",
+                "currentConditionValueType": "conditionValueType",
+                "genericEndWidget": "genWidget",
+                "genericValueContext": "genValueContext",
+                "genericValueContextValues": "genValueContextVals",
+                "genericEndValueContextValues": "genEndValueContextVals",
+                "isPriorityNeedToFetch": "isSoaCallNeeded",
+                "genericEndValueContext": "genEndVal",
+                "filterResourceValue": "resourceVal",
+                "isSoaNeededToFetchVal": "stateOrStatusSoa",
+                "propertyContext": "propContext"
+            },
+            "events": {
+                "success": [
+                    {
+                        "condition": "data.isPriorityNeedToFetch === true",
+                        "name": "saw1PrgView.fetchPriorties"
+                    },
+                    {
+                        "condition": "data.isSoaNeededToFetchVal && data.isSoaNeededToFetchVal.value === 'state' && data.isSoaNeededToFetchVal.isSoaCallReq === true",
+                        "name": "saw1PrgView.fetchState"
+                    },
+                    {
+                        "condition": "data.isSoaNeededToFetchVal.value === 'status' && data.isSoaNeededToFetchVal.isSoaCallReq === true",
+                        "name": "saw1PrgView.fetchStatus"
+                    },
+                    {
+                        "condition": "data.isSoaNeededToFetchVal.value === 'statestatus' && data.isSoaNeededToFetchVal.isSoaCallReq === true",
+                        "name": "saw1PrgView.fetchStateAndStatus"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "displayError"
+                    }
+                ]
+            }
+        },
+        "selectionChangeOfOperatorContext": {
+            "actionType": "JSFunction",
+            "method": "selectionChangeOfOperatorContext",
+            "inputData": {
+                "propertyContext": "{{data.propertyContext}}",
+                "genericWidget": "{{data.genericWidget}}",
+                "operatorTypeContext": "{{data.operatorTypeContext}}",
+                "currentConditionValueType": "{{data.currentConditionValueType}}",
+                "genericEndWidget": "{{data.genericEndWidget}}",
+                "genericValueContext": "{{data.genericValueContext}}",
+                "i18n": "{{data.i18n}}"
+            },
+            "outputData": {
+                "genericWidget": "widget",
+                "operatorTypeContext": "operatorValues",
+                "currentConditionValueType": "conditionValueType",
+                "genericEndWidget": "genWidget",
+                "genericValueContext": "genValueContext"
+            },
+            "deps": "js/Saw1ProgramAddFilterService"
+        },
+        "checkForEditCondition": {
+            "actionType": "JSFunction",
+            "method": "editProgramViewFilterConditon",
+            "inputData": {
+                "ctx": "{{ctx}}",
+                "i18n": "{{data.i18n}}",
+                "filterCondn": "{{props.programViewFiltersConditions}}",
+                "cond": "{{data.conditionContext}}",
+                "type": "{{data.typeContext}}",
+                "prop": "{{data.propertyContext}}",
+                "operator": "{{data.operatorTypeContext}}"
+            },
+            "outputData": {
+                "conditionContext": "cond",
+                "typeContext": "type",
+                "propertyContext": "prop",
+                "operatorTypeContext": "opertr"
+            },
+            "deps": "js/Saw1ProgramAddFilterService",
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "displayError"
+                    }
+                ]
+            }
+        },
+        "openPeoplePickerPanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "AwPeoplePicker"
+            }
+        },
+        "removeResource" : {
+            "actionType": "JSFunction",
+            "method": "removeResource",
+            "inputData": {
+                "filterResourceValue": "{{data.filterResourceValue}}"
+            },
+            "outputData": {
+                "filterResourceValue": ""
+            },
+            "deps": "js/Saw1ProgramAddFilterService"
+        },
+        "cleanUp": {
+            "actionType": "JSFunction",
+            "method": "cleanUpEdit",
+            "inputData": {
+                "ctx": "{{ctx}}"
+            },
+            "deps": "js/Saw1ProgramAddFilterService"
+        },
+        "fieldsEmptyErrorAction": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Saw1ProgramViewFilter.fieldsEmptyErrorMessage"
+                } ]
+            }
+        },
+        "workCompletePercentErrorAction": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Saw1ProgramViewFilter.workCompletePercentErrorMessage"
+                } ]
+            }
+        },
+        "invalidHoursAction": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Saw1ProgramViewFilter.invalidHoursMessage"
+                } ]
+            }
+        },
+        "performAddBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "addSelectedUsersInternal",
+                    "condition": "conditions.isAddUsersValid"
+                },
+                {
+                    "action": "navigateToMainPanel",
+                    "condition": "conditions.isAddUsersValid"
+                },
+                {
+                    "action": "resentUserPanelContextData",
+                    "condition": "conditions.isAddUsersValid"
+                }
+            ]
+        },
+        "addSelectedUsersInternal": {
+            "actionType": "JSFunction",
+            "method": "addSelectedUsers",
+            "inputData": {
+                "selectedUser": "{{props.subPanelContext.addUserPanelState.selectedUsers}}",
+                "resourceVal": "{{data.filterResourceValue}}",
+                "data":"{{fields}}"
+            },
+            "outputData": {
+                "filterResourceValue": ""
+            },
+            "deps": "js/Saw1ProgramAddFilterService"
+        },
+        "navigateToMainPanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "Saw1ProgramAddFilters"
+            }
+        },
+        "resentUserPanelContextData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.addUserPanelState}}",
+                "value": {
+                    "propName": "",
+                    "selectedUsers": []
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "renderIntialData": {
+            "actionType": "batchJob",
+            "steps": [
+
+                {
+                    "action": "updateTypePropMap"
+                },
+                {
+                    "action": "fetchPropNamesFromSOA"
+                },
+                {
+                    "action": "processPropDesc"
+                },
+                {
+                    "action": "selectionChangeOfTypeContext"
+                }
+            ]
+        },
+        "fetchStateFromSoa": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-LOV",
+            "method": "getInitialLOVValues",
+            "inputData": {
+                "initialData": {
+                    "lovInput": {
+                        "owningObject": {
+                            "uid": "AAAAAAAAAAAAAA",
+                            "type": "unknownType"
+                        },
+                        "boName": "Schedule",
+                        "operationName": "Search"
+                    },
+                    "propertyName": "fnd0state",
+                    "filterData": {
+                        "maxResults": 0,
+                        "numberToReturn": 25,
+                        "order": 1
+                    }
+                }
+            },
+            "outputData": {
+                "stateLovResult": ""
+            }
+        },
+        "fetchPriortiesFromSoa": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-LOV",
+            "method": "getInitialLOVValues",
+            "inputData": {
+                "initialData": {
+                    "lovInput": {
+                        "owningObject": {
+                            "uid": "AAAAAAAAAAAAAA",
+                            "type": "unknownType"
+                        },
+                        "boName": "Schedule",
+                        "operationName": "Search"
+                    },
+                    "propertyName": "priority",
+                    "filterData": {
+                        "maxResults": 0,
+                        "numberToReturn": 100,
+                        "order": 1
+                    }
+                }
+            },
+            "outputData": {
+                "priorityLovResult": ""
+            }
+        },
+        "getPriorities": {
+            "actionType": "JSFunction",
+            "method": "getPriorities",
+            "deps": "js/Saw1ProgramAddFilterService",
+            "inputData": {
+                "lovResponse": "{{data.priorityLovResult}}",
+                "genericVals": "{{data.genericValueContextValues}}",
+                "genericEndVals": "{{data.genericEndValueContextValues}}",
+                "genericEndValueContext": "{{data.genericEndValueContext}}",
+                "i18n": "{{data.i18n}}"
+            },
+            "outputData": {
+                "genericValueContextValues": "genVals",
+                "genericEndValueContextValues": "genericEndContx",
+                "genericEndValueContext": "genEndVal"
+            }
+        },
+        "getStatus": {
+            "actionType": "JSFunction",
+            "method": "getStatus",
+            "deps": "js/Saw1ProgramAddFilterService",
+            "inputData": {
+                "index": 0,
+                "genericVals": "{{data.genericValueContextValues}}",
+                "genericValCon": "{{data.genericValueContext}}",
+                "propContext": "{{data.propertyContext}}"
+            },
+            "outputData": {
+                "genericValueContextValues": "genericVals",
+                "genericValueContext": "genericValsContx"
+            }
+        },
+        "updateExistingStates": {
+            "actionType": "JSFunction",
+            "method": "updateExistingStates",
+            "deps": "js/Saw1ProgramAddFilterService",
+            "inputData": {
+                "lovResponse": "{{data.stateLovResult}}"
+            }
+        },
+        "getState": {
+            "actionType": "JSFunction",
+            "method": "getState",
+            "deps": "js/Saw1ProgramAddFilterService",
+            "inputData": {
+                "lovResponse": "{{data.stateLovResult}}",
+                "genericVals": "{{data.genericValueContextValues}}",
+                "genericValCon": "{{data.genericValueContext}}",
+                "propContext": "{{data.propertyContext}}"
+            },
+            "outputData": {
+                "genericValueContextValues": "genericVals",
+                "genericValueContext": "genericValsContx",
+                "propertyContext": "propertyCon"
+            }
+        },
+        "fetchPrefValues": {
+            "actionType": "TcSoaService",
+            "serviceName": "Administration-2012-09-PreferenceManagement",
+            "method": "getPreferences",
+            "inputData": {
+                "preferenceNames": [ "ProgramViewFilterProperties" ],
+                "includePreferenceDescriptions": true
+            },
+            "outputData": {
+                "preferenceResult": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "saw1PrgView.prefDataFetched"
+                    }
+                ]
+            }
+        },
+        "navigateToIntitalPanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "Saw1ProgramViewFilterSub"
+            }
+        },
+        "fetchPropNamesFromSOA": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2015-10-Session",
+            "method": "getTypeDescriptions2",
+            "inputData": {
+                "typeNames": "{{data.objs}}",
+                "options": {}
+            },
+            "outputData": {
+                "descResult": ""
+            }
+        },
+        "addConditionToFilter": {
+            "actionType": "JSFunction",
+            "method": "addProgramViewConditionToCtx",
+            "inputData": {
+                "ctx": "{{ctx}}",
+                "prgViewFilterCond": "{{props.programViewFiltersConditions}}",
+                "data": "{{data}}",
+                "atomicDataRef": "{{data.atomicDataRef}}",
+                "genericWidget": "{{data.genericWidget}}",
+                "genericEndWidget": "{{data.genericEndWidget}}",
+                "genericValueContextValues": "{{data.genericValueContextValues}}",
+                "filterResourceValue": "{{data.filterResourceValue}}"
+            },
+            "outputData": {
+                "programViewFiltersConditions": "prgViewFilterCond",
+                "genericWidget": "widget",
+                "genericEndWidget": "endWidget",
+                "genericValueContextValues": "contextVals",
+                "filterResourceValue": "filterResource"
+            },
+            "events":{
+                "success":[{
+                    "name": "saw1prgView.navigateToMainPanel"
+                }]
+            },
+            "deps": "js/Saw1ProgramAddFilterService"
+        }
+    },
+
+    "data": {
+        "addButtonCommand" : {
+            "action": "openPeoplePickerPanel",
+            "iconName": "Add",
+            "tooltip": "{{i18n.saw1_add}}"
+        },
+        "removeButtonCommand" : {
+            "action": "removeResource",
+            "iconName": "Remove",
+            "tooltip": "{{i18n.saw1remove}}"
+        },
+        "filterResourceValue": {
+            "displayName": "{{i18n.saw1Resource}}",
+            "type": "STRING",
+            "dbValue": "",
+            "uiValue": "",
+            "isEditable": "false"
+        },
+        "conditionContext": {
+            "displayName": "{{i18n.conditionSection}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": "true",
+            "dbValue": ""
+        },
+        "conditionContextValues": {
+            "type": "STRING",
+            "dbValue": [ {
+                    "propDisplayValue": "{{i18n.and}}",
+                    "propInternalValue": "And"
+                },
+                {
+                    "propDisplayValue": "{{i18n.or}}",
+                    "propInternalValue": "Or"
+                }
+            ]
+        },
+        "typeContext": {
+            "displayName": "{{i18n.typeSection}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": "true",
+            "dbValue": ""
+        },
+        "typeContextValues": {
+            "type": "STRING",
+            "dbValue": [ {
+                "propDisplayValue": "{{i18n.Saw1ScheduleTask}}",
+                "propInternalValue": "ScheduleTask"
+            },
+            {
+                "propDisplayValue": "{{i18n.Saw1Schedule}}",
+                "propInternalValue": "Schedule"
+            } ]
+        },
+        "propertyContext": {
+            "displayName": "{{i18n.propertySection}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": "true",
+            "dbValue": ""
+        },
+        "propertyContextValues": {
+            "type": "STRING",
+            "dbValue": []
+        },
+        "operatorTypeContext": {
+            "displayName": "{{i18n.operatorSection}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": "true",
+            "dbValue": ""
+        },
+        "operatorTypeContextValues": {
+            "type": "STRING",
+            "dbValue": [ {} ]
+        },
+        "currentFieldValueType": {
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "currentConditionValueType": {
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "genericWidget": {
+            "displayName": "",
+            "type": "DATE",
+            "isRequired": "true",
+            "dbValue": ""
+        },
+        "genericEndWidget": {
+            "displayName": "{{i18n.to}}",
+            "type": "DATE",
+            "isRequired": "true",
+            "dbValue": ""
+        },
+        "genericValueContext": {
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": "true",
+            "dbValue": ""
+        },
+        "genericValueContextValues": {
+            "type": "STRING",
+            "dbValue": [ {} ]
+        },
+        "genericEndValueContext": {
+            "displayName": "{{i18n.to}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": "true",
+            "dbValue": ""
+        },
+        "genericEndValueContextValues": {
+            "type": "STRING",
+            "dbValue": [ {} ]
+        }
+    },
+
+    "messages": {
+        "fieldsEmptyErrorMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.fieldsEmptyErrorMsg}}"
+        },
+        "workCompletePercentErrorMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.workCompletePercentErrorMsg}}"
+        },
+        "invalidHoursMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.invalidHoursErrorMsg}}"
+        },
+        "displayError": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+
+    "props": {
+        "program-view-filters": {
+            "type": "object"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "performLoadingPanel",
+        "onUpdate": [
+            {
+                "action": "performAddBatchAction",
+                "observers": [
+                    "props.subPanelContext.addUserPanelState.value.selectedUsers"
+                ]
+            }
+        ]
+    },
+
+    "onEvent": [
+        {
+            "eventId": "saw1PrgView.fetchPriorties",
+            "action": "fetchPriorties"
+        },
+        {
+            "eventId": "saw1PrgView.fetchState",
+            "action": "fetchState"
+        },
+        {
+            "eventId": "saw1PrgView.fetchStatus",
+            "action": "fetchStatus"
+        },
+        {
+            "eventId": "saw1PrgView.fetchStateAndStatus",
+            "action": "fetchStateAndStatus"
+        },
+        {
+            "eventId": "Saw1.fetchPrefValues",
+            "action": "fetchPrefValues"
+        },
+        {
+            "eventId": "saw1PrgView.prefDataFetched",
+            "action": "renderIntialData"
+        },
+        {
+            "eventId": "saw1prgView.navigateToMainPanel",
+            "action": "navigateToIntitalPanel"
+        },
+        {
+            "eventId": "Saw1.fetchPropNamesFromSOA",
+            "action": "fetchPropNamesFromSOA"
+        },
+        {
+            "eventId": "saw1PrgView.propDescFetched",
+            "action": "processPropDesc"
+        },
+        {
+            "eventId": "checkForEditConditionEvent",
+            "action": "checkForEditCondition"
+        },
+        {
+            "eventId": "Saw1ProgramAddFilters.contentUnloaded",
+            "action": "cleanUp"
+        },
+        {
+            "eventId": "selectionChangeOfTypeContext",
+            "action": "selectionChangeOfTypeContext"
+        },
+        {
+            "eventId": "selectionChangeOfPropertyContext",
+            "cacheEventData": true,
+            "action": "selectionChangeOfPropertyContext"
+        },
+        {
+            "eventId": "Saw1ProgramViewFilter.fieldsEmptyError",
+            "action": "fieldsEmptyErrorAction"
+        },
+        {
+            "eventId": "Saw1ProgramViewFilter.fieldsEmptyErrorMessage",
+            "message": "fieldsEmptyErrorMsg"
+        },
+        {
+            "eventId": "Saw1ProgramViewFilter.workCompletePercentError",
+            "action": "workCompletePercentErrorAction"
+        },
+        {
+            "eventId": "Saw1ProgramViewFilter.workCompletePercentErrorMessage",
+            "message": "workCompletePercentErrorMsg"
+        },
+        {
+            "eventId": "Saw1ProgramViewFilter.invalidHoursError",
+            "action": "invalidHoursAction"
+        },
+        {
+            "eventId": "Saw1ProgramViewFilter.invalidHoursMessage",
+            "message": "invalidHoursMsg"
+        },
+        {
+            "eventId": "showResourcesPanelEvent",
+            "action": "showResourcesPanel"
+        }
+    ],
+    "conditions": {
+        "isEmptyListBox": {
+            "expression": "data.genericValueContext.dbValue || data.genericValueContext.dbValue === 0 || data.genericValueContext.dbValue === false"
+        },
+        "isEmptyEndListBox": {
+            "expression": "data.genericEndValueContext.dbValue || data.genericEndValueContext.dbValue === 0 || data.genericEndValueContext.dbValue === false"
+        },
+        "isEmptyGenericWidgetBox": {
+            "expression": "data.genericWidget.dbValue || data.genericWidget.dbValue === 0 || data.genericWidget.dbValue === false"
+        },
+        "isEmptyEndGenericWidgetBox": {
+            "expression": "data.genericEndWidget.dbValue || data.genericEndWidget.dbValue === 0 || data.genericEndWidget.dbValue === false"
+        },
+        "isEndValueFilled": {
+            "expression": "((data.currentFieldValueType.dbValue === 'LISTBOX' && conditions.isEmptyEndListBox) || (data.currentFieldValueType.dbValue === 'DATE' && conditions.isEmptyEndGenericDateWidgetBox) || conditions.isEmptyEndGenericWidgetBox)"
+        },
+        "isEmptyGenericDateWidgetBox": {
+            "expression": "data.genericWidget.dbValue > 0"
+        },
+        "isEmptyEndGenericDateWidgetBox": {
+            "expression": "data.genericEndWidget.dbValue > 0"
+        },
+        "isFiltersValueFilled": {
+            "expression": "((data.currentFieldValueType.dbValue === 'LISTBOX' && conditions.isEmptyListBox) || (data.currentFieldValueType.dbValue === 'DATE' && conditions.isEmptyGenericDateWidgetBox) || (data.currentFieldValueType.dbValue === 'PANEL' && data.filterResourceValue.uiValue) || conditions.isEmptyGenericWidgetBox)"
+        },
+        "isStartAndEndReqValuesEntered": {
+            "expression": "(conditions.isFiltersValueFilled && conditions.isEndValueFilled)"
+        },
+        "isAllReqValuesEntered": {
+            "expression": "(data.currentConditionValueType.dbValue && conditions.isStartAndEndReqValuesEntered) || (!data.currentConditionValueType.dbValue && conditions.isFiltersValueFilled)"
+        },
+        "showValueWidget": {
+            "expression": " data.genericWidget.dbValue || data.genericEndWidget.dbValue || data.genericValueContext.dbValue || data.genericEndValueContext.dbValue || data.filterResourceValue"
+        },
+        "showWidget": {
+            "expression": "data.conditionContext.dbValue && data.typeContext.dbValue && data.propertyContext.dbValue && data.operatorTypeContext.dbValue"
+        },
+        "showAddWidget": {
+            "expression": "!ctx.ProgramViewFilterConditonForEdit && conditions.showWidget && conditions.showValueWidget"
+        },
+        "showAddWidgetForResource": {
+            "expression": "conditions.showWidget"
+        },
+        "showAddWidgetForResourcePanel": {
+            "expression": "data.dataProviders.getResourcePool.selectedObjects.length > 0 || data.dataProviders.userPerformSearch.selectedObjects.length > 0 || data.dataProviders.getDisciplines.selectedObjects.length > 0"
+        },
+        "showSaveWidget": {
+            "expression": "ctx.ProgramViewFilterConditonForEdit && conditions.showValueWidget"
+        },
+        "showGenericWidget": {
+            "expression": "data.currentFieldValueType.dbValue !== 'LISTBOX' && data.currentFieldValueType.dbValue !== 'PANEL'"
+        },
+        "showGenericEndWidget": {
+            "expression": "conditions.showGenericWidget && data.currentConditionValueType.dbValue"
+        },
+        "showConditionBox": {
+            "expression": "(props.programViewFiltersConditions && props.programViewFiltersConditions.filtersData && props.programViewFiltersConditions.filtersData.length > 0 && !ctx.ProgramViewFilterConditonForEdit) || (props.programViewFiltersConditions.filtersData[0].uid !== ctx.ProgramViewFilterConditonForEdit.uid)"
+        },
+        "checkForStringType": {
+            "expression": "data.propertyContext.uiValue === 'Name' || data.propertyContext.uiValue === 'Description' || data.currentFieldValueType.dbValue === 'STRING'"
+        },
+        "checkOperatorType": {
+            "expression": "conditions.checkBetweenOperator || data.currentFieldValueType.dbValue === 'PANEL' || conditions.checkForStringType"
+        },
+        "checkBetweenOperator": {
+            "expression": "data.operatorTypeContext.dbValue === 'Between'"
+        },
+        "showGenericListBox": {
+            "expression": "conditions.showWidget && data.currentFieldValueType.dbValue === 'LISTBOX'"
+        },
+        "showGenericEndListBox": {
+            "expression": "conditions.showGenericListBox && data.currentConditionValueType.dbValue"
+        },
+        "showResourceAssignment": {
+            "expression": "conditions.showAddWidgetForResource && data.currentFieldValueType.dbValue === 'PANEL'"
+        },
+        "isAddUsersValid": {
+            "expression": "props.subPanelContext.addUserPanelState.selectedUsers && props.subPanelContext.addUserPanelState.selectedUsers.length > 0"
+        }
+    },
+    "i18n": {
+        "assigned": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1Unassigned": [
+            "ScheduleManagerMessages"
+        ],
+        "conditionSection": [
+            "ScheduleManagerMessages"
+        ],
+        "and": [
+            "ScheduleManagerMessages"
+        ],
+        "or": [
+            "ScheduleManagerMessages"
+        ],
+        "typeSection": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1ScheduleTask": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1Schedule": [
+            "ScheduleManagerMessages"
+        ],
+        "propertySection": [
+            "ScheduleManagerMessages"
+        ],
+        "operatorSection": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1EqualTo": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1NotEqualTo": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1LessThan": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1GreaterThan": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1LessThanOrEqTo": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1GreaterThanOrEqTo": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1Between": [
+            "ScheduleManagerMessages"
+        ],
+        "ValueSection": [
+            "ScheduleManagerMessages"
+        ],
+        "addButtonText": [
+            "ScheduleManagerMessages"
+        ],
+        "saveBtnTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "filters": [
+            "ScheduleManagerMessages"
+        ],
+        "filtersCommandTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "addFilter": [
+            "ScheduleManagerMessages"
+        ],
+        "fieldsEmptyErrorMsg": [
+            "ScheduleManagerMessages"
+        ],
+        "workCompletePercentErrorMsg": [
+            "ScheduleManagerMessages"
+        ],
+        "invalidHoursErrorMsg": [
+            "ScheduleManagerMessages"
+        ],
+        "saw1Resource": [
+            "ScheduleManagerMessages"
+        ],
+        "saw1_add": [
+            "ScheduleManagerMessages"
+        ],
+        "saw1remove": [
+            "ScheduleManagerMessages"
+        ],
+        "from": [
+            "ScheduleManagerMessages"
+        ],
+        "to": [
+            "ScheduleManagerMessages"
+        ]
+    }
+}

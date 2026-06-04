@@ -1,0 +1,290 @@
+{
+    "schemaVersion": "1.0.0",
+    "ctx": {
+        "panelContext": null,
+        "addItemEventProgressing": ""
+    },
+    "data": {
+        "activeView": "AddObjectPrimarySub",
+        "creationRelation": {
+            "displayName": "{{i18n.relation}}",
+            "type": "STRING",
+            "hasLov": true,
+            "dataProvider": "getRelationListProvider"
+        },
+        "triggerCreate": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        },
+        "xrtState": {
+            "initialValues": {
+                "context": {}
+            },
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub",
+                "context": {}
+            },
+            "meta": {}
+        },
+        "addPanelState": {
+            "initialValues": {
+                "creationType": "",
+                "createdObject": "",
+                "sourceObjects": "",
+                "selectedTab": "",
+                "isDatasetCreate": ""
+            },
+            "meta": {}
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {}
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions": {
+        "revealAction": {
+            "actionType": "JSFunction",
+            "method": "updateAddObjectData",
+            "inputData": {
+                "inputData": "{{subPanelContext}}",
+                "addObject": "{{data.addObject}}"
+            },
+            "outputData": {
+                "panelContext": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "cleanup": {
+            "actionType": "JSFunction",
+            "method": "cleanupAddObject",
+            "inputData": {
+                "type": "CREATE_PANEL_CONTEXT",
+                "path": "addObject"
+            },
+            "events": {
+                "success": [ {
+                    "name": "complete",
+                    "condition": "!data.isDestroyed()",
+                    "eventData": {
+                        "source": "toolAndInfoPanel"
+                    }
+                } ]
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "clearAddEventProgContext": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "inputData": {
+                "0": "addItemEventProgressing"
+            },
+            "deps": "js/appCtxService"
+        },
+        "createObject": {
+            "actionType": "JSFunction",
+            "method": "updateCreateTrigger",
+            "inputData": {
+                "triggerCreate": "{{data.triggerCreate}}",
+                "value": true
+            },
+            "outputData": {
+                "triggerCreate": "triggerCreate"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "createRelationForPaletteOrSearch": {
+            "actionType": "JSFunction",
+            "method": "updateCreateTrigger",
+            "inputData": {
+                "triggerCreate": "{{data.triggerCreate}}",
+                "value": true
+            },
+            "outputData": {
+                "triggerCreate": "triggerCreate"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "setActiveView": {
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cacheInitialSelection",
+                    "condition": "!data.initialSelection"
+                },
+                {
+                    "action": "closePanel"
+                }
+            ]
+        },
+        "cacheInitialSelection": {
+            "actionType": "JSFunction",
+            "method": "cacheSelection",
+            "inputData": {
+                "selectedUidSD": "{{props.subPanelContext.selectionData}}",
+                "selectedUidPWAS": "{{props.subPanelContext.searchState.pwaSelection}}",
+                "selectedUidBS": "{{props.subPanelContext.searchState.baseSelection}}"
+            },
+            "outputData": {
+                "initialSelection": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "closePanel",
+            "inputData": {
+                "selectedUidSD": "{{props.subPanelContext.selectionData}}",
+                "selectedUidPWAS": "{{props.subPanelContext.searchState.pwaSelection}}",
+                "selectedUidBS": "{{props.subPanelContext.searchState.baseSelection}}",
+                "initialSelection": "{{data.initialSelection}}",
+                "dialogOptions": "{{props.subPanelContext.popupOptions}}"
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "Awp0AddObjectToProject.contentUnloaded",
+            "action": "clearAddEventProgContext",
+            "condition": "subPanelContext.panelPinned"
+        },
+        {
+            "eventId": "pasteItem.commitFailed",
+            "action": "clearAddEventProgContext"
+        }
+    ],
+    "messages": {},
+    "functions": {
+        "getCreateInput": {
+            "functionName": "getCreateInput",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.extensionVMProps}}",
+                "",
+                "{{subPanelContext.editHandler}}"
+            ]
+        },
+        "getCreatedObject": {
+            "functionName": "getCreatedObject",
+            "parameters": [
+                "{{subPanelContext.addObject.validTypes}}"
+            ]
+        },
+        "getDatasets": {
+            "functionName": "getDatasets",
+            "parameters": []
+        }
+    },
+    "conditions": {
+        "isNewTabAddButtonVisible": {
+            "expression": "addPanelState.creationType && addPanelState.selectedTab.view==='NewTabPageSub' && !addPanelState.isDatasetCreate"
+        },
+        "isPaletteSearchTabAddButtonEnabled": {
+            "expression": "addPanelState.sourceObjects && addPanelState.sourceObjects.length > 0 && !addPanelState.isAddACopy"
+        },
+        "isPaletteSearchTabAddACopyButtonVisible": {
+            "expression": "addPanelState.sourceObjects && addPanelState.sourceObjects.length === 1 && ( addPanelState.selectedTab.view==='SearchTabPageSub' || addPanelState.selectedTab.view==='PaletteTabPageSub' ) && !addPanelState.isAddACopy"
+        },
+        "isPaletteSearchTabAddACopyButtonEnable": {
+            "expression": {
+                "$source": "addPanelState.sourceObjects[0].modelType.typeHierarchyArray",
+                "$query": {
+                    "$notin": "{{ctx.preferences.AWC_AddACopyExclusionTypeList}}"
+                }
+            }
+        },
+        "isPaletteSearchTabAddACopyCancelButtonVisible": {
+            "expression": "addPanelState.sourceObjects && addPanelState.sourceObjects.length === 1 && addPanelState.isAddACopy"
+        },
+        "isAddPanelXRTLoaded": {
+            "expression": "data.activeView==='AddObjectPrimarySub'"
+        },
+        "isAddInNewTabPage":{
+            "expression": "addPanelState.selectedTab.view==='NewTabPageSub' && !addPanelState.isDatasetCreate"
+        },
+        "isAddInNewTabPageEnabled":{
+            "expression": "!ctx.addItemEventProgressing && addPanelState.creationType && data.xrtState.xrtTypeLoaded"
+        },
+        "isAddInPaletteTabPage":{
+            "expression": "addPanelState.selectedTab.view==='PaletteTabPageSub'"
+        },
+        "isAddInSearchTabPage":{
+            "expression": "addPanelState.selectedTab.view==='SearchTabPageSub'"
+        },
+        "isAddInClassificationTabPage":{
+            "expression": "addPanelState.selectedTab.view==='ClassificationTabPageSub'"
+        }
+    },
+    "i18n": {
+        "submitButtonTitle": [
+            "TCUICommandPanelsMessages"
+        ],
+        "ADD_BUTTON_TITLE": [
+            "BaseMessages"
+        ],
+        "addACopy": [
+            "addObjectMessages"
+        ],
+        "cancel": [
+            "addObjectMessages"
+        ],
+        "relation": [
+            "XRTMessages"
+        ],
+        "LOADING_TEXT": [
+            "BaseMessages"
+        ],
+        "MORE_LINK_TEXT": [
+            "BaseMessages"
+        ],
+        "objectType": [
+            "awAddDirectiveMessages"
+        ],
+        "FILTER_TEXT": [
+            "BaseMessages"
+        ],
+        "BACK_BUTTON_TITLE": [
+            "BaseMessages"
+        ]
+    },
+    "lifecycleHooks": {
+        "onMount": "revealAction",
+        "onUnmount": "cleanup"
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

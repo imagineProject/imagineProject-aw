@@ -1,0 +1,87 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "revealAction": {
+            "actionType": "dataProvider",
+            "method": "listDataProvider"
+        },
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "columnFilters": "{{data.columnProviders.clientScopeUI.columnFilters}}",
+                        "providerName": "{{subPanelContext.searchState.provider}}",
+                        "searchCriteria": "{{subPanelContext.searchState.criteria}}",
+                        "searchFilterFieldSortType": "{{subPanelContext.searchState.sortType}}",
+                        "searchSortCriteria": [],
+                        "searchFilterMap6": "{{subPanelContext.searchState.activeFilterMap}}",
+                        "startIndex": "{{data.dataProviders.listDataProvider.startIndex}}"
+                    },
+                    "inflateProperties": false
+                },
+                "1": {
+                    "types": [ {
+                        "name": "BusinessObject",
+                        "properties": [ {
+                            "name": "awp0CellProperties"
+                        } ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "output": "{{function:processOutput}}"
+            }
+        },
+        "setCalendarSelection": {
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.listDataProvider.selectionModel}}",
+                "newSelection": "{{props.subPanelContext.searchState.newAddedCalendar}}"
+            },
+            "deps": "js/selectionModelFactory"
+        }
+    },
+    "dataProviders": {
+        "listDataProvider": {
+            "action": "loadData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            }
+        }
+    },
+    "functions": {
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.searchState}}"
+            ],
+            "deps": "js/awSearchService"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate":
+        [ {
+            "action": "revealAction",
+            "observers": [
+                "props.subPanelContext.searchState.criteria.searchString",
+                "props.subPanelContext.searchState.filterString",
+                "props.subPanelContext.searchState.newAddedCalendar"
+            ]
+        },
+        {
+            "action": "setCalendarSelection",
+            "observers": [ "props.subPanelContext.searchState.newAddedCalendar" ]
+        } ]
+    }
+}

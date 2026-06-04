@@ -1,0 +1,108 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "provider": {},
+        "selectedIndexerType": {
+            "type": "object"
+        },
+        "isSelected": {
+            "type": "BOOLEAN",
+            "dbValue": false
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "loadListView"
+    },
+    "actions": {
+        "loadListView": {
+            "actionType": "dataProvider",
+            "method": "indexerListDataProvider"
+        },
+        "loadIndexerListAndSelectFirst": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadIndexerList"
+                },
+                {
+                    "action": "selectFirstItem"
+                }
+            ]
+        },
+        "loadIndexerList": {
+            "actionType": "JSFunction",
+            "method": "getIndexerAdminList",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "totalLoaded": "totalLoaded",
+                "searchResults": "search"
+            },
+            "deps": "js/indexerService"
+        },
+        "selectFirstItem": {
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.indexerListDataProvider.selectionModel}}",
+                "newSelection": "{{data.searchResults[0].uid}}"
+            },
+            "deps": "js/selectionModelFactory"
+        },
+        "selectDeselectIndexer": {
+            "actionType": "JSFunction",
+            "method": "selectDeselectIndexerInPWA",
+            "inputData": {
+                "selected": "{{data.eventData.selected[0]}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/indexerService"
+        }
+    },
+    "dataProviders": {
+        "indexerListDataProvider": {
+            "action": "loadIndexerListAndSelectFirst",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "single",
+            "inputData": {
+                "selectionModel": "{{props.subPanelContext.selectionModel}}",
+                "selectionData": "{{props.subPanelContext.selectionData}}"
+            }
+        }
+    },
+    "messages": {},
+    "functions": {
+        "getIndexerAdminList": {
+            "functionName": "getIndexerAdminList",
+            "parameters": [
+                "searchResultsJSON"
+            ]
+        }
+    },
+    "i18n": {
+        "TitlePWA": [
+            "DataDiscoveryServicesMessages"
+        ]
+    },
+    "conditions": {},
+    "onEvent": [
+        {
+            "eventId": "showIndexerList.reloadData",
+            "action": "loadListView",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "indexerListDataProvider.selectionChangeEvent",
+            "action": "selectDeselectIndexer",
+            "cacheEventData": true
+        }
+    ]
+}

@@ -1,0 +1,279 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+
+    "onEvent": [ {
+            "eventId": "am.removeACLName",
+            "action": "removeACL",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Am0ManageACL.DeleteComplete",
+            "action": "closePanelDialog"
+        },
+        {
+            "eventId": "Am0ManageACL.CreateComplete",
+            "action": "closePanelDialog"
+        },
+        {
+            "eventId": "refreshACLNamesList",
+            "action": "callACLNameProvider"
+        }
+    ],
+
+    "actions": {
+        "onPanelLoad":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setCreateAclType"
+                },
+                {
+                    "action": "callACLNameProvider"
+                }
+            ]
+        },
+        "setCreateAclType":{
+            "actionType": "JSFunction",
+            "method": "setCreateAclType",
+            "inputData": {
+                "aclType": "{{data.createAclType}}"
+            },
+            "outputData":{
+                "createAclType":""
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "callACLNameProvider": {
+            "actionType": "dataProvider",
+            "method": "objectAclNameProvider"
+        },
+        "loadACLData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2022-12-AwAccessManager",
+            "method": "getACLs2",
+            "inputData": {
+                "aclType": "{{subPanelContext.aclType}}",
+                "searchStr": "{{function:getAclsSearchString}}",
+                "startIndex": "{{data.dataProviders.objectAclNameProvider.startIndex}}",
+                "pageSize": 50
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "aclEntries": "{{function:loadObjectACLNames}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "createACL": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2022-12-AwAccessManager",
+            "method": "createACLs2",
+            "inputData": {
+                "acls": [ {
+                    "aclName": "{{data.objectACLName.dbValue}}",
+                    "aclType": "{{data.createAclType}}",
+                    "clientId": "CreateACL"
+                } ]
+            },
+            "outputData": {
+                "createdObjectsPartialErrors": "partialErrors",
+                "errors": "{{function:processPartialErrors}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Am0ManageACL.CreateComplete",
+                    "condition": "!subPanelContext.panelPinned"
+                } ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "createACLSuccessfulMessage"
+                } ],
+                "failure": [ {
+                    "message": "createACLFailureMessage"
+                } ]
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "removeACL": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2022-06-AwAccessManager",
+            "method": "deleteACLs",
+            "inputData": {
+                "acls": "{{function:getObjectACLsToRemove}}"
+            },
+            "outputData": {
+                "deletedObjects": "deleted",
+                "partialErrors": "partialErrors",
+                "errors": "{{function:processPartialErrors}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Am0ManageACL.DeleteComplete",
+                    "condition": "!subPanelContext.panelPinned"
+                    } ],
+                "failure": [ {
+                    "name": "refreshACLNamesList"
+                } ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "deleteACLSuccessMessage"
+                } ],
+                "failure": [ {
+                        "condition": "data.deletedObjects",
+                        "message": "deleteACLPartialFailureMessage"
+                    },
+                    {
+                        "condition": "!data.deletedObjects",
+                        "message": "deleteACLCompleteFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/accessMgmtService"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+
+    "data": {
+        "filterBox": {
+            "displayName": "",
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "objectACLName": {
+            "displayName": "{{i18n.objectAclName}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "isEditable": "true",
+            "dbValue": "",
+            "dispValue": ""
+        },
+        "createAclType":"{{subPanelContext.aclType}}",
+        "manageACLCommandsAnchor": "am0_manageACLNames"
+    },
+
+    "dataProviders": {
+        "objectAclNameProvider": {
+            "action": "loadACLData",
+            "response": "{{data.aclEntries}}",
+            "totalFound": "{{data.totalFound}}",
+            "enablePropEdit": "FALSE",
+            "selectionModelMode": "multiple"
+        }
+    },
+
+    "messages": {
+        "createACLSuccessfulMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.successfulACLCreation}}",
+            "messageTextParams": [
+                "{{data.objectACLName.uiValue}}"
+            ]
+        },
+        "createACLFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.createACLFailure}}",
+            "messageTextParams": [
+                "{{data.objectACLName.uiValue}}",
+                "{{data.errors}}"
+            ]
+        },
+        "deleteACLSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.deleteACLNamesSuccess}}",
+            "messageTextParams": [
+                "{{data.deletedObjects.length}}"
+            ]
+        },
+        "deleteACLPartialFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.deleteACLNamesPartialFailure}}",
+            "messageTextParams": [
+                "{{data.deletedObjects.length}}",
+                "{{data.dataProviders.objectAclNameProvider.selectedObjects.length}}",
+                "{{data.errors}}"
+            ]
+        },
+        "deleteACLCompleteFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.deleteACLNamesCompleteFailure}}",
+            "messageTextParams": [
+                "{{data.errors}}"
+            ]
+        }
+    },
+
+    "functions": {
+        "getAclsSearchString": {
+            "functionName": "getFilterString",
+            "parameters": [
+                "{{data.filterBox.dbValue}}"
+            ]
+        },
+        "processPartialErrors": {
+            "functionName": "processPartialErrors",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getObjectACLsToRemove": {
+            "functionName": "getObjectACLsToRemove",
+            "parameters": [
+                "{{dataProviders.objectAclNameProvider.selectedObjects}}"
+            ]
+        }
+    },
+
+    "conditions": {
+        "isValidACL": {
+            "expression": "data.objectACLName.dbValue !== ''"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "onPanelLoad"
+    },
+
+    "i18n": {
+        "objectAclName": [
+            "AccessmgmtConstants"
+        ],
+        "create": [
+            "AccessmgmtConstants"
+        ],
+        "successfulACLCreation": [
+            "AccessmgmtConstants"
+        ],
+        "createACLFailure": [
+            "AccessmgmtConstants"
+        ],
+        "manageACLNames": [
+            "AccessmgmtConstants"
+        ],
+        "aclNames": [
+            "AccessmgmtConstants"
+        ],
+        "createNewACL": [
+            "AccessmgmtConstants"
+        ],
+        "deleteACLNamesSuccess": [
+            "AccessmgmtConstants"
+        ],
+        "deleteACLNamesPartialFailure": [
+            "AccessmgmtConstants"
+        ],
+        "deleteACLNamesCompleteFailure": [
+            "AccessmgmtConstants"
+        ]
+    }
+
+}

@@ -1,0 +1,237 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "initActiveFolderFulltextStateInProjectCase": {
+            "actionType": "JSFunction",
+            "method": "initActiveFolderFulltextStateInProjectCase",
+            "inputData": {
+                "searchState": "{{subPanelContext.searchState}}"
+            },
+            "deps": "js/projectFolderUtils"
+        },
+        "updateSearchStateAfterFilterAction": {
+            "actionType": "JSFunction",
+            "method": "updateSearchStateAfterFilterAction",
+            "inputData": {
+                "searchState": "{{subPanelContext.searchState}}"
+            },
+            "deps": "js/searchCommonUtils"
+        },
+        "save":
+        {
+            "actionType": "JSFunction",
+            "method": "editActiveFolder",
+            "inputData": {
+                "parentFolderUID": "",
+                "searchFolderUID": "{{subPanelContext.searchState.searchFolder.uid}}",
+                "reportDefinitionUID": "{{function:getReportDefinitionUID}}",
+                "searchCriteria":"{{function:getReportDefinitionCriteriaForSave}}"
+            },
+            "deps": "js/searchFolderService"
+        },
+        "updateSearchFolder":
+        {
+            "actionType": "JSFunction",
+            "method": "setNonEditMode",
+            "inputData":
+            {
+                "data":"{{data}}",
+                "searchFolderCtx":"{{subPanelContext.searchState.searchFolder}}"
+            },
+            "deps": "js/searchFolderService"
+        },
+        "constructBreadCrumbTitle": {
+            "actionType": "JSFunctionAsync",
+            "method": "buildTitle",
+            "inputData": {
+                "searchObject": "{{subPanelContext.searchState}}"
+            },
+            "outputData": {
+                "crumbTitle": ""
+            },
+            "deps": "js/AwSearchBreadcrumbUtils"
+        },
+        "loadProjects": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Aut0MyProjectList"
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Aut0ProjectProvider",
+                        "searchCriteria": {
+                            "searchString": "{{function:getFilterInput}}",
+                            "activeProjectsOnly": "true",
+                            "clientId": "ProjectContext",
+                            "privilegedProjectsOnly": "false",
+                            "programsOnly": ""
+                        },
+                        "searchFilterFieldSortType": "Alphabetical",
+                        "startIndex": "{{data.dataProviders.projectListSelector.startIndex}}",
+                        "searchFilterMap6": {},
+                        "searchSortCriteria": []
+                    },
+                    "inflateProperties": false
+                },
+                "1": {
+                    "types": [ {
+                        "name": "TC_Project",
+                        "properties": [ {
+                                "name": "object_string"
+                            },
+                            {
+                                "name": "project_id"
+                            },
+                            {
+                                "name": "project_name"
+                            }
+                        ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "projects": "{{function:createLOVEntriesForSavedSearchObjects}}",
+                "searchResults": "{{json:searchResultsJSON}}"
+            }
+        },
+        "updateSearchStateWithSelectedProject": {
+            "actionType": "JSFunction",
+            "method": "updateSearchStateWithSelectedProject",
+            "inputData": {
+                "searchState": "{{subPanelContext.searchState}}",
+                "selectedProjects": "{{data.dataProviders.projectListSelector.selectedObjects}}"
+            },
+            "deps": "js/projectFolderUtils"
+        }
+    },
+    "data": {
+        "projectListProp": {
+            "type": "STRING",
+            "hasLov": true,
+            "isEditable": true,
+            "propertyLabelDisplay": "NO_PROPERTY_LABEL",
+            "dataProvider": "projectListSelector",
+            "dbValue": ""
+        },
+        "projectLabel": {
+            "displayName": "{{i18n.project}}",
+            "type": "STRING"
+        },
+        "projectListToolTip": {
+            "extendedTooltipContent": "{{i18n.projectListToolTip}}"
+        }
+    },
+
+    "functions": {
+        "createLOVEntriesForSavedSearchObjects": {
+            "functionName": "createLOVEntriesForSavedSearchObjects",
+            "parameters": [],
+            "deps": "js/searchFolderRuleImportSavedSearchService"
+        },
+        "getReportDefinitionCriteriaForSave":
+        {
+            "functionName": "getReportDefinitionCriteriaForSave",
+            "parameters":
+            [
+                "{{ctx.searchFolder}}",
+                 "{{data}}"
+            ]
+        },
+        "getReportDefinitionUID": {
+            "functionName": "getReportDefinitionUID",
+            "parameters":
+            [
+                "{{ctx.searchFolder.props.awp0SearchDefinition.dbValue}}"
+            ]
+        },
+        "getFilterInput": {
+            "functionName": "getFilterInput",
+            "parameters":
+            [
+                "{{data.projectListProp.filterString}}"
+            ],
+            "deps": "js/searchFolderRuleImportSavedSearchService"
+        }
+    },
+    "messages": {
+        "unsavedChanges": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.unsavedChanges}}",
+            "messageTextParams": [
+                "{{ctx.mselected[0].props.object_name.uiValues[0]}}"
+            ],
+            "navigationOptions": [
+                {
+                    "option": "Discard",
+                    "text": "{{i18n.discard}}",
+                    "action": ""
+                },
+                {
+                    "option": "Save",
+                    "text": "{{i18n.Save}}",
+                    "action": "save"
+                }
+            ]
+        }
+    },
+    "dataProviders":
+    {
+        "projectListSelector":
+        {
+            "action": "loadProjects",
+            "response": "{{data.projects}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "conditions": {
+        "showFilters": {
+            "expression": "subPanelContext.searchState.searchFolder.searchFilterMap"
+        },
+        "populatedSearchString": {
+            "expression": "subPanelContext.searchState.criteria && subPanelContext.searchState.criteria.searchString && subPanelContext.searchState.criteria.searchString.length > 0"
+        }
+    },
+    "i18n": {
+        "searchBtn": [ "SearchMessages" ],
+        "Awp0SearchTitle": ["SearchMessages"],
+        "searchFiltersTitle": [ "SearchMessages" ],
+        "refine": [ "SearchMessages" ],
+        "savedSearch": [ "SearchMessages" ],
+        "searchCriteria": [ "SearchMessages" ],
+        "unsavedChanges": [ "SearchMessages" ],
+        "discard": [ "SearchMessages" ],
+        "Save": [ "SearchMessages" ],
+        "project": [ "SearchMessages" ],
+        "projectListToolTip": [ "SearchMessages" ]
+    },
+    "lifecycleHooks": {
+        "onMount": "initActiveFolderFulltextStateInProjectCase",
+        "onUpdate": [
+            {
+                "action": "updateSearchStateAfterFilterAction",
+                "observers": [ "props.subPanelContext.searchState" ]
+            },
+            {
+                "action": "constructBreadCrumbTitle",
+                "observers": [ "props.subPanelContext.searchState" ]
+            },
+            {
+                "action": "updateSearchStateWithSelectedProject",
+                "observers": [ "viewModel.dataProviders.projectListSelector.selectedObjects" ]
+            }
+        ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

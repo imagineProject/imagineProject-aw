@@ -1,0 +1,137 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+
+        "_sublocation":{
+
+            "name": "com.siemens.splm.client.projmgmt:ProjectContentsSubLocation",
+            "label": "{{ctx.locationContext.modelObject.props.object_string.dbValues[0]}}",
+            "clientScopeURI": "Awp0SearchResults",
+            "nameToken": "com.siemens.splm.client.projmgmt:ProjectContentsSubLocation",
+            "context": {
+                "search": {
+                    "provider": "Awp0FullTextSearchProvider",
+                    "sortType": "Alphabetical",
+                    "maxToLoad": 50,
+                    "maxToReturn": 50,
+                    "chartTitle": {
+                        "source": "/i18n/SearchMessages",
+                        "key": "SearchResultsChartTitle"
+                    },
+                    "showLoadingText": true
+                }
+            },
+            "noBaseSelection": true,
+            "viewBase": "ProjectContents",
+            "hideRelationsTree": true,
+            "policy": "/policies/projectObjectPropertyPolicy.json"
+        },
+        "searchState": {
+            "initialValues": {
+                "searchStringSecondary":"*"
+            },
+            "meta": {
+                "categories": [ {
+                    "filterValues": [ {
+                        "selected": {
+                            "field": "true",
+                            "type": "ViewModelProperty"
+                        }
+                    } ]
+                } ]
+            }
+        }
+    },
+    "actions":{
+        "initialize": {
+            "actionType": "batchJob",
+            "steps": [
+
+                {
+                    "action": "initializeSearchState"
+                },
+
+                {
+                    "action":"getPrimaryCriteria"
+                },
+                {
+                    "action": "updateSearchStatePrimaryCriteria"
+                },
+                {
+                    "action":"ensureModelTypesLoaded"
+                }
+            ]
+        },
+        "initializeSearchState": {
+            "actionType": "JSFunctionAsync",
+            "method": "createStateFromUrl",
+            "inputData": {
+                "provider": "{{data._sublocation}}",
+                "searchStateProp": null,
+                "searchState": "{{data.searchState}}",
+                "searchStateUpdater": "{{data.updateAtomicData}}",
+                "skipURL": false,
+                "searchCriteria": null,
+                "pwaSelectionModel": "{{data.selectionModels.prjContentsSelectionModel}}"
+            },
+            "deps": "js/awSearchSublocationService"
+        },
+        "updateSearchStateURL": {
+            "actionType": "JSFunction",
+            "method": "updateURL",
+            "inputData": {
+                "searchStateProp": "{{props.searchState}}",
+                "searchState": "{{data.searchState}}",
+                "searchStateUpdater": "{{data.updateAtomicData}}",
+                "skipURL": null
+            },
+            "deps": "js/awSearchSublocationService"
+        },
+        "getPrimaryCriteria":{
+            "actionType": "JSFunction",
+            "method": "getProjectContentSearchCriteria",
+            "inputData": {
+                "searchState":"{{fields.searchState}}"
+            },
+            "outputData":{
+                "criteria":""
+            },
+            "deps": "js/projMgmtService"
+        },
+        "updateSearchStatePrimaryCriteria": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{fields.searchState}}",
+                "value": {
+                    "searchStringPrimary": "{{data.criteria.searchString}}",
+                    "criteria":"{{data.criteria}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "ensureModelTypesLoaded": {
+            "actionType": "JSFunctionAsync",
+            "method": "ensureModelTypesLoaded",
+            "inputData": {
+                "typeNames": [ "WorkspaceObject" ]
+            },
+            "deps": "soa/kernel/soaService"
+        }
+    },
+    "selectionModels": {
+       "prjContentsSelectionModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initialize",
+        "onUpdate": [
+            {
+                "action": "updateSearchStateURL",
+                "observers": [ "viewModel.searchState" ]
+            }
+        ]
+    }
+
+}

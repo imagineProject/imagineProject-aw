@@ -1,0 +1,82 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "reveal": {
+            "actionType": "dataProvider",
+            "method": "imageDataProvider"
+        },
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "columnFilters": "{{data.columnProviders.clientScopeUI.columnFilters}}",
+                        "providerName": "{{subPanelContext.searchState.provider}}",
+                        "searchCriteria": "{{subPanelContext.searchState.criteria}}",
+                        "searchFilterFieldSortType": "{{subPanelContext.searchState.sortType}}",
+                        "searchSortCriteria": [],
+                        "searchFilterMap6": "{{subPanelContext.searchState.activeFilterMap}}",
+                        "startIndex": "{{data.dataProviders.imageDataProvider.startIndex}}"
+                    },
+                    "inflateProperties": false
+                },
+                "1": {
+                    "types": [ {
+                        "name": "BusinessObject",
+                        "properties": [ {
+                            "name": "awp0CellProperties"
+                        } ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "output": "{{function:processOutput}}"
+            }
+        }
+    },
+    "conditions": {
+        "emptyWorkareaConfig": {
+            "expression": "!subPanelContext.searchState.criteria.searchString && subPanelContext.searchState.totalFound === 0 && subPanelContext.provider.emptyWorkareaConfig && !subPanelContext.searchState.totalLoaded"
+        },
+        "emptyWorkareaConfigNoResults": {
+            "expression": "subPanelContext.searchState.criteria.searchString && subPanelContext.searchState.totalFound === 0 && subPanelContext.provider.emptyWorkareaConfigNoResults && !subPanelContext.searchState.totalLoaded"
+        }
+    },
+    "dataProviders": {
+        "imageDataProvider": {
+            "action": "loadData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+    "functions": {
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.searchState}}"
+            ],
+            "deps": "js/awSearchService"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": {
+            "action": "reveal",
+            "observers": [
+                "props.subPanelContext.searchState.criteria.searchString",
+                "props.subPanelContext.searchState.filterString"
+            ]
+        }
+    },
+    "onEvent": []
+}

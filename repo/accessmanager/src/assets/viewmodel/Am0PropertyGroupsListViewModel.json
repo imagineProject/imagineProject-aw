@@ -1,0 +1,154 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "actions": {
+        "reveal": {
+            "actionType": "dataProvider",
+            "method": "propertyGroupsListProvider"
+        },
+        "dialogAction": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view": "Am0AddPropertyGroup",
+                    "parent": ".aw-layout-workareaMain",
+                    "placement": "right",
+                    "width": "MEDIUM",
+                    "height": "FULL",
+                    "isCloseVisible": false,
+                    "subPanelContext": "{{commandContext}}",
+                    "isPinUnpinEnabled": true
+                }
+            }
+        },
+
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "",
+                        "operationType": "as_arranged"
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Am0ALSGroupProvider",
+                        "searchCriteria": "{{subPanelContext.searchState.criteria}}",
+                        "searchFilterFieldSortType": "",
+                        "startIndex": "{{data.dataProviders.propertyGroupsListProvider.startIndex}}",
+                        "searchFilterMap6": "{{subPanelContext.searchState.activeFilterMap}}",
+                        "searchSortCriteria": "{{subPanelContext.searchState.sortCriteria}}"
+                    },
+                    "inflateProperties": false
+                },
+                "1": {
+                    "types": [
+                        {
+                            "name": "BusinessObject",
+                            "properties": [
+                                {
+                                    "name": "awp0CellProperties"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "output": "{{function:processOutput}}"
+            },
+            "events":{
+                "success": [
+                    {
+                        "name": "setRootNodeSelectionEvent"
+                    }
+                ]
+            }
+        },
+        "addPropertyGroupsToProviderAction": {
+            "actionType": "JSFunction",
+            "method": "addPropertyGroupsToProvider",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.propertyGroupsListProvider}}",
+                "eventData": "{{data.eventData}}",
+                "searchState":"{{subPanelContext.searchState}}"
+            },
+            "deps": "js/propertyGroupsService"
+        },
+        "setRootNodeSelection":{
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.propertyGroupsListProvider.selectionModel}}",
+                "newSelection": "{{data.searchResults.objects[0].uid}}"
+            },
+            "deps": "js/selectionModelFactory"
+        }
+    },
+    "functions": {
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.searchState}}"
+            ],
+            "deps": "js/awSearchService"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "addpropertyGroupToProviderEvent",
+            "cacheEventData": true,
+            "action": "addPropertyGroupsToProviderAction"
+        },
+        {
+            "eventId": "setRootNodeSelectionEvent",
+            "cacheEventData": true,
+            "action": "setRootNodeSelection",
+            "condition": "{{data.dataProviders.propertyGroupsListProvider.selectedObjects.length === 0}}"
+        }
+    ],
+    "dataProviders": {
+        "propertyGroupsListProvider": {
+            "action": "loadData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": {
+            "action": "reveal",
+            "observers": [
+                "props.subPanelContext.searchState.criteria.searchString",
+                "props.subPanelContext.searchState.filterString"
+            ]
+        }
+    },
+    "i18n": {
+        "propertyGroupsPwaTitle": [
+            "AccessmgmtConstants"
+        ],
+        "propertyGroupsPwaHint": [
+            "AccessmgmtConstants"
+        ],
+        "Am0AddPropertyGroupTitle":[
+            "AccessmgmtConstants"
+        ],
+        "noResultsFound":[
+            "AccessmgmtConstants"
+        ],
+        "noResultsSearchKeywordHint":[
+            "AccessmgmtConstants"
+        ]
+    }
+}

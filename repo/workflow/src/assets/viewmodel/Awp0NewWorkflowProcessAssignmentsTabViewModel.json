@@ -1,0 +1,174 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+
+    "actions": {
+        "updateUserPanelSearchState": {
+            "actionType": "JSFunction",
+            "method": "updateUserPanelSearchStateCriteria",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.addUserPanelState}}",
+                "value" : {
+                    "selectedObject": "{{props.subPanelContext.submitPanelState.value.targetObjects[0].uid}}"
+                }
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        },
+        "updatePropAssignmentContextInfoBatchJob": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "updatePropAssignmentContextInfo",
+                    "condition": "taskInfoObject.updatePropContext"
+                },
+                {
+                    "action": "resetPropAssignmentContextInfo",
+                    "condition": "taskInfoObject.updatePropContext"
+                }
+            ]
+        },
+        "updatePropAssignmentContextInfo": {
+            "actionType": "JSFunction",
+            "method": "updatePropAssignmentContextInfo",
+            "inputData": {
+                "taskInfoObject": "{{data.taskInfoObject}}",
+                "taskObject": "{{data.taskInfoObject.taskObject}}",
+                "subPanelContent": "{{props.subPanelContext.assignmentState}}"
+            },
+            "outputData": {
+                "taskInfoObject": ""
+            },
+            "deps": "js/Awp0WorkflowAssignmentService"
+        },
+        "resetPropAssignmentContextInfo": {
+            "actionType": "JSFunction",
+            "method": "updateParentComponentAtomicData",
+            "inputData": {
+                "AtomicObj": "{{data.taskInfoObject}}",
+                "value" : {
+                    "updatePropContext": ""
+                }
+            },
+            "outputData": {
+                "taskInfoObject": ""
+            },
+            "deps": "js/Awp0NewWorkflowProcess"
+        },
+        "clearContextData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.addUserPanelState}}",
+                "value" : {
+                    "propName": null,
+                    "selectedUsers": [],
+                    "participantType": null,
+                    "profileObject": null,
+                    "criteria": "{{props.subPanelContext.addUserPanelState.defaultCriteria}}",
+                    "triggerUpdateSearchCriteria": false
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "handleSelectionBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "handleTaskNodeSelection",
+                    "condition": "data.selectionData && data.selectionData.selected"
+                }
+            ]
+        },
+        "handleTaskNodeSelection": {
+            "actionType": "JSFunction",
+            "method": "handleTaskAssignmentRowSelection",
+            "inputData": {
+                "taskObject": "{{data.selectionData}}",
+                "taskAssignmentContext": "{{props.subPanelContext.assignmentState.taskAssignmentDataObject}}",
+                "taskInfoObject": "{{data.taskInfoObject}}"
+            },
+            "outputData": {
+                "taskInfoObject": ""
+            },
+            "deps": "js/Awp0WorkflowAssignmentUtils"
+        }
+    },
+
+    "data": {
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "maxRowsToShown": 7,
+        "treeOperationMode": 1,
+        "addUsersOnPanelAnchor": "awp0_addUsersOnPanelAnchor",
+        "taskInfoObject": {
+            "initialValues": {
+                "updatePropContext": ""
+            },
+            "meta": {
+            }
+        },
+        "tabsModel":
+        {
+            "isArray": "true",
+            "dbValue":
+            [
+                {
+                    "tabKey": "Awp0PeoplePickerTab",
+                    "name": "{{i18n.Results}}"
+
+                },
+                {
+                    "tabKey": "Awp0SuggestionsTab",
+                    "name": "{{i18n.Suggestions}}"
+                }
+            ]
+        }
+    },
+
+    "dataProviders": {},
+
+    "messages": {
+
+    },
+    "lifecycleHooks": {
+        "onMount": "updateUserPanelSearchState",
+        "onUnmount": "clearContextData",
+        "onUpdate": [ {
+                "action": "updatePropAssignmentContextInfoBatchJob",
+                "observers": [ "viewModel.atomicData.taskInfoObject.updatePropContext" ]
+            },
+            {
+                "action": "handleSelectionBatchJob",
+                "observers": [ "viewModel.atomicData.selectionData.selected" ]
+            }
+        ]
+    },
+
+    "onEvent": [],
+
+    "conditions": {
+        "isProcessTemplateInfoPresent": {
+            "expression": "subPanelContext.submitPanelState.processTemplate"
+        },
+        "isTaskObjectSelected": {
+            "expression": "data.taskInfoObject.taskObject && data.taskInfoObject.taskObject.uid"
+        },
+        "showSuggestionsTab" :{
+            "expression": "data.selectedTab.tabKey === 'Awp0SuggestionsTab'"
+        },
+        "showPeoplePickerTab": {
+            "expression": "data.selectedTab.tabKey === 'Awp0PeoplePickerTab'"
+        },
+        "arePPSuggestionsEnabled": {
+            "expression": "ctx.preferences && ctx.preferences.AWA_is_feature_installed && ctx.preferences.AWA_is_feature_installed[ 0 ] === 'true' && ctx.preferences.AWA_enable_people_picker_suggestions && ctx.preferences.AWA_enable_people_picker_suggestions[ 0 ] === 'true'"
+        }
+
+    },
+    "props": {},
+    "i18n": {
+        "Results": ["WorkflowCommandPanelsMessages"],
+        "Suggestions":["WorkflowCommandPanelsMessages"]
+    }
+
+}

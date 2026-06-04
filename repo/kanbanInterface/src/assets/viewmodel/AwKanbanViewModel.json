@@ -1,0 +1,91 @@
+{
+    "schemaVersion": "1.0.0",
+    "props": {
+        "kanban-id": {
+            "type": "string"
+        },
+        "selection-data": {
+            "type": "object"
+        },
+        "kanban-state": {
+            "type": "object"
+        }
+    },
+    "actions": {
+        "renderKanban": {
+            "method": "renderKanban",
+            "options": {
+                "elementRefList": [
+                    "kanbanElement"
+                ]
+            },
+            "deps": "js/AwKanbanService"
+        },
+        "initializeKanbanView": {
+            "actionType": "JSFunction",
+            "method": "initializeKanbanView",
+            "inputData": {
+                "kanbanId": "{{props.kanbanId}}",
+                "kanbanState": "{{props.kanbanState}}",
+                "elementRefList": "{{parameters.elementRefList}}"
+            },
+            "deps": "js/AwKanbanService"
+        },
+        "pushDataToKanban": {
+            "actionType": "JSFunction",
+            "method": "pushDataToKanban",
+            "inputData": {
+                "kanbanId": "{{props.kanbanId}}",
+                "initialLoadedObjs": "{{props.kanbanState.loadedObjects}}"
+            },
+            "deps": "js/AwKanbanService"
+        },
+        "revertCardDragDrop": {
+            "actionType": "JSFunction",
+            "method": "revertCardDragDrop",
+            "inputData": {
+                "kabbanState": "{{props.kanbanState}}"
+            },
+            "deps": "js/AwKanbanService"
+        },
+        "handleAWStateChangesForKanban": {
+            "actionType": "JSFunction",
+            "method": "handleAWStateChangesForKanban",
+            "inputData": {
+                "kanbanState": "{{props.kanbanState}}"
+            },
+            "deps": "js/AwKanbanService"
+        },
+        "updateKanbanCards": {
+            "actionType": "JSFunction",
+            "method": "updateKanbanCards",
+            "inputData": {
+                "webixInstance": "{{props.kanbanState.operation.value}}"
+            },
+            "deps": "js/AwKanbanService"
+        },
+        "destroyKanbanInstance": {
+            "actionType": "JSFunction",
+            "method": "destructKanbanView",
+            "inputData": {
+                "webixInstance": "{{data.webixInstance}}"
+            },
+            "deps": "js/AwKanbanService"
+        }
+    },
+    "lifecycleHooks": {
+        "render": "renderKanban",
+        "onMount": "initializeKanbanView",
+        "onUnmount": "destroyKanbanInstance",
+        "onUpdate": [ {
+                "action": "pushDataToKanban",
+                "observers": [ "props.kanbanState.loadedObjects" ]
+            },
+            {
+                "action": "handleAWStateChangesForKanban",
+                "observers": [ "props.kanbanState.operation" ]
+            }
+        ]
+    },
+    "onEvent": []
+}

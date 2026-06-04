@@ -1,0 +1,175 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "reveal": {
+            "actionType": "dataProvider",
+            "methods": [
+                "getUserToRevert"
+            ]
+        },
+        "getUserToRevert": {
+            "actionType": "JSFunction",
+            "method": "getUserToRevert",
+            "inputData": {
+                "dbValue": "{{data.filterBox.dbValue}}",
+                "dataProvider": "{{data.dataProviders.getUserToRevert}}"
+            },
+            "policy": {
+                "types": [
+
+                    {
+                        "name": "ResourceAssignment",
+                        "properties": [ {
+                                "name": "secondary_object",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "discipline"
+                            }
+
+                        ]
+                    }
+                ]
+            },
+
+            "outputData": {
+                "searchResults": "searchResults",
+                "totalFound": "totalFound",
+                "totalLoaded": "totalLoaded"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "displayError"
+                    }
+                ]
+            },
+            "deps": "js/Saw1DesignateDisciplineService"
+        },
+        "revert": {
+            "actionType": "JSFunction",
+            "method": "checkScheduleTags",
+            "inputData": {
+                "selected": "{{ctx.mselected}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "revertUsers.callSoa"
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "condition": "errorCode=='diffScheduleErrorMsg'",
+                    "message": "diffScheduleErrorMsg"
+                } ]
+            },
+            "deps": "js/ResourcesService"
+        },
+        "revertUsers": {
+            "actionType": "JSFunction",
+            "method": "prepInpForRelToUnassign",
+            "deps": "js/Saw1DesignateDisciplineService",
+
+            "outputData": {
+                "output": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "revertToDisciplines"
+
+                } ]
+            }
+        },
+        "revertToDisciplines": {
+            "actionType": "JSFunction",
+            "method": "replaceAssignmentForRevert",
+            "deps": "js/Saw1DesignateDisciplineService",
+            "inputData": {
+                "selectedObjects": "{{data.dataProviders.getUserToRevert.selectedObjects}}",
+                "output": "{{data.output}}"
+
+            },
+            "events": {
+                "success": [ {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{ctx.selected}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "displayError"
+                    }
+                ]
+            }
+        }
+    },
+
+    "data": {
+        "filterBox": {
+            "displayName": "",
+            "type": "STRING",
+            "dbValue": ""
+        }
+    },
+    "dataProviders": {
+        "getUserToRevert": {
+            "action": "getUserToRevert",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "totalLoaded": "{{data.totalLoaded}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "conditions": {
+        "isValidToShowRevertButton": {
+            "expression": "data.dataProviders.getUserToRevert.selectedObjects.length > 0"
+        }
+    },
+    "messages": {
+        "diffScheduleErrorMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.errorMsgForDiffSchRevert}}",
+            "messageTextParams": []
+        },
+        "displayError": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "revertToDisciplines",
+            "action": "revertToDisciplines"
+        },
+        {
+            "eventId": "revertUsers.callSoa",
+            "action": "revertUsers"
+        }
+    ],
+
+    "i18n": {
+        "RevertToDiscipline": [
+            "ScheduleManagerMessages"
+        ],
+        "revert": [
+            "ScheduleManagerMessages"
+        ],
+        "errorMsgForDiffSchRevert": [
+            "ScheduleManagerMessages"
+        ]
+    }
+}

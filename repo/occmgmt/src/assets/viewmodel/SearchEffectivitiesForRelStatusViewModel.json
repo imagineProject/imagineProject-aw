@@ -1,0 +1,189 @@
+{
+    "schemaVersion" : "1.0.0",
+
+    "i18n":
+    {
+        "addElementBtn":[ "OccurrenceManagementConstants"],
+        "filter": [ "OccurrenceManagementConstants"],
+        "sharedEffectivities":[ "OccurrenceManagementConstants"],
+        "genericServerError" :["OccurrenceManagementMessages"]
+    },
+
+    "dataProviders":
+    {
+        "performSearchForSharedEffectivities":
+        {
+            "action": "performSearchForSharedEffectivitiesAction",
+            "response": "{{data.effectivitiesFound}}",
+            "totalFound": "{{data.effectivitiesTotalFound}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+    "data" :
+    {
+        "filterBox": {
+          "displayName" :"{{i18n.filter}}",
+          "type": "STRING",
+          "dbValue" :""
+        }
+    },
+    "actions":
+    {
+        "getAllSharedEffectivitiesAction":
+        {
+            "actionType": "dataProvider",
+            "method": "performSearchForSharedEffectivities"
+        },
+
+        "performSearchForSharedEffectivitiesAction":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData":
+            {
+                "searchInput":
+                {
+                    "maxToLoad": 20,
+                    "maxToReturn": 20,
+                    "providerName": "Awb0EffectivityProvider",
+                    "searchFilterFieldSortType": "Alphabetical",
+                    "startIndex": "{{data.dataProviders.performSearchForSharedEffectivities.startIndex}}",
+                    "searchCriteria":
+                    {
+                        "effectivityId": "{{data.filterBox.dbValue}}"
+                    },
+                    "searchFilterMap":
+                    {
+                    },
+                    "searchSortCriteria":
+                    [
+                    ],
+                    "attributesToInflate":
+                    [
+                    ],
+                    "internalPropertyName": ""
+                }
+            },
+            "outputData":
+            {
+                "effectivitiesFound": "searchResults",
+                "effectivitiesTotalFound": "totalFound"
+            }
+        },
+        "addSearchButtonClicked":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2017-06-EffectivityManagment",
+            "method": "addOrRemoveRelStatusEffectivities",
+            "inputData":
+            {
+                "input":
+                {
+                    "status": "{{props.subPanelContext.sharedData.releaseStatus}}",
+                    "effectivities": "{{data.dataProviders.performSearchForSharedEffectivities.selectedObjects}}",
+                    "addOrRemove": true
+                }
+            },
+
+            "outputData":
+            {
+                "occurrenceConfigured": "updated",
+                "occurrenceUnconfigured": "deleted",
+                "ServiceData" : ""
+            },
+            "events":
+            {
+                "success": [
+                    {
+                        "name": "navigateToDisplayandRemoveRelEffPanelEventFromSearch"
+                    },
+                    {
+                        "name" : "releaseStatusUpdatedByEffectivityEvent"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name" : "releaseStatusUpdatedByEffectivityEvent"
+                    }
+                ]
+            },
+             "actionMessages":
+             {
+                 "failure":
+                 [
+                     {
+                         "message": "failedToApplyReleaseEffMessage"
+                     }
+                 ]
+             },
+             "deps":"js/sharedEffectivityService"
+        },
+        "navigateToDisplayandRemoveRelEffPanelAction": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "inputData": {
+                "path": "",
+                "value": {
+                    "previousView": "{{props.subPanelContext.sharedData.activeView}}",
+                    "activeView": "DisplayAndRemoveEffectivitiesForRelStatus"
+                },
+                "target": "{{props.subPanelContext.sharedData}}"
+            },
+            "deps": "js/occmgmtUtils"
+        },
+
+        "refreshSelectedObject": {
+            "actionType": "JSFunction",
+            "method": "updateEffectivities",
+            "inputData": {
+                "selectedModelObject": "{{ctx.selected}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/sharedEffectivityService"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "getAllSharedEffectivitiesAction"
+    },
+
+    "onEvent": [
+        {
+            "eventId": "searchEffectivities.search",
+            "action": "getAllSharedEffectivitiesAction"
+        },
+        {
+            "eventId": "navigateToDisplayandRemoveRelEffPanelEventFromSearch",
+            "action": "navigateToDisplayandRemoveRelEffPanelAction"
+        },
+        {
+            "eventId": "releaseStatusUpdatedByEffectivityEvent",
+            "action":  "refreshSelectedObject"
+        }
+    ],
+
+     "messages":
+     {
+         "failedToApplyReleaseEffMessage":
+         {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.genericServerError}}",
+            "messageTextParams": [
+                 "{{data.ServiceData.partialErrors[0].errorValues[0].message}}"
+            ]
+         }
+     },
+
+     "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+
+     "conditions":{
+         "isAnyItemSelectedFromSharedSearchPanelList":{
+              "expression" : "data.dataProviders.performSearchForSharedEffectivities.selectedObjects.length>0"
+         }
+     }
+}

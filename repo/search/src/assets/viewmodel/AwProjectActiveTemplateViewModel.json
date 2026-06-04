@@ -1,0 +1,163 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "lifecycleHooks": {
+        "onInit": "getInitialValueBatchJob"
+    },
+    "data": {
+        "awp0isActiveTemplate": {
+            "type": "BOOLEAN",
+            "displayName": "{{i18n.activeProjectDataTemplateProp}}",
+            "renderingHint": "checkbox",
+            "isRequired": "false",
+            "isEditable": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE"
+        }
+    },
+    "actions": {
+        "updateIsActiveTemplateBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setProperties"
+                },
+                {
+                    "action": "performSaveOperation"
+                }
+            ]
+        },
+        "performSaveOperation": {
+            "actionType": "JSFunction",
+            "method": "saveEdits",
+            "deps": "js/editHandlerService",
+            "inputData": {}
+        },
+        "setProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-09-DataManagement",
+            "method": "setProperties",
+            "inputData": {
+                "info": "{{function:getAwp0IsActiveTemplateForSetProperties}}"
+            },
+            "deps": "js/projectFolderUtils"
+        },
+        "getProjectDataTemplateObject": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": [
+                    {
+                        "uid": "{{props.subPanelContext.selected.uid}}",
+                        "type": "Awp0ProjectDataTemplate"
+                    }
+                ],
+                "attributes": [
+                    "awp0isActiveTemplate"
+                ]
+            },
+            "outputData": {
+                "projectDataTemplateObject": "{{function:getObject}}"
+            },
+            "deps": "js/projectFolderUtils"
+        },
+        "getInitialValue": {
+            "actionType": "JSFunction",
+            "method": "getInitialValueOfIsActiveTemplateProp",
+            "inputData":
+            {
+                "projectDataTemplateObject": "{{data.projectDataTemplateObject}}",
+                "awp0isActiveTemplate": "{{data.awp0isActiveTemplate}}"
+            },
+            "outputData":
+            {
+                "awp0isActiveTemplate": "awp0isActiveTemplate",
+                "initialValue": "initialValue"
+            },
+            "deps": "js/projectFolderUtils"
+        },
+        "getVisibilityOfCommand": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2024-12-UiConfig",
+            "method": "getVisibleCommands2",
+            "inputData": {
+                "getVisibleCommands2Input": [ {
+                    "clientScopeURI": "Awp0Folders",
+                    "commandContextInfo": [
+                        {
+                            "contextName": "commandBarId",
+                            "contextValue": "aw_multiLanguageProperty"
+                        }
+                    ],
+                    "commands": [ "Aut0AddProject" ],
+                    "selectionInfo": [
+                        {
+                            "parentSelectionIndex": -1,
+                            "selectedObjects": [
+                                {
+                                    "uid": "{{props.subPanelContext.selected.uid}}",
+                                    "type": "{{props.subPanelContext.selected.type}}"
+                                }
+                            ]
+                        }
+                    ]
+                } ]
+            },
+            "outputData": {
+                "showProp": "{{function:checkIfPropNeedsToBeShown}}"
+            },
+            "deps": "js/projectFolderUtils"
+        },
+        "getInitialValueBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getProjectDataTemplateObject"
+                },
+                {
+                    "action": "getInitialValue"
+                },
+                {
+                    "action": "getVisibilityOfCommand"
+                }
+            ]
+        }
+    },
+    "dataProviders": {
+    },
+    "functions": {
+        "getObject": {
+            "functionName": "getObject",
+            "parameters": [
+                "Awp0ProjectDataTemplate"
+            ]
+        },
+        "getAwp0IsActiveTemplateForSetProperties": {
+            "functionName": "getAwp0IsActiveTemplateForSetProperties",
+            "parameters": [
+                "{{props.subPanelContext.selected}}",
+                "{{data.awp0isActiveTemplate.dbValue}}"
+            ]
+        },
+        "checkIfPropNeedsToBeShown": {
+            "functionName": "checkIfPropNeedsToBeShown",
+            "parameters": [
+            ]
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "AwProjectActiveTemplate.updateIsActiveTemplate",
+            "action": "updateIsActiveTemplateBatchJob",
+            "condition": "data.initialValue !== data.awp0isActiveTemplate.dbValue"
+        }
+    ],
+    "conditions": {
+    },
+    "ctx": {
+        "xrtSummaryContextObject": null
+    },
+    "i18n": {
+        "activeProjectDataTemplateProp": [ "SearchMessages" ]
+    }
+}

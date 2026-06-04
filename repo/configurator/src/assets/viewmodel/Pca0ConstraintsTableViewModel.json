@@ -1,0 +1,889 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "sortTableWithCreationDate": false,
+        "newlyCreatedObjUids": [],
+        "columns": [],
+        "searchResults": [],
+        "totalFound": -1,
+        "columnsToDisableSort": [ "cfg0SubjectCondition", "cfg0ApplicabilityCondition", "cfg0Effectivity", "cfg0ExpScript", "cfg0AsText", "cfg0DefaultCondition" ],
+        "columnsToDisableFilter": [ "cfg0SubjectCondition", "cfg0ApplicabilityCondition", "cfg0Effectivity", "cfg0ExpScript", "cfg0AsText", "cfg0DefaultCondition" ],
+        "lastLoadedConstraintUid": "",
+        "searchState": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "isReviseAction" : false,
+        "constraintsTableData": {
+            "initialValues": { "availableConstraintTypes": [] },
+            "meta": {}
+        }
+    },
+    "actions": {
+        "addCreatedConstraintsToPWA": {
+            "actionType": "JSFunction",
+            "method": "addCreatedConstraintsToPWA",
+            "inputData": {
+                "modelObjects": "{{parameters.eventData.modelObjects}}",
+                "dataProvider": "{{data.dataProviders.pca0ConstraintsDataProvider}}",
+                "totalFound": "{{data.totalFound}}",
+                "newlyCreatedObjUids": "{{data.newlyCreatedObjUids}}",
+                "isSaveAsAction": "{{parameters.eventData.isSaveAsAction}}"
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "newlyCreatedObjUids": "newlyCreatedObjUids"
+            },
+            "deps": "js/pca0ConstraintsGridService"
+        },
+        "initComponentAndUpdateXrtContext": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "initComponent"
+                },
+                {
+                    "action": "updateXrtContext"
+                }
+            ]
+        },
+        "initComponent": {
+            "actionType": "JSFunctionAsync",
+            "method": "initComponent",
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "updateXrtContext": {
+            "actionType": "JSFunction",
+            "method": "updateXrtContext",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "storageSyncAndFirePWAReset": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "syncSessionStorage"
+                },
+                {
+                    "action": "resetPrimaryWorkAreaTableBatchAction"
+                }
+            ]
+        },
+        "getApplicableConstraintTypes": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-04-DataManagement",
+            "method": "findDisplayableSubBusinessObjectsWithDisplayNames",
+            "inputData": {
+                "input": "{{function:getInputForApplicableTypes}}"
+            },
+            "outputData": {
+                "constraintsTypes": "{{function:cacheLoadedConstraintTypesAndOpenDialog}}"
+            },
+            "deps": "js/pca0ConstraintsGridService"
+        },
+        "syncSessionStorage": {
+            "actionType": "JSFunction",
+            "method": "syncSessionStorage",
+            "deps": "js/pca0ContextManagementService"
+        },
+        "resetPrimaryWorkAreaTableBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "resetNewlyCreatedUIDs"
+                },
+                {
+                    "action": "resetPrimaryWorkArea"
+                }
+            ]
+        },
+        "resetNewlyCreatedUIDs": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "newlyCreatedObjUids": []
+            },
+            "outputData": {
+                "newlyCreatedObjUids": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "resetPrimaryWorkArea": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "pca0ConstraintsGrid.plTable.reload"
+                },
+                {
+                    "name": "Pca0ConstraintsGrid.handlePrimarySelectionChange"
+                } ]
+            },
+            "outputData": {
+                "uidOfLastRule": "",
+                "data.dataProviders.pca0ConstraintsDataProvider.startIndex": 0
+            }
+        },
+        "refreshPrimaryWorkArea": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "pca0ConstraintsGrid.plTable.clientRefresh"
+                } ]
+            }
+        },
+        "loadConstraintsData": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "loadConstraintsDataFromServer"
+                },
+                {
+                    "action": "getItemsToSelect",
+                    "condition": "conditions.Pca0IsCfgSelectedItemsOnPage"
+                },
+                {
+                    "action": "selectAndOpenItems",
+                    "condition": "conditions.Pca0IsCfgSelectedItemsOnPage"
+                },
+                {
+                    "action": "switchToGridOrMatrixTab",
+                    "condition":"conditions.Pca0IsCfgSelectedItemsOnPage"
+                }
+            ]
+        },
+        "loadConstraintsDataFromServer": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Pca0Constraints"
+                    },
+                    "searchInput": {
+                        "attributesToInflate": "{{ctx.search.tableViewProperties}}",
+                        "maxToLoad": 99,
+                        "maxToReturn": 50,
+                        "providerName": "Pca0ConstraintsProvider",
+                        "searchCriteria": "{{function:getInputCriteria}}",
+                        "columnFilters": "{{data.columnProviders.pca0ConstraintsColumnProvider.columnFilters}}",
+                        "searchFilterFieldSortType": "Priority",
+                        "searchSortCriteria": "{{data.columnProviders.pca0ConstraintsColumnProvider.sortCriteria}}",
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.pca0ConstraintsDataProvider.startIndex}}"
+                        },
+                        "searchFilterMap6": "{{function:getInputSearchFilterMap}}"
+                    },
+                    "inflateProperties": true
+                },
+                "1": {
+                    "types": "{{function:getPropertyPolicyForPerformSearch}}",
+                    "override":true
+                }
+            },
+            "outputData": {
+                "searchResults": "{{json:searchResultsJSON}}",
+                "totalFound": "totalFound",
+                "lastLoadedConstraintUid": "{{function:getLastUid}}",
+                "dataProviders.pca0ConstraintsDataProvider._enableAccScroll": false,
+                "dataProviders.pca0ConstraintsDataProvider.columnConfig": "{{function:getColumnConfig}}",
+                "serviceData": "ServiceData",
+                "ctx.searchResponseInfo.columnConfig": "{{function:getColumnConfig}}",
+                "ctx.searchResponseInfo.totalFound": "totalFound",
+                "additionalInfoMessages": "{{function:updateAdditionalInfoMessages}}"
+            }
+        },
+        "getItemsToSelect": {
+            "actionType": "JSFunction",
+            "method": "getItemsToSelect",
+            "inputData": {
+                "searchResult": "{{data.searchResults}}"
+            },
+            "outputData": {
+                "itemsToSelectAndOpen": "itemsToSelectAndOpen",
+                "tabId": "tabId"
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "selectAndOpenItems": {
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.pca0ConstraintsDataProvider.selectionModel}}",
+                "newSelection": "{{data.itemsToSelectAndOpen}}"
+            },
+            "deps": "js/selectionModelFactory"
+        },
+        "switchToGridOrMatrixTab": {
+            "actionType": "JSFunction",
+            "method": "switchToTabInObjectSummary",
+            "inputData": {
+                "sublocationState": "{{props.subPanelContext.pageContext.sublocationState}}",
+                "tabId":"{{data.tabId}}"
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "saveColumnConfigAndReloadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Pca0Constraints"
+                    },
+                    "saveColumnConfigData": {
+                        "clientScopeURI": "Pca0Constraints",
+                        "columnConfigId": "{{data.dataProviders.pca0ConstraintsDataProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.pca0ConstraintsDataProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "attributesToInflate": "{{ctx.search.tableViewProperties}}",
+                        "maxToLoad": 99,
+                        "maxToReturn": 50,
+                        "providerName": "Pca0ConstraintsProvider",
+                        "searchCriteria": "{{function:getInputCriteriaForColumnProvider}}",
+                        "columnFilters": "{{data.columnProviders.pca0ConstraintsColumnProvider.columnFilters}}",
+                        "searchSortCriteria": "{{data.columnProviders.pca0ConstraintsColumnProvider.sortCriteria}}",
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.pca0ConstraintsDataProvider.startIndex}}"
+                        },
+                        "searchFilterMap6": "{{function:getInputSearchFilterMapForColumnProvider}}"
+                    },
+                    "inflateProperties": true
+                },
+                "1": {
+                    "types": "{{function:getPropertyPolicyForPerformSearch}}",
+                    "override":true
+                }
+            },
+            "outputData": {
+                "searchResults": "{{json:searchResultsJSON}}",
+                "totalFound": "totalFound",
+                "dataProviders.pca0ConstraintsDataProvider.columnConfig": "{{function:getColumnConfig}}",
+                "lastLoadedConstraintUid": "{{function:getLastUid}}",
+                "dataProviders.pca0ConstraintsDataProvider._enableAccScroll": false,
+                "serviceData": "ServiceData",
+                "ctx.searchResponseInfo.totalFound": "totalFound"
+            }
+        },
+        "resetColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [ {
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos": [ {
+                            "clientScopeURI": "Pca0Constraints",
+                            "operationType": "union",
+                            "typeNames": "{{data.dataProviders.pca0ConstraintsDataProvider.columnConfig.typesForArrange}}",
+                            "columnsToExclude": []
+                        } ],
+                        "businessObjects": [ {} ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "dataProviders.pca0ConstraintsDataProvider.columnConfig": "{{function:postResetFunction}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "pca0ConstraintsGrid.plTable.reload"
+                } ]
+            }
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "deleteConstraints": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2019-06-DataManagement",
+            "method": "unlinkAndDeleteObjects",
+            "inputData": {
+                "deleteInput": "{{function:unlinkAndDeleteFunction}}"
+            },
+            "outputData": {
+                "unlinkAndDeleteObjectsResponse": ""
+            },
+            "events": {
+                "failure": [ {
+                    "name": "Pca0ConstraintsTableViewModel.processPartialErrors",
+                    "eventData": {
+                        "ServiceData": "{{data.unlinkAndDeleteObjectsResponse}}"
+                    }
+                } ],
+                "success": [ {
+                "name": "pca0ConstraintsGrid.plTable.reload"
+                } ]}
+            ,
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "processPartialErrors": {
+            "actionType": "JSFunction",
+            "method": "processPartialErrors",
+            "inputData": {
+                "eventData": "{{data.eventData.ServiceData}}"
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "validateAndAddCreatedConstraintsToPWA": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Pca0Constraints"
+                    },
+                    "saveColumnConfigData": {
+                        "clientScopeURI": "Pca0Constraints",
+                        "columnConfigId": "{{data.dataProviders.pca0ConstraintsDataProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.pca0ConstraintsDataProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "attributesToInflate": "{{ctx.search.tableViewProperties}}",
+                        "maxToLoad": 99,
+                        "maxToReturn": 50,
+                        "providerName": "Pca0ApplyPrecFilterProvider",
+                        "searchCriteria": "{{function:getNewlyAddedCriteria}}",
+                        "columnFilters": "{{data.columnProviders.pca0ConstraintsColumnProvider.columnFilters}}",
+                        "searchSortCriteria": "{{data.columnProviders.pca0ConstraintsColumnProvider.sortCriteria}}",
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.pca0ConstraintsDataProvider.startIndex}}"
+                        }
+                    },
+                    "inflateProperties": true
+                },
+                "1": {
+                    "types": "{{function:getPropertyPolicyForPerformSearch}}",
+                    "override":true
+                }
+            },
+            "outputData": {
+                "searchResults": "{{json:searchResultsJSON}}",
+                "objectNames": "{{function:getCreatedObjectsNames}}",
+                "serviceData": "ServiceData"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0ConstraintsTable.addCreatedConstraintsToPWA",
+                    "eventData": {
+                        "modelObjects": "{{data.searchResults}}",
+                        "isSaveAsAction": "{{parameters.isSaveAsAction}}"
+                    },
+                    "condition": "data.serviceData.plain.length > 0"
+                },
+                {
+                    "name": "Pca0Constraints.constraintCreated",
+                    "eventData": {
+                        "constraints": "{{parameters.eventData.constraints}}"
+                    },
+                    "condition": "parameters.eventData.canLoadInEditor && data.serviceData.plain.length > 0"
+                }
+            ],
+                "failure": [ {
+                    "name": "Pca0ConstraintsTableViewModel.processPartialErrors",
+                    "eventData": {
+                        "searchResults": "{{data.searchResults}}"
+                    }
+                } ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "condition": "data.serviceData.plain === undefined",
+                    "message": "objectFilteredOutMessage"
+                } ]
+            }
+        },
+        "validateRevisedObject": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Pca0Constraints"
+                    },
+                    "saveColumnConfigData": {
+                        "clientScopeURI": "Pca0Constraints",
+                        "columnConfigId": "{{data.dataProviders.pca0ConstraintsDataProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.pca0ConstraintsDataProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "attributesToInflate": "{{ctx.search.tableViewProperties}}",
+                        "maxToLoad": 99,
+                        "maxToReturn": 50,
+                        "providerName": "Pca0ApplyPrecFilterProvider",
+                        "searchCriteria": "{{function:getReviseCriteria}}",
+                        "columnFilters": "{{data.columnProviders.pca0ConstraintsColumnProvider.columnFilters}}",
+                        "searchSortCriteria": "{{data.columnProviders.pca0ConstraintsColumnProvider.sortCriteria}}",
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.pca0ConstraintsDataProvider.startIndex}}"
+                        }
+                    },
+                    "inflateProperties": true
+                },
+                "1": {
+                    "types": "{{function:getPropertyPolicyForPerformSearch}}",
+                    "override":true
+                }
+            },
+            "outputData": {
+                "searchResults": "{{json:searchResultsJSON}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0Constraints.showReviseObjects",
+                    "eventData": {
+                        "searchResults": "{{data.searchResults}}"
+                    }
+                } ],
+                "failure": [ {
+                    "name": "Pca0ConstraintsTableViewModel.processPartialErrors",
+                    "eventData": {
+                        "searchResults": "{{data.searchResults}}"
+                    }
+                } ]
+            }
+        },
+        "updateObjectAfterRevise": {
+            "actionType": "JSFunction",
+            "method": "updateObjectAfterRevise",
+            "inputData": {
+                "selectedObject": "{{data.ctx.selected}}",
+                "dataProvider": "{{data.dataProviders.pca0ConstraintsDataProvider}}",
+                "response": "{{parameters.eventData.searchResults}}"
+            },
+            "outputData": {
+                "searchResults": "{{json:searchResultsJSON}}"
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "validateIsReviseAction": {
+            "actionType": "JSFunction",
+            "method": "validateIsReviseAction",
+            "inputData": {
+                "tag" : "{{parameters.tag}}"
+            },
+            "outputData": {
+                "isReviseAction" : ""
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "openAddConstraintDialog": {
+            "actionType": "JSFunction",
+            "method": "openAddConstraintPanel",
+            "inputData": {
+                "input": {
+                    "commandContext": "{{commandContext}}",
+                    "commandId": "Pca0ConstraintsGridEditorAdd",
+                    "constraintsTableData": "{{data.atomicDataRef.constraintsTableData}}"
+                }
+            },
+            "deps": "js/pca0ConstraintsGridService"
+        },
+        "fetchConstraintFilterCategoriesAndFacets": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Pca0Constraints"
+                    },
+                    "searchInput": {
+                        "providerName": "Pca0ConstraintsProvider",
+                        "searchCriteria": "{{function:getFilterCategoryAndFacetsInput}}"
+                    },
+                    "inflateProperties": false
+                }
+            },
+            "outputData": {
+                "output": "{{function:cacheFilterCategoriesAndOpenDialog}}"
+            }
+        },
+        "applyConstraintsFilter": {
+            "actionType": "JSFunction",
+            "method": "updateFilteringInputs",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.searchState}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "pca0ConstraintsGrid.plTable.reload"
+                    } 
+                ]
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "resetStateParams": {
+            "actionType": "JSFunction",
+            "method": "resetStateParams",
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "constraintsTableRefreshCommandBatchAction": {
+            "actionType": "batchJob",
+            "steps": [  {
+                    "action": "resetStateParams",
+                    "condition": "conditions.Pca0IsCfgSelectedItemsOnPage"
+                },
+                {
+                    "action": "resetPrimaryWorkAreaTableBatchAction"
+                }
+            ]
+        }
+    },
+    "dataProviders": {
+        "pca0ConstraintsDataProvider": {
+            "action": "loadConstraintsData",
+            "editContext": "TABLE_CONTEXT",
+            "nextAction": "loadConstraintsData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "_enableAccScroll":false,
+            "commandsAnchor": "aw_splmTableCommandsAnchor",
+            "inputData": {
+                "accessMode": "table",
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "editSupportParamKeys": [ "s_uid", "d_uids" ]
+            }
+        }
+    },
+    "columnProviders": {
+        "pca0ConstraintsColumnProvider": {
+            "saveColumnAndLoadAction": "saveColumnConfigAndReloadData",
+            "resetColumnAction": "resetColumnConfig"
+        }
+    },
+    "grids": {
+        "pca0ConstraintsGrid": {
+            "dataProvider": "pca0ConstraintsDataProvider",
+            "columnProvider": "pca0ConstraintsColumnProvider",
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "enableSorting": true,
+                "enableGridMenu": true,
+                "isFilteringEnabled": true,
+                "enableExpandAndPaginationInEdit": false
+            }
+        }
+    },
+    "messages": {
+        "deleteMultipleConstraintsConfirmationMessage": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.deleteMultipleConstraintsConfirmationMsg}}",
+            "messageTextParams": [
+                "{{commandContext.selectionData.selected.length}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}"
+                },
+                {
+                    "option": "Delete",
+                    "text": "{{i18n.deleteText}}",
+                    "action": "deleteConstraints"
+                }
+            ]
+        },
+        "deleteSingleConstraintConfirmationMessage": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.deleteSingleConstraintsConfirmationMsg}}",
+            "messageTextParams": [
+                "{{commandContext.selectionData.selected[0].props.object_name.uiValues[0]}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}"
+                },
+                {
+                    "option": "Delete",
+                    "text": "{{i18n.deleteText}}",
+                    "action": "deleteConstraints"
+                }
+            ]
+        },
+        "selectedConstraintsMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.selectedConstraintsMessage}}"
+        },
+        "objectFilteredOutMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.objectFilteredOut}}",
+            "messageTextParams": [ "{{data.objectNames}}" ]
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "reviseObject.assignProjects",
+            "action": "validateIsReviseAction",
+            "inputArgs": {
+                "tag": "revise"
+            }
+        },
+        {
+            "eventId": "Pca0ConstraintsTable.openAddDialog",
+            "action": "openAddConstraintDialog"
+        },
+        {
+            "eventId": "Pca0ConstraintsTable.fetchAvailableConstraintTypes",
+            "action": "getApplicableConstraintTypes",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "saveAsObject.assignProjects",
+            "action": "validateIsReviseAction",
+            "inputArgs": {
+                "tag": "saveAs"
+            }
+        },
+        {
+            "eventId": "Pca0ReviseObjectPostHandler",
+            "condition": "data.isReviseAction === true",
+            "action": "validateRevisedObject",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Constraints.showReviseObjects",
+            "action": "updateObjectAfterRevise",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent",
+            "criteria": {
+                "name": "pca0ConstraintsGrid"
+            }
+        },
+        {
+            "eventId": "Pca0FilterCriteriaSettings.filterCriteriaUpdated",
+            "action": "storageSyncAndFirePWAReset"
+        },
+        {
+            "eventId": "primaryWorkarea.multiSelectAction",
+            "action": "refreshPrimaryWorkArea"
+        },
+        {
+            "eventId": "Pca0ConstraintsTable.deleteMultipleConstraints",
+            "message": "deleteMultipleConstraintsConfirmationMessage"
+        },
+        {
+            "eventId": "Pca0ConstraintsTable.deleteSingleConstraint",
+            "message": "deleteSingleConstraintConfirmationMessage"
+        },
+        {
+            "eventId": "Pca0ConstraintsTableViewModel.processPartialErrors",
+            "action": "processPartialErrors",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "pca0ConstraintsTable.reloadContent",
+            "action": "constraintsTableRefreshCommandBatchAction"
+        },
+        {
+            "eventId": "Pca0ConstraintsFilter.fetchConstraintFilterCategoriesAndFacets",
+            "action": "fetchConstraintFilterCategoriesAndFacets",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0ConstraintsGrid.applyConstraintsFilter",
+            "action": "applyConstraintsFilter",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0ConstraintsTable.validateAndAddCreatedConstraintsToPWA",
+            "action": "validateAndAddCreatedConstraintsToPWA",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0ConstraintsTable.addCreatedConstraintsToPWA",
+            "action": "addCreatedConstraintsToPWA",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Awp0ShowSaveAs.saveAsComplete",
+            "action": "validateAndAddCreatedConstraintsToPWA",
+            "inputArgs": {
+                "eventData": "{{eventData}}",
+                "isSaveAsAction": true
+            },
+            "condition": "conditions.isSaveAsAction"
+        }
+    ],
+    "conditions": {
+        "showEmptyWorkarea":
+        {
+            "expression": "data.totalFound === 0 && data.additionalInfoMessages.includes( 'noDataFoundForContext' )"
+        },
+        "isFormulaSuggesterEnabled": {
+            "expression": "ctx.state.urlAttributes.formulaSuggester !== undefined"
+        },
+        "Pca0IsCfgSelectedItemsOnPage": {
+            "expression": "ctx.state.params.cfgSelectedItemsInPage !== undefined"
+        },
+        "isSaveAsAction": {
+            "expression": "ctx.SAVEAS_PANEL_CONTEXT !== undefined"
+        }
+    },
+    "functions": {
+        "getCreatedObjectsNames": {
+            "functionName": "getCreatedObjectsNames",
+            "parameters": [ "{{parameters.eventData}}" ],
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "getReviseCriteria": {
+            "functionName": "getInputAndReviseCriteria",
+            "parameters": [ "{{parameters.eventData.uid}}", "revise" ],
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "getNewlyAddedCriteria": {
+            "functionName": "getInputCriteriaForNewlyAdded",
+            "parameters": [ "{{parameters.eventData}}" ],
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "getInputForApplicableTypes": {
+            "functionName": "getInputForApplicableTypes",
+            "parameters": [
+                "allConstraintRules"
+            ]
+        },
+        "cacheLoadedConstraintTypesAndOpenDialog": {
+            "functionName": "cacheLoadedConstraintTypes",
+            "parameters": [
+                "{{parameters.eventData}}",
+                "{{data.atomicDataRef.constraintsTableData}}"
+            ]
+        },
+        "getInputCriteria": {
+            "functionName": "getInputAndReviseCriteria",
+            "parameters": [ "{{data.lastLoadedConstraintUid}}", "", "{{props.subPanelContext.searchState}}", "{{data.newlyCreatedObjUids}}", "{{data.dataProviders.pca0ConstraintsDataProvider.startIndex}}"],
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "getInputCriteriaForColumnProvider": {
+            "functionName": "getInputAndReviseCriteria",
+            "parameters": [ "{{data.lastLoadedConstraintUid}}", "", "{{data.updatedFilterState}}", "{{data.newlyCreatedObjUids}}", "{{data.dataProviders.pca0ConstraintsDataProvider.startIndex}}"],
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "getLastUid": {
+            "functionName": "getLastUid",
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "getColumnConfig": {
+            "functionName": "getColumnConfig",
+            "parameters": [
+                "{{data.columnsToDisableSort}}",
+                "{{data.columnsToDisableFilter}}",
+                "{{data.dataProviders.pca0ConstraintsDataProvider.columnConfig.typesForArrange}}",
+                "{{data.conditions.isFormulaSuggesterEnabled}}"
+            ],
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "unlinkAndDeleteFunction": {
+            "functionName": "unlinkAndDelete",
+            "parameters": [
+                "{{commandContext.selectionData.selected}}"
+            ]
+        },
+        "getFilterCategoryAndFacetsInput" : {
+            "functionName": "getFilterCategoryAndFacetsInput",
+            "deps": "js/pca0ConstraintsFilterService"
+        },
+        "cacheFilterCategoriesAndOpenDialog": {
+            "functionName": "cacheFilterCategoriesAndOpenDialog",
+            "parameters": [
+                "{{parameters.eventData}}"
+            ],
+            "deps": "js/pca0ConstraintsFilterService"
+        },
+        "getInputSearchFilterMap" : {
+            "functionName": "getInputSearchFilterMap",
+            "parameters": [
+                "{{props.subPanelContext.searchState}}"
+            ],
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "getInputSearchFilterMapForColumnProvider" : {
+            "functionName": "getInputSearchFilterMap",
+            "parameters": [
+                "{{data.updatedFilterState}}"
+            ],
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "postResetFunction": {
+            "functionName": "postResetFunction",
+            "parameters": [
+                "{{data.dataProviders.pca0ConstraintsDataProvider.columnConfig}}"
+            ],
+            "deps": "js/tcarrange.service"
+        },
+        "getPropertyPolicyForPerformSearch": {
+            "functionName": "getPropertyPolicyForPerformSearch",
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "updateAdditionalInfoMessages": {
+            "functionName": "updateAdditionalInfoMessages",
+            "parameters": [
+                "{{props.subPanelContext.searchState}}"
+            ],
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        }
+    },
+    "ctx": {
+        "ConfiguratorCtx": null
+    },
+    "lifecycleHooks": {
+        "onMount": "initComponentAndUpdateXrtContext"
+    },
+    "i18n": {
+        "deleteSingleConstraintsConfirmationMsg": [ "ConfiguratorExplorerMessages" ],
+        "deleteMultipleConstraintsConfirmationMsg": [ "ConfiguratorExplorerMessages" ],
+        "cancel": [ "ConfiguratorExplorerMessages" ],
+        "deleteText": [ "ConfiguratorExplorerMessages" ],
+        "selectedConstraintsMessage": [ "ConfiguratorExplorerMessages" ],
+        "objectFilteredOut": [ "ConfiguratorExplorerMessages" ],
+        "addCmd": [ "ConfiguratorExplorerMessages" ],
+        "emptyWorkAreaTitle": [ "ConfiguratorExplorerMessages" ],
+        "showNoConstraintsHint": [ "ConfiguratorExplorerMessages" ],
+        "refresh": [ "ConfiguratorExplorerMessages" ]
+    }
+}

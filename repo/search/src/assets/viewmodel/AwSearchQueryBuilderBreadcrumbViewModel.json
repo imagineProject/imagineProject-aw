@@ -1,0 +1,117 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+    ],
+    "lifecycleHooks": {
+        "onMount": "initialize",
+        "onUpdate": [
+            {
+                "action": "buildTitle",
+                "observers": [ "props.subPanelContext.searchState" ]
+            },
+            {
+                "action": "updateQueryType",
+                "observers": [ "viewModel.data.queriesTypeSelector.dbValue" ]
+            }
+        ]
+    },
+    "data": {
+        "crumbTitle": null,
+        "queriesTypeLabel": {
+            "displayName": "{{i18n.showText}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true"
+        },
+        "queriesTypeSelector": {
+            "displayName":"{{i18n.all}}",
+            "type":"STRING",
+            "isRequired":"true",
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE",
+            "isEditable": "true",
+            "hasLov": true,
+            "dataProvider": "queryTypes",
+            "emptyLOVEntry": false
+        }
+    },
+    "actions": {
+        "initialize": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "buildTitle"
+                },
+                {
+                    "action": "initializeQueryType"
+                }
+            ]
+        },
+        "buildTitle": {
+            "actionType": "JSFunctionAsync",
+            "method": "buildTitle",
+            "inputData": {
+                "searchObject": "{{props.subPanelContext.searchState}}"
+            },
+            "outputData": {
+                "crumbTitle": ""
+            },
+            "deps": "js/AwSearchBreadcrumbUtils"
+        },
+        "initializeQueryType": {
+            "actionType": "JSFunction",
+            "method": "initializeQueryType",
+            "inputData": {
+                "queriesTypeSelector": "{{data.queriesTypeSelector}}",
+                "searchState": "{{props.subPanelContext.searchState}}",
+                "allText": "{{i18n.all}}"
+            },
+            "outputData": {
+                "queriesTypeSelector": ""
+            },
+            "deps": "js/AwSearchBreadcrumbUtils"
+        },
+        "updateQueryType": {
+            "actionType": "JSFunction",
+            "method": "updateQueryType",
+            "inputData": {
+                "queriesTypeSelector": "{{data.queriesTypeSelector}}",
+                "searchState": "{{props.subPanelContext.searchState}}"
+            },
+            "deps": "js/AwSearchBreadcrumbUtils"
+        }
+    },
+    "dataProviders": {
+        "queryTypes": {
+            "response": [
+                {
+                    "propDisplayValue": "{{i18n.all}}",
+                    "propInternalValue": "all",
+                    "selected": true
+                },
+                {
+                    "propDisplayValue": "{{i18n.public}}",
+                    "propInternalValue": "public",
+                    "selected": false
+                },
+                {
+                    "propDisplayValue": "{{i18n.private}}",
+                    "propInternalValue": "private",
+                    "selected": false
+                }
+            ],
+            "totalFound": 3
+        }
+    },
+    "onEvent": [],
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "i18n": {
+        "showText": [ "SearchMessages" ],
+        "all": [ "SearchMessages" ],
+        "public": [ "SearchMessages" ],
+        "private": [ "SearchMessages" ]
+    }
+}

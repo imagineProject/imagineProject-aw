@@ -1,0 +1,256 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "variantRuleFilterBox": {
+            "displayName": "{{i18n.filter1}}",
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "defaultVariantRule": {
+            "displayName": "{{i18n.useNoVariantRuleLabel}}",
+            "uiValue": "{{i18n.useNoVariantRuleLabel}}",
+            "type": "STRING"
+        },
+        "customVariantRule": {
+            "displayName": "{{i18n.customVariantRule}}",
+            "type": "STRING"
+        },
+        "newVariantRule": {
+            "displayName": "{{i18n.new}}",
+            "type": "STRING"
+        }
+    },
+    "actions": {
+        "initializeView": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getAllVariantRulesAction"
+                },
+                {
+                    "action": "activateCurrentView",
+                    "condition": "conditions.isActiveViewDifferent"
+                }
+            ]
+        },
+        "getAllVariantRulesAction": {
+            "actionType": "dataProvider",
+            "method": "getAllVariantRules"
+        },
+        "getAllVariantRules": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getConfigPerspective"
+                },
+                {
+                    "action": "prepareGetVariantRulesSOAInput"
+                },
+                {
+                    "action": "searchForVariantRules"
+                },
+                {
+                    "action": "processVariantRules"
+                }
+            ]
+        },
+        "getConfigPerspective": {
+            "actionType": "JSFunctionAsync",
+            "method": "getConfigPerspective",
+            "deps": "js/pcaStructureVariantService",
+            "inputData": {
+                "occContext": "{{data.subPanelContext.occContext}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "outputData": {
+                "configPerspectiveFromConsumerApps": ""
+            }
+        },
+        "prepareGetVariantRulesSOAInput": {
+            "actionType": "JSFunction",
+            "method": "prepareCfgProviderInput",
+            "inputData": {
+                "data": "{{data}}",
+                "textboxInput":"{{data.variantRuleFilterBox.dbValue}}",
+                "revisionRule": "{{ctx.userSession.props.awp0RevRule}}"
+            },
+            "outputData":{
+                "searchSOAInput":""
+            },
+            "deps": "js/pcaStructureVariantService"
+        },
+        "searchForVariantRules": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "maxToLoad": 99,
+                        "maxToReturn": 20,
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.getAllVariantRules.startIndex}}"
+                        },
+                        "providerName": "Pca0SavedVariantsProvider",
+                        "searchCriteria": "{{data.searchSOAInput}}",
+                        "searchSortCriteria": [ {
+                            "fieldName": "lsd",
+                            "sortDirection": "DESC"
+                        } ]
+                    }
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "totalLoaded": "totalLoaded",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "lastLoadedVariantUid": "{{function:getLastUid}}"
+            }
+        },
+        "processVariantRules": {
+            "actionType": "JSFunction",
+            "method": "processVariantRules",
+            "inputData": {
+                "data":"{{data.searchResults}}",
+                "startIndex": "{{data.dataProviders.getAllVariantRules.startIndex}}",
+                "totalFound": "{{data.totalFound}}",
+                "defaultVariantRule": "{{data.subPanelContext.defaultVariantRule.uiValue}}"
+            },
+            "outputData":{
+                "variantRules":"variantRules",
+                "totalFound": "totalFound"
+            },
+            "deps": "js/pcaStructureVariantService"
+        },
+        "applyVariantInfoChange": {
+            "actionType": "JSFunction",
+            "method": "applyVariantConfigChange",
+            "inputData": {
+                "value": {
+                    "configContext": {
+                        "r_uid": "{{data.subPanelContext.occContext.productContextInfo.props.awb0CurrentRevRule.dbValues[0]}}",
+                        "var_uids": "{{data.eventData.variantRules}}",
+                        "iro_uid": "{{data.eventData.svrOwningItem.uid}}",
+                        "de": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EffDate.dbValues[0]}}",
+                        "ue": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EffUnitNo.dbValues[0]}}",
+                        "ei_uid": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EffEndItem.dbValues[0]}}",
+                        "eg_uids": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EffectivityGroups.dbValues}}",
+                        "startDate": "{{data.subPanelContext.occContext.productContextInfo.props.awb0StartEffDates.dbValues[0]}}",
+                        "endDate": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EndEffDates.dbValues[0]}}",
+                        "fromUnit": "{{data.subPanelContext.occContext.productContextInfo.props.awb0StartEffUnits.dbValues[0]}}",
+                        "toUnit": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EndEffUnits.dbValues[0]}}",
+                        "startFreshNavigation": true
+                    },
+                    "transientRequestPref": {
+                        "jitterFreePropLoad" : true,
+                        "userGesture": "VARIANT_RULE_CHANGE"
+                    }
+                },
+                "occContext": "{{data.subPanelContext.occContext}}"
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "updateVariantRule": {
+            "actionType": "JSFunction",
+            "method": "updateVariantRule",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "data": "{{data}}",
+                "configSvrEndItem": "{{props.subPanelContext.configSvrEndItem}}"
+            },
+            "outputData":{
+                "isCustomVariantRuleApplied":"isCustomVariantRuleApplied"
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "selectVariantRule": {
+            "actionType": "JSFunction",
+            "method": "selectVariantRule",
+            "inputData": {
+                "data": "{{data}}",
+                "dataprovider": "{{data.dataProviders.getAllVariantRules}}"
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "activateCurrentView": {
+            "actionType": "JSFunction",
+            "method": "updateActiveContext",
+            "inputData": {
+                "data": "{{data.subPanelContext.contextKey}}"
+            },
+            "deps": "js/aceContextStateMgmtService"
+        },
+        "processVariantInfoChange": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "setVariantRuleChangeFlag"
+                },
+                {
+                    "action": "applyVariantInfoChange"
+                }
+            ]
+        },
+        "setVariantRuleChangeFlag": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "variantRule.changeRule",
+                "value": true
+            },
+            "deps": "js/appCtxService"
+        }
+    },
+    "dataProviders": {
+        "getAllVariantRules": {
+            "action": "getAllVariantRules",
+            "response": "{{data.variantRules}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeView"
+    },
+    "onEvent": [
+        {
+            "eventId": "getAllVariantRules.selectionChangeEvent",
+            "cacheEventData": true,
+            "action": "updateVariantRule"
+        },
+        {
+            "eventId": "getAllVariantRules.modelObjectsUpdated",
+            "action": "selectVariantRule"
+        },
+        {
+            "eventId": "awConfigPanel.variantInfoChanged",
+            "cacheEventData": true,
+            "action": "processVariantInfoChange"
+        },
+        {
+            "eventId": "awConfigPanel.setMountFlag",
+            "action": "setMountFlag"
+        }
+    ],
+    "conditions": {
+        "isActiveViewDifferent": {
+            "expression": "data.subPanelContext.contextKey !== ctx.aceActiveContext.key"
+        }
+    },
+    "functions": {
+        "getLastUid": {
+            "functionName": "getLastUid",
+            "deps": "js/pcaStructureVariantService"
+        }
+    },
+    "i18n": {
+        "useNoVariantRuleLabel": [ "OccurrenceManagementConstants" ],
+        "filter1":["OccurrenceManagementConstants"],
+        "customCVConfigurationTitle":["OccurrenceManagementConstants"],
+        "new": [ "OccurrenceManagementConstants" ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

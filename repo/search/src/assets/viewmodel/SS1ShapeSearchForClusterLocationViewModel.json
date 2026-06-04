@@ -1,0 +1,275 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "performClusterSearch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "clusterSearchFromPalette",
+                    "condition": "conditions.isPaletteTabAddButtonVisible"
+                },
+                {
+                    "action": "clusterSearchFromSearchTab",
+                    "condition": "conditions.isSearchTabAddButtonVisible"
+                }
+            ]
+        },
+        "clusterSearchFromPalette": {
+            "actionType": "JSFunction",
+            "method": "doClusterSearch",
+            "inputData": {
+                "targetState": "",
+                "clusterCandidate": "{{data.addPanelState.sourceObjects}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "clusterSearch.closeSelectTargetsPanel"
+                    }
+                ]
+            },
+            "deps": "js/SS1ClusterSearchService"
+        },
+        "clusterSearchFromSearchTab": {
+            "actionType": "JSFunction",
+            "method": "doClusterSearch",
+            "inputData": {
+                "targetState": "",
+                "clusterCandidate": "{{selectionData.selected}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "clusterSearch.closeSelectTargetsPanel"
+                    }
+                ]
+            },
+            "deps": "js/SS1ClusterSearchService"
+        },
+        "closeSelectTargetsPanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": null,
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "checkClusterTargetVisibilityForPalette": {
+            "actionType": "JSFunction",
+            "method": "checkClusterTargetVisibilityForPalette",
+            "inputData": {
+                "data":"{{data}}",
+                "addPanelState": "{{data.addPanelState}}"
+            },
+            "outputData": {
+                "isValidShapeInPalette": ""
+            },
+            "deps": "js/SS1ClusterSearchService"
+        },
+        "initClusterTargetPanelbatchJob":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "initializeClusterSearchPopupId"
+                },
+                {
+                    "action": "initClusterSearchPanel"
+                }
+            ]
+        },
+        "initClusterSearchPanel":{
+            "actionType": "JSFunction",
+            "method": "initClusterSearchPanel",
+            "outputData": {
+                "searchFilterTabModels": ""
+            },
+            "deps": "js/SS1ClusterSearchService"
+        },
+        "initializeClusterSearchPopupId": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.searchState}}",
+                "value": {
+                    "clusterSearchPopupId": "{{subPanelContext.popupOptions.popupId}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateSearchCriteriaForObjectsReported":{
+            "actionType": "JSFunction",
+            "method": "updateSearchCriteriaForObjectsReported",
+            "inputData": {
+                "searchState": "{{data.searchState}}",
+                "searchStateUpdater": "{{data.updateAtomicData}}"
+            },
+            "deps": "js/SS1ClusterSearchService"
+        },
+        "updateSearchCriteriaSearchString":{
+            "actionType": "JSFunction",
+            "method": "updateSearchCriteriaSearchString",
+            "inputData": {
+                "searchState": "{{data.searchState}}",
+                "searchStateUpdater": "{{data.updateAtomicData}}"
+            },
+            "deps": "js/SS1ClusterSearchService"
+        },
+        "reInitialize": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.searchState}}",
+                "value": {
+                    "clusterSearchPopupId": null
+                }
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "data": {
+        "activeSearch": {
+            "initialValues": {
+                "name": "keyword"
+            },
+            "meta": {}
+        },
+        "typeContext":{
+            "typeFilter": "ItemRevision"
+        },
+        "showSubFilter": false,
+        "searchState": {
+            "initialValues": {
+                "provider": "Awp0FullTextSearchProvider",
+                "criteria": {
+                    "searchFromLocation": "global",
+                    "totalObjectsFoundReportedToClient": "0",
+                    "limitedFilterCategoriesEnabled": "true"
+                },
+                "hideResultsCount": true,
+                "hideFilters": true
+            },
+            "meta": {
+                "categories": [ {
+                    "filterValues": [ {
+                        "selected": {
+                            "field": "true",
+                            "type": "ViewModelProperty"
+                        }
+                    } ]
+                } ]
+            }
+        },
+        "tabModels": [ {
+                "name": "{{i18n.addObjPaletteBtn}}",
+                "tabKey": "palettePage"
+            },
+            {
+                "name": "{{i18n.searchApplicationTitle}}",
+                "tabKey": "searchPage",
+                "recreatePanel": true
+            }
+        ],
+        "searchFilterTabModels1": {
+            "isArray": "true",
+            "dbValue": [ {
+                    "tabKey": "results",
+                    "pageId": "results",
+                    "name": "Results",
+                    "selectedTab": true,
+                    "priority": 0,
+                    "recreatePanel": true
+                }
+            ]
+        },
+        "searchString": {
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "additionalSearchCriteria": {
+            "group": ""
+        },
+        "filterBox": {
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "typeFilter": "ItemRevision",
+        "relationType": "",
+        "triggerCreate": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        },
+        "addPanelState": {
+            "initialValues": {
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {
+                "sourceObjects": {
+                    "field": "true",
+                    "type": "OBJECTARRAY"
+                },
+                "selectedTab": {
+                    "field": "true",
+                    "type": "OBJECT"
+                }
+            }
+        },
+        "searchBox": {
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "true",
+            "dbValue": ""
+        },
+        "searchTip": {
+            "dbValue": "cluster search candidates"
+        },
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "conditions": {
+        "isSearchCandidateSelected": {
+            "expression": "conditions.isSearchTabAddButtonVisible || conditions.isPaletteTabAddButtonVisible"
+        },
+        "isPaletteTabAddButtonVisible": {
+            "expression": "data.selectedTab.tabKey === 'palettePage' && addPanelState.sourceObjects && addPanelState.sourceObjects.length > 0"
+        },
+        "isSearchTabAddButtonVisible": {
+            "expression": "data.selectedTab.tabKey === 'searchPage' && selectionData.selected[0]"
+        }
+    },
+    "onEvent": [ {
+        "eventId": "clusterSearch.closeSelectTargetsPanel",
+        "action": "closeSelectTargetsPanel"
+    }],
+    "selectionModels": {
+        "resultTabModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "i18n": {
+        "SS1TargetForCluster": [ "ClusterSearchMessages" ],
+        "SS1ShapeSearchClusterAction": [ "ClusterSearchMessages" ],
+        "searchApplicationTitle": [ "SearchMessages" ],
+        "addObjPaletteBtn": [ "SearchMessages"]
+    },
+    "lifecycleHooks": {
+        "onMount": "initClusterTargetPanelbatchJob",
+        "onUnmount": "reInitialize",
+        "onUpdate": [
+            {
+                "action": "checkClusterTargetVisibilityForPalette",
+                "observers": [ "viewModel.atomicData.addPanelState.sourceObjects" ]
+            },
+            {
+                "action": "updateSearchCriteriaForObjectsReported",
+                "observers": [ "viewModel.atomicData.searchState.endIndex" ]
+            },
+            {
+                "action": "updateSearchCriteriaSearchString",
+                "observers": [ "viewModel.atomicData.searchState.criteria.searchString" ]
+            }
+        ]
+    }
+}

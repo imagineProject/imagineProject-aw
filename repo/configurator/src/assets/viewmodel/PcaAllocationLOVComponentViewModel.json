@@ -1,0 +1,99 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "render": {
+            "method": "awPcaAllocationLOVComponentRenderFunction",
+            "deps": "js/PcaAllocationLOVComponentService"
+        },
+        "getApplicableAllocations": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": "{{function:getSearchInput}}",
+                    "noServiceData": false,
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "searchResults": "{{function:processSoaResponseForBONames}}",
+                "totalFound": "totalFound",
+                "lastLoadedObjectUid": "{{function:getLastUid}}",
+                "searchString": "{{function:getFilterString}}"
+            }
+        }
+    },
+    "data":{
+        "listBoxName": {
+            "type": "STRINGARRAY",
+            "isArray": true,
+            "dataProvider": "pca0AllocationDataProvider"
+        },
+        "searchColumnName":"",
+        "searchResults": [],
+        "totalFound": 0,
+        "lastLoadedObjectUid": ""
+    },
+    "conditions": {},
+    "onEvent": [],
+    "dataProviders": {
+        "pca0AllocationDataProvider": {
+            "action": "getApplicableAllocations",
+            "initializeAction": "getApplicableAllocations",
+            "nextAction": "getApplicableAllocations",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}"
+        }
+    },
+    "functions": {
+        "getInputForApplicableNames": {
+            "functionName": "getInputForApplicableNames",
+            "parameters": [
+                "{{data.ctx.selected.type}}"
+            ],
+            "deps": "js/pca0InlineAuthoringHandler"
+        },
+        "processSoaResponseForBONames": {
+            "functionName": "processSoaResponseForBONames",
+            "parameters": [
+                "{{data.searchColumnName}}"
+            ],
+            "deps": "js/PcaAllocationLOVComponentService"
+        },
+        "getFilterString": {
+            "functionName": "getFilterString",
+            "parameters": [
+                "{{data.ctx.selected.props}}"
+            ],
+            "deps": "js/PcaAllocationLOVComponentService"
+        },
+        "getLastUid": {
+            "functionName": "getLastUid",
+            "parameters": [],
+            "deps": "js/PcaAllocationLOVComponentService"
+        },
+        "getSearchInput": {
+            "functionName": "getSearchInputForAllocation",
+            "parameters": [
+                "{{data.ctx.selected.props}}",
+                "{{data.searchColumnName}}",
+                "{{data.dataProviders.pca0AllocationDataProvider.startIndex}}",
+                "{{ctx.ConfiguratorCtx.configPerspective.uid}}",
+                "{{props}}",
+                "{{data.lastLoadedObjectUid}}",
+                "{{data.searchString}}"
+            ],
+            "deps": "js/PcaAllocationLOVComponentService"
+        }
+    },
+    "lifecycleHooks": {
+        "render": "render"
+
+    },
+    "props": {
+        "prop": {
+            "type": "field"
+        }
+    }
+}

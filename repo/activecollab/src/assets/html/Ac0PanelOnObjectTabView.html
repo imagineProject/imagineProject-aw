@@ -1,0 +1,63 @@
+<aw-guidance-message exist-when="ctx.preferences.Ac0EnableDevFeatures && ctx.preferences.Ac0EnableDevFeatures[0]==='true'" message="discussPanelNewDiscussionRefreshMsg" banner-style="true" show-icon="false" show-type="false">
+    <div class="sw-button-wrapper">
+    <aw-button action="panelRefreshBtnAction">
+        <aw-image class="aw-activecollab-refreshDiscussionIcon" source="data.refreshIconURL.dbValue" is-icon="true"></aw-image>
+        {{i18n.discussPanelRefreshCmd}}
+    </aw-button>
+    </div>
+</aw-guidance-message>
+    <div class='sw-row aw-activecollab-cellHeader' exist-when="!conditions.isSnapshotSelected">
+        <img exist-when="props.objectTabData && !conditions.isHostedComponent && data.selectedObject.typeIconURL && props.objectTabData.subPanelContext.selectionData.selected[0] && props.objectTabData.subPanelContext.selectionData.selected[0].props.object_string.dbValues" class="aw-base-icon aw-type-icon sw-flex-column aw-activecollab-cellHeaderIcon" src={{data.selectedObject.typeIconURL}} />
+        <div class="sw-column flex-auto aw-activecollab-cellHeaderTitleContainer" visible-when="props.objectTabData && !conditions.isHostedComponent">
+            <div exist-when="props.objectTabData.subPanelContext.selectionData.selected[0] && props.objectTabData.subPanelContext.selectionData.selected[0].props.object_string.dbValues" class="aw-activecollab-cellHeaderTitle sw-flex-row ">
+                <div class="aw-activecollab-cellHeaderText">{{data.selectedObject.dbValue}}</div>
+            </div>
+        </div>
+        <img exist-when="props.objectTabData && conditions.isHostedComponent && ctx.selected.typeIconURL" class="aw-base-icon aw-type-icon sw-flex-column aw-activecollab-cellHeaderIcon" src={{ctx.selected.typeIconURL}} />
+        <div class="sw-column flex-auto aw-activecollab-cellHeaderTitleContainer" visible-when="props.objectTabData && conditions.isHostedComponent">
+            <div exist-when="props.objectTabData.objData.sharedData.selectedObj" class="aw-activecollab-cellHeaderTitle sw-flex-row ">
+                <div class="aw-activecollab-cellHeaderText">{{data.selectedHostedObject.dbValue}}</div>
+            </div>
+        </div>
+        <aw-command-bar context="{sharedData: props.objectTabData.objData.sharedData, panelData:data}" anchor="ac0_updateOnObjectCmds"></aw-command-bar>
+        <aw-command-bar exist-when="props.objectTabData.subPanelContext.selectionData.selected[0] && props.objectTabData.subPanelContext.selectionData.selected[0].props.object_string.dbValues && !conditions.inProductGalleryLocation" class="sw-column flex-shrink aw-activecollab-cellHeaderCommandBar" anchor="ac0_onObjectSubCmds" overflow="true"></aw-command-bar>
+    </div>
+
+    <div class="sw-row aw-activecollab-cellHeader" exist-when="conditions.isSnapshotSelected">
+        <img exist-when="props.objectTabData && !conditions.isHostedComponent && data.selectedSnapshotObject.typeIconURL" class="aw-base-icon aw-type-icon sw-flex-column aw-activecollab-cellHeaderIcon" src={{data.selectedSnapshotObject.typeIconURL}} />
+        <div class="sw-column flex-auto aw-activecollab-cellHeaderTitleContainer" visible-when="props.objectTabData && !conditions.isHostedComponent">
+            <div exist-when="data.selectedSnapshotObject" class="aw-activecollab-cellHeaderTitle sw-flex-row ">
+                <div class="aw-activecollab-cellHeaderText">{{data.selectedSnapshotObject.dbValue}}</div>
+            </div>
+        </div>
+        <img exist-when="props.objectTabData && conditions.isHostedComponent && ctx.selected.typeIconURL" class="aw-base-icon aw-type-icon sw-flex-column aw-activecollab-cellHeaderIcon" src={{ctx.selected.typeIconURL}} />
+        <div class="sw-column flex-auto aw-activecollab-cellHeaderTitleContainer" visible-when="props.objectTabData && conditions.isHostedComponent">
+            <div exist-when="data.selectedHostedSnapshotObject" class="aw-activecollab-cellHeaderTitle sw-flex-row ">
+                <div class="aw-activecollab-cellHeaderText">{{data.selectedHostedSnapshotObject.dbValue}}</div>
+            </div>
+        </div>
+        <aw-command-bar context="{sharedData: props.objectTabData.objData.sharedData, panelData:data}" anchor="ac0_updateOnObjectCmds"></aw-command-bar>
+    </div>
+
+    <div height="4f" exist-when="conditions.inProductGalleryLocation && conditions.hasNoDiscussions ||
+    !conditions.inProductGalleryLocation && !conditions.isSnapshotSelected ||
+    !conditions.inProductGalleryLocation && conditions.isSnapshotSelected && conditions.hasNoDiscussions||
+    !conditions.inProductGalleryLocation && conditions.isSnapshotSelectedOnObject && conditions.hasNoDiscussions">
+        <div class="sw-column" width="4" justify="center" align-content="stretch">
+            <aw-command-bar context="{sharedData: props.objectTabData.objData.sharedData}" anchor="ac0_onObjectTabNewCmd" alignment="HORIZONTAL"></aw-command-bar>
+        </div>
+    </div>
+<aw-panel-body class="aw-layout-panelBody">
+    <aw-list
+        visible-when="!data.dataProviders.conversationDataProvider.noResults && ( conditions.isNotClassificationUsecase || conditions.isClassificationUsecase)"
+        dataprovider="data.dataProviders.conversationDataProvider" class="aw-activecollab-shadow afx-content-background">
+        <ac0-discussion-tile conv-item="{discussionItem: item}" selected-obj='{selectionData: props.objectTabData.objData.selectionData}' shared-data-obj='{sharedData: props.objectTabData.objData.sharedData}' contents="{switch: { meta: { showMeta: true, clickableLinks: true }, showDetails: true, showList: true, showReply: true, showActions: true, showMoreCommands: true } }" occmgmt-context="props.objectTabData.occmgmtContext"></ac0-discussion-tile>
+    </aw-list>
+    <aw-empty-workarea
+        visible-when="data.dataProviders.conversationDataProvider.noResults"
+        image="graEmptyDiscussion" title="i18n.emptyStateOnObjectPanel"
+        hint="i18n.emptyStateOnObjectHostedLocation"
+        action="actions.createNewDiscussion"
+        link-text="i18n.newConversation">
+    </aw-empty-workarea>
+</aw-panel-body>

@@ -1,0 +1,64 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "showListOfPrimaryComponentsBatchJob": {
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action": "getPropertiesOfVmoHovered",
+                    "condition":"!conditions.isAwb0PrimaryComponentsUndefined"
+                },
+                {
+                    "action": "showListOfPrimaryComponents"
+                }
+            ]
+        },
+        "getPropertiesOfVmoHovered": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": [
+                    "{{subPanelContext.vmoHovered}}"
+                ],
+                "attributes": [
+                    "awb0PrimaryComponents"
+                ]
+            }
+        },
+        "showListOfPrimaryComponents": {
+            "actionType": "JSFunctionAsync",
+            "method": "showListOfPrimaryComponents",
+            "inputData": {
+                "vmoHovered": "{{subPanelContext.vmoHovered}}",
+                "primaryLabel": "{{i18n.primaryLabel}}",
+                "tooltipLinkText": "{{i18n.tooltipLinkText}}"
+            },
+            "outputData": {
+                "primaryObjects": "tooltipObjects",
+                "enableMorePrimary": "enableMoreObjects",
+                "morePrimary": "moreObjects",
+                "primaryLabel": "tooltipLabel"
+            },
+            "deps": "js/aceOccurrenceSubstituteGroupService"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "showListOfPrimaryComponentsBatchJob"
+    },
+    "data": {
+        "primaryLabel": {
+            "displayName": "{{i18n.primaryLabel}}",
+            "type": "STRING"
+        }
+    },
+    "conditions": {
+        "isAwb0PrimaryComponentsUndefined": {
+            "expression": "vmoHovered.props && !vmoHovered.props.awb0PrimaryComponents"
+        }
+    },
+    "i18n": {
+        "primaryLabel": [ "OccurrenceManagementConstants" ],
+        "tooltipLinkText": [ "OccurrenceManagementConstants" ]
+    }
+}

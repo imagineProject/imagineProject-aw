@@ -1,0 +1,284 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "data": {
+        "addUserPanelState": {
+            "initialValues": {
+                "provider": "Awp0PeoplePickerProvider",
+                "selectionModelMode": "single",
+                "criteria": {
+                    "providerContentType": "GroupMember",
+                    "searchString": "*",
+                    "selectedObject": "",
+                    "searchSubGroup": "true",
+                    "group": "",
+                    "role": "",
+                    "participantType": ""
+                },
+                "selectedUsers": "",
+                "isAddButtonNeeded": false,
+                "selectedObjectsForChangeOwner": ""
+            },
+            "meta": {
+                "selectedUsers": {
+                    "field": "true",
+                    "type": "OBJECTARRAY"
+                }
+            }
+        },
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "showRelatedObjects":{
+            "displayName": "{{i18n.showRelatedObjects}}",
+            "type": "boolean",
+            "dbValue": false
+        },
+        "hideRelatedObjects":{
+            "displayName": "{{i18n.hideRelatedObjects}}",
+            "type": "boolean",
+            "dbValue": true
+        }
+    },
+    "actions": {
+        "changeOwner": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "changeOwnership"
+                },
+                {
+                    "action": "closePanelDialog"
+                }
+            ]
+        },
+        "changeOwnership": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2023-12-DataManagement",
+            "method": "changeOwner2",
+            "inputData": {
+                "objectsAndOwnersInput": "{{function:getChangeOwnerInput}}",
+                "relatedObjectsIncluded": "{{function:getIncludeRelatedObjectsFlag}}"
+            },
+            "outputData": {
+                "changeOwnershipPartialErrors": "partialErrors"
+            },
+            "events": {
+                "success": [ {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closePanelDialog"
+                    }
+                ],
+                "failure": [ {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closePanelDialog"
+                    },
+                    {
+                        "condition": "(ctx.mselected && ctx.mselected.length > 1 && data.changeOwnershipPartialErrors )",
+                        "name": "partialErrorsReceived"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "condition": "(ctx.mselected && ctx.mselected.length === 1)",
+                    "message": "singleObjectChangeOwnershipSuccess"
+                }, {
+                    "condition": "(ctx.mselected && ctx.mselected.length > 1)",
+                    "message": "multipleObjectsChangeOwnershipSuccess"
+                } ],
+                "failure": [ {
+                        "condition": "(ctx.mselected && ctx.mselected.length === 1 && data.changeOwnershipPartialErrors )",
+                        "message": "changeOwnershipForObjectFailure"
+                    }
+                ]
+            },
+            "deps": "js/tcChangeOwnerService"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "showRelatedObjects": {
+            "actionType": "JSFunction",
+            "method": "showRelatedObjects",
+            "inputData": {
+                "shouldShowRelatedObjects": true
+            },
+            "outputData": {
+                "data.showRelatedObjects.dbValue": "showRelatedObjects",
+                "data.hideRelatedObjects.dbValue": "hideRelatedObjects"
+            },
+            "deps": "js/tcChangeOwnerService"
+        },
+        "hideRelatedObjects": {
+            "actionType": "JSFunction",
+            "method": "showRelatedObjects",
+            "inputData": {
+                "shouldShowRelatedObjects": false
+            },
+            "outputData": {
+                "data.showRelatedObjects.dbValue": "showRelatedObjects",
+                "data.hideRelatedObjects.dbValue": "hideRelatedObjects"
+            },
+            "deps": "js/tcChangeOwnerService"
+        },
+        "cacheSelections": {
+            "actionType": "JSFunction",
+            "method": "cacheSelections",
+            "inputData": {
+                "selection": "{{props.subPanelContext.selectionData}}"
+            },
+            "outputData": {
+                "cachedSelections": ""
+            },
+            "deps": "js/tcChangeOwnerService"
+        },
+        "handleSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "hasSelectionChanged"
+                },
+                {
+                    "action": "closePanelDialog",
+                    "condition": "conditions.selectionChanged"
+                }
+            ]
+        },
+        "hasSelectionChanged": {
+            "actionType": "JSFunction",
+            "method": "hasSelectionChanged",
+            "inputData": {
+                "selection": "{{props.subPanelContext.selectionData}}",
+                "cachedSelections": "{{data.cachedSelections}}"
+            },
+            "outputData": {
+                "selectionChanged": ""
+            },
+            "deps": "js/tcChangeOwnerService"
+        },
+        "handlePartialErrors": {
+            "actionType": "JSFunction",
+            "method": "setNumberOfSuccessfulObjects",
+            "inputData": {
+                "selected": "{{ctx.mselected}}",
+                "partialErrors": "{{data.changeOwnershipPartialErrors}}"                
+            },
+            "outputData": {
+                "noOfsucccessFulObjects": ""
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "partialObjectsChangeOwnershipFailure"
+                } ]
+            },
+            "deps": "js/tcChangeOwnerService"
+        }
+    },
+    "messages": {
+        "singleObjectChangeOwnershipSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.singleObjectChangeOwnershipSuccess}}",
+            "messageTextParams": [ "{{ctx.mselected[0].props.object_string.uiValues[0]}}" ]
+        },
+        "multipleObjectsChangeOwnershipSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.multipleObjectsChangeOwnershipSuccess}}",
+            "messageTextParams": [
+                "{{ctx.mselected.length}}",
+                "{{ctx.mselected.length}}"
+            ]
+        },
+        "partialObjectsChangeOwnershipFailure": {
+            "expression": {
+                "successCount": "noOfsucccessFulObjects"
+            },
+            "messageType": "ERROR",
+            "messageKey": "changeOwnerNotyError",
+            "messageTextParams": [
+                "{{expression.successCount}}",
+                "{{ctx.mselected.length}}"
+            ],
+            "messageData": {
+                "partialErrors": "{{data.changeOwnershipPartialErrors}}"
+            },
+            "message": {
+                "messageParam": {
+                    "name": "multipleObjectsChangeOwnershipSuccess"
+                },
+                "partialError": {
+                    "name": "changeOwnershipForObjectFailure"
+                }
+            }
+        },
+        "changeOwnershipForObjectFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.changeOwnershipForObjectFailure}}",
+            "messageTextParams": [ "{{ctx.mselected[0].props.object_string.uiValues[0]}}" ]
+        }
+    },
+    "conditions": {
+        "isValidToPerformChangeOwnership": {
+            "expression": "addUserPanelState.selectedUsers.length === 1"
+        },
+        "selectionChanged": {
+            "expression": "data.selectionChanged === true"
+        }
+    },
+
+    "functions": {
+        "getChangeOwnerInput": {
+            "functionName": "getChangeOwnerInput",
+            "parameters": [
+                "{{data}}",
+                "{{ctx.mselected}}",
+                "{{data.addUserPanelState.selectedUsers[0]}}"
+            ]
+        },
+        "getIncludeRelatedObjectsFlag": {
+            "functionName": "getIncludeRelatedObjectsFlag",
+            "parameters": [
+                "{{data}}"
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "cacheSelections",
+        "onUpdate": [ {
+            "action": "handleSelectionChange",
+            "observers": [ "props.subPanelContext.selectionData.selected[0].uid", "props.subPanelContext.selectionData.selected.length" ]
+        }]
+    },
+    "i18n": {
+        "user": [ "Awp0ChangeOwnerMessages" ],
+        "change": [ "Awp0ChangeOwnerMessages" ],
+        "Awp0ChangeOwner": [ "Awp0ChangeOwnerMessages" ],
+        "singleObjectChangeOwnershipSuccess": [ "Awp0ChangeOwnerMessages" ],
+        "multipleObjectsChangeOwnershipSuccess": [ "Awp0ChangeOwnerMessages" ],
+        "changeOwnershipForObjectFailure": [ "Awp0ChangeOwnerMessages" ],
+        "relatedObjects": [ "Awp0ChangeOwnerMessages"],
+        "showRelatedObjects": [ "Awp0ChangeOwnerMessages"],
+        "hideRelatedObjects": [ "Awp0ChangeOwnerMessages"]
+    },
+    "onEvent": [
+        {
+            "eventId": "partialErrorsReceived",
+            "action": "handlePartialErrors"
+        }
+    ]
+}

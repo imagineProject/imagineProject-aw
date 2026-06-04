@@ -1,0 +1,131 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-command-panel.directive",
+        "js/aw-command-sub-panel.directive",
+        "js/visible-when.directive",
+        "js/aw-init.directive"
+    ],
+    "actions": {
+        "closePanel":
+        {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData":
+            {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "condition": "data.initialSelection !== undefined && data.initialSelection !== subPanelContext.selectionData.selected[0].uid",
+                        "name": "close.dialog"
+                    }
+                ]
+            }
+        },
+        "updateActiveView":{
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "inputData": {
+                "stateName": "{{fields.activeState}}",
+                "destPanelId": "Cm1CreateChangeSub"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "cacheInitialSelection": {
+            "actionType": "JSFunction",
+            "method": "cacheSelection",
+            "inputData": {
+                "selectedUidSD": "{{props.subPanelContext.selectionData}}",
+                "selectedUidPWAS": "{{props.subPanelContext.searchState.pwaSelection}}",
+                "selectedUidBS": "{{props.subPanelContext.searchState.baseSelection}}"
+            },
+            "outputData": {
+                "initialSelection": ""
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "gwt.SubLocationContentSelectionChangeEvent",
+            "condition": "conditions.isObjectSelected",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "close.dialog",
+            "action": "closePanel"
+        }
+    ],
+    "conditions": {
+        "isObjectSelected": {
+            "expression": "haveObjectsSelected===true"
+        },
+        "differentSelection": {
+            "expression": "data.initialSelection !== subPanelContext.selectionData.selected[0].uid"
+        }
+    },
+    "lifecycleHooks": {
+         "onMount": "cacheInitialSelection",
+         "onUpdate": [ {
+            "action": "closePanelOnSelectionChange",
+            "observers": [ "props.subPanelContext.selectionData.selected[0].uid", "props.subPanelContext.searchState.pwaSelection[0].uid", "props.subPanelContext.searchState.baseSelection.uid" ]
+        }]
+    },
+    "i18n": {
+        "CreateChange": [
+            "CreateChangeMessages"
+        ],
+        "DeriveChange": [
+            "CreateChangeMessages"
+        ],
+        "BACK_BUTTON_TITLE": ["BaseMessages"]
+    },
+    "data": {
+        "sharedData": {
+            "initialValues": {
+                "prePanelId":"Cm1CreateChangeSub"
+            },
+            "meta": {}
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "Cm1CreateChangeSub",
+                "context": {}
+            },
+            "meta": {
+                "activeView": {
+                    "field": "true",
+                    "type": "STRING"
+                },
+                "context": {
+                    "field": "true",
+                    "type": "OBJECT"
+                }
+            }
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {
+                "selectedProjects": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "triggerAssign": {
+                    "field": "true",
+                    "type": "BOOLEAN"
+                }
+            }
+        }
+    }
+}

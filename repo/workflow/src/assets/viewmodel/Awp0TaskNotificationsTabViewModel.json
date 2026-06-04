@@ -1,0 +1,439 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-panel-body.directive",
+        "js/aw-command-panel-section.directive"
+    ],
+    "actions": {
+        "initNotificationTab": {
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action": "getValidTemplateVMOObject"
+                },
+                {
+                    "action": "loadProperties",
+                    "condition": "data.selectedTemplateObject && data.selectedTemplateObject.uid"
+                }
+            ]
+        },
+        "getValidTemplateVMOObject": {
+            "actionType": "JSFunction",
+            "method": "getValidTemplateVMOObject",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "workflowDgmEditCtx": "{{props.subPanelContext.workflowDgmEditCtx}}"
+            },
+            "outputData": {
+                "rootTaskTemplateObject": "rootTaskTemplateObject",
+                "selectedTemplateObject": "selectedTemplateObject",
+                "isTemplateEditable": "isTemplateEditable"
+            },
+            "deps": "js/Awp0WorkflowDesignerUtils"
+        },
+        "loadProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": "{{function:getTemplateObjectsToLoad}}",
+                "attributes": [
+                    "template_name",
+                    "action_handlers"
+                ]
+            },
+            "policy": {
+                "types": [ {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "object_desc"
+                            },
+                            {
+                                "name": "fnd0Instructions"
+                            },
+                            {
+                                "name": "action_handlers",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                             }
+
+                        ]
+                    },
+                    {
+                        "name": "EPMHandler",
+                        "properties":
+                        [
+                           {
+                              "name": "arguments"
+                           },
+                           {
+                                "name": "parent_action_type"
+                           }
+                        ]
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "epmTaskTemplate.notificationPropertiesLoaded",
+                        "condition" : "data.allParticipantTypeResults"
+                    },
+                    {
+                        "name": "epmTaskTemplate.loadDynamicParticipants",
+                        "condition" : "!data.allParticipantTypeResults"
+                    }
+                ]
+            },
+            "deps": "js/Awp0WorkflowTemplateNotificationService"
+        },
+        "populateNotificationTableData": {
+            "actionType": "JSFunction",
+            "method": "populateNotificationTableData",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "selection": "{{data.selectedTemplateObject}}",
+                "dataProvider": "{{data.dataProviders.notificationDataProvider}}",
+                "handlers": [ "EPM-late-notification", "EPM-notify", "EPM-notify-report"],
+                "dynamicParticipants": "{{data.allParticipantTypeResults}}",
+                "notificationHandlerContext" : "{{data.notificationHandlerContext}}"
+            },
+            "outputData": {
+                "tableResult": "tableResult",
+                "notificationHandlerContext": "notificationHandlerContext"
+            },
+            "deps": "js/Awp0WorkflowTemplateNotificationService"
+        },
+        "revealPariticipantTypes": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput":
+                    {
+                        "maxToLoad": -1,
+                        "maxToReturn": -1,
+                        "providerName": "Awp0ResourceProvider",
+                        "searchCriteria": {
+                            "searchString": "",
+                            "resourceProviderContentType": "ParticipantType"
+                        },
+                        "cursor": {
+                            "startIndex": 0
+                        },
+                        "searchFilterFieldSortType": "Alphabetical",
+                        "searchFilterMap6": {},
+                        "searchSortCriteria": []
+                    }
+                }
+            },
+            "outputData":{
+              "allParticipantTypeResults": "searchFilterCategories"
+            },
+           "events": {
+               "success":
+               [
+                   {
+                       "name": "epmTaskTemplate.notificationPropertiesLoaded"
+                   }
+               ]
+           }
+        },
+        "notificationHandlerRowSelectionAction": {
+            "actionType": "JSFunction",
+            "method": "notificationHandlerRowSelection",
+            "inputData": {
+               "ctx": "{{ctx}}",
+               "selection": "{{data.dataProviders.notificationDataProvider.selectedObjects}}",
+               "notificationHandlerContext" : "{{data.notificationHandlerContext}}"
+            },
+            "outputData": {
+                "notificationHandlerContext": ""
+            },
+            "deps": "js/Awp0WorkflowTemplateNotificationService"
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "workflow.closeOpenedPanel"
+                } ]
+            }
+        },
+        "updateNotificationTabBatchAction": {
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action": "closePanel"
+                },
+                {
+                    "action": "getValidTemplateVMOObject"
+                },
+                {
+                    "action": "loadProperties",
+                    "condition": "data.selectedTemplateObject && data.selectedTemplateObject.uid"
+                }
+            ]
+        }
+    },
+    "functions": {
+        "getTemplateObjectsToLoad": {
+            "functionName": "getTemplateObjectsToLoad",
+            "parameters":
+            [
+                "{{data.selectedTemplateObject}}"
+            ]
+        }
+    },
+    "columnProviders": {
+        "tableColumnProvider" : {
+            "soaEnabled": false,
+            "sortCriteria": [],
+            "columns": [
+                {
+                    "name": "notifyWhen",
+                    "displayName": "{{i18n.notifyWhen}}",
+                    "minWidth": 100,
+                    "width": 100,
+                    "pinnedLeft": false,
+                    "isTableCommand":false,
+                    "enableColumnHiding": false
+                },
+                {
+                    "name": "subject",
+                    "displayName": "{{i18n.subject}}",
+                    "width": 210,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100,
+                    "enableColumnHiding": false
+                },
+                {
+                    "name": "recipients",
+                    "displayName": "{{i18n.recipientsLabel}}",
+                    "width": 310,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100,
+                    "enableColumnHiding": false
+                },
+                {
+                    "name": "message",
+                    "displayName": "{{i18n.message}}",
+                    "width": 310,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100,
+                    "enableColumnHiding": false
+                },
+                {
+                    "name": "includeLabel",
+                    "displayName": "{{i18n.includeLabel}}",
+                    "width": 200,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100,
+                    "enableColumnHiding": false
+                }
+            ]
+        }
+    },
+    "dataProviders": {
+        "notificationDataProvider": {
+            "response": "{{data.tableResult.searchResults}}",
+            "totalFound": "{{data.tableResult.totalFound}}",
+            "searchIndex": "{{data.searchIndex}}"
+        }
+    },
+
+    "grids": {
+        "notificationsHandlerTable": {
+            "columnProvider": "tableColumnProvider",
+            "dataProvider": "notificationDataProvider",
+            "enableArrangeMenu": false,
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableGridMenu": true,
+                "enablePinning": false,
+                "enableSorting": false
+            }
+        }
+    },
+    "data": {
+        "notificationHandlerContext": {},
+        "actionsLabel":{
+            "displayName":"{{i18n.actions}}",
+            "type": "STRING"
+        },
+        "EPM-late-notification" : {
+            "projectMembers" : [ "PROJECT_ADMINISTRATOR", "PROJECT_TEAM_ADMINISTRATOR", "PROJECT_AUTHOR", "PROJECT_MEMBER" ],
+            "workflowMembers" : [ "OWNER", "REVIEWERS", "UNDECIDED", "PROCESS_OWNER", "TARGET_OWNER" ]
+        },
+        "EPM-notify-report" : {
+            "projectMembers" : [ "PROJECT_ADMINISTRATOR", "PROJECT_TEAM_ADMINISTRATOR", "PROJECT_AUTHOR", "PROJECT_MEMBER" ],
+            "workflowMembers" : [ "USER", "REVIEWERS", "UNDECIDED", "PROCESS_OWNER", "TARGET_OWNER" ]
+        },
+        "lateNotificationAnchor": "aw_workflowNotificationLateAnchor",
+        "notificationAnchor": "aw_workflowNotificationsAnchor",
+        "actionTypeValues": [
+            {
+                "propDisplayValue": "{{i18n.reviewStarted}}",
+                "propInternalValue": "review"
+            },
+            {
+                "propDisplayValue": "{{i18n.reviewRejectDecision}}",
+                "propInternalValue": "rejection"
+            },
+            {
+                "propDisplayValue": "{{i18n.reviewDecisionDone}}",
+                "propInternalValue": "progress"
+            },
+            {
+                "propDisplayValue": "{{i18n.reviewComplete}}",
+                "propInternalValue": "level"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskAssigned}}",
+                "propInternalValue": 1
+            },
+            {
+                "propDisplayValue": "{{i18n.taskStarted}}",
+                "propInternalValue": 2
+            },
+            {
+                "propDisplayValue": "{{i18n.taskPerformed}}",
+                "propInternalValue": 100
+            },
+            {
+                "propDisplayValue": "{{i18n.taskComplete}}",
+                "propInternalValue": 4
+            },
+            {
+                "propDisplayValue": "{{i18n.taskSkipped}}",
+                "propInternalValue": 5
+            },
+            {
+                "propDisplayValue": "{{i18n.taskSuspended}}",
+                "propInternalValue": 6
+            },
+            {
+                "propDisplayValue": "{{i18n.taskResumed}}",
+                "propInternalValue": 7
+            },
+            {
+                "propDisplayValue": "{{i18n.taskUndo}}",
+                "propInternalValue": 8
+            },
+            {
+                "propDisplayValue": "{{i18n.taskAborted}}",
+                "propInternalValue": 9
+            },
+            {
+                "propDisplayValue": "{{i18n.taskPastDue}}",
+                "propInternalValue": "EPM-late-notification"
+            }
+        ]
+    },
+    "lifecycleHooks":  {
+        "onUpdate": [
+            {
+                "action": "closePanel",
+                "observers": [
+                    "viewModel.data.notificationHandlerContext.selectedTemplateObject"
+                ]
+            },
+            {
+                "action": "updateNotificationTabBatchAction",
+                "observers": [
+                    "props.subPanelContext.workflowDgmState.selectedObject"
+                ]
+            }
+        ]
+    },
+    "ctx": {
+        "preferences": null,
+        "activeToolsAndInfoCommand.commandId": null
+    },
+    "onEvent": [
+        {
+            "eventId": "epmTaskTemplate.loadDynamicParticipants",
+            "action": "revealPariticipantTypes"
+        },
+        {
+            "eventId": "epmTaskTemplate.notificationPropertiesLoaded",
+            "action": "populateNotificationTableData"
+        },
+        {
+            "eventId": "workflowDesigner.tabReload",
+            "action": "populateNotificationTableData"
+        },
+        {
+            "eventId": "notificationDataProvider.selectionChangeEvent",
+            "action": "notificationHandlerRowSelectionAction"
+        }
+    ],
+    "i18n": {
+        "actionType" : ["WorkflowDesignerMessages"],
+        "assignmentType" : ["WorkflowDesignerMessages"],
+        "assignmentValue" : ["WorkflowDesignerMessages"],
+        "actions": ["WorkflowDesignerMessages"],
+        "reviewerLabel" : ["WorkflowDesignerMessages"],
+        "recipientLabel" : ["WorkflowDesignerMessages"],
+        "assignee" : ["WorkflowCommandPanelsMessages"],
+        "assign_action": [ "WorkflowDesignerMessages" ],
+        "start_action": [ "WorkflowDesignerMessages" ],
+        "perform_action": [ "WorkflowDesignerMessages" ],
+        "complete_action": [ "WorkflowDesignerMessages" ],
+        "skip_action": [ "WorkflowDesignerMessages" ],
+        "suspend_action": [ "WorkflowDesignerMessages" ],
+        "resume_action": [ "WorkflowDesignerMessages" ],
+        "abort_action": [ "WorkflowDesignerMessages" ],
+        "undo_action": [ "WorkflowDesignerMessages" ],
+        "lateNotifications": [ "WorkflowDesignerMessages" ],
+        "PROJECT_ADMINISTRATOR": [ "WorkflowDesignerMessages" ],
+        "PROJECT_TEAM_ADMINISTRATOR": [ "WorkflowDesignerMessages" ],
+        "PROJECT_AUTHOR": [ "WorkflowDesignerMessages" ],
+        "PROJECT_MEMBER": [ "WorkflowDesignerMessages" ],
+        "TARGET_OWNER": [ "WorkflowDesignerMessages" ],
+        "PROCESS_OWNER": [ "WorkflowDesignerMessages" ],
+        "USER": [ "WorkflowDesignerMessages" ],
+        "OWNER": [ "WorkflowDesignerMessages" ],
+        "REVIEWERS": [ "WorkflowDesignerMessages" ],
+        "UNDECIDED": [ "WorkflowDesignerMessages" ],
+        "RESPONSIBLE_PARTY": [ "WorkflowDesignerMessages"],
+        "emailNotifications": [ "WorkflowDesignerMessages"],
+        "notifyWhen": [ "WorkflowDesignerMessages"],
+        "subject": [ "WorkflowDesignerMessages"],
+        "recipientsLabel": [ "WorkflowDesignerMessages"],
+        "reviewStarted": [ "WorkflowDesignerMessages" ],
+        "reviewRejectDecision": [ "WorkflowDesignerMessages" ],
+        "reviewDecisionDone": [ "WorkflowDesignerMessages" ],
+        "reviewComplete": [ "WorkflowDesignerMessages" ],
+        "taskAssigned": [ "WorkflowDesignerMessages" ],
+        "taskStarted": [ "WorkflowDesignerMessages" ],
+        "taskPerformed": [ "WorkflowDesignerMessages" ],
+        "taskComplete": [ "WorkflowDesignerMessages"],
+        "taskSuspended": [ "WorkflowDesignerMessages"],
+        "taskSkipped": [ "WorkflowDesignerMessages"],
+        "taskAborted": [ "WorkflowDesignerMessages"],
+        "taskUndo": [ "WorkflowDesignerMessages"],
+        "taskResumed": [ "WorkflowDesignerMessages"],
+        "taskPastDue": [ "WorkflowDesignerMessages"],
+        "message": [ "WorkflowDesignerMessages" ],
+        "includeLabel": [ "WorkflowDesignerMessages" ]
+    }
+}

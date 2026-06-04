@@ -1,0 +1,131 @@
+<div class="sw-column">
+    <div class="aw-cfg-fullScreenPage" exist-when="conditions.isFscInListView">
+        <!-- keep this aw-column, otherwise sometimes the command bar dissapears entirely -->
+        <aw-column id="fscColumnWrapper">
+            <div class="sw-row flex-shrink">
+                <aw-server-visibility-toolbar id="fscToolbar" exist-when="!conditions.isOpenedFromConfiguratorCtx" first-anchor="aw_altPWADisplay,aw_fscCommandBar" second-anchor="aw_toolbarRight,aw_fullScreen" context="{fscState: data.fscState, variantRuleData: data.variantRuleData, ...props.subPanelContext,rootModuleHasChildren:data.rootModuleHasChildren, isSelectionSummaryOpened: data.isSelectionSummaryOpened }" orientation="HORIZONTAL"></aw-server-visibility-toolbar>
+                <aw-server-visibility-toolbar id="fscToolbar" exist-when="conditions.isOpenedFromConfiguratorCtx" first-anchor="aw_altPWADisplay,aw_fscCommandBar" second-anchor="aw_toolbarRight" context="{fscState: data.fscState, variantRuleData: data.variantRuleData, ...props.subPanelContext,rootModuleHasChildren:data.rootModuleHasChildren, isSelectionSummaryOpened: data.isSelectionSummaryOpened, isModuleConfiguredOut: data.isModuleConfiguredOut }" orientation="HORIZONTAL"></aw-server-visibility-toolbar>
+            </div>
+            <div class="sw-row demo-h-3f">
+                <div class="sw-column aw-cfg-summary">
+                    <pca0-summary summarystate="data.fscState" variant-rule-data="data.variantRuleData"></pca0-summary>
+                </div>
+            </div>
+            <aw-separator></aw-separator>
+            <aw-row height="fill" id="fscRowWrapper" exist-when="conditions.CfgHorizontalLayout && data.fscInitialized && conditions.showGroupsAsTab">
+                <!-- Modules -->
+                <div class="sw-column w-3" visible-when="conditions.isProductHierarchyDepth" show-when="conditions.shouldShowConfigurationModules">
+                    <pca0-fsc-configuration-module-tree sub-panel-context="subPanelContext"></pca0-fsc-configuration-module-tree>
+                </div>
+                <aw-splitter id="splitter1" direction="Vertical" visible-when="conditions.shouldShowConfigurationModules"></aw-splitter>
+                <!-- Scopes and Features-->
+                <div class="sw-column aw-cfg-columnWithoutPadding pca0features" exist-when="!conditions.isModuleConfiguredOut" aw-class="[
+                conditions.shouldShowConfigurationModules && conditions.shouldShowSelectionSummary ? 'w-6' : conditions.shouldShowConfigurationModules || conditions.shouldShowSelectionSummary ? 'w-9' : 'w-12']">
+                    <div class="flex-shrink">
+                        <pca0-scopes class="aw-splm-tableCellText"
+                        fsc-state="data.fscState"
+                        variant-rule-data="data.variantRuleData"
+                        config-ctx="props.subPanelContext.configCtx" show-tab=true></pca0-scopes>
+                    </div>
+                    <pca0-features fsc-state="data.fscState"
+                    variant="data.variantRuleData"
+                    config-ctx="props.subPanelContext.configCtx" is-selection-summary-open="{{data.isSelectionSummaryOpened}}"></pca0-features>
+                </div>
+                <div class="sw-column " aw-class="[
+                conditions.shouldShowSelectionSummary ? 'w-6' : 'w-9']"
+                exist-when="conditions.isModuleConfiguredOut">
+                    <aw-empty-workarea
+                    image="graEmptyProductConfigurator128"
+                    title="{{i18n.emptyConfigurationViewTitle}}"
+                    hint="{{i18n.emptyConfigurationViewHint}}"></aw-empty-workarea>
+                </div>
+                <aw-splitter id="splitter1" exist-when=conditions.shouldShowSelectionSummary direction="Vertical"></aw-splitter>
+                <!-- Selection Summary -->
+                <div exist-when="conditions.shouldShowSelectionSummary" class="sw-column w-3 pca0SelectionSummaryPanel">
+                    <pca0-selection-summary sub-panel-context="{...props.subPanelContext, fscState: data.fscState, variantRuleData: data.variantRuleData, isSelectionSummaryOpenedFromChip: data.isSelectionSummaryOpenedFromChip, isStale: data.isStale, rootModuleHasChildren:data.rootModuleHasChildren }"></pca0-selection-summary>
+                </div>
+            </aw-row>
+            <!-- Using the aw-cfg-minimumWidth class for columns ensures that their size can be reduced up to a defined limit, allowing other columns or panels to be resizable. -->
+            <aw-row height="fill" id="fscRowWrapper" exist-when="conditions.CfgHorizontalLayout && data.fscInitialized && !conditions.showGroupsAsTab">
+                <div class="sw-column w-3 aw-cfg-minimunWidth" visible-when="conditions.isProductHierarchyDepth" show-when="conditions.shouldShowConfigurationModules">
+                    <pca0-fsc-configuration-module-tree sub-panel-context="subPanelContext"></pca0-fsc-configuration-module-tree>
+                </div>
+                <aw-splitter id="splitter1" direction="Vertical" visible-when="conditions.shouldShowConfigurationModules"></aw-splitter>
+
+                <aw-column class="aw-cfg-columnWithoutPadding  pca0scopes aw-cfg-minimunWidth" id="fscColumnScopes" width="{{conditions.CfgHorizontalLayout ? conditions.CfgLayoutWithSummary?'30%' : '35%': 'fill'}}"
+                exist-when="!conditions.isModuleConfiguredOut">
+                    <pca0-scopes class="aw-splm-tableCellText aw-cfg-minimunWidth"
+                    fsc-state="data.fscState"
+                    variant-rule-data="data.variantRuleData"
+                    config-ctx="props.subPanelContext.configCtx"
+                    show-text-ui="{{data.vcvLayoutSettings.showCompressedData}}"
+                    ></pca0-scopes>
+                </aw-column>
+                <aw-splitter id="splitter1" direction="Vertical"></aw-splitter>
+
+                <aw-column id="fscColumnFeatures" class="aw-cfg-minimunWidth aw-cfg-columnWithoutPadding pca0features" width="{{conditions.CfgHorizontalLayout ? conditions.CfgLayoutWithSummary?'40%' : '65%': 'fill'}}"
+                exist-when="!conditions.isModuleConfiguredOut">
+                    <pca0-features class="aw-splm-tableCellText aw-cfg-minimunWidth"
+                    fsc-state="data.fscState"
+                    variant="data.variantRuleData"
+                    config-ctx="props.subPanelContext.configCtx"
+                    is-selection-summary-open="{{data.isSelectionSummaryOpened}}"
+                    ></pca0-features>
+                </aw-column>
+                <aw-column class="aw-cfg-columnWithoutPadding aw-cfg-minimunWidth"
+                aw-class="[conditions.shouldShowSelectionSummary ? 'w-6' : 'w-9']"
+                exist-when="conditions.isModuleConfiguredOut">
+                    <aw-empty-workarea
+                    image="graEmptyProductConfigurator128"
+                    title="{{i18n.emptyConfigurationViewTitle}}"
+                    hint="{{i18n.emptyConfigurationViewHint}}"></aw-empty-workarea>
+                </aw-column>
+                <aw-splitter id="splitter1" direction="Vertical" exist-when=conditions.shouldShowSelectionSummary></aw-splitter>
+                <div exist-when= "conditions.shouldShowSelectionSummary" class="sw-column w-3 pca0SelectionSummaryPanel">
+                    <pca0-selection-summary  sub-panel-context="{...props.subPanelContext, fscState: data.fscState, variantRuleData: data.variantRuleData, isSelectionSummaryOpenedFromChip: data.isSelectionSummaryOpenedFromChip, isStale: data.isStale, rootModuleHasChildren:data.rootModuleHasChildren }"></pca0-selection-summary>
+                </div>
+            </aw-row>
+
+            <!-- continuing to use aw-row and col because divs like div class="sw-row h-3" will jump after selecting anything in the table or the groups and increase the size past the available container size.
+        One fix would be to have a sw-row with a calc fixed size, but we'll do it later as it needs more time to get it right -->
+            <aw-row height="fill" exist-when="!conditions.CfgHorizontalLayout && data.fscInitialized && !conditions.showGroupsAsTab">
+                <aw-column>
+                    <aw-row class="" visible-when="conditions.isProductHierarchyDepth" show-when="conditions.shouldShowConfigurationModules" height="35%">
+                        <pca0-fsc-configuration-module-tree sub-panel-context="subPanelContext"></pca0-fsc-configuration-module-tree>
+                    </aw-row>
+                    <aw-splitter direction="HORIZONTAL" visible-when="conditions.shouldShowConfigurationModules"></aw-splitter>
+                    <aw-row class="" height="35%" exist-when="!conditions.isModuleConfiguredOut">
+                        <pca0-scopes class="aw-splm-tableCellText"
+                        fsc-state="data.fscState"
+                        variant-rule-data="data.variantRuleData"
+                        config-ctx="props.subPanelContext.configCtx"
+                        show-text-ui="{{data.vcvLayoutSettings.showCompressedData}}"
+                        ></pca0-scopes>
+                    </aw-row>
+                    <aw-splitter direction="HORIZONTAL"></aw-splitter>
+                    <aw-row height="35%" exist-when="!conditions.isModuleConfiguredOut">
+                        <aw-panel-body>
+                            <pca0-features class="aw-splm-tableCellText"
+                            fsc-state="data.fscState"
+                            variant="data.variantRuleData"
+                            config-ctx="props.subPanelContext.configCtx"
+                            is-selection-summary-open="{{data.isSelectionSummaryOpened}}"
+                           ></pca0-features>
+                        </aw-panel-body>
+                    </aw-row>
+                    <aw-row exist-when="conditions.isModuleConfiguredOut">
+                        <aw-empty-workarea
+                        image="graEmptyProductConfigurator128"
+                        title="{{i18n.emptyConfigurationViewTitle}}"
+                        hint="{{i18n.emptyConfigurationViewHint}}"></aw-empty-workarea>
+                    </aw-row>
+                    <aw-row height="35%" class="pca0SelectionSummaryPanel" exist-when="conditions.shouldShowSelectionSummary">
+                        <pca0-selection-summary sub-panel-context="{...props.subPanelContext, fscState: data.fscState, variantRuleData: data.variantRuleData, isSelectionSummaryOpenedFromChip: data.isSelectionSummaryOpenedFromChip, isStale: data.isStale, rootModuleHasChildren:data.rootModuleHasChildren }"></pca0-selection-summary>
+                    </aw-row>
+                </aw-column>
+            </aw-row>
+        </aw-column>
+    </div>
+    <pca0-multiple-variants-configuration-content multi-svr-context="{ ...props.subPanelContext, selection: data.variantRuleData.variantRulesToLoad, fscState: data.fscState, variantRuleData: data.variantRuleData, isVCVOpenedFromConfigurator: false }" exist-when="!conditions.isFscInListView">
+    </pca0-multiple-variants-configuration-content>
+</div>

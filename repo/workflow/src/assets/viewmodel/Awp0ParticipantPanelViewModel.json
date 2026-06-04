@@ -1,0 +1,452 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-flex-row.directive",
+        "js/aw-toolbar.directive",
+        "js/aw-flex-column.directive"
+    ],
+    "actions": {
+        "loadParticipantConstantTypes": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadParticipantConstantTypes",
+            "inputData": {
+                "preferences": "{{ctx.preferences}}",
+                "selectedObject": "{{data.selectedObject}}"
+            },
+            "outputData": {
+                "typeConstantValues": ""
+            },
+            "deps": "js/Awp0ParticipantPanelService"
+        },
+        "initializeParticipantPanelData": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getValidObject"
+                },
+                {
+                    "action": "loadParticipantConstantTypes",
+                    "condition": "conditions.participantTypeConstantValuesNotLoaded"
+                },
+                {
+                    "action": "loadParticipantsData"
+                },
+                {
+                    "action": "populateContextData"
+                }
+            ]
+        },
+        "getValidObject": {
+            "actionType": "JSFunction",
+            "method": "getSelectedValidObject",
+            "inputData": {
+                "selectedObject": "{{props.subPanelContext.selected}}",
+                "openedObject": "{{props.subPanelContext.openedObject}}"
+            },
+            "outputData": {
+                "selectedObject": ""
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        },
+        "loadParticipantsData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects":
+                [
+                    "{{data.selectedObject}}"
+                ],
+                "attributes":
+                [
+                    "HasParticipant",
+                    "participants",
+                    "allowable_participant_types",
+                    "assignable_participant_types",
+                    "awp0RequiredParticipants"
+                ]
+            },
+            "outputData": {
+                "participantDataObj": "{{function:populateParticipantData}}"
+            },
+            "policy": {
+                "types": [ {
+                        "name": "ItemRevision",
+                        "properties": [
+                            {
+                                "name": "participants",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "HasParticipant",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "allowable_participant_types",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "assignable_participant_types",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "awp0RequiredParticipants"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Participant",
+                        "properties":
+                        [
+                            {
+                                "name": "assignee",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "fnd0AssigneeUser"
+                            },
+                            {
+                                "name": "fnd0AssigneeGroup"
+                            },
+                            {
+                                "name": "fnd0AssigneeRole"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "GroupMember",
+                        "properties": [
+                           {
+                              "name": "group",
+                              "modifiers": [
+                                 {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                 }
+                              ]
+                           },
+                           {
+                              "name": "role",
+                              "modifiers": [
+                                 {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                 }
+                              ]
+                           },
+                           {
+                              "name": "userName"
+                           },
+                           {
+                                "name": "user",
+                                "modifiers": [
+                                {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            }
+                        ]
+                     },
+                     {
+                        "name": "POM_member",
+                        "properties": [
+                            {
+                                "name": "user",
+                                "modifiers": [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Group",
+                        "properties": [ {
+                            "name": "object_full_name"
+                        } ]
+                    },
+                    {
+                        "name": "Role",
+                        "properties": [ {
+                            "name": "role_name"
+                        } ]
+                    },
+                    {
+                        "name": "ResourcePool",
+                        "properties": [ {
+                                "name": "group",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "role",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "User",
+                        "properties": [
+                            {
+                                "name": "user_name"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "ImanType",
+                        "properties":
+                        [
+                            {
+                                "name": "type_name"
+                            },
+                            {
+                                "name": "object_string"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/Awp0ParticipantPanelService"
+        },
+        "populateContextData": {
+            "actionType": "JSFunction",
+            "method": "populateContextData",
+            "inputData": {
+                "contextData" : "{{data.participantDataObj.participantData}}"
+            },
+            "outputData": {
+                "participantData": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "workflow.updatePinnedPanelData",
+                        "eventData": {
+                            "participantData": "{{data.participantDataObj.participantData}}"
+                        },
+                        "excludeLocalDataCtx": true,
+                        "condition": "data.participantDataObj && data.participantDataObj.participantData && ctx.activeToolsAndInfoCommand.commandId === 'AddParticipant'"
+                    }
+                ]
+            },
+            "deps": "js/Awp0ParticipantPanelService"
+        },
+        "loadParticipantTableColumns": {
+            "actionType": "JSFunction",
+            "method": "loadParticipantTableColumns",
+            "inputData": {
+                "columns" : "{{data.participantTableColumns}}"
+            },
+            "outputData": {
+                "dataProviders.particpantTableDataProvider.columnConfig": "columnConfig"
+            },
+            "deps": "js/Awp0ParticipantPanelService"
+        },
+        "reloadDataProvider": {
+            "actionType": "dataProvider",
+            "method": "particpantTableDataProvider"
+        },
+        "evaluateSelections": {
+            "actionType": "JSFunction",
+            "method": "evaluateSelections",
+            "inputData": {
+                "selection": "{{dataProviders.particpantTableDataProvider.selectedObjects}}",
+                "participantData": "{{data.participantData}}"
+            },
+            "outputData": {
+                "participantData": ""
+            },
+            "deps": "js/Awp0ParticipantPanelService"
+        },
+        "getFilterFacets": {
+            "actionType": "JSFunction",
+            "method": "getFilterFacetValues",
+            "inputData": {
+                "columnName": "{{filterFacetInput.column.field}}",
+                "objects": "{{data.dataProviders.particpantTableDataProvider.viewModelCollection.loadedVMObjects}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "filterFacetResults": ""
+            },
+            "deps": "js/Awp0WorkflowSortFilterService"
+        },
+        "reloadTable": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [
+                    {
+                        "name": "participantsTable.plTable.reload"
+                    }
+                ]
+            }
+        }
+    },
+    "functions": {
+        "populateParticipantData": {
+            "functionName": "populateParticipantData",
+            "parameters": [
+                "{{data}}",
+                "{{ctx}}",
+                "{{data.selectedObject}}",
+                "{{ctx.preferences.ItemRevision_supported_participant_types}}"
+            ]
+        },
+        "getParticipantConstantLoaded": {
+            "functionName": "getParticipantConstantLoaded",
+            "parameters": [
+                "{{ctx.preferences}}",
+                "{{data.selectedObject}}"
+            ]
+        }
+    },
+    "dataProviders": {
+        "particpantTableDataProvider": {
+            "initializeAction": "initializeParticipantPanelData",
+            "response": "{{data.participantDataObj.loadResult.searchResults}}",
+            "totalFound": "{{data.participantDataObj.loadResult.totalFound}}",
+            "searchIndex": "{{data.participantDataObj.loadResult.searchIndex}}",
+            "selectionModelMode": "multiple",
+            "filterFacetAction": "getFilterFacets",
+            "filterFacetResults": "{{data.filterFacetResults}}",
+            "inputData": {
+                "selectionData": "{{subPanelContext.selectionData}}"
+            }
+        }
+    },
+    "columnProviders": {
+        "participantTableColumnProvider": {
+            "loadColumnAction": "loadParticipantTableColumns",
+            "columns": "{{data.columns}}",
+            "sortCriteria": [],
+            "frozenColumnIndex": -1
+        }
+    },
+    "grids": {
+        "participantsTable": {
+            "dataProvider": "particpantTableDataProvider",
+            "columnProvider": "participantTableColumnProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableGridMenu": true,
+                "enablePinning": false,
+                "enableSorting": true,
+                "enableDynamicRowHeight":true,
+                "maxRowsToShow": 7,
+                "isFilteringEnabled": true
+            }
+        }
+    },
+    "data": {
+        "participantTableColumns" : [
+            {
+                "propName": "participantName",
+                "propDisplayName": "{{i18n.typeString}}",
+                "width": 100,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 60,
+                "type":"STRING"
+            },
+            {
+                "propName": "participantValue",
+                "propDisplayName": "{{i18n.USER}}",
+                "width": 190,
+                "isTreeNavigation": false,
+                "isTableCommand" : false,
+                "minWidth" : 150,
+                "type":"OBJECT"
+            }
+        ],
+        "participantData": {
+            "initialValues": {
+                "assignableParticipantTypes": null,
+                "isParticipantTable": false,
+                "selectedObjects": []
+            },
+            "meta": {
+                "selectedObjects": {
+                    "field": "true",
+                    "type": "OBJECTARRAY"
+                }
+            }
+        }
+    },
+    "messages": {
+        "soaFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "ctx": {
+        "preferences": null,
+        "activeToolsAndInfoCommand.commandId": null
+    },
+    "onEvent": [
+        {
+            "eventId": "particpantTableDataProvider.selectionChangeEvent",
+            "action": "evaluateSelections"
+        },
+        {
+            "eventId": "workflow.resetParticipantTable",
+            "action": "reloadTable"
+        }
+    ],
+    "conditions": {
+        "participantTypeConstantValuesNotLoaded": {
+            "expression": "!data.typeConstantValues || data.typeConstantValues.length <= 0"
+        }
+    },
+    "i18n": {
+        "typeString": [ "WorkflowDesignerMessages" ],
+        "USER": [ "WorkflowDesignerMessages" ],
+        "required": [ "WorkflowCommandPanelsMessages" ]
+    }
+}

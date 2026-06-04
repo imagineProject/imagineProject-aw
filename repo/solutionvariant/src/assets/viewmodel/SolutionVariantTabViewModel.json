@@ -1,0 +1,127 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "actions": {
+        "initializeSVRData":{
+            "actionType": "JSFunction",
+            "method": "getBOMLineUids",
+            "inputData":{
+                "data": "{{props.subPanelContext.selection}}"
+    },
+            "outputData": {
+                "selectedBOMLine":""
+            },
+            "deps": "js/solutionVariantTableService"
+        },
+        "registerSVCtx":{
+            "actionType": "JSFunction",
+            "method": "registerSVCtx",
+            "deps": "js/solutionVariantTableService"
+        },
+        "refreshSolutionVariantsObjectSet": {
+            "actionType": "JSFunction",
+            "method": "refreshObjectSet",
+            "inputData": {
+                "vmObjectSet": "{{atomicDataRef.objectSetSolutionVariants}}",
+                "xrtContext": "{{data.xrtContext}}"
+            },
+            "deps": "js/solutionVariantTableService"
+        },
+        "initActions":{
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "registerSVCtx"
+                },
+                {
+                    "action": "initializeSVRData"
+                }
+            ]
+        },
+        "cleanupSVContext":{
+            "actionType": "JSFunction",
+            "method": "cleanupSVContext",
+            "deps": "js/solutionVariantTableService"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "refreshSVTable",
+            "action": "refreshSolutionVariantsObjectSet"
+        },
+        {
+            "eventId": "Pca0VariantConditionAuthoringGrid.SaveExpressions",
+            "action": "refreshSolutionVariantsObjectSet"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "initActions",
+        "onUnmount": "cleanupSVContext"
+    },
+    "messages": {
+
+    },
+    "i18n": {
+        "variantRules": [
+            "SolutionVariantConstants"
+        ],
+        "solutionVariants": [
+            "SolutionVariantConstants"
+        ]
+    },
+    "data": {
+        "objectSetSolutionVariants": {
+            "initialValues": {
+                "dpRef": { "current": null },
+                "objectSetUri": "SolutionVariants",
+                "objectSetInfo": {
+                    "firstPage": []
+                },
+                "commandContext": {
+                    "tableDataProviderName": "Awp0ObjectSetRowProvider",
+                    "clientScopeURI": "SolutionVariants",
+                    "objectSetSource": "Smc0SVInfoProvider.Smc0SolutionVariantInfo",
+                    "searchCriteria": {
+                        "parentUid": "{{ctx.SVContext.bomLineUID}}",
+                        "allRevisions": "{{atomicData.settings.showAllRevisions}}",
+                        "allContexts": "{{atomicData.settings.showDataFromAllContexts}}",
+                        "objectSet": "Smc0SVInfoProvider.Smc0SolutionVariantInfo"
+                    }
+            },
+                "objsetdata": {
+                    "uid": "",
+                    "defaultDisplay": "tableDisplay",
+                    "elementType": "objectSet",
+                    "id": "SolutionVariants",
+                    "sortyBy": "object_string",
+                    "sortDirection": "ascending",
+                    "source": "Smc0SVInfoProvider.Smc0SolutionVariantInfo",
+                    "sourceHasDataset": true,
+                    "displayModes": {
+                        "tableDisplay": {
+                            "gridProvider": "SolutionVariants"
+                        },
+                        "thumbnailDisplay": true
+            },
+                    "commands": []
+                },
+                "titlekey": "tc_xrt_SolutionVariants"
+            },
+            "meta": {}
+            }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "conditions": {
+        "bomLineUIDAvailable": {
+            "expression": "ctx.SVContext.bomLineUID && ctx.SVContext.bomLineUID !== ''"
+        }
+    },
+    "selectionModels": {
+        "svSelectionModel": {
+            "selectionMode": "multiple"
+        }
+    }
+}

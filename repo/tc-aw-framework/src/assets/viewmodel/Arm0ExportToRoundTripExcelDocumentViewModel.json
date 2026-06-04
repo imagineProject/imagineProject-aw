@@ -1,0 +1,125 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-command-panel.directive",
+        "js/aw-command-sub-panel.directive",
+        "js/visible-when.directive",
+        "js/aw-init.directive"
+    ],
+    "actions": {
+        "revealExportExcelPanel": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2014-11-RequirementsManagement",
+            "method": "getExportTemplates",
+            "inputData": {
+                "filter": [
+                    {
+                        "inputObjects": "{{function:getInputObjects}}",
+                        "templateTypes": [
+                            "ExcelTemplate"
+                        ],
+                        "requestPref": "{{ctx.excelTemplateForExport.templateName}}"
+                    }
+                ]
+            },
+            "outputData": {
+                "response": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "ExportToOffice.prepareTemplateLists"
+                    },
+                    {
+                        "name": "Arm0ExportToRoundTripExcelDocument.panelOpenEvent"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "condition": "errorCode.code==141080",
+                        "message": "notificationForExportFailureMsg"
+                    }
+                ]
+            },
+            "deps": "js/ExcelExportToOfficeApp"
+        },
+        "unRegisterExcelCommandContext": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "excelTemplateForExport"
+            }
+        },
+        "prepareTemplateLists": {
+            "actionType": "JSFunction",
+            "method": "processExportTemplatesResponse",
+            "inputData": {
+                "response": "{{response}}",
+                "data": "{{data}}",
+                "ctx": "{{ctx}}"
+            },
+            "outputData":{
+                "excelTemplatesList": "excelTemplatesList"
+            },
+            "deps": "js/ExcelExportToOfficeApp"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount":"revealExportExcelPanel",
+        "onUnmount": "unRegisterExcelCommandContext"
+    },
+
+    "onEvent": [
+        {
+            "eventId": "ExportToOffice.prepareTemplateLists",
+            "action": "prepareTemplateLists"
+        },
+        {
+            "eventId": "Arm0ExportToRoundTripExcelDocument.contentUnloaded",
+            "action": "unRegisterExcelCommandContext"
+        }
+    ],
+    "data": {
+        "sharedData": {
+            "initialValues": {
+                "activeView": "Arm0ExportToRoundTripExcelDocumentSub",
+                "exportColumns": {
+                    "isArray": "true",
+                    "dbValue": [
+
+                    ]
+                }
+            },
+            "meta": {}
+        },
+        "excelTemplates": {
+            "displayName": "{{i18n.template}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": true
+        }
+    },
+    "functions": {
+        "getInputObjects": {
+            "functionName": "getInputObjects",
+            "parameters": ["{{subPanelContext}}"]
+        }
+    },
+    "conditions": {},
+    "messages": {},
+    "i18n": {
+        "exportCmdTitle": [
+            "ExcelRoundTripMessages"
+        ],
+        "customPropertyTitle":[
+            "ExcelRoundTripMessages"
+        ],
+        "addProperties": [
+            "ExcelRoundTripMessages"
+        ]
+    }
+}

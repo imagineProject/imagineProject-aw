@@ -1,0 +1,451 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "showBreadcrumb": {
+            "actionType": "JSFunction",
+            "method": "showBreadcrumb",
+            "inputData": {
+                "fscState": "{{props.summarystate}}"
+            },
+            "outputData": {
+                "crumbs": ""
+            },
+            "deps": "js/pca0SummaryService"
+        },
+        "showModuleHierarchy": {
+            "actionType": "JSFunction",
+            "method": "updateModuleHierarchyVisibility",
+            "inputData": {
+                "fscState": "{{props.summarystate}}",
+                "shouldShow": true
+            },
+            "deps": "js/pca0SummaryService"
+        },
+        "refreshSavedVariantsListAfterInit": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "refreshSavedVariantsList",
+                "condition": "conditions.isInitialized && data.dataProvider.loadedSavedVariantsProvider"
+            } ],
+            "deps": "js/pca0SummaryService"
+        },
+        "refreshSavedVariantsList": {
+            "actionType": "dataProvider",
+            "method": "loadedSavedVariantsProvider"
+        },
+        "getLoadedSavedVariants": {
+            "actionType": "JSFunction",
+            "method": "getLoadedSavedVariants",
+            "inputData": {
+                "summarystate": "{{props.summarystate}}",
+                "dataProvider": "{{data.dataProviders.loadedSavedVariantsProvider}}"
+            },
+            "outputData": {
+                "loadedVariantsList": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0FullScreenSummary.setLoadedVariantInChip"
+                } ]
+            },
+            "deps": "js/pca0SummaryService"
+        },
+        "openSelectionSummaryFromChip": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0FullScreenConfiguration.openSelectionSummaryFromChip",
+                    "eventData": {
+                        "isSelectionSummaryOpenedFromChip": true
+                    }
+                } ]
+            }
+        },
+        "updateCompletenessStatusAndViolations": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "showViolationInfoInFscSummary"
+                },
+                {
+                    "action": "updateCompletenessStatus"
+                }
+            ]
+        },
+        "showViolationInfoInFscSummary": {
+            "actionType": "JSFunction",
+            "method": "showViolationInfoInFscSummary",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}",
+                "summarystate": "{{props.summarystate}}"
+            },
+            "outputData": {
+                "violationLabel": "result.violationLabel",
+                "violationMessages": "result.violationMessages"
+            },
+            "deps": "js/pca0SummaryService"
+        },
+        "updateCompletenessStatus": {
+            "actionType": "JSFunction",
+            "method": "updateCompletenessStatus",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}",
+                "summarystate": "{{props.summarystate}}"
+            },
+            "deps": "js/pca0SummaryService"
+        },
+        "disableCompletenessStatusChip": {
+            "actionType": "JSFunction",
+            "method": "disableCompletenessStatusChip",
+            "inputData": {
+                "summarystate": "{{props.summarystate}}"
+            },
+
+            "deps": "js/pca0SummaryService"
+        },
+        "onMountedInitializer": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "refreshSavedVariantsList"
+                },
+                {
+                    "action": "initSummaryState"
+                }
+            ]
+        },
+        "handleAllSelectionsCleared": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0FullScreenSummary.updateCompletenessStatusAndViolations",
+                    "eventData": {
+                        "CompletenessStatus": { "criteriaStatus": [] }
+                    }
+                } ]
+            }
+        },
+        "initSummaryState": {
+            "actionType": "JSFunction",
+            "method": "initSummaryState",
+            "inputData": {
+                "summarystate": "{{props.summarystate}}"
+            },
+            "outputData": {
+                "isInitialized": ""
+            },
+            "deps": "js/pca0SummaryService"
+        },
+
+        "removeDuplicates": {
+            "actionType": "JSFunction",
+            "method": "removeDuplicates",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.loadedSavedVariantsProvider}}"
+            },
+            "outputData": {
+                "loadedVariantsList": ""
+            },
+            "deps": "js/pca0SummaryService"
+        },
+        "removeSavedVariants": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0LoadSavedVariants.unloadSVR"
+                } ]
+            }
+        },
+        "setLoadedVariantInChipBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "setLoadedVariantInChip",
+                "condition": "conditions.showRemoveSavedVariants"
+            },
+            {
+                "action": "setLoadedVariantInChip2",
+                "condition": "!conditions.showRemoveSavedVariants"
+            } ],
+            "deps": "js/pca0SummaryService"
+        },
+        "setLoadedVariantInChip": {
+            "actionType": "JSFunction",
+            "method": "setLoadedVariantInChip",
+            "inputData": {
+                "loadedVariantsList": "{{data.loadedVariantsList}}",
+                "variantRuleChipWithRemoveButton": "{{data.variantRuleChipWithRemoveButton}}",
+                "isExpressionNonGridable": "{{props.variantRuleData.isExpressionNonGridable}}"
+            },
+            "outputData": {
+                "variantRuleChipWithRemoveButton": "newVariantChip",
+                "nonGridableExpressionTooltipInfo": "nonGridableExpressionTooltipInfo"
+            },
+            "deps": "js/pca0SummaryService"
+        },
+        "setLoadedVariantInChip2": {
+            "actionType": "JSFunction",
+            "method": "setLoadedVariantInChip",
+            "inputData": {
+                "loadedVariantsList": "{{data.loadedVariantsList}}",
+                "variantRuleChipWithoutRemoveButton": "{{data.variantRuleChipWithoutRemoveButton}}",
+                "isExpressionNonGridable": "{{props.variantRuleData.isExpressionNonGridable}}"
+            },
+            "outputData": {
+                "variantRuleChipWithoutRemoveButton": "newVariantChip",
+                "nonGridableExpressionTooltipInfo": "nonGridableExpressionTooltipInfo"
+            },
+            "deps": "js/pca0SummaryService"
+        }
+    },
+    "dataProviders": {
+        "loadedSavedVariantsProvider": {
+            "action": "getLoadedSavedVariants",
+            "response": "{{data.loadedVariantsList}}",
+            "totalFound": "{{data.totalFound}}",
+            "showDecorators": "true",
+            "commandsAnchor": "aw_removeVariant_cellCommand",
+            "selectionModelMode": "none"
+        },
+        "variantRuleChipWithRemoveButtonDataProvider": {
+            "type": "Static",
+            "response": "{{data.variantRuleChipWithRemoveButton}}",
+            "selectionModelMode": "none"
+        },
+        "variantRuleChipWithoutRemoveButtonDataProvider": {
+            "type": "Static",
+            "response": "{{data.variantRuleChipWithoutRemoveButton}}",
+            "selectionModelMode": "none"
+        }
+    },
+    "functions": {
+        "getActiveVariantRules": {
+            "functionName": "getActiveVariantRules",
+            "parameters": []
+        }
+    },
+    "onEvent": [ {
+            "eventId": "Pca0FullScreenSummary.displayProductModelsSelections",
+            "cacheEventData": true,
+            "action": "displayProductModelsSelectionsList"
+        },
+        {
+            "eventId": "Pca0FullScreenSummary.displayUserSelections",
+            "action": "displayUserSelectionsList"
+        },
+        {
+            "eventId": "Pca0Summary.showBreadcrumb",
+            "action": "showBreadcrumb"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.updateSVRListInSummary",
+            "action": "onMountedInitializer"
+        },
+        {
+            "eventId": "Pca0FullScreenSummary.updateCompletenessStatusAndViolations",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "updateCompletenessStatusAndViolations"
+        },
+        {
+            "eventId": "Pca0Summary.disableCompletenessStatusChip",
+            "action": "disableCompletenessStatusChip"
+        },
+        {
+            "eventId": "Pca0Summary.displaySummarySelections",
+            "action": "displaySummarySelections"
+        },
+        {
+            "eventId": "Pca0FullScreenSummary.updateUserSelectionsSectionExpansion",
+            "action": "updateUserSelectionsSectionExpansion"
+        },
+        {
+            "eventId": "Pca0FullScreenSummary.getUserSelectionsList",
+            "action": "getUserSelectionsList"
+        },
+        {
+            "eventId": "Pca0Summary.initSummaryState",
+            "action": "initSummaryState"
+        },
+        {
+            "eventId": "Pca0Features.allSelectionsCleared",
+            "action": "handleAllSelectionsCleared"
+        },
+        {
+            "eventId": "Pca0FullScreenSummary.setLoadedVariantInChip",
+            "action": "setLoadedVariantInChipBatch"
+        },
+        {
+            "eventId": "Pca0Settings.applySettings",
+            "action": "disableCompletenessStatusChip"
+        },
+        {
+            "eventId": "Pca0Summary.updateSummaryChip",
+            "action": "getLoadedSavedVariants"
+        }
+    ],
+    "messages": {
+        "completenessStatusGuidanceInfo": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.completenessStatusGuidanceMessage}}"
+        }
+    },
+    "i18n": {
+        "variant": [ "FullScreenConfigurationMessages" ],
+        "invalidStatus": [ "FullScreenConfigurationMessages" ],
+        "validAndInCompleteStatus": [ "FullScreenConfigurationMessages" ],
+        "validAndCompleteStatus": [ "FullScreenConfigurationMessages" ],
+        "completenessStatusGuidanceMessage": [ "FullScreenConfigurationMessages" ]
+    },
+    "data": {
+        "variantsSectionExpand": true,
+        "userSelectionsSectionExpand": false,
+        "validAndIncompletenessStatusChipData": {
+            "iconId": "indicatorValidButIncompleteConfiguration",
+            "labelDisplayName": "{{i18n.validAndInCompleteStatus}}",
+            "labelInternalName": "validAndIncomplete",
+            "enableWhen": {
+                "condition": "conditions.isCompletenessStatusChipEnabled"
+            }
+        },
+        "validAndCompletenessStatusChipData": {
+            "iconId": "indicatorValidConfiguration",
+            "labelDisplayName": "{{i18n.validAndCompleteStatus}}",
+            "labelInternalName": "validAndComplete",
+            "enableWhen": {
+                "condition": "conditions.isCompletenessStatusChipEnabled"
+            }
+        },
+        "invalidStatusChipData": {
+            "iconId": "indicatorInvalidConfiguration",
+            "labelDisplayName": "{{i18n.invalidStatus}}",
+            "labelInternalName": "invalid",
+            "enableWhen": {
+                "condition": "conditions.isCompletenessStatusChipEnabled"
+            }
+        },
+        "violationMessagesTT": {
+            "view": "Pca0ViolationsExtendedTooltip"
+        },
+        "completenessStatusTooltip": {
+            "view": "Pca0TitledExtendedTooltip"
+        },
+        "nonGridableExpressionDetailsTooltipView": {
+            "view": "Pca0NonGridableExpressionTooltip"
+        },
+        "variantRuleChipWithRemoveButton": [ {
+            "iconId": "",
+            "uiIconId": "miscRemoveBreadcrumb",
+            "chipType": "BUTTON",
+            "labelDisplayName": "",
+            "enableWhen": true
+        }],
+        "variantRuleChipWithoutRemoveButton": [ {
+            "iconId": "",
+            "chipType": "BUTTON",
+            "labelDisplayName": "",
+            "enableWhen": {
+                "condition": "conditions.isVariantChipEnabled"
+            }
+        } ],
+        "crumbs": [],
+        "completenessStatusValidAndComplete": {
+            "completenessStatus":"validAndComplete"
+        },
+        "completenessStatusValidAndInComplete": {
+            "completenessStatus":"validAndInComplete"
+        }
+    },
+    "conditions": {
+        "isProductHierarchyDepth": {
+            "expression": "ctx.fscContext.appliedSettings.configSettings.props.pca0ProductHierarchyDepth !== undefined && ctx.fscContext.appliedSettings.configSettings.props.pca0ProductHierarchyDepth.dbValues[0] !== '1'"
+        },
+        "showModuleHierarchyBreadcrumb": {
+            "expression": "conditions.isProductHierarchyDepth && props.summarystate.showModuleHierarchy === false"
+        },
+        "showRemoveSavedVariants": {
+            "expression": "ctx.fscContext && ctx.fscContext.isVCVOpenedFromConfigurator === false"
+        },
+        "isExpressionNonGridable": {
+            "expression": "props.variantRuleData.isExpressionNonGridable"
+        },
+        "isCompletenessStatusChipEnabled": {
+            "expression": "props.summarystate.isCompletenessStatusChipEnabled"
+        },
+        "ValidAndInComplete": {
+            "expression": "props.summarystate.completenessStatus === 'ValidAndInComplete'"
+        },
+        "ValidAndComplete": {
+            "expression": "props.summarystate.completenessStatus === 'ValidAndComplete'"
+        },
+        "InValid": {
+            "expression": "props.summarystate.completenessStatus === 'InValid'"
+        },
+        "ViolationSeverityError": {
+            "expression": "props.summarystate.violationSeverity === 'error'"
+        },
+        "ViolationSeverityWarning": {
+            "expression": "props.summarystate.violationSeverity === 'warning'"
+        },
+        "ViolationSeverityInfo": {
+            "expression": "props.summarystate.violationSeverity === 'info'"
+        },
+        "isInitialized": {
+            "expression": "data.isInitialized"
+        },
+        "canLoadSummary": {
+            "expression": "ctx.fscContext !== undefined && ctx.fscContext.appliedSettings !== undefined"
+        },
+        "isVariantChipEnabled": {
+            "expression": "ctx.fscContext.initialVariantRule && ctx.fscContext.initialVariantRule.props.object_name.dbValue !== 'Custom Configuration'"
+        }
+    },
+    "props": {
+        "summarystate": {
+            "type": "object",
+            "variantRuleDirty": {
+                "type": "boolean"
+            }
+        },
+        "variant-rule-data": {
+            "type": "object"
+        },
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "ctx": {
+        "fscContext": {
+            "type": "object"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "onMountedInitializer",
+        "onUpdate": [ {
+                "action": "setLoadedVariantInChipBatch",
+                "observers": [ "props.variantRuleData.isExpressionNonGridable" ]
+            },
+            {
+                "action": "refreshSavedVariantsListAfterInit",
+                "observers": [ "props.summarystate.variantRuleDirty" ]
+            },
+            {
+                "action": "refreshSavedVariantsList",
+                "observers": [ "viewModel.ctx.fscContext.initialVariantRule" ]
+            },
+            {
+                "action": "removeDuplicates",
+                "observers": [ "viewModel.dataProviders.loadedSavedVariantsProvider.viewModelCollection.loadedVMObjects.length" ]
+            },
+            {
+                "action": "showModuleHierarchy",
+                "observers": [ "viewModel.ctx.fscContext.configurationModuleHierarchy" ]
+            },
+            {
+                "action": "showBreadcrumb",
+                "observers": [ "props.summarystate.showModuleHierarchy" ]
+            }
+        ]
+    }
+}

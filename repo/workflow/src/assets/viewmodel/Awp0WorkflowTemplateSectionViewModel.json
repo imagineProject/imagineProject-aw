@@ -1,0 +1,371 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "actions": {
+        "initPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadAlternateProcedurePreference"
+                }
+            ]
+        },
+        "loadAlternateProcedurePreference": {
+            "actionType": "JSFunction",
+            "method": "getAllowAlternateProcedurePrefValue",
+            "inputData": {
+                "data": "{{ctx.preferences}}",
+                "submitPanelState": "{{props.subPanelContext.submitPanelState}}"
+            },
+            "outputData": {
+                "allowAlternateProceduresPrefValue": ""
+            },
+            "deps": "js/Awp0NewWorkflowProcess"
+        },
+        "populateAlternateProcedureProp": {
+            "actionType": "JSFunction",
+            "method": "populateAlternateProcedureProp",
+            "inputData": {
+                "propObject": "{{data.allowAlternateProcedures}}",
+                "targetObjects": "{{function:getTargetObjects}}",
+                "subPanelContext": "{{props.subPanelContext.submitPanelState}}",
+                "allowAlternateProceduresPrefValue": "{{data.allowAlternateProceduresPrefValue}}"
+            },
+            "outputData": {
+                "allowAlternateProcedures": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "submitToWorkflow.loadWorkflowTemplatesEvent"
+                    }
+                ]
+            },
+            "deps": "js/Awp0NewWorkflowProcess"
+        },
+        "updatePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "submitToWorkflow.loadWorkflowTemplatesEvent",
+                        "condition": "props.subPanelContext.submitPanelState.isReloadPanel === true"
+                    }
+                ]
+            }
+        },
+        "loadWorkflowTemplates": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2013-05-Workflow",
+            "method": "getWorkflowTemplates",
+            "inputData": {
+                "input": [
+                    {
+                        "clientId": "allTemplates",
+                        "getFiltered": false,
+                        "targetObjects": "{{props.targetObjects}}"
+                    },
+                    {
+                        "clientId": "filterTemplates",
+                        "getFiltered": true,
+                        "targetObjects": "{{props.targetObjects}}"
+                    }
+                ]
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "object_desc"
+                            },
+                            {
+                                "name": "fnd0Instructions"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "templatesData": "{{function:getWorkflowTemplatesData}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "submitToWorkflow.templatesLoaded"
+                    }
+                ]
+            },
+            "deps": "js/Awp0NewWorkflowProcess"
+        },
+        "populatePanelData": {
+            "actionType": "JSFunction",
+            "method": "populatePanelData",
+            "inputData": {
+                "templatesData": "{{data.templatesData}}",
+                "subPanelContext": "{{props.subPanelContext.submitPanelState}}",
+                "targetObjects": "{{props.targetObjects}}",
+                "getFiltered": "{{data.allowAlternateProcedures.dbValue}}",
+                "workflowTemplatesProp": "{{data.workflowTemplates}}",
+                "processNameProp": "{{data.workFlowName}}"
+            },
+            "outputData": {
+                "templates": "templatesObjects",
+                "workflowTemplates": "workflowTemplates",
+                "workFlowName": "workFlowName"
+            },
+            "deps": "js/Awp0NewWorkflowProcess"
+        },
+        "getValidTemplates": {
+            "actionType": "JSFunction",
+            "method": "populatePanelData",
+            "inputData": {
+                "templatesData": "{{data.templatesData}}",
+                "subPanelContext": "{{props.subPanelContext.submitPanelState}}",
+                "targetObjects": "{{props.targetObjects}}",
+                "getFiltered": "{{data.allowAlternateProcedures.dbValue}}",
+                "workflowTemplatesProp": "{{data.workflowTemplates}}",
+                "processNameProp": "{{data.workFlowName}}"
+            },
+            "outputData": {
+                "templates": "templatesObjects",
+                "workflowTemplates": "workflowTemplates",
+                "workFlowName": "workFlowName"
+            },
+            "deps": "js/Awp0NewWorkflowProcess"
+        },
+        "updateTemplateContextInfo": {
+            "actionType": "JSFunction",
+            "method": "updateTemplateContextInfo",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext.submitPanelState}}",
+                "targetObjects": "{{props.targetObjects}}",
+                "workflowTemplates": "{{data.workflowTemplates}}",
+                "processNameProp": "{{data.workFlowName}}",
+                "fields": "{{fields.workFlowName}}"
+            },
+            "outputData": {
+                "workFlowName": ""
+            },
+            "deps": "js/Awp0NewWorkflowProcess"
+        },
+        "updateWorkflowProcessName": {
+            "actionType": "JSFunction",
+            "method": "updateWorkflowContextInfo",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext.submitPanelState}}",
+                "contextKey": "processName",
+                "processNameProp": "{{data.workFlowName.dbValue}}"
+            },
+            "deps": "js/Awp0NewWorkflowProcess"
+        },
+        "updateWorkflowProcessDescription": {
+            "actionType": "JSFunction",
+            "method": "updateWorkflowContextInfo",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext.submitPanelState}}",
+                "contextKey": "processDescription",
+                "processNameProp": "{{data.description.dbValue}}"
+            },
+            "deps": "js/Awp0NewWorkflowProcess"
+        },
+        "updateAssignmentStateOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "resetAssignmentState",
+                    "condition": "props.subPanelContext.assignmentState.taskAssignmentDataObject && data.initialSelection !== props.subPanelContext.submitPanelState.processTemplate.uid"
+                },
+                {
+                    "action": "cacheInitialTemplateSelection"
+                }
+            ]
+        },
+        "cacheInitialTemplateSelection": {
+            "actionType": "JSFunction",
+            "method": "cacheSelection",
+            "inputData": {
+                "selectedUid": "{{props.subPanelContext.submitPanelState.processTemplate.uid}}"
+            },
+            "outputData": {
+                "initialSelection": ""
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        },
+        "resetAssignmentState": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.assignmentState}}",
+                "value": {
+                    "taskAssignmentDataObject": "",
+                    "parentChildMap": "",
+                    "isPrivilegedToAssign": false,
+                    "selectedPals": null,
+                    "updatedTaskObjects": []
+                }
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "data": {
+        "allowAlternateProcedures": {
+            "displayName": "",
+            "type": "BOOLEAN",
+            "propertyRadioTrueText": "{{i18n.All}}",
+            "propertyRadioFalseText": "{{i18n.Assigned}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "renderingHint": "radiobutton"
+        },
+        "workflowTemplates": {
+            "displayName": "{{i18n.Workflow_Template}}",
+            "type": "STRING",
+            "hasLov": true,
+            "dataProvider": "templatesLOVProvider"
+        },
+        "workFlowName": {
+            "displayName": "{{i18n.Workflow_Name}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "maxLength": 128
+        },
+        "description": {
+            "displayName": "{{i18n.Description}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "maxLength": 240,
+            "numberOfLines": 3,
+            "dbValue": ""
+        },
+        "allowAlternateProceduresPrefValue": {
+            "dbValue": ""
+        }
+    },
+    "dataProviders": {
+        "templatesLOVProvider": {
+            "response": "{{data.templates}}",
+            "totalFound": "{{data.templates.length}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "messages": {},
+    "lifecycleHooks": {
+        "onMount": "loadAlternateProcedurePreference",
+        "onUpdate": [
+            {
+                "action": "updatePanel",
+                "observers": [
+                    "props.subPanelContext.submitPanelState.isReloadPanel"
+                ]
+            },
+            {
+                "action": "updateAssignmentStateOnSelectionChange",
+                "observers": [
+                    "props.subPanelContext.submitPanelState.processTemplate"
+                ]
+            }
+        ]
+    },
+    "ctx": {
+        "preferences": null
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "target-objects": {
+            "type": "object"
+        }
+    },
+    "functions": {
+        "getFiltered": {
+            "functionName": "getFiltered",
+            "parameters": [
+                "{{data.allowAlternateProcedures.dbValue}}"
+            ]
+        },
+        "getWorkflowTemplatesData": {
+            "functionName": "getWorkflowTemplatesData",
+            "parameters": [],
+            "deps": "js/Awp0NewWorkflowProcess"
+        },
+        "getTargetObjects": {
+            "functionName": "getTargetObjects",
+            "parameters": [
+                "{{props.subPanelContext}}"
+            ],
+            "deps": "js/Awp0NewWorkflowProcess"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "submitToWorkflow.templatesLoaded",
+            "action": "populatePanelData"
+        },
+        {
+            "eventId": "condition.expressionValueChanged",
+            "action": "updateWorkflowProcessName",
+            "criteria": {
+                "condition": "conditions.workflowNameChanged"
+            },
+            "cacheEventData": true
+        },
+        {
+            "eventId": "condition.expressionValueChanged",
+            "action": "updateWorkflowProcessDescription",
+            "criteria": {
+                "condition": "conditions.workflowDescriptionChanged"
+            },
+            "cacheEventData": true
+        },
+        {
+            "eventId": "submitToWorkflow.populateAlternateProcedurePropEvent",
+            "action": "populateAlternateProcedureProp"
+        },
+        {
+            "eventId": "submitToWorkflow.loadWorkflowTemplatesEvent",
+            "action": "loadWorkflowTemplates"
+        }
+    ],
+    "conditions": {
+        "isAllowAlternateProcedures": {
+            "expression": "props.subPanelContext.submitPanelState.CR_allow_alternate_procedures.toLowerCase() !== 'none'"
+        },
+        "isAllowAlternateProcedureEnable": {
+            "expression": "props.targetObjects && props.targetObjects.length > 0"
+        },
+        "workflowNameChanged": {
+            "expression": "data.workFlowName.dbValue",
+            "trackValues": true
+        },
+        "workflowDescriptionChanged": {
+            "expression": "data.description.dbValue",
+            "trackValues": true
+        }
+    },
+    "i18n": {
+        "Workflow": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "All": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "Assigned": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "Workflow_Template": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "Workflow_Name": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "Description": [
+            "WorkflowCommandPanelsMessages"
+        ]
+    }
+}

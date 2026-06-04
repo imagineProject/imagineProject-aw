@@ -1,0 +1,40 @@
+<aw-command-panel class="aw-pma-updateSummaryContainer" caption="i18n.proposedUpdates" context="{...subPanelContext,...data}">
+    <div class="sw-section" exist-when="data.sourceAlignedOcc && data.targetAlignedOcc">
+        <div class="sw-column aw-pma-updateHeaderTile">
+            <!-- Focus Mode Toggle -->
+            <aw-togglebutton class="aw-category-toggle" prop="data.focusModeToggleDBOM" action="handleFocusModeToggleChange" exist-when="data.srcViewKey === 'CBASrcContext'"></aw-togglebutton>
+            <aw-togglebutton class="aw-category-toggle" prop="data.focusModeToggleEBOM" action="handleFocusModeToggleChange" exist-when="data.srcViewKey === 'CBATrgContext'"></aw-togglebutton>
+        </div>
+        <!-- chips providing update summaries -->
+        <pma-update-summary-header exist-when="data.updateSummaryState.headerSummary" sub-panel-context="{...subPanelContext,data:data, swapRequired:data.swapRequired,updateSummaryState:{...data.updateSummaryState}}"></pma-update-summary-header>
+        <div exist-when="data.showChipSet && data.updateSummaryState.chips.length>0" class="sw-row flex-auto align-start justify-left flex-wrap afx-alt-content-background aw-pma-chipSection">
+            <div class="sw-column" aw-repeat="chip:data.updateSummaryState.chips">
+                <aw-chip chip="chip" selected="chip.selected" button-type="{{chip.selected?'accent-high-contrast':'base'}}" action="updateSelection" ></aw-chip>
+            </div>
+        </div>
+    </div>
+    <aw-panel-body>
+        <!-- scrollable panel having list of tiles as per update summary -->
+        <div class="sw-column sw-section">
+            <div class="sw-column w-12 aw-pma-updateSummaryTileContent" aw-repeat="updateSummary:data.updateSummaryState.updateSummaries" visible-when="data.filteredOutChips.indexOf(updateSummary.selectedUpdateAction.dbValue) === -1">
+               <pma-update-summary-tile sub-panel-context="{...subPanelContext,data:data, updateSummaryState:{...data.updateSummaryState}, 'updateSummary':{...updateSummary}, tileIndex:updateSummary.selectedUpdateAction.tileIndex, swapRequired:data.swapRequired}"></pma-update-summary-tile>
+            </div>
+        </div>
+        <div class="sw-column flex-auto aw-pma-updateSummaryTileContent" exist-when="data.response.ServiceData && data.response.ServiceData.partialErrors === undefined && data.updateSummaryState.updateSummaries.length === 0 && subPanelContext.cbaContext.srcStructure && subPanelContext.cbaContext.trgStructure">
+            <div class="sw-column flex-auto">
+                <aw-empty-workarea title="i18n.Pma1NoProposedUpdateTitle" hint="i18n.Pma1NoProposedUpdate" visible-when="!data.isHiddenTilesInPanel && data.response.updateActions.length === 1">
+                </aw-empty-workarea>
+                <aw-empty-workarea title="i18n.Pma1AlignmentUpdateTitle" hint="i18n.Pma1AlignmentUpdate" visible-when="data.isHiddenTilesInPanel">
+                </aw-empty-workarea>
+            </div>
+        </div>
+    </aw-panel-body>
+    <!-- Run in background checkbox and update button-->
+    <aw-checkbox class="aw-pma-runInBackgroundCheckBox" exist-when="data.updateSummaryState.updateSummaries.length > 0" prop="data.runInBackground"></aw-checkbox>
+    <aw-panel-footer>
+        <aw-button class="aw-pma-updateButton" action="performUpdate" size="auto"
+        enable-when="((data.updateSummaryState.updateSummaries && data.updateSummaryState.updateSummaries.length > 0) || data.isHiddenTilesInPanel) && !data.updateSummaryState.isUpdateSummaryInProgress">
+            <aw-i18n>i18n.update</aw-i18n>
+        </aw-button>
+    </aw-panel-footer>
+</aw-command-panel>

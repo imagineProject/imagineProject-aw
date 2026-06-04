@@ -1,0 +1,153 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "initializeGridHeader": {
+            "actionType": "JSFunction",
+            "method": "buildGridHeaderTooltipDetails",
+            "inputData": {
+                "columnData": "{{props.column}}",
+                "gridEditorMode": "{{props.gridEditorMode}}"
+            },
+            "outputData": {
+                "tooltipInfo": ""
+            },
+            "deps": "js/pca0GridHeaderService"
+        },
+        "initializeGridHeaderBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "initializeGridHeader"
+                },
+                {
+                    "action": "loadViolationInfo",
+                    "condition": "props.column.headerStatusInfo.currentSVRUid === props.column.field"
+                },
+                {
+                    "action": "loadCompletenessStatus",
+                    "condition": "props.column.headerStatusInfo.currentSVRUid === props.column.field"
+                }
+            ]
+        },
+        "updateCompletenessStatusAndViolations": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "showViolationInfo",
+                    "condition": "parameters.eventData.currentSVRUid === props.column.field"
+                },
+                {
+                    "action": "updateCompletenessStatus",
+                    "condition": "parameters.eventData.currentSVRUid === props.column.field"
+                }
+            ]
+        },
+        "showViolationInfo": {
+            "actionType": "JSFunction",
+            "method": "showViolationInfo",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}",
+                "column": "{{props.column.field}}"
+            },
+            "outputData": {
+                "violationLabel": "result.violationLabel",
+                "violationMessages": "result.violationMessages",
+                "severity": "result.severity"
+            },
+            "deps": "js/pca0MultiSVRGridEditorHeaderService"
+        },
+        "updateCompletenessStatus": {
+            "actionType": "JSFunction",
+            "method": "updateCompletenessStatus",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}",
+                "column": "{{props.column.field}}"
+            },
+            "outputData": {
+                "completenessStatus": "result.completenessStatus",
+                "tooltipInfo.tooltipIconUrl": "result.tooltipInfo.tooltipIconUrl",
+                "tooltipInfo.tooltipIconText": "result.tooltipInfo.tooltipIconText"
+            },
+            "deps": "js/pca0MultiSVRGridEditorHeaderService"
+        },
+        "loadViolationInfo": {
+            "actionType": "JSFunction",
+            "method": "showViolationInfo",
+           "inputData": {
+                "headerStatusInfo": "{{props.column.headerStatusInfo}}",
+                "uid": "{{props.column.uid}}"
+            },
+            "outputData": {
+                "violationLabel": "result.violationLabel",
+                "violationMessages": "result.violationMessages",
+                "severity": "result.severity"
+            },
+            "deps": "js/pca0MultiSVRGridEditorHeaderService"
+        },
+        "loadCompletenessStatus": {
+            "actionType": "JSFunction",
+            "method": "updateCompletenessStatus",
+            "inputData": {
+                "headerStatusInfo": "{{props.column.headerStatusInfo}}",
+                "uid": "{{props.column.uid}}"
+            },
+            "outputData": {
+                "completenessStatus": "result.completenessStatus",
+                "tooltipInfo.tooltipIconUrl": "result.tooltipInfo.tooltipIconUrl",
+                "tooltipInfo.tooltipIconText": "result.tooltipInfo.tooltipIconText"
+            },
+            "deps": "js/pca0MultiSVRGridEditorHeaderService"
+        },
+        "colorifyHeaderCells": {
+            "actionType": "JSFunction",
+            "method": "colorifyMultiSVRHeaderCells",
+            "inputData": {
+                "variabilityProps": "{{parameters.eventData.variabilityProps}}"
+            },
+            "deps": "js/pca0MultiSVRGridEditorHeaderService"
+        }
+    },
+    "data": {
+         "violationMessagesTT":
+         {
+            "view": "Pca0ViolationsExtendedTooltip"
+         },
+         "completenessStatus": {
+            "completenessStatusId": "",
+            "completenessStatusLabel": ""
+        }
+    },
+    "messages": {},
+    "onEvent": [
+        {
+            "eventId": "pca0MultiSVRGridEditor.updateCompletenessStatusAndViolations",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "updateCompletenessStatusAndViolations"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.updateDirtyHeaders",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "colorifyHeaderCells"
+        }
+
+    ],
+    "conditions": {
+        "inVerticalMode": {
+            "expression": "props.column.isVertical"
+        },
+        "InValid": {
+            "expression": "data.completenessStatus.completenessStatusId === 'InValid'"
+        },
+        "hasCompletnessStatus": {
+            "expression": "data.completenessStatus.completenessStatusId !== ''"
+        },
+        "hasViolationsToDisplay": {
+            "expression": "data.violationMessages !== undefined && data.violationMessages.length > 0"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeGridHeaderBatch"
+    }
+}

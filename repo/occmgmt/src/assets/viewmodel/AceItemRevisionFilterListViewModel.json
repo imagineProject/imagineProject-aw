@@ -1,0 +1,153 @@
+{
+    "schemaVersion": "1.0.0",
+    "props": {
+        "sub-panel-context": {
+            "type": ""
+        }
+    },
+    "data": {
+        "objectList": {
+            "name": "objectList",
+            "displayName": "{{props.subPanelContext.addElementState.filterListTitle}}",
+            "type": "STRING",
+            "isRequired": true,
+            "dataProvider": "listDataProvider"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "getSavedQueryUid"
+    },
+    "actions": {
+        "getRequiredObjectList": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData":  {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "",
+                        "hostingClientName": "",
+                        "clientScopeURI": "",
+                        "operationType": "",
+                        "columnsToExclude": []
+                    },
+                    "saveColumnConfigData": {
+                        "scope": "",
+                        "scopeName": "",
+                        "clientScopeURI": "",
+                        "columnConfigId": "",
+                        "columns": []
+                    },
+                    "noServiceData": false,
+                    "inflateProperties": false,
+                    "searchInput": {
+                        "maxToLoad": 40,
+                        "maxToReturn": 40,
+                        "providerName": "Awb0FullTextSearchProvider",
+                        "searchCriteria":{
+                            "queryUID": "{{data.searchQuery.uid}}",
+                            "Type": "{{props.subPanelContext.addElementState.typeToBeSearched}}",
+                            "lastEndIndex": "",
+                            "totalObjectsFoundReportedToClient": "",
+                            "typeOfSearch": "ADVANCED_SEARCH",
+                            "searchContext": "{{props.subPanelContext.currentState.pci_uid}}",
+                            "savedQueryUID": "",
+                            "includeConnections": "",
+                            "useAlternateConfig": "true",
+                            "honorOrgScheme": "false",
+                            "productContextsToBeExcludedFromSearch": "",
+                            "searchScope": "{{props.subPanelContext.rootElement.uid}}",
+                            "productContextUids":"{{props.subPanelContext.currentState.pci_uid}}",
+                            "selectedLine": "",
+                            "forceThreshold": "true",
+                            "searchID":"{{function:getSearchId}}",
+                            "utcOffset": "330",
+                            "checkThreshold": "1"
+                        },
+                        "searchFilterFieldSortType": "Priority",
+                        "searchFilterMap6": "",
+                        "cursor": {
+                            "startIndex": "{{data.startIndex}}",
+                            "endReached": false,
+                            "startReached": false,
+                            "endIndex": 0
+                        }
+                    }
+                }
+            },
+            "outputData": {
+                    "objectsList"     : "{{function:getUniqueObjectListResponse}}",
+                    "totalFound"      : "totalFound",
+                    "moreValuesExist" : "{{function:isMoreValuesExist}}",
+                    "startIndex"      : "{{function:getStartIndex}}"
+            }
+        },
+        "selectObjectInList": {
+            "actionType": "JSFunction",
+            "method"    : "updateAddElementStateWithSelectedObjectInList",
+            "inputData" : {
+                "selected" : "{{data.objectList.dbValue}}",
+                "subPanelContext": "{{props.subPanelContext.addElementState}}"
+            },
+            "outputData" : {
+            },
+            "deps": "js/aceItemRevisionFilterListService"
+        },
+        "getSavedQueryUid": {
+            "actionType" : "TcSoaService",
+            "serviceName": "Query-2010-04-SavedQuery",
+            "method" : "findSavedQueries",
+            "inputData"  : {
+              "inputCriteria": [
+                {
+                  "queryNames": [
+                    "Item Revision..."
+                  ]
+                }
+              ]
+            },
+            "outputData": {
+              "searchQuery": "savedQueries[0]"
+            }
+        }
+    },
+    "functions": {
+        "getUniqueObjectListResponse": {
+            "functionName": "getUniqueObjectListResponse",
+            "parameters": [
+                "{{data.dataProviders.listDataProvider.viewModelCollection}}"
+            ],
+            "deps": "js/aceItemRevisionFilterListService"
+        },
+        "isMoreValuesExist": {
+            "functionName": "isMoreValuesExist",
+            "parameters": [],
+            "deps": "js/aceItemRevisionFilterListService"
+        },
+        "getSearchId": {
+            "functionName": "getSearchId",
+            "parameters": [
+                "{{data.searchQuery.uid}}"
+            ],
+            "deps": "js/aceItemRevisionFilterListService"
+        },
+        "getStartIndex": {
+            "functionName": "getStartIndex",
+            "parameters": [
+                "{{data.startIndex}}"
+            ],
+            "deps": "js/aceItemRevisionFilterListService"
+        }
+    },
+    "dataProviders": {
+        "listDataProvider": {
+            "initializeAction": "getRequiredObjectList",
+            "nextAction"      : "getRequiredObjectList",
+            "response"        : "{{data.objectsList}}",
+            "totalFound"      : "{{data.totalFound}}",
+            "moreValuesExist" : "{{data.moreValuesExist}}"
+        }
+    },
+
+    "i18n": {    }
+}

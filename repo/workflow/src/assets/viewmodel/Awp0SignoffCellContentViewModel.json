@@ -1,0 +1,84 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports":
+    [
+        "js/aw-model-icon.directive",
+        "js/aw-visual-indicator.directive",
+        "js/exist-when.directive",
+        "js/aw-link.directive",
+        "js/aw-avatar.directive"
+    ],
+
+    "actions":
+    {
+        "updateDecisionRequired": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-09-DataManagement",
+            "method": "setProperties",
+            "inputData": {
+                "info": "{{function:setPropertiesInputForSignoffDecision}}"
+            },
+            "deps": "js/Awp0SignoffCellContentService"
+        },
+        "updateDecisionPropObject": {
+            "actionType": "JSFunction",
+            "method": "updateDecisionPropObject",
+            "inputData": {
+                "propObject": "{{data.decisionRequired}}",
+                "vmo": "{{props.vmo}}"
+            },
+            "outputData": {
+                "decisionRequired": ""
+            },
+            "deps": "js/Awp0SignoffCellContentService"
+        }
+    },
+
+    "functions": {
+        "setPropertiesInputForSignoffDecision": {
+            "functionName": "setPropertiesInputForSignoffDecision",
+            "parameters": [
+                "{{props.vmo}}"
+            ]
+        }
+    },
+    "data": {
+        "decisionRequired": {
+            "displayName": "{{i18n.decisionRequired}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "{{props.vmo.props.fnd0DecisionRequired.dbValue}}",
+            "uiValue": "{{props.vmo.props.fnd0DecisionRequired.uiValue}}",
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE"
+        }
+    },
+    "i18n": {
+        "decisionRequired": [ "InboxMessages" ]
+    },
+    "props": {
+        "vmo":{
+            "type": "viewModelObject"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": {
+            "action": "updateDecisionPropObject",
+            "observers": [
+                "props.vmo.props.fnd0DecisionRequired.dbValue"
+            ]
+        }
+    },
+    "conditions": {
+        "isResourcePoolSignoffObject": {
+            "expression": "props.vmo.isResoucePoolSignoff"
+        },
+        "isSignoffDecisionModifiable": {
+            "expression": "props.vmo.props.fnd0DecisionRequired && props.vmo.isRequiredDecisionModifiable"
+        },
+        "isSignoffDecisionNonModifiable": {
+            "expression": "props.vmo.props.fnd0DecisionRequired && !props.vmo.isRequiredDecisionModifiable"
+        }
+    }
+
+}

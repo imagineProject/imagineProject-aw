@@ -1,0 +1,253 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "openPanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "Saw1AddSchedulesToProgramViewDataset"
+            }
+        },
+        "callLoadSchedulesDataProvider": {
+            "actionType": "dataProvider",
+            "methods": [
+                "loadSchedulesDataProvider"
+            ]
+        },
+        "loadObjects":{
+            "actionType": "JSFunction",
+            "method": "loadObjects",
+            "inputData": {
+                "configurations": "{{subPanelContext.programViewConfigurations.configurations}}",
+                "sharedData":"{{subPanelContext.sharedData}}"
+            },
+            "deps": "js/Saw1CreateProgramViewDatasetService"
+        },
+        "removeSelectedSchedules": {
+            "actionType": "JSFunction",
+            "method": "removeSelectedSchedules",
+            "inputData": {
+                "loadSchedulesDataProvider": "{{data.dataProviders.loadSchedulesDataProvider}}",
+                "sharedData":"{{subPanelContext.sharedData}}"
+            },
+            "deps": "js/Saw1CreateProgramViewDatasetService"
+        },
+        "updateProgramViewConfigurationsState":{
+            "actionType": "JSFunction",
+            "method": "updateProgramViewConfigurationsState",
+            "inputData": {
+                "configurations":"{{subPanelContext.programViewConfigurations}}",
+                "sharedData":"{{subPanelContext.sharedData}}"
+            },
+            "events": {
+                "success": [{
+                    "name": "closeDialog"
+                }],
+                "failure": [
+                    {
+                        "name": "closeDialog"
+                    }
+                  ]
+            },
+            "deps": "js/Saw1CreateProgramViewDatasetService" 
+        },
+        "createProgramViewDataset": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProjectManagementAw-2019-12-ScheduleManagementAw",
+            "method": "manageProgramView",
+            "inputData": {
+                "programViewInfo": {
+                    "operationType": "create",
+                    "inputOptions": [ {
+                            "name": "object_name",
+                            "stringValue": "{{data.programViewName.dbValue}}"
+                        },
+                        {
+                            "name": "object_desc",
+                            "stringValue": "{{data.description.dbValue}}"
+                        }
+                    ],
+                    "programViewConfiguration": {
+                        "scheduleUIDs": "{{function:getScheduleUIDs}}"
+                    }
+                }
+            },
+            "outputData": {
+                "createdView": ""
+            },
+            "events": {
+                "success": [ {
+                        "name": "openCreatedProgramViewDataset",
+                        "condition": "data.isOpenOnCreate.dbValue === true"
+                    },
+                    {
+                        "name": "closeDialog"
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": [
+                                "{{ctx.locationContext.ActiveWorkspace:SubLocation}}"
+                            ]
+                        },
+                        "condition": "data.isOpenOnCreate.dbValue !== true"
+                    },
+                    {
+                        "name": "primaryWorkarea.reset",
+                        "condition": "data.isOpenOnCreate.dbValue !== true"
+                    }
+                ]
+            },
+            "deps": "js/Saw1CreateProgramViewDatasetService"
+        },
+        "openCreatedProgramViewDataset": {
+            "actionType": "Navigate",
+            "navigateTo": "com_siemens_splm_clientfx_tcui_xrt_showObject",
+            "navigationParams": {
+                "uid": "{{data.createdView.programView.uid}}"
+            }
+        },
+        "closePanelDialog":{
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "dataProviders": {
+        "loadSchedulesDataProvider": {
+            "selectionModelMode": "single",
+            "response": "{{props.subPanelContext.sharedData.selectedSchedules}}",
+            "totalFound": "{{props.subPanelContext.sharedData.selectedSchedules.length}}",
+            "totalLoaded": "{{props.subPanelContext.sharedData.selectedSchedules.length}}",
+            "commandsAnchor": "aw_removeScheduleCellCommand"
+        }
+    },
+    "messages":{
+        "soaErrorMessage": {
+          "messageType": "ERROR",
+          "messageText": "{{errorCode}}"
+        }
+    },
+    "data": {
+        "addRemoveSchedulesCommand": "saw1_add",
+        "programViewName": {
+            "displayName": "{{i18n.name}}",
+            "type": "STRING",
+            "isRequired": "true"
+        },
+        "description": {
+            "displayName": "{{i18n.description}}",
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "isOpenOnCreate": {
+            "displayName": "{{i18n.openOnCreate}}",
+            "dbValue": false,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true"
+        }
+    },
+    "conditions": {
+        "isCreateProgramViewPanel": {
+            "expression": "ctx.sidenavCommandId === 'Saw1CreateProgramViewDataset'"
+        },
+        "showChangeButton": {
+            "expression": "props.subPanelContext.sharedData.showChangeButton"
+        },
+        "showWidget": {
+            "expression": "data.programViewName.dbValue && conditions.isCreateProgramViewPanel"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "Saw1CreateProgramView.removeSchedule",
+            "action": "removeSelectedSchedules"
+        },
+        {
+            "eventId": "openCreatedProgramViewDataset",
+            "action": "openCreatedProgramViewDataset"
+        },
+        {
+            "eventId":"saw1AddRemoveSchedulesProgram.callLoadSchedulesDataProvider",
+            "action": "callLoadSchedulesDataProvider"
+        },
+        {
+            "eventId": "saw1AddRemoveSchedulesProgramView.openAddSchPrgViewPanel",
+            "action": "openPanel"
+        },
+        {
+            "eventId":"closeDialog",
+            "action":"closePanelDialog"
+        }
+    ],
+    "functions": {
+        "getScheduleUIDs": {
+            "functionName": "getScheduleUIDs",
+            "parameters": [
+                "{{subPanelContext.sharedData}}"
+            ]
+        },
+        "getConfigurationForAddUpdateSchedule": {
+            "functionName": "getConfigurationForAddUpdateSchedule",
+            "parameters": [
+                "{{data.dataProviders}}",
+                "{{ctx.programViewConfiguration}}"
+            ]
+        },
+        "getProgramViewObject": {
+            "functionName": "getProgramViewObject",
+            "parameters": [
+                "{{ctx}}"
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onMount":"loadObjects",
+        "onUpdate": {
+            "action": "callLoadSchedulesDataProvider",
+            "observers": [
+                "props.subPanelContext.sharedData"
+            ]
+        }  
+    },
+    "i18n": {
+        "saw1_Change": [
+            "ScheduleManagerMessages"
+        ],
+        "schedulesTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "createProgramView": [
+            "ScheduleManagerMessages"
+        ],
+        "create": [
+            "ScheduleManagerMessages"
+        ],
+        "programView": [
+            "ScheduleManagerMessages"
+        ],
+        "properties": [
+            "ScheduleManagerMessages"
+        ],
+        "name": [
+            "ScheduleManagerMessages"
+        ],
+        "description": [
+            "ScheduleManagerMessages"
+        ],
+        "openOnCreate": [
+            "ScheduleManagerMessages"
+        ],
+        "filtersCommandTitle": [
+            "ScheduleManagerMessages"
+        ]
+    }
+}

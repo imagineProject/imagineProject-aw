@@ -1,0 +1,43 @@
+<div class="aw-layout-flexColumn" aw-class="{'aw-layout-include aw-workflow-performTaskPanel': subPanelContext.xrtType==='SUMMARY'}">
+    <aw-panel-body>
+        <div class="sw-property sw-component sw-row">
+            <aw-guidance-message message="testMessageError" closable="false" banner-style="true" show-icon="false" show-type="true" visible-when="conditions.isChildTaskError && !conditions.isWarning">
+            </aw-guidance-message>
+            <aw-guidance-message message="testMessageWarning" closable="false" banner-style="true" show-icon="false" show-type="true" visible-when="conditions.isChildTaskError && conditions.isWarning">
+            </aw-guidance-message>
+        </div>
+        <aw-widget  prop="data.taskName"></aw-widget>
+        <aw-widget  prop="data.description" visible-when="conditions.showInstructions"></aw-widget>
+        <aw-widget  prop="data.workflowDescription" visible-when="conditions.showWorkflowDescription"></aw-widget>
+        <aw-command-panel-section caption="i18n.reviewers" anchor="data.profileCommands" context="data.signoffSelectionData" exist-when="conditions.isProfileExistOnTask">
+            <aw-list dataprovider="data.dataProviders.reviewProfileSignoffProvider" command-context="{dialogActionForSignoffCellCommand: actions.dialogActionForSignoffCellCommand, ...subPanelContext}">
+                <awp0-signoff-profile-cell-content exist-when="item.modelType.typeHierarchyArray.indexOf( 'EPMSignoffProfile' ) > -1" vmo="item"></awp0-signoff-profile-cell-content>
+                <awp0-signoff-cell-content exist-when="item.modelType.typeHierarchyArray.indexOf( 'Signoff' ) > -1" vmo="item"></awp0-signoff-cell-content>
+            </aw-list>
+            <aw-dialog action="dialogActionForSignoffCellCommand"></aw-dialog>
+        </aw-command-panel-section>
+        <aw-command-panel-section caption="i18n.reviewers" anchor="data.sectionCommands" context="data.signoffSelectionData" exist-when="!conditions.isProfileExistOnTask">
+            <aw-list dataprovider="data.dataProviders.reviewAdhocSignoffProvider">
+                <awp0-signoff-cell-content exist-when="item.modelType.typeHierarchyArray.indexOf( 'Signoff' ) > -1" vmo="item"></awp0-signoff-cell-content>
+                <awp0-workflow-required-cell-content exist-when="!(item.modelType.typeHierarchyArray.indexOf( 'Signoff' ) > -1)" vmo="item"></awp0-workflow-required-cell-content>
+            </aw-list>
+        </aw-command-panel-section>
+        <aw-command-panel-section caption="i18n.additionalReviewers" anchor="data.sectionCommands" context="data.signoffSelectionData" exist-when="conditions.isProfileExistOnTask">
+            <aw-list dataprovider="data.dataProviders.reviewAdhocSignoffProvider">
+                <awp0-signoff-cell-content exist-when="item.modelType.typeHierarchyArray.indexOf( 'Signoff' ) > -1" vmo="item"></awp0-signoff-cell-content>
+            </aw-list>
+        </aw-command-panel-section>
+        <aw-panel-section caption="i18n.minimumParticipation">
+            <aw-radiobutton  prop="data.quorumOptions" enable-when="conditions.enableQuorumEditBox"></aw-radiobutton>
+            <aw-numeric id="sstPercentQuorumValue" prop="data.percentQuorumValue" visible-when="conditions.isPercentQuorum" enable-when="conditions.enableQuorumEditBox"></aw-numeric>
+            <aw-numeric id="sstNumericQuorumValue" prop="data.numericQuorumValue" visible-when="conditions.isNumericQuorum" enable-when="conditions.enableQuorumEditBox"></aw-numeric>
+            <aw-break></aw-break>
+            <aw-checkbox prop="data.waitForReviewers"></aw-checkbox>
+        </aw-panel-section>
+        <aw-widget prop="data.comments"></aw-widget>
+        <aw-password prop="data.password" visible-when="conditions.isSecureTask"></aw-password>
+    </aw-panel-body>
+    <aw-panel-footer>
+        <aw-button size="auto" action="verifySaveTaskAndComplete" enable-when="conditions.isValidToComplete"><aw-i18n>i18n.complete</aw-i18n></aw-button>
+    </aw-panel-footer>
+</div>

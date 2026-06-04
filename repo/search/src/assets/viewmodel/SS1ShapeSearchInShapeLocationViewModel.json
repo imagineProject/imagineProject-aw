@@ -1,0 +1,245 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "actions": {
+        "initializeSearchState": {
+            "actionType": "JSFunction",
+            "method": "initializeShapeCandidateSearchState",
+            "inputData": {
+            },
+            "outputData": {
+                "searchState": ""
+            },
+            "deps": "js/Awp0ShapeSearchService"
+        },
+        "performShapeSearch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "shapeSearchFromPalette",
+                    "condition": "conditions.isPaletteTabAddButtonVisible"
+                },
+                {
+                    "action": "shapeSearchFromSearchTab",
+                    "condition": "conditions.isSearchTabAddButtonVisible"
+                }
+            ]
+        },
+        "shapeSearchFromPalette": {
+            "actionType": "JSFunction",
+            "method": "doShapeSearch",
+            "inputData": {
+                "targetState": "",
+                "shapeCandidate": "{{data.addPanelState.sourceObjects[0].uid}}"
+            },
+            "deps": "js/Awp0ShapeSearchService"
+        },
+        "shapeSearchFromSearchTab": {
+            "actionType": "JSFunction",
+            "method": "doShapeSearch",
+            "inputData": {
+                "targetState": "",
+                "shapeCandidate": "{{data.selectionData.selected[0].uid}}"
+            },
+            "deps": "js/Awp0ShapeSearchService"
+        },
+        "checkShapeVisibilityForPalette": {
+            "actionType": "JSFunction",
+            "method": "checkShapeVisibilityForPalette",
+            "inputData": {
+                "data":"{{data}}",
+                "addPanelState": "{{data.addPanelState}}"
+            },
+            "outputData": {
+                "isValidShapeInPalette": ""
+            },
+            "deps": "js/Awp0ShapeSearchService"
+        },
+        "initShapesPanelbatchJob":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "initializeShapeSearchPopupId"
+                },
+                {
+                    "action": "initShapesPanel"
+                },
+                {
+                    "action": "initializeSearchState"
+                }
+            ]
+        },
+        "initShapesPanel":{
+            "actionType": "JSFunction",
+            "method": "initShapesPanel",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "searchFilterTabModels": ""
+            },
+            "deps": "js/Awp0ShapeSearchService"
+        },
+        "initializeShapeSearchPopupId": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.searchState}}",
+                "value": {
+                    "shapeSearchPopupId": "{{subPanelContext.popupOptions.popupId}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateSearchCriteriaForObjectsReported":{
+            "actionType": "JSFunction",
+            "method": "updateSearchCriteriaForObjectsReported",
+            "inputData": {
+                "searchState": "{{data.searchState}}",
+                "searchStateUpdater": "{{data.updateAtomicData}}"
+            },
+            "deps": "js/Awp0ShapeSearchService"
+        },
+        "updateSearchCriteriaSearchString":{
+            "actionType": "JSFunction",
+            "method": "updateSearchCriteriaSearchString",
+            "inputData": {
+                "searchState": "{{data.searchState}}",
+                "searchStateUpdater": "{{data.updateAtomicData}}"
+            },
+            "deps": "js/Awp0ShapeSearchService"
+        },
+        "reInitialize": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.searchState}}",
+                "value": {
+                    "shapeSearchPopupId": null
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "reInitializeSearchState": {
+            "actionType": "JSFunction",
+            "method": "reInitializeSearchState",
+            "inputData": {
+                "searchState": "{{data.searchState}}",
+                "tabKey": "{{data.selectedTab.tabKey}}"
+            },
+            "outputData": {
+                "searchState": ""
+            },
+            "deps": "js/Awp0ShapeSearchService"
+        }
+    },
+    "data": {
+        "searchState": {
+            "initialValues": {
+            },
+            "meta": {
+                "categories": [ {
+                    "filterValues": [ {
+                        "selected": {
+                            "field": "true",
+                            "type": "ViewModelProperty"
+                        }
+                    } ]
+                } ]
+            }
+        },
+        "tabModels": [
+            {
+                "name": "{{i18n.searchApplicationTitle}}",
+                "tabKey": "searchPage",
+                "recreatePanel": true
+            },
+            {
+                "name": "{{i18n.addObjPaletteBtn}}",
+                "tabKey": "palettePage"
+            }
+        ],
+        "searchFilterTabModels1": {
+            "isArray": "true",
+            "dbValue": [ {
+                    "tabKey": "results",
+                    "pageId": "results",
+                    "name": "Results",
+                    "selectedTab": true,
+                    "priority": 0,
+                    "recreatePanel": true
+                },
+                {
+                    "tabKey": "filters",
+                    "pageId": "filters",
+                    "name": "Filters",
+                    "priority": 1,
+                    "recreatePanel": true
+                }
+            ]
+        },
+        "addPanelState": {
+            "initialValues": {
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {
+                "sourceObjects": {
+                    "field": "true",
+                    "type": "OBJECTARRAY"
+                },
+                "selectedTab": {
+                    "field": "true",
+                    "type": "OBJECT"
+                }
+            }
+        },
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "conditions": {
+        "isSearchCandidateSelected": {
+            "expression": "conditions.isSearchTabAddButtonVisible || conditions.isPaletteTabAddButtonVisible"
+        },
+        "isPaletteTabAddButtonVisible": {
+            "expression": "data.selectedTab.tabKey === 'palettePage' && addPanelState.sourceObjects && addPanelState.sourceObjects.length > 0 && data.isValidShapeInPalette"
+        },
+        "isSearchTabAddButtonVisible": {
+            "expression": "data.selectedTab.tabKey === 'searchPage' && data.selectionData && data.selectionData.selected && data.selectionData.selected.length === 1"
+        }
+    },
+    "selectionModels": {
+        "resultTabModel": {
+            "selectionMode": "single"
+        }
+    },
+    "i18n": {
+        "SS1Shapes": [ "SearchMessages" ],
+        "SS1ShapeSearchTitleAction": [ "SearchMessages" ],
+        "searchApplicationTitle": [ "SearchMessages" ],
+        "addObjPaletteBtn": [ "SearchMessages"]
+    },
+    "lifecycleHooks": {
+        "onMount": "initShapesPanelbatchJob",
+        "onUnmount": "reInitialize",
+        "onUpdate": [
+            {
+                "action": "checkShapeVisibilityForPalette",
+                "observers": [ "viewModel.atomicData.addPanelState.sourceObjects" ]
+            },
+            {
+                "action": "updateSearchCriteriaForObjectsReported",
+                "observers": [ "viewModel.atomicData.searchState.endIndex" ]
+            },
+            {
+                "action": "updateSearchCriteriaSearchString",
+                "observers": [ "viewModel.atomicData.searchState.criteria.searchString", "viewModel.atomicData.searchState.filterString" ]
+            },
+            {
+                "action": "reInitializeSearchState",
+                "observers": [ "viewModel.data.selectedTab.tabKey" ]
+            }
+        ]
+    }
+}

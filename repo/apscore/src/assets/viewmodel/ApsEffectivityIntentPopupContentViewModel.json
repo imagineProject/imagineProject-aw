@@ -1,0 +1,121 @@
+{
+    "schemaVersion": "1.0.0",
+    "dataProviders": {
+        "intentValuesProvider": {
+            "action": "getIntentValuesForFamily",
+            "dataProviderType": "TcLOV",
+            "response": "{{data.intentValues}}",
+            "totalFound": "{{data.intentValues.length}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "actions": {
+        "getIntentValuesForFamily": {
+            "actionType": "JSFunction",
+            "method": "getIntentValuesForFamily",
+            "deps": "js/apsEffectivityIntentService",
+            "inputData": {
+                "family": "{{subPanelContext.family}}",
+                "effIntents": "{{subPanelContext.effIntents}}"
+            },
+            "outputData": {
+                "intentValues": ""
+            }
+        },
+        "setIntent": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getIntentFormula"
+                },
+                {
+                    "action": "applyIntentEffectivityFormula",
+                    "condition": "subPanelContext.panelFlag === 'CONFIGURATION'"
+                },
+                {
+                    "action": "closePopupPanel"
+                }
+            ]
+        },
+        "getIntentFormula": {
+            "actionType": "JSFunction",
+            "method": "getIntentFormula",
+            "deps": "js/apsEffectivityIntentService",
+            "inputData": {
+                "family": "{{subPanelContext.family}}",
+                "intentValue": "{{data.eventData.property.dbValue}}",
+                "effIntents": "{{subPanelContext.effIntents}}",
+                "occContext": "{{subPanelContext.occContext}}"
+            },
+            "outputData": {
+                "newIntentFormula": ""
+            }
+        },
+        "closePopupPanel": {
+            "actionType": "JSFunctionAsync",
+            "method": "close",
+            "deps": "js/popupService"
+        },
+        "applyIntentEffectivityFormula": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "deps": "js/occmgmtUtils",
+            "inputData": {
+                "path": null,
+                "value": {
+                    "configContext": {
+                        "r_uid": "{{subPanelContext.occContext.productContextInfo.props.awb0CurrentRevRule.dbValues[0]}}",
+                        "var_uids": "{{subPanelContext.occContext.productContextInfo.props.awb0CurrentVariantRules.dbValues}}",
+                        "fromUnit": "{{subPanelContext.occContext.productContextInfo.props.awb0StartEffUnits.dbValues[0]}}",
+                        "toUnit": "{{subPanelContext.occContext.productContextInfo.props.awb0EndEffUnits.dbValues[0]}}",
+                        "startDate": "{{subPanelContext.occContext.productContextInfo.props.awb0StartEffDates.dbValues[0]}}",
+                        "endDate": "{{subPanelContext.occContext.productContextInfo.props.awb0EndEffDates.dbValues[0]}}",
+                        "intentFormula": "{{data.newIntentFormula}}",
+                        "startFreshNavigation": true
+                    }
+                },
+                "target": "{{subPanelContext.occContext}}"
+            }
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "awlinkPopup.selected",
+            "cacheEventData": true,
+            "action": "setIntent",
+            "eventSource": "current",
+            "condition": "conditions.isOpenedFromEffectivityAuthoringPanel"
+        }
+    ],
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "conditions": {
+        "isOpenedFromEffectivityAuthoringPanel": {
+            "expression": {
+                "$source": "property.propertyName",
+                "$query": {
+                    "$eq": "apsEffectivityIntent"
+                }
+            }
+        }
+    },
+    "data": {
+        "intentValues": [],
+        "family": "{{subPanelContext.family}}",
+        "currentValue": {
+            "displayName": "{{subPanelContext.family.currentValue.propDisplayValue}}",
+            "type": "STRING",
+            "isRequired": "true"
+        },
+        "famProp": {
+            "displayName": "{{subPanelContext.family.famProp.propDisplayValue + ':'}}",
+            "dbValue": "{{subPanelContext.family.famProp.dbValue}}",
+            "type": "STRING",
+            "dispValue": "{{subPanelContext.family.famProp.propDisplayValue}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        }
+    }
+}

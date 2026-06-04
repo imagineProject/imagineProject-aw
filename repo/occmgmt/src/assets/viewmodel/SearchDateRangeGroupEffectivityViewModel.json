@@ -1,0 +1,238 @@
+{
+    "schemaVersion" : "1.0.0",
+
+    "i18n":
+    {
+        "sharedEffectivities":[ "OccurrenceManagementConstants"],
+        "addElementBtn":[ "OccurrenceManagementConstants"],
+        "failedToApplyEffectivity":[ "OccurrenceManagementConstants"],
+        "filter": [ "OccurrenceManagementConstants"],
+        "editGroupEffTitle": [ "OccurrenceManagementConstants"],
+        "apply": [ "OccurrenceManagementConstants"],
+        "editEffectivityTooltip": [ "OccurrenceManagementConstants"],
+        "upText":["OccurrenceManagementConstants"],
+        "soText":["OccurrenceManagementConstants"],
+        "dateEffectivity":["OccurrenceManagementConstants"],
+        "upTextForUnit": ["OccurrenceEffectivityConstants"]
+    },
+
+    "functions": {
+        "getExistingAndSearchedGroupEffectivities": {
+            "functionName": "getExistingAndSearchedGroupEffectivities",
+            "parameters": ["{{props.subPanelContext.occContext}}", "{{data.dataProviders.performSearchForSharedEffectivities.selectedObjects}}"]
+        },
+        "appendAndGetSearchedAndExistingGroupEffectivities": {
+            "functionName": "applyDateEffectivityGroups",
+            "parameters": ["{{data}}", "{{data.dataProviders.performSearchForSharedEffectivities.selectedObjects}}"]
+        }
+    },
+
+    "dataProviders":
+    {
+        "performSearchForSharedEffectivities":
+        {
+            "action": "performSearchForSharedEffectivitiesAction",
+            "response": "{{data.effectivitiesFound}}",
+            "totalFound": "{{data.effectivitiesTotalFound}}",
+            "selectionModelMode": "single",
+            "commandsAnchor": "edit_effectivity_group_cell_commands"
+        }
+    },
+    "data" :
+    {
+        "filterBox": {
+          "displayName" :"{{i18n.filter}}",
+          "type": "STRING",
+          "dbValue" :""
+        }
+    },
+    "actions":
+    {
+        "getAllSharedEffectivitiesAction":
+        {
+            "actionType": "dataProvider",
+            "method": "performSearchForSharedEffectivities"
+        },
+
+        "performSearchForSharedEffectivitiesAction":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData":
+            {
+                "searchInput":
+                {
+                    "maxToLoad": 20,
+                    "maxToReturn": 20,
+                    "providerName": "Awb0EffectivityProvider",
+                    "searchFilterFieldSortType": "Alphabetical",
+                    "startIndex": "{{data.dataProviders.performSearchForSharedEffectivities.startIndex}}",
+                    "searchCriteria": {
+                        "effectivityId": "{{data.filterBox.dbValue}}",
+                        "effectivityType": "groupEffectivityDate"
+                    },
+                    "searchFilterMap":
+                    {
+                    },
+                    "searchSortCriteria":
+                    [
+                    ],
+                    "attributesToInflate":
+                    [
+                    ],
+                    "internalPropertyName": ""
+                }
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "Fnd0EffectvtyGrpRevision",
+                        "properties": [
+                            {
+                                "name": "Fnd0EffectivityList"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData":
+            {
+                "effectivitiesFound": "searchResults",
+                "effectivitiesTotalFound": "totalFound"
+            }
+        },
+        "applySearchedGroupEffectivity":
+        {
+            "actionType": "JSFunction",
+            "method": "applyConfiguration",
+            "inputData":{
+                "value": {
+                    "configContext": {
+                        "r_uid": "{{data.subPanelContext.occContext.productContextInfo.props.awb0CurrentRevRule.dbValues[0]}}",
+                        "eg_uids": "{{function:appendAndGetSearchedAndExistingGroupEffectivities}}",
+                        "ue": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EffUnitNo.dbValues[0]}}",
+                        "ei_uid": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EffEndItem.dbValues[0]}}",
+                        "var_uids": "{{data.subPanelContext.occContext.productContextInfo.props.awb0VariantRules.dbValues}}",
+                        "iro_uid": "{{data.subPanelContext.occContext.productContextInfo.props.awb0VariantRuleOwningRev.dbValues[0]}}",
+                        "startDate": "{{data.subPanelContext.occContext.productContextInfo.props.awb0StartEffDates.dbValues[0]}}",
+                        "endDate": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EndEffDates.dbValues[0]}}",
+                        "startFreshNavigation": true
+                    },
+                    "transientRequestPref": {
+                        "jitterFreePropLoad" : true,
+                        "userGesture": "EFFECTIVITY_CHANGE"
+                    }
+                },
+                "occContext": "{{data.subPanelContext.occContext}}"
+            },
+            "events": {
+                "success": [{
+                    "name": "closePanel",
+                    "condition": "conditions.shouldClosePanel"
+                },{
+                    "name": "navigateToConfigPanel",
+                    "condition": "conditions.shouldNavigateToConfigPanel"
+                }
+               ]
+            },
+            "deps": "js/effectivityGroupTableService"
+        },
+        "getDateRangeDateNavigateToEditDateRange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getDateRangeEditContextAction"
+                },
+                {
+                    "action": "navigateToEditDateRangeGroupEffAction"
+                }
+            ]
+        },
+        "getDateRangeEditContextAction":{
+            "actionType": "JSFunction",
+            "method": "getDateRangeEditContext",
+            "inputData": {
+                "vmo": "{{parameters.eventData.vmo}}",
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "i18n" : "{{i18n}}"
+            },
+            "deps": "js/editGroupEffectivityCommandHandler"
+        },
+        "navigateToEditDateRangeGroupEffAction": {
+            "actionType": "JSFunction",
+            "method": "navigateToView",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "view": {
+                    "panelId":"EditDateRangeGroupEffectivity",
+                    "title": "{{i18n.editEffectivityTooltip}}",
+                    "additionalSubPanelContext": {
+                        "shouldClosePanelOnApply": "{{props.subPanelContext.shouldClosePanelOnApply}}"
+                    }
+                }
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "navigateToConfigPanel":{
+            "actionType": "JSFunction",
+            "method": "goToPrevPanel",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}"
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "getAllSharedEffectivitiesAction"
+    },
+
+    "onEvent": [
+        {
+            "eventId": "navigateToEditDateRangeGroupEffectivity",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "getDateRangeDateNavigateToEditDateRange"
+        },
+        {
+            "eventId": "navigateToConfigPanel",
+            "action": "navigateToConfigPanel"
+        },
+        {
+            "eventId": "closePanel",
+            "action": "closePanel"
+        }
+
+    ],
+
+     "conditions":{
+        "isAnyItemSelectedFromSearchPanelList":{
+            "expression" : "data.dataProviders.performSearchForSharedEffectivities.selectedObjects.length>0"
+        },
+         "cancelButtonVisible":{
+             "expression" : "false"
+         },
+         "shouldClosePanel": {
+             "expression": "props.subPanelContext.shouldClosePanelOnApply"
+         },
+         "shouldNavigateToConfigPanel": {
+             "expression": "!props.subPanelContext.shouldClosePanelOnApply"
+         }
+     },
+     "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

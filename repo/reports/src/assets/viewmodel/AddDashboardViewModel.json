@@ -1,0 +1,172 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions":{
+        "loadActionForEditingDashboard":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "startDashboardLoading",
+                "condition": "subPanelContext.searchState.editingDashboard"
+            }]
+        },
+        "loadActionForNonEditingDashboard":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "startDashboardLoading",
+                "condition": "!subPanelContext.searchState.editingDashboard"
+            }]
+        },
+        "startDashboardLoading": {
+            "actionType": "dataProvider",
+            "method": "listDataProvider"
+        },
+        "getReportdefinitionList":{
+            "actionType": "JSFunction",
+            "method": "getReportdefinitionListFromSelectedTab",
+            "inputData": {
+                "searchData": "{{props.subPanelContext.searchState}}"
+            },
+            "outputData": {
+                "searchResults": ""
+            },
+            "deps": "js/showMyDashboardService"
+        },
+        "saveReportDashboardAction":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "saveReportDashboard"
+            }, {
+                "action": "closePopup",
+                "condition": "!props.subPanelContext.panelPinned"
+            } ]
+        },
+        "saveReportDashboard": {
+            "actionType": "JSFunction",
+            "method": "saveReportDashboardAction",
+            "inputData": {
+                "dashboardId": "{{props.subPanelContext.submitPanelState.dashboardId.dbValue}}",
+                "dashboardName": "{{data.dashboardName.uiValue}}",
+                "dashboardDesc": "{{data.dashboardDesc.uiValue}}",
+                "vmos": "{{data.dataProviders.listDataProvider.viewModelCollection.loadedVMObjects}}",
+                "searchState": "{{subPanelContext.searchState}}"
+            },
+            "deps": "js/showMyDashboardService"
+        },
+        "closePopup": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "inputData": {
+                "popupId": "{{props.subPanelContext.popupOptions.popupId}}",
+                "targetEvent": "{{$event}}"
+            },
+            "deps": "js/popupService"
+        },
+        "updateDashboardName":{
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.submitPanelState}}",
+                "value": {
+                    "dashboardName": "{{data.dashboardName.uiValue}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateDashboardDescription":{
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.submitPanelState}}",
+                "value": {
+                    "dashboardDesc": "{{data.dashboardDesc.uiValue}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "loadActionForNonEditingDashboard",
+        "onUpdate": [ {
+            "action": "loadActionForEditingDashboard",
+            "observers": [ "props.subPanelContext.searchState.totalFound" ]
+        }]
+    },
+    "data": {
+        "dashboardName": {
+            "displayName": "{{i18n.reportName}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "isEditable": "true",
+            "maxLength": "128",
+            "renderingHint": "textbox",
+            "dbValue": "{{props.subPanelContext.submitPanelState.dashboardName}}",
+            "uiValue": "{{props.subPanelContext.submitPanelState.dashboardName}}"
+        },
+        "dashboardDesc": {
+            "displayName": "{{i18n.reportDesc}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "{{props.subPanelContext.submitPanelState.dashboardDesc}}",
+            "uiValue": "{{props.subPanelContext.submitPanelState.dashboardDesc}}"
+        }
+    },
+    "dataProviders": {
+        "listDataProvider": {
+            "action": "getReportdefinitionList",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.searchResults.length}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+    "i18n": {
+        "properties": ["ReportChartMessages"],
+        "reportId": [
+            "ReportChartMessages"
+        ],
+        "reportName": [
+            "ReportChartMessages"
+        ],
+        "reportDesc": [
+            "ReportChartMessages"
+        ],
+        "templatesTitle": [
+            "ReportChartMessages"
+        ],
+        "addDashboardReportWithPanel": [
+            "ReportChartMessages"
+        ],
+        "saveReport": [
+            "ReportChartMessages"
+        ]
+    },
+    "conditions": {
+        "enableSave":{
+            "expression": "data.dashboardName.uiValue.length > 0"
+        },
+        "dashboardNameChanged": {
+            "expression": "data.dashboardName.dbValue",
+            "trackValues": true
+        },
+        "dashboardDescChanged": {
+            "expression": "data.dashboardDesc.dbValue",
+            "trackValues": true
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "condition.expressionValueChanged",
+            "action": "updateDashboardName",
+            "criteria": {
+                "condition": "conditions.dashboardNameChanged"
+            }
+        },
+        {
+            "eventId": "condition.expressionValueChanged",
+            "action": "updateDashboardDescription",
+            "criteria": {
+                "condition": "conditions.dashboardDescChanged"
+            }
+        }
+    ]
+}

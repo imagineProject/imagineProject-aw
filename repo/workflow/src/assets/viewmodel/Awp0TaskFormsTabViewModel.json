@@ -1,0 +1,287 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-panel-body.directive",
+        "js/aw-command-panel-section.directive"
+    ],
+    "actions": {
+        "initFormTab": {
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action": "getValidTemplateVMOObject"
+                },
+                {
+                    "action": "loadProperties",
+                    "condition": "data.selectedTemplateObject && data.selectedTemplateObject.uid"
+                }
+            ]
+        },
+        "getValidTemplateVMOObject": {
+            "actionType": "JSFunction",
+            "method": "getValidTemplateVMOObject",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "workflowDgmEditCtx": "{{props.subPanelContext.workflowDgmEditCtx}}"
+            },
+            "outputData": {
+                "rootTaskTemplateObject": "rootTaskTemplateObject",
+                "selectedTemplateObject": "selectedTemplateObject",
+                "isTemplateEditable": "isTemplateEditable"
+            },
+            "deps": "js/Awp0WorkflowDesignerUtils"
+        },
+        "loadProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": [
+                    "{{data.selectedTemplateObject}}"
+                ],
+                "attributes": [
+                    "template_name",
+                    "action_handlers",
+                    "complete_action_rules"
+                ]
+            },
+            "policy": {
+                "types": [ {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "object_desc"
+                            },
+                            {
+                                "name": "fnd0Instructions"
+                            },
+                            {
+                                "name": "action_handlers",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "complete_action_rules",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            }
+
+                        ]
+                    },
+                    {
+                        "name": "EPMHandler",
+                        "properties":
+                        [
+                           {
+                              "name": "arguments"
+                           },
+                           {
+                                "name": "parent_action_type"
+                           },
+                           {
+                                "name": "handler_name"
+                           }
+                        ]
+                    },
+                    {
+                        "name": "EPMBusinessRule",
+                        "properties": [ {
+                                "name": "rule_handlers",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "object_name"
+                            },
+                            {
+                                "name": "rule_quorum"
+                            },
+                            {
+                                "name":"action"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "epmTaskTemplate.formPropertiesLoaded"
+                    }
+                ]
+            },
+            "deps": "js/Awp0WorkflowTemplateFormService"
+        },
+        "populateFormTableData": {
+            "actionType": "JSFunction",
+            "method": "populateFormTableData",
+            "inputData": {
+                "data": "{{data}}",
+                "selection": "{{data.selectedTemplateObject}}",
+                "dataProvider": "{{data.dataProviders.formDataProvider}}",
+                "formHandlerContext": "{{data.formHandlerContext}}"
+            },
+            "outputData": {
+                "tableResult": "tableResult",
+                "formHandlerContext": "formHandlerContext"
+            },
+            "deps": "js/Awp0WorkflowTemplateFormService"
+        },
+        "formHandlerRowSelectionAction": {
+            "actionType": "JSFunction",
+            "method": "formHandlerRowSelection",
+            "inputData": {
+                "ctx": "{{ctx}}",
+                "selection": "{{data.dataProviders.formDataProvider.selectedObjects}}",
+                "formHandlerContext" : "{{data.formHandlerContext}}"
+             },
+             "outputData": {
+                 "formHandlerContext": ""
+             },
+            "deps": "js/Awp0WorkflowTemplateFormService"
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "workflow.closeOpenedPanel"
+                } ]
+            }
+        }
+    },
+    "functions": {
+    },
+    "columnProviders": {
+        "tableColumnProvider" : {
+            "soaEnabled": false,
+            "sortCriteria": [],
+            "columns": [
+                {
+                    "name": "formType",
+                    "displayName": "{{i18n.formType}}",
+                    "minWidth": 100,
+                    "width": 300,
+                    "pinnedLeft": false,
+                    "isTableCommand":false,
+                    "enableColumnHiding": false
+                },
+                {
+                    "name": "formName",
+                    "displayName": "{{i18n.formName}}",
+                    "width": 350,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100,
+                    "enableColumnHiding": false
+                },
+                {
+                    "name": "description",
+                    "displayName": "{{i18n.Description}}",
+                    "width": 350,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100,
+                    "enableColumnHiding": false
+                },
+                {
+                    "name": "target",
+                    "displayName": "{{i18n.attachAs}}",
+                    "width": 350,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100,
+                    "enableColumnHiding": false
+                }
+            ]
+        }
+    },
+    "dataProviders": {
+        "formDataProvider": {
+            "response": "{{data.tableResult.searchResults}}",
+            "totalFound": "{{data.tableResult.totalFound}}",
+            "searchIndex": "{{data.tableResult.searchIndex}}"
+        }
+    },
+
+    "grids": {
+        "formHandlerTable": {
+            "columnProvider": "tableColumnProvider",
+            "dataProvider": "formDataProvider",
+            "enableArrangeMenu": false,
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableGridMenu": false,
+                "enablePinning": false,
+                "enableSorting": false
+            }
+        }
+    },
+    "data": {
+        "formAnchor": "aw_workflowFormsAnchor",
+        "formHandlerContext": {}
+    },
+    "lifecycleHooks":  {
+        "onUpdate": [
+            {
+                "action": "closePanel",
+                "observers": [
+                    "viewModel.data.formHandlerContext.selectedTemplateObject"
+                ]
+            },
+            {
+                "action": "initFormTab",
+                "observers": [
+                    "props.subPanelContext.workflowDgmState.selectedObject"
+                ]
+            }
+        ]
+    },
+    "ctx": {
+        "preferences": null,
+        "activeToolsAndInfoCommand.commandId": null
+    },
+    "onEvent": [
+        {
+            "eventId": "epmTaskTemplate.formPropertiesLoaded",
+            "action": "populateFormTableData"
+        },
+        {
+            "eventId": "workflowDesigner.tabReload",
+            "action": "populateFormTableData"
+        },
+        {
+            "eventId": "formDataProvider.selectionChangeEvent",
+            "action": "formHandlerRowSelectionAction"
+        }
+    ],
+    "i18n": {
+        "action_type": [ "WorkflowDesignerMessages" ],
+        "formType": [ "WorkflowDesignerMessages" ],
+        "Description": [ "WorkflowCommandPanelsMessages" ],
+        "attachAs": [ "WorkflowDesignerMessages" ],
+        "taskStarted": [ "WorkflowDesignerMessages" ],
+        "taskPerformed": [ "WorkflowDesignerMessages" ],
+        "formName": [ "WorkflowDesignerMessages" ],
+        "target": [ "WorkflowDesignerMessages" ],
+        "reference": [ "WorkflowDesignerMessages" ],
+        "forms": [ "WorkflowDesignerMessages" ]
+    }
+}

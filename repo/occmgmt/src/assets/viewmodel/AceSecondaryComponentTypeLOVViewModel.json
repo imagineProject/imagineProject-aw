@@ -1,0 +1,124 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "secondaryComponentType": {
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": true,
+            "hasLov": true,
+            "dataProvider": "secondaryComponentTypeProvider",
+            "name": "{{i18n.secondaryComponentTypeLOVTitle}}"
+        },
+        "secondaryComponentTypeValues": [],
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "numberOfElements": {
+            "dbValue": 1
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "getSecondaryComponentTypeValues",
+        "onUpdate": [{
+            "action": "setSecondaryComponentTypeOnUpdate",
+            "observers": ["viewModel.secondaryComponentType"]
+        },
+        {
+            "action": "validateSelection",
+            "observers": ["props.subPanelContext.addPanelState.sourceObjects"]
+        }]
+    },
+    "actions": {
+        "setSecondaryComponentTypeOnUpdate": {
+            "actionType": "JSFunction",
+            "method": "setSecondaryComponentTypeOnUpdate",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "secondaryComponentType": "{{fields.secondaryComponentType}}"
+            },
+            "deps": "js/aceSecondaryComponentService"
+        },
+        "getSecondaryComponentTypeValues": {
+            "actionType": "JSFunction",
+            "method": "initializeSecondaryComponentTypeValues",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "secondaryComponentType": "{{fields.secondaryComponentType}}"
+            },
+            "outputData": {
+                "secondaryComponentTypeValues": ""
+            },
+            "deps": "js/aceSecondaryComponentService"
+        },
+        "addPropertiesAndSetCreateInputContext": {
+            "actionType": "JSFunction",
+            "method": "buildElementCreateInputAndUpdateState",
+            "inputData": {
+                "value": "{{data}}",
+                "subPanelContext": {
+                    "addElementState": "{{props.subPanelContext.addElementState}}",
+                    "editHandler": "{{editHandlers.addPanelEditHandler}}"
+                }
+            },
+            "outputData": {},
+            "events": {
+                "success": [
+                    {
+                        "name": "setCreateInputContextSuccess",
+                        "excludeLocalDataCtx": true
+                    }
+                ]
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "validateSelection":{
+            "actionType": "JSFunction",
+            "method": "validateSelection",
+            "inputData": {
+                "addElementState": "{{props.subPanelContext.addElementState}}",
+                "addPanelState": "{{props.subPanelContext.addPanelState}}"
+            },
+            "deps": "js/aceSecondaryComponentService"
+        }
+    },
+    "i18n": {
+        "secondaryComponentTypeLOVTitle": [
+            "OccurrenceManagementConstants"
+        ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "dataProviders": {
+        "secondaryComponentTypeProvider": {
+            "response": "{{data.secondaryComponentTypeValues}}"
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_SECONDARY_PANEL_CONTEXT",
+            "setActive": true,
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "onEvent": [{
+        "eventId": "awb0Element.addElementProperties",
+        "action": "addPropertiesAndSetCreateInputContext",
+        "condition": "!conditions.isElementPropertiesSectionVisible"
+    }],
+    "conditions": {
+        "isElementPropertiesSectionVisible":{
+            "expression": "props.subPanelContext.addElementState.Awb0ElementCreateSubView"
+        }
+    }
+}

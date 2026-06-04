@@ -1,0 +1,78 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {},
+    "actions": {
+        "performSearchSubstituteElementAction":
+        {
+            "actionType": "dataProvider",
+            "method": "performSearchSubstituteElement"
+        },
+        "performSearchSoaCall": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient"
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awb0SubstitutesProvider",
+                        "searchCriteria": {
+                            "selectedElement": "{{props.subPanelContext.occContext.pwaSelection[0].uid}}",
+                            "usecase": "GetSubstituteComponents",
+                            "substituteGroup": "{{props.subPanelContext.selectionData.selected[0].fnd0OccSubstGroupObj.uid}}",
+                            "inputGroupSet": "{{props.subPanelContext.selectionData.selected[0].fnd0setId.uid}}"
+                        },
+                        "searchFilterFieldSortType": "Priority"
+                    }
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}"
+            }
+        },
+        "updateSelectedObjectsOnState": {
+            "actionType": "JSFunction",
+            "method": "updateSelectedObjectsOnState",
+            "inputData": {
+                "activeViewState": "{{data.dataProviders.performSearchSubstituteElement.selectedObjects}}",
+                "addPanelState":"{{props.subPanelContext.addPanelState}}"
+            },
+            "outputData": {
+                "sourceObjects": "sourceObjects"
+            },
+            "deps": "js/aceOccurrenceSubstituteGroupService"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount":"performSearchSubstituteElementAction"
+    },
+    "dataProviders": {
+        "performSearchSubstituteElement": {
+            "action": "performSearchSoaCall",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId" : "performSearchSubstituteElement.selectionChangeEvent",
+            "action": "updateSelectedObjectsOnState"
+        }
+    ],
+    "messages": {
+    },
+    "i18n": {
+
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

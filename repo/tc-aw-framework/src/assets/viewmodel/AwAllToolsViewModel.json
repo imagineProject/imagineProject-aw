@@ -1,0 +1,80 @@
+{
+    "schemaVersion": "1.0.0",
+    "data":{
+        "back": {
+            "displayName": "{{i18n.Awp0Back}}",
+            "type": "STRING"
+        },
+        "searchBox": {
+            "displayName": "{{i18n.Awp0Search}}",
+            "type": "STRING"
+        },
+        "searchBoxPlaceHolder": {
+            "dbValue": "{{i18n.Awp0Search}}"
+        }
+    },
+    "actions": {
+        "loadAllApps": {
+            "actionType": "dataProvider",
+            "method": "allApps"
+        },
+        "loadAllTools": {
+            "actionType": "JSFunction",
+            "method": "loadAllTools",
+            "inputData": {
+                "allApps": "{{props.context.allApplications}}",
+                "filterString": "{{data.searchBox.uiValue}}"
+            },
+            "dataParsers": [{
+                    "id": "allAppsDataParser",
+                    "responseObjs": "filteredApps"
+                }
+            ],
+            "outputData": {
+                "response": "filteredApps",
+                "totalFound": "totalFound"
+            },
+            "deps": "js/launcherService"
+        },
+        "goBack": {
+            "actionType": "JSFunction",
+            "method": "goBack",
+            "inputData": {
+                "launcherState": "{{props.context.launcherState}}"
+            },
+            "deps": "js/launcherService"
+        }
+    },
+    "dataParseDefinitions": {
+        "allAppsDataParser": {
+            "id": "{{response.tileID}}",
+            "uid": "{{response.tileID}}",
+            "cellHeader1": "{{response.displayName}}",
+            "typeIconURL": "{{response.tileIcon}}",
+            "icon": "{{response.icon}}",
+            "action": "{{response.action}}",
+            "props": {}
+        }
+    },
+    "dataProviders": {
+        "allApps": {
+            "action": "loadAllTools",
+            "response": "{{data.response}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "single",
+            "contextMenuCommandsAnchor": "allToolsContextMenu"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "loadAllApps"
+    },
+    "i18n": {
+        "Awp0Back": [ "PersonalizationMessages" ],
+        "Awp0Search": [ "PersonalizationMessages" ]
+    },
+    "props": {
+        "context": {
+            "type": "object"
+        }
+    }
+}

@@ -1,0 +1,883 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports":
+    [
+        "js/aw-panel-body.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-widget.directive",
+        "js/aw-i18n.directive",
+        "js/aw-listbox.directive",
+        "js/visible-when.directive",
+        "js/aw-repeat.directive",
+        "js/aw-password.directive",
+        "js/aw-guidance-message.directive"
+    ],
+
+    "actions":
+    {
+        "initPanel":
+        {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setTCSSOEnabled"
+                },
+                {
+                    "action": "registerPerformPanelProps"
+                },
+                {
+                    "action": "loadProperties"
+                },
+                {
+                    "action": "initDigitalSignature"
+                }
+            ]
+        },
+        "loadProperties":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData":
+            {
+                "objects":
+                [
+                    "{{props.subPanelContext.taskToPerform}}"
+                ],
+                "attributes": [
+                    "object_string",
+                    "object_desc",
+                    "comments",
+                    "secure_task",
+                    "has_failure_paths",
+                    "task_template"
+                ]
+            },
+            "policy":
+            {
+                "types":
+                [
+                    {
+                        "name": "EPMConditionTask",
+                        "properties":
+                        [
+                            {
+                                "name": "task_template",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "has_failure_paths"
+                            },
+                            {
+                                "name": "fnd0ObjectsToDigitallySign",
+                                "modifiers": [{
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                }]
+                            },
+                            {
+                                "name": "fnd0IsPKIAuthRequired",
+                                "modifiers": [{
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                }]
+                            },
+                            {
+                                "name": "fnd0RequireCompleteConfirm"
+                            },
+                            {
+                                "name": "fnd0Instructions"
+                            },
+                            {
+                                "name": "parent_process",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "object_desc"
+                            },
+                            {
+                                "name": "fnd0TaskExecutionErrors"
+                            },
+                            {
+                                "name": "fnd0TaskExecutionStatus"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Job",
+                        "properties":
+                        [
+                            {
+                                "name": "object_desc"
+                            }
+
+                        ]
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "conditionTask.taskPropertiesLoaded"
+                    }
+                ]
+            },
+
+            "deps": "js/Awp0EPMConditionTaskPerform"
+
+        },
+        "setTCSSOEnabled": {
+            "actionType": "JSFunctionAsync",
+            "method": "setTCSSOEnabled",
+            "outputData":
+            {
+                "isTCSSOEnabled": ""
+            },
+            "deps": "js/Awp0PerformTask"
+        },
+        "completeTask":
+        {
+            "actionType": "JSFunction",
+            "method": "performTask",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "actionableObject": "{{props.subPanelContext.taskToPerform}}",
+                "action": "SOA_EPM_complete_action",
+                "supportingValue": "{{data.taskResultSelected}}",
+                "supportingObject": ""
+            },
+            "deps": "js/Awp0EPMConditionTaskPerform"
+        },
+
+        "unableToComplete":
+        {
+            "actionType": "JSFunction",
+            "method": "performTask",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "actionableObject": "{{props.subPanelContext.taskToPerform}}",
+                "action": "SOA_EPM_fail_action",
+                "supportingValue": "Unable_to_complete",
+                "supportingObject": ""
+            },
+            "deps": "js/Awp0EPMConditionTaskPerform"
+        },
+
+        "populatePanelData":
+        {
+            "actionType": "JSFunction",
+            "method": "populatePanelData",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "selection": "{{props.subPanelContext.taskToPerform}}",
+                "fields": "{{fields}}"
+            },
+            "outputData":{
+                "taskName": "taskName",
+                "description": "description",
+                "workflowDescription": "workflowDescription",
+                "isSecureTask": "isSecureTask",
+                "hasFailurePaths": "hasFailurePaths",
+                "selectedObject": "selectedObject",
+                "taskErrors": "taskErrors",
+                "isWarning": "isWarning"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "conditionTask.taskPanelPopulated"
+                    }
+                ]
+            },
+            "deps": "js/Awp0EPMConditionTaskPerform"
+        },
+
+        "initTaskResultLOV":
+        {
+            "actionType": "JSFunctionAsync",
+            "method": "initTaskResultLOV",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "selection": "{{data.selectedObject}}"
+            },
+            "outputData":{
+                "taskResults": "taskResults",
+                "taskResult": "taskResult"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "checkForSSOReauthEvent"
+                    }
+                ]
+            },
+            "deps": "js/Awp0EPMConditionTaskPerform"
+        },
+
+        "initDigitalSignature":
+        {
+            "actionType": "JSFunctionAsync",
+            "method": "initDigitalSignature",
+            "inputData": {
+                "selection": "{{props.subPanelContext.taskToPerform}}"
+            },
+            "outputData": {
+                "isDSConfigured": ""
+            },
+            "deps": "js/Awp0PerformTask"
+        },
+
+        "saveTask":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-09-DataManagement",
+            "method": "setProperties",
+            "inputData":
+            {
+                "info":
+                [
+                    {
+                        "object": "{{props.subPanelContext.taskToPerform}}",
+                        "timestamp": "",
+                        "vecNameVal":
+                        [
+                            {
+                                "name": "task_result",
+                                "values":
+                                [
+                                    "{{data.taskResultSelected}}"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "condition": "!data.isDSConfigured",
+                        "name": "conditionTask.completeTask"
+                    },
+                    {
+                        "condition": "data.isDSConfigured",
+                        "name": "conditionTask.completeTaskDS"
+                    }
+                ]
+            },
+
+            "deps": "js/Awp0EPMConditionTaskPerform"
+        },
+
+        "saveTaskUnableToComplete":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-09-DataManagement",
+            "method": "setProperties",
+            "inputData":
+            {
+                "info":
+                [
+                    {
+                        "object": "{{props.subPanelContext.taskToPerform}}",
+                        "timestamp": "",
+                        "vecNameVal":
+                        [
+                            {
+                                "name": "task_result",
+                                "values":
+                                [
+                                    "Unable_to_complete"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "condition": "!data.isDSConfigured",
+                        "name": "conditionTask.unableToCompleteTask"
+                    },
+                    {
+                        "condition": "data.isDSConfigured",
+                        "name": "conditionTask.unableToCompleteTaskDS"
+                    }
+                ]
+            },
+
+            "deps": "js/Awp0EPMConditionTaskPerform"
+        },
+
+        "completeTaskDS":
+        {
+            "actionType": "JSFunction",
+            "method": "performTaskDS",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "actionableObject": "{{props.subPanelContext.taskToPerform}}",
+                "action": "SOA_EPM_complete_action",
+                "supportingValue": "{{data.taskResultSelected}}",
+                "supportingObject": ""
+            },
+            "deps": "js/Awp0EPMConditionTaskPerform"
+        },
+
+        "unableToCompleteDS":
+        {
+            "actionType": "JSFunction",
+            "method": "performTaskDS",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "actionableObject": "{{props.subPanelContext.taskToPerform}}",
+                "action": "SOA_EPM_fail_action",
+                "supportingValue": "Unable_to_complete",
+                "supportingObject": ""
+            },
+            "deps": "js/Awp0PerformTask"
+        },
+         "verifySaveTask": {
+            "actionType": "JSFunction",
+            "method": "getTaskResultValue",
+            "inputData":
+            {
+                "taskResult": "{{data.taskResult.dbValue}}",
+                "data": "{{data}}"
+            },
+            "outputData":
+            {
+                "taskResultSelected":""
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "checkRequireConfirmationEvent",
+                        "condition": "data.taskResultSelected && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] === '1'"
+                    },
+                    {
+                        "name": "saveTaskEvent",
+                        "condition": "data.taskResultSelected && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] !== '1'"
+                    }
+                ]
+            },
+            "deps": "js/Awp0EPMConditionTaskPerform"
+        },
+        "getSelectedTaskPathResult": {
+            "actionType": "JSFunction",
+            "method": "getTaskResultValue",
+            "inputData":
+            {
+                "taskResult": "{{conditionTaskResult.selectedPath}}",
+                "data": "{{data}}"
+            },
+            "outputData":
+            {
+                "taskResultSelected":""
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "checkRequireConfirmationEvent",
+                        "condition": "data.taskResultSelected && data.conditionTaskResult.selectedPath && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] === '1'"
+                    },
+                    {
+                        "name": "saveTaskEvent",
+                        "condition": "data.conditionTaskResult.selectedPath && data.conditionTaskResult.selectedPath != '' && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] !== '1'"
+                    }
+                ]
+            },
+            "deps": "js/Awp0EPMConditionTaskPerform"
+        },
+
+        "verifySaveTaskUnableToComplete": {
+            "actionType": "JSFunction",
+            "method": "getTaskResultValue",
+            "inputData":
+            {
+                "taskResult": "{{i18n.unableToComplete}}",
+                "data": "{{data}}"
+            },
+            "outputData":
+            {
+                "taskResultSelected": ""
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "checkUnableToCompleteRequireConfirmationEvent",
+                        "condition": "subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] === '1'"
+                    },
+                    {
+                        "name": "saveTaskUnableToCompleteEvent",
+                        "condition": "subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] !== '1'"
+                    }
+                ]
+            },
+            "deps": "js/Awp0EPMConditionTaskPerform"
+        },
+        "registerPerformPanelProps": {
+            "actionType": "JSFunction",
+            "method": "registerPerformPanelProps",
+            "deps": "js/Awp0PerformTask"
+        },
+        "unregisterPerformPanelProp": {
+            "actionType": "JSFunction",
+            "method": "unregisterPerformPanelProp",
+            "deps": "js/Awp0PerformTask"
+        },
+        "cancelAction": {
+            "actionType": "JSFunction",
+            "method": "resetTaskResults",
+            "inputData": {
+                "conditionTaskResult" : "{{data.conditionTaskResult}}"
+            },
+            "outputData": {
+                "conditionTaskResult": ""
+            },
+            "deps": "js/Awp0EPMConditionTaskPerform"
+        },
+        "checkForSSOReauthAction": {
+            "actionType": "JSFunction",
+            "method": "checkForReauthentication",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "deps": "js/Awp0PerformTask"
+        }
+    },
+
+    "data":
+    {
+        "taskName":
+        {
+            "displayName": "{{i18n.taskName}}",
+            "type": "STRING",
+            "isEditable" : "false",
+            "dbValue":"",
+            "uiValue":"",
+            "renderingHint":"label"
+        },
+
+        "description":
+        {
+            "displayName": "{{i18n.object_desc}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "isRequired": "false",
+            "uiValue":"",
+            "dbValue":"",
+            "renderingHint":"label"
+        },
+
+        "comments":
+        {
+            "displayName": "{{i18n.comments}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "numberOfLines": 3,
+            "maxLength": 4000,
+            "dbValue": "",
+            "uiValue":"",
+            "renderingHint":"textarea"
+        },
+
+        "hasFailurePaths":
+        {
+            "displayName": "",
+            "isRequired": "false",
+            "isEditable": "false",
+            "type": "STRING",
+            "dbValue":"",
+            "dispValue":""
+        },
+
+        "password":
+        {
+            "displayName": "{{i18n.passwordDisplayName}}",
+            "type": "STRING",
+            "isEditable": "true",
+            "isRequired": "true",
+            "dispValue":"",
+            "dbValue":""
+        },
+
+        "isSecureTask":
+        {
+            "displayName": "",
+            "isRequired": "false",
+            "isEditable": "false",
+            "type": "STRING",
+            "dbValue":"",
+            "dispValue":""
+        },
+
+        "taskResult":
+        {
+            "displayName": "{{i18n.taskResult}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": true
+        },
+
+        "workflowDescription":
+        {
+            "displayName": "{{i18n.workflowDescription}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "isRequired": "false",
+            "uiValue":"",
+            "dbValue":"",
+            "renderingHint":"label"
+        },
+        "conditionTaskResult": {
+            "initialValues": {
+                "selectedPath": ""
+            },
+            "meta": {
+                "selectedPath": {
+                    "field": "true",
+                    "type": "OBJECT"
+                }
+            }
+        },
+        "taskErrors": {
+            "type": "STRING",
+            "isEditable": "true",
+            "isRequired": "true",
+            "dispValue":"",
+            "dbValue":""
+        }
+    },
+
+    "onEvent":
+    [
+        {
+            "eventId": "conditionTask.taskPropertiesLoaded",
+            "action": "populatePanelData"
+        },
+        {
+            "eventId": "conditionTask.taskPanelPopulated",
+            "action": "initTaskResultLOV"
+        },
+        {
+            "eventId": "conditionTask.completeTask",
+            "action": "completeTask"
+        },
+        {
+            "eventId": "conditionTask.unableToCompleteTask",
+            "action": "unableToComplete"
+        },
+        {
+            "eventId": "conditionTask.completeTaskDS",
+            "action": "completeTaskDS"
+        },
+        {
+            "eventId": "conditionTask.unableToCompleteTaskDS",
+            "action": "unableToCompleteDS"
+        },
+        {
+            "eventId": "Awp0PerformTask.updateInternalPanel",
+            "action": "initPanel"
+        },
+        {
+            "eventId": "checkRequireConfirmationEvent",
+            "message": "checkRequireConfirmationMessage"
+        },
+        {
+            "eventId": "checkUnableToCompleteRequireConfirmationEvent",
+            "message": "checkUnableToCompleteRequireConfirmationMessage"
+        },
+        {
+            "eventId": "saveTaskEvent",
+            "action": "saveTask"
+        },
+        {
+            "eventId": "saveTaskUnableToCompleteEvent",
+            "action": "saveTaskUnableToComplete"
+        },
+        {
+            "eventId": "editHandlerStateChange",
+            "condition": "state === 'saved'",
+            "cacheEventData": true,
+            "action": "populatePanelData"
+        },
+        {
+            "eventId": "checkForSSOReauthEvent",
+            "action": "checkForSSOReauthAction"
+        }
+    ],
+
+    "functions":
+    {
+        "getComments":
+        {
+            "functionName": "getComments",
+            "parameters":
+            [
+                "{{data}}"
+            ]
+        },
+
+        "getTaskResultValue":
+        {
+            "functionName": "getTaskResultValue",
+            "parameters":
+            [
+                "{{taskResult.propDisplayValue}}",
+                "{{data}}"
+            ]
+        }
+    },
+
+    "messages":
+    {
+        "displayError":
+        {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.displayError}}",
+            "messageTextParams":
+            [
+                "{{data.taskName.uiValue}}",
+                "{{data.errorMessage}}"
+            ]
+        },
+        "checkRequireConfirmationMessage":
+        {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.requireConfirmationSetTaskResult}}",
+            "messageTextParams": [
+                "{{data.taskName.uiValue}}",
+                "{{data.conditionTaskResult.selectedPath}}"
+            ],
+            "navigationOptions":
+            [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}",
+                    "action": "cancelAction"
+                },
+                {
+                    "option": "Complete",
+                    "text": "{{i18n.taskResultValue}}",
+                    "action": "saveTask"
+                }
+            ]
+        },
+
+        "checkUnableToCompleteRequireConfirmationMessage":
+        {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.requireConfirmationSetTaskResult}}",
+            "messageTextParams": [
+                "{{data.taskName.uiValue}}",
+                "{{data.taskResultSelected}}"
+            ],
+            "navigationOptions":
+            [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}",
+                    "action": "cancelAction"
+                },
+                {
+                    "option": "Complete",
+                    "text": "{{i18n.taskResultValue}}",
+                    "action": "saveTaskUnableToComplete"
+                }
+
+            ]
+        },
+        "testMessageError": {
+            "messageType": "ERROR",
+            "messageText": "{{data.taskErrors.uiValue}}"
+        },
+        "testMessageWarning": {
+            "messageType": "WARNING",
+            "messageText": "{{data.taskErrors.uiValue}}"
+        }
+    },
+    "preferences":
+    [
+        "WRKFLW_hide_subsequent_task_errors"
+    ],
+
+    "lifecycleHooks": {
+        "onMount": "initPanel",
+        "onUpdate": {
+            "action": "getSelectedTaskPathResult",
+            "observers": [ "viewModel.atomicData.conditionTaskResult.selectedPath" ]
+        },
+        "onUnmount": "unRegisterPerformPanelProp"
+    },
+
+    "conditions":
+    {
+        "showUnableToComplete":
+        {
+            "expression": "data.hasFailurePaths.dbValue==true"
+        },
+
+        "isSecureTask":
+        {
+            "expression": "data.isSecureTask.dbValue==true"
+        },
+
+        "showInstructions":
+        {
+            "expression": "data.description.dbValue && data.description.dbValue.length>0"
+        },
+        "showConditionPathsAsList": {
+            "expression": "data.taskResults && !conditions.showConditionPathsAsButton"
+        },
+
+        "showConditionPathsAsButton":
+        {
+            "expression": "(data.taskResults && data.taskResults.length <= 5 && data.hasFailurePaths.dbValue==true) || (data.taskResults && data.taskResults.length <= 6 && data.hasFailurePaths.dbValue==false)"
+        },
+
+        "showCompleteButton":
+        {
+            "expression": "(((data.taskResults && data.taskResults.length == 6 && data.hasFailurePaths.dbValue==true) || ( data.taskResults.length > 6)) && data.taskResult.dbValue && data.taskResult.dbValue !='')"
+        },
+
+        "isValidToComplete":
+        {
+            "expression": "((data.isSecureTask && data.isSecureTask.dbValue==true && data.password.dbValue && data.password.dbValue.length>0) || (data.isSecureTask && data.isSecureTask.dbValue==false ))"
+        },
+        "isDSConfigured":
+        {
+            "expression": "data.isDSConfigured"
+        },
+        "showWorkflowDescription":
+        {
+            "expression": "data.workflowDescription.dbValue && data.workflowDescription.dbValue.length>0"
+        },
+        "isToolAndInfoAreaPanel": {
+            "expression": "subPanelContext.isToolAndInfoAreaPanel===true"
+        },
+        "isChildTaskError": {
+            "expression": "data.taskErrors.uiValue && data.taskErrors.uiValue"
+        },
+        "isWarning":
+        {
+            "expression": "data.isWarning"
+        }
+
+    },
+
+    "i18n":
+    {
+        "taskName":
+        [
+            "InboxMessages"
+        ],
+
+        "taskInstructions":
+        [
+            "InboxMessages"
+        ],
+
+        "performTask":
+        [
+            "InboxMessages"
+        ],
+
+        "comments":
+        [
+            "InboxMessages"
+        ],
+
+        "complete":
+        [
+            "InboxMessages"
+        ],
+
+        "unableToComplete":
+        [
+            "InboxMessages"
+        ],
+
+        "passwordDisplayName":
+        [
+            "InboxMessages"
+        ],
+
+        "displayError":
+        [
+            "InboxMessages"
+        ],
+
+        "object_desc":
+        [
+            "InboxMessages"
+        ],
+
+        "taskResult":
+        [
+            "InboxMessages"
+        ],
+
+        "trueText":
+        [
+            "InboxMessages"
+        ],
+
+        "falseText":
+        [
+            "InboxMessages"
+        ],
+        "cancel":
+        [
+            "InboxMessages"
+        ],
+        "requireConfirmationSetTaskResult":
+        [
+            "InboxMessages"
+        ],
+        "requireConfirmationUnableToComplete":
+        [
+            "InboxMessages"
+        ],
+        "workflowDescription":
+        [
+            "InboxMessages"
+        ]
+    }
+}

@@ -1,0 +1,859 @@
+
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+    ],
+
+    "actions": {
+        "initPanel": {
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action": "initializeDataProvider"
+                },
+                {
+                    "action": "populatePanelData"
+                }
+            ]
+        },
+        "initializeDataProvider": {
+            "actionType": "dataProvider",
+            "methods": [ "recipientsDataProvider" ]
+        },
+        "populatePanelData": {
+            "actionType": "JSFunction",
+            "method": "populatePanelData",
+            "inputData": {
+               "data": "{{data}}",
+               "rootTaskTemplateObject": "{{props.subPanelContext.handlerContextObject.rootTaskTemplateObject}}",
+               "templateObject": "{{props.subPanelContext.handlerContextObject.selectedTemplateObject}}",
+               "handlerContextObject": "{{props.subPanelContext.handlerContextObject.selectedObjects[0]}}",
+               "workflowDgmEditCtx": "{{props.subPanelContext.workflowDgmEditCtx}}"
+            },
+            "outputData": {
+                "isPanelEditable": "isPanelEditable",
+                "isReviewACKRoutePSTaskSelected": "isReviewACKRoutePSTaskSelected",
+                "taskNotifyWhenList": "taskNotifyWhenList",
+                "reviewNotifyWhenList": "reviewNotifyWhenList",
+                "notifyMessage": "notifyMessage",
+                "notifySubject": "notifySubject",
+                "processInfo": "processInfo",
+                "targetInfo": "targetInfo",
+                "referenceInfo": "referenceInfo",
+                "selectedNotifyWhenOption": "selectedNotifyWhenOption",
+                "handlerName": "handlerName"
+            },
+            "deps": "js/Awp0WorkflowTemplateNotificationPanelService"
+        },
+        "closeCurrentOpenedPanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+            }
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "notifyWhenReviewOptionChange": {
+            "actionType": "JSFunction",
+            "method": "notifyWhenOptionChange",
+            "inputData": {
+               "data": "{{data}}",
+               "isReviewTaskTemplate": "{{data.isReviewACKRoutePSTaskSelected}}",
+               "reviewTaskOption": "{{data.reviewNotifyWhenList.dbValue}}"
+            },
+            "outputData": {
+                "handlerName" : "handlerName",
+                "notifySubject": "notifySubject",
+                "notifyMessage": "notifyMessage"
+            },
+            "deps": "js/Awp0WorkflowTemplateNotificationPanelService"
+        },
+        "notifyTaskOptionChange": {
+            "actionType": "JSFunction",
+            "method": "notifyWhenOptionChange",
+            "inputData": {
+               "data": "{{data}}",
+               "isReviewTaskTemplate": "{{data.isReviewACKRoutePSTaskSelected}}",
+               "taskNotifyOption": "{{data.taskNotifyWhenList.dbValue}}"
+            },
+            "outputData": {
+                "handlerName" : "handlerName",
+                "notifySubject": "notifySubject",
+                "notifyMessage": "notifyMessage"
+            },
+            "deps": "js/Awp0WorkflowTemplateNotificationPanelService"
+        },
+        "removeKeyRoleArguments" : {
+            "actionType": "JSFunction",
+            "method": "removeKeyRoleArguments",
+            "inputData": {
+                "selObject": "{{commandContext.vmo}}",
+                "dataProvider": "{{data.dataProviders.recipientsDataProvider}}"
+            },
+            "outputData": {
+                "isValidToModify": ""
+            },
+            "deps": "js/Awp0WorkflowTemplateNotificationPanelService"
+        },
+        "addUsers": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "addSelectedUsers",
+                    "condition": "conditions.isSelectedUsersPresent"
+                },
+                {
+                    "action": "navigateToMainPage",
+                    "condition": "conditions.isSelectedUsersPresent"
+                },
+                {
+                    "action": "resetSelectedUsersOnState",
+                    "condition": "conditions.isSelectedUsersPresent"
+                }
+            ]
+        },
+        "addSelectedUsers": {
+            "actionType": "JSFunction",
+            "method": "addSelectedUsers",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext.addUserPanelState.selectedUsers}}",
+                "dataProvider": "{{data.dataProviders.recipientsDataProvider}}"
+            },
+            "outputData": {
+                "isValidToModify": ""
+            },
+            "deps": "js/Awp0WorkflowTemplateNotificationPanelService"
+        },
+        "navigateToMainPage": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.subPanelContext.activeState}}",
+                "destPanelId": "Awp0WorkflowNotificationHandlerSub"
+            }
+        },
+        "resetSelectedUsersOnState": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.addUserPanelState}}",
+                "value": {
+                    "selectedUsers": []
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "saveHandler": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2019-06-Workflow",
+            "method": "createOrUpdateHandler",
+            "inputData": {
+                "input": "{{function:getCreateOrUpdateHandlerInput}}"
+            },
+            "policy": {
+                "types": [ {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "action_handlers",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                             }
+
+                        ]
+                    },
+                    {
+                        "name": "EPMHandler",
+                        "properties":
+                        [
+                           {
+                              "name": "arguments"
+                           },
+                           {
+                                "name": "parent_action_type"
+                           }
+                        ]
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "closePanel"
+                    },
+                    {
+                        "name": "workflowDesigner.tabReload"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "serverError"
+                    }
+                ]
+            },
+            "deps": "js/Awp0WorkflowTemplateNotificationPanelService"
+        },
+        "removeHandlerObject": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "deleteObjects",
+            "inputData": {
+                "objects": [
+                    "{{props.subPanelContext.handlerContextObject.selectedObjects[0].handlerObject}}"
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "closePanel"
+                    },
+                    {
+                        "name": "workflowDesigner.tabReload"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "serverError"
+                    }
+                ]
+            }
+        },
+        "createHandler": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2019-06-Workflow",
+            "method": "createOrUpdateHandler",
+            "inputData": {
+                "input": "{{function:getCreateHandlerInput}}"
+            },
+            "policy": {
+                "types": [ {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "action_handlers",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                             }
+
+                        ]
+                    },
+                    {
+                        "name": "EPMHandler",
+                        "properties":
+                        [
+                           {
+                              "name": "arguments"
+                           },
+                           {
+                                "name": "parent_action_type"
+                           }
+                        ]
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "closePanel"
+                    },
+                    {
+                        "name": "workflowDesigner.tabReload"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "serverError"
+                    }
+                ]
+            },
+            "deps": "js/Awp0WorkflowTemplateNotificationPanelService"
+        }
+    },
+    "data": {
+        "assignmentPanelAnchor": "awp0_addAssignmentPanelAnchor",
+        "isAddButtonVisible": true,
+        "isReviewOptionAvailable": true,
+        "handlerName": "EPM-notify",
+        "reviewNotifyWhenList": {
+            "type": "STRING",
+            "displayName": "{{i18n.notifyWhenPanelLabel}}",
+            "hasLov": true,
+            "isRequired": "true",
+            "dataProvider": "reviewNotifyWhenDataProvider",
+            "emptyLOVEntry": false,
+            "dbValue": "review"
+        },
+        "taskNotifyWhenList": {
+            "type": "STRING",
+            "displayName": "{{i18n.notifyWhenPanelLabel}}",
+            "hasLov": true,
+            "isRequired": "true",
+            "dataProvider": "taskNotifyWhenDataProvider",
+            "emptyLOVEntry": false,
+            "dbValue": "2"
+        },
+        "reviewNotifyWhenValues": [
+            {
+                "propDisplayValue": "{{i18n.reviewStarted}}",
+                "propInternalValue": "review"
+            },
+            {
+                "propDisplayValue": "{{i18n.reviewRejectDecision}}",
+                "propInternalValue": "rejection"
+            },
+            {
+                "propDisplayValue": "{{i18n.reviewDecisionDone}}",
+                "propInternalValue": "progress"
+            },
+            {
+                "propDisplayValue": "{{i18n.reviewComplete}}",
+                "propInternalValue": "level"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskStarted}}",
+                "propInternalValue": "2"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskPerformed}}",
+                "propInternalValue": "100"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskComplete}}",
+                "propInternalValue": "4"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskAssigned}}",
+                "propInternalValue": "1"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskSkipped}}",
+                "propInternalValue": "5"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskUndo}}",
+                "propInternalValue": "8"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskAborted}}",
+                "propInternalValue": "9"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskPastDue}}",
+                "propInternalValue": "EPM-late-notification"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskSuspended}}",
+                "propInternalValue": "6"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskResumed}}",
+                "propInternalValue": "7"
+            }
+        ],
+        "taskNotifyWhenValues": [
+            {
+                "propDisplayValue": "{{i18n.taskStarted}}",
+                "propInternalValue": "2"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskPerformed}}",
+                "propInternalValue": "100"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskComplete}}",
+                "propInternalValue": "4"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskAssigned}}",
+                "propInternalValue": "1"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskSkipped}}",
+                "propInternalValue": "5"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskUndo}}",
+                "propInternalValue": "8"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskAborted}}",
+                "propInternalValue": "9"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskPastDue}}",
+                "propInternalValue": "EPM-late-notification"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskSuspended}}",
+                "propInternalValue": "6"
+            },
+            {
+                "propDisplayValue": "{{i18n.taskResumed}}",
+                "propInternalValue": "7"
+            }
+        ],
+        "handlerConfiguration": [
+            {
+                "handlerName": "EPM-late-notification",
+                "selectionMode": "multiple",
+                "projectMembers" : [
+                    {
+                        "internalName": "$PROJECT_ADMINISTRATOR",
+                        "displayName": "{{i18n.PROJECT_ADMINISTRATOR}}"
+                    },
+                    {
+                        "internalName": "$PROJECT_TEAM_ADMINISTRATOR",
+                        "displayName": "{{i18n.PROJECT_TEAM_ADMINISTRATOR}}"
+                    },
+                    {
+                        "internalName": "$PROJECT_AUTHOR",
+                        "displayName": "{{i18n.PROJECT_AUTHOR}}"
+                    },
+                    {
+                        "internalName": "$PROJECT_MEMBER",
+                        "displayName": "{{i18n.PROJECT_MEMBER}}"
+                    } ],
+                "workflowMembers" : [
+                    {
+                        "internalName": "$OWNER",
+                        "displayName": "{{i18n.OWNER}}"
+                    },
+                    {
+                        "internalName": "$REVIEWERS",
+                        "displayName": "{{i18n.REVIEWERS}}"
+                    },
+                    {
+                        "internalName": "$RESPONSIBLE_PARTY",
+                        "displayName": "{{i18n.RESPONSIBLE_PARTY}}"
+                    },
+                    {
+                        "internalName": "$UNDECIDED",
+                        "displayName": "{{i18n.UNDECIDED}}"
+                    },
+                    {
+                        "internalName": "$TARGET_OWNER",
+                        "displayName": "{{i18n.TARGET_OWNER}}"
+                    },
+                    {
+                        "internalName": "$PROCESS_OWNER",
+                        "displayName": "{{i18n.PROCESS_OWNER}}"
+                    } ]
+            },
+            {
+                "handlerName": "EPM-notify-report",
+                "selectionMode": "multiple",
+                "projectMembers" : [
+                {
+                    "internalName": "$PROJECT_ADMINISTRATOR",
+                    "displayName": "{{i18n.PROJECT_ADMINISTRATOR}}"
+                },
+                {
+                    "internalName": "$PROJECT_TEAM_ADMINISTRATOR",
+                    "displayName": "{{i18n.PROJECT_TEAM_ADMINISTRATOR}}"
+                },
+                {
+                    "internalName": "$PROJECT_AUTHOR",
+                    "displayName": "{{i18n.PROJECT_AUTHOR}}"
+                },
+                {
+                    "internalName": "$PROJECT_MEMBER",
+                    "displayName": "{{i18n.PROJECT_MEMBER}}"
+                } ],
+                "workflowMembers" : [
+                {
+                    "internalName": "$USER",
+                    "displayName": "{{i18n.USER}}"
+                },
+                {
+                    "internalName": "$REVIEWERS",
+                    "displayName": "{{i18n.REVIEWERS}}"
+                },
+                {
+                    "internalName": "$RESPONSIBLE_PARTY",
+                    "displayName": "{{i18n.RESPONSIBLE_PARTY}}"
+                },
+                {
+                    "internalName": "$UNDECIDED",
+                    "displayName": "{{i18n.UNDECIDED}}"
+                },
+                {
+                    "internalName": "$TARGET_OWNER",
+                    "displayName": "{{i18n.TARGET_OWNER}}"
+                },
+                {
+                    "internalName": "$PROCESS_OWNER",
+                    "displayName": "{{i18n.PROCESS_OWNER}}"
+                } ]
+            },
+            {
+                "handlerName": "EPM-notify",
+                "selectionMode": "multiple",
+                "projectMembers" : [                     {
+                    "internalName": "$PROJECT_ADMINISTRATOR",
+                    "displayName": "{{i18n.PROJECT_ADMINISTRATOR}}"
+                },
+                {
+                    "internalName": "$PROJECT_TEAM_ADMINISTRATOR",
+                    "displayName": "{{i18n.PROJECT_TEAM_ADMINISTRATOR}}"
+                },
+                {
+                    "internalName": "$PROJECT_AUTHOR",
+                    "displayName": "{{i18n.PROJECT_AUTHOR}}"
+                },
+                {
+                    "internalName": "$PROJECT_MEMBER",
+                    "displayName": "{{i18n.PROJECT_MEMBER}}"
+                } ],
+                "workflowMembers" : [
+                    {
+                        "internalName": "$USER",
+                        "displayName": "{{i18n.USER}}"
+                    },
+                    {
+                        "internalName": "$REVIEWERS",
+                        "displayName": "{{i18n.REVIEWERS}}"
+                    },
+                    {
+                        "internalName": "$RESPONSIBLE_PARTY",
+                        "displayName": "{{i18n.RESPONSIBLE_PARTY}}"
+                    },
+                    {
+                        "internalName": "$UNDECIDED",
+                        "displayName": "{{i18n.UNDECIDED}}"
+                    },
+                    {
+                        "internalName": "$TARGET_OWNER",
+                        "displayName": "{{i18n.TARGET_OWNER}}"
+                    },
+                    {
+                        "internalName": "$PROCESS_OWNER",
+                        "displayName": "{{i18n.PROCESS_OWNER}}"
+                    } ]
+            }
+        ],
+        "includeLabel": {
+            "displayName": "{{i18n.includeLabel}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE"
+        },
+        "recipientsLabel": {
+            "displayName": "{{i18n.recipientsLabel}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE"
+        },
+        "processInfo": {
+            "displayName": "{{i18n.processInfo}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": true,
+            "dispValue": "{{i18n.processInfo}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "targetInfo": {
+            "displayName": "{{i18n.targets}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": true,
+            "dispValue": "{{i18n.targets}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "referenceInfo": {
+            "displayName": "{{i18n.references}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": true,
+            "dispValue": "{{i18n.references}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "notifySubject": {
+            "type": "STRING",
+            "displayName": "{{i18n.subject}}",
+            "renderingHint": "textbox"
+        },
+        "notifyMessage": {
+            "type": "STRING",
+            "displayName": "{{i18n.message}}",
+            "renderingHint": "textarea"
+        },
+        "userOption": {
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": true,
+            "dbValue": "keyRoles",
+            "dispValue": "{{i18n.keyRoles}}"
+        },
+        "userOptionValues": [ {
+                "propDisplayValue": "{{i18n.keyRoles}}",
+                "dispValue": "{{i18n.keyRoles}}",
+                "propInternalValue": "keyRoles"
+            },
+            {
+                "propDisplayValue": "{{i18n.teamAssignment}}",
+                "dispValue": "{{i18n.teamAssignment}}",
+                "propInternalValue": "ResourcePool"
+            },
+            {
+                "propDisplayValue": "{{i18n.userGroupMember}}",
+                "dispValue": "{{i18n.userGroupMember}}",
+                "propInternalValue": "User,GroupMember"
+            }
+        ],
+        "workflowMembers" : [
+            {
+                "internalName": "$USER",
+                "displayName": "{{i18n.USER}}",
+                "typeName": "Workflow"
+            },
+            {
+                "internalName": "$REVIEWERS",
+                "displayName": "{{i18n.REVIEWERS}}",
+                "typeName": "Workflow"
+            },
+            {
+                "internalName": "$RESPONSIBLE_PARTY",
+                "displayName": "{{i18n.RESPONSIBLE_PARTY}}",
+                "typeName": "Workflow"
+            },
+            {
+                "internalName": "$UNDECIDED",
+                "displayName": "{{i18n.UNDECIDED}}",
+                "typeName": "Workflow"
+            },
+            {
+                "internalName": "$TARGET_OWNER",
+                "displayName": "{{i18n.TARGET_OWNER}}",
+                "typeName": "Workflow"
+            },
+            {
+                "internalName": "$PROCESS_OWNER",
+                "displayName": "{{i18n.PROCESS_OWNER}}",
+                "typeName": "Workflow"
+            } ]
+    },
+    "functions": {
+        "getCreateOrUpdateHandlerInput" : {
+            "functionName": "getCreateOrUpdateHandlerInput",
+            "parameters": [
+                "{{data}}",
+                "{{props.subPanelContext.handlerContextObject.selectedTemplateObject}}",
+                "{{props.subPanelContext.handlerContextObject.selectedObjects[0]}}",
+                "{{props.subPanelContext}}"
+            ]
+        },
+        "getCreateHandlerInput" : {
+            "functionName": "getCreateOrUpdateHandlerInput",
+            "parameters": [
+                "{{data}}",
+                "{{props.subPanelContext.handlerContextObject.selectedTemplateObject}}",
+                "{{props.subPanelContext.handlerContextObject.selectedObjects[0]}}",
+                "{{props.subPanelContext}}",
+                "true"
+            ]
+        }
+    },
+    "lifecycleHooks":  {
+        "onMount": "initPanel",
+        "onUpdate": [ {
+            "action": "removeHandlerObject",
+            "observers": [ "props.subPanelContext.handlerContextObject.deleteHandlerUid" ]
+        },
+        {
+            "action": "addUsers",
+            "observers": [ "props.subPanelContext.addUserPanelState.selectedUsers" ]
+        }
+    ]
+    },
+    "ctx": {
+        "panelContext": null,
+        "preferences": null
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "closePanel",
+            "action": "closeCurrentOpenedPanel"
+        },
+        {
+            "eventId": "workflow.closeOpenedPanel",
+            "action": "closeCurrentOpenedPanel"
+        },
+        {
+            "eventId": "removeKeyRoleArgumentsEvent",
+            "action": "removeKeyRoleArguments"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+    "preferences":
+    [
+        "EPM_ARG_target_user_group_list_separator"
+    ],
+    "messages": {
+        "serverError": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+
+    "conditions":
+    {
+        "isReviewAckRoutePSTaskTemplateSelected" : {
+            "expression":  "props.subPanelContext.handlerContextObject.selectedTemplateObject && (props.subPanelContext.handlerContextObject.selectedTemplateObject.modelType.typeHierarchyArray.indexOf( 'EPMReviewTaskTemplate' ) > -1 || props.subPanelContext.handlerContextObject.selectedTemplateObject.modelType.typeHierarchyArray.indexOf( 'EPMAcknowledgeTaskTemplate' ) > -1 || props.subPanelContext.handlerContextObject.selectedTemplateObject.modelType.typeHierarchyArray.indexOf( 'EPMRouteTaskTemplate' ) > -1 || props.subPanelContext.handlerContextObject.selectedTemplateObject.modelType.typeHierarchyArray.indexOf( 'EPMPerformSignoffTaskTemplate' ) > -1)"
+        },
+        "isValidToUpdate": {
+            "expression":  "props.subPanelContext.handlerContextObject.selectedObjects && props.subPanelContext.handlerContextObject.selectedObject[0] && conditions.isHandlerPropModified"
+        },
+        "isHandlerPropModified": {
+            "expression":  "props.subPanelContext.handlerContextObject.selectedObjects[0] && data.dataProviders.recipientsDataProvider.viewModelCollection.loadedVMObjects.length > 1"
+        },
+        "isPanelDirty": {
+            "expression":  "awPanelBody.$valid && awPanelBody.$dirty"
+        },
+        "isLateNotificationHandler": {
+            "expression":  "data.taskNotifyWhenList.dbValue === 'EPM-late-notification' || data.reviewNotifyWhenList.dbValue === 'EPM-late-notification'"
+        },
+        "isHandlerIncludeInfo": {
+            "expression": "data.isPanelEditable && !conditions.isLateNotificationHandler"
+        },
+        "isInfoPanelType": {
+            "expression": "props.subPanelContext.panelType === 'info' || props.subPanelContext.panelType === 'INFO'"
+        },
+        "isEditPanelType": {
+            "expression": "props.subPanelContext.panelType === 'edit' || props.subPanelContext.panelType === 'EDIT'"
+        },
+        "isAddPanelType": {
+            "expression": "props.subPanelContext.panelType === 'add' || props.subPanelContext.panelType === 'ADD'"
+        },
+        "isUpdateHandlerCase": {
+            "expression": "conditions.isEditPanelType && dataProviders.recipientsDataProvider.vmCollectionObj.vmCollection.loadedVMObjects.length >= 1"
+        },
+        "isUpdateRecipientHandlerCase": {
+            "expression": "conditions.isEditPanelType && ( dataProviders.recipientsDataProvider.vmCollectionObj.vmCollection.loadedVMObjects.length >= 1 && data.isValidToModify)"
+        },
+        "isAddHandlerCase": {
+            "expression": "conditions.isAddPanelType && props.subPanelContext.handlerContextObject.selectedObjects.length <= 0 && data.isValidToModify"
+        },
+        "isValidToAddNotificationHandler": {
+            "expression":  "!ctx.workflowTabContext.handlerObject && ( data.isValidToModify || awPanelBody.$valid && awPanelBody.$dirty )"
+        },
+        "isUserOptionListVisible": {
+            "expression": "conditions.isAddPanelType || conditions.isEditPanelType"
+        },
+        "isSelectedUsersPresent": {
+            "expression": "props.subPanelContext.addUserPanelState.selectedUsers && props.subPanelContext.addUserPanelState.selectedUsers.length > 0"
+        }
+    },
+    "dataProviders": {
+        "recipientsDataProvider": {
+            "selectionModelMode": "multiple",
+            "commandsAnchor"  : "aw_workflowKeyRoleCellCommand"
+        },
+        "reviewNotifyWhenDataProvider": {
+            "response": "{{data.reviewNotifyWhenValues}}"
+        },
+        "taskNotifyWhenDataProvider": {
+            "response": "{{data.taskNotifyWhenValues}}"
+        }
+    },
+
+    "i18n": {
+        "addCommandTitle": [ "InboxMessages" ],
+        "recipientsLabel": [ "WorkflowDesignerMessages" ],
+        "emailNotifications": [ "WorkflowDesignerMessages" ],
+        "notifyWhenPanelLabel": [ "WorkflowDesignerMessages" ],
+        "reviewStarted": [ "WorkflowDesignerMessages" ],
+        "reviewRejectDecision": [ "WorkflowDesignerMessages" ],
+        "reviewDecisionDone": [ "WorkflowDesignerMessages" ],
+        "reviewComplete": [ "WorkflowDesignerMessages" ],
+        "reviewPastDue": [ "WorkflowDesignerMessages" ],
+        "taskAssigned": [ "WorkflowDesignerMessages" ],
+        "taskStarted": [ "WorkflowDesignerMessages" ],
+        "taskPerformed": [ "WorkflowDesignerMessages" ],
+        "taskComplete": [ "WorkflowDesignerMessages"],
+        "taskSuspended": [ "WorkflowDesignerMessages"],
+        "taskSkipped": [ "WorkflowDesignerMessages"],
+        "taskAborted": [ "WorkflowDesignerMessages"],
+        "taskUndo": [ "WorkflowDesignerMessages"],
+        "taskResumed": [ "WorkflowDesignerMessages"],
+        "taskPastDue": [ "WorkflowDesignerMessages"],
+        "references": [ "WorkflowDesignerMessages" ],
+        "processInfo": [ "WorkflowDesignerMessages" ],
+        "targets": [ "WorkflowDesignerMessages" ],
+        "message": [ "WorkflowDesignerMessages" ],
+        "subject": [ "WorkflowDesignerMessages" ],
+        "includeLabel": [ "WorkflowDesignerMessages" ],
+        "removeCommandTitle": [ "InboxMessages" ],
+        "save": [ "TCUICommandPanelsMessages" ],
+        "PROJECT_ADMINISTRATOR": [ "WorkflowDesignerMessages" ],
+        "PROJECT_TEAM_ADMINISTRATOR": [ "WorkflowDesignerMessages" ],
+        "PROJECT_AUTHOR": [ "WorkflowDesignerMessages" ],
+        "PROJECT_MEMBER": [ "WorkflowDesignerMessages" ],
+        "TARGET_OWNER": [ "WorkflowDesignerMessages" ],
+        "PROCESS_OWNER": [ "WorkflowDesignerMessages" ],
+        "USER": [ "WorkflowDesignerMessages" ],
+        "RESPONSIBLE_PARTY": [ "WorkflowDesignerMessages"],
+        "OWNER": [ "WorkflowDesignerMessages" ],
+        "REVIEWERS": [ "WorkflowDesignerMessages" ],
+        "UNDECIDED": [ "WorkflowDesignerMessages" ],
+        "any": [ "WorkflowCommandPanelsMessages" ],
+        "teamAssignment": [ "WorkflowDesignerMessages" ],
+        "keyRoles": [ "WorkflowDesignerMessages" ],
+        "userGroupMember": [ "WorkflowDesignerMessages" ]
+    }
+
+}
+

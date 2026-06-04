@@ -1,0 +1,1243 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-column.directive",
+        "js/aw-row.directive",
+        "js/aw-graph.directive",
+        "js/aw-toolbar.directive",
+        "js/aw-splitter.directive",
+        "js/aw-include.directive",
+        "js/exist-when.directive",
+        "js/aw-navigate-breadcrumb.directive",
+        "js/aw-scrollpanel.directive",
+        "js/visible-when.directive"
+    ],
+
+    "actions": {
+        "initLegendData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2014-11-Workflow",
+            "method": "getWorkflowGraphLegend",
+            "inputData": {
+                "viewName": "WorkflowDesigner"
+            },
+
+            "outputData": {
+                "presentationRulesData": "presentationRulesXML"
+            },
+
+            "events": {
+                "success": [ {
+                    "name": "workflowDesigner.setLegendData"
+                } ]
+            },
+            "deps": "js/Awp0WorkflowDesignerGraphLegendManager"
+        },
+        "setLegendData": {
+            "actionType": "JSFunction",
+            "method": "setLegendData",
+            "inputData": {
+                "ctx": "{{ctx}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "legend": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "workflowDesigner.legendInitialized"
+                } ]
+            },
+            "deps": "js/Awp0WorkflowDesignerGraphLegendManager"
+        },
+        "loadWorkflowGraph": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2014-11-Workflow",
+            "method": "getWorkflowGraph",
+            "inputData": {
+                "input": [ {
+                    "selection": {
+                        "type": "{{ctx.xrtSummaryContextObject.type}}",
+                        "uid": "{{ctx.xrtSummaryContextObject.uid}}"
+                    }
+                } ]
+            },
+            "policy": {
+                "types": [ {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "object_string"
+                            },
+                            {
+                                "name": "subtask_template"
+                            },
+                            {
+                                "name": "parent_task_template"
+                            },
+                            {
+                                "name": "successors"
+                            },
+                            {
+                                "name": "predecessors"
+                            },
+                            {
+                                "name": "stage"
+                            },
+                            {
+                                "name": "template_classification"
+                            },
+                            {
+                                "name": "location1"
+                            },
+                            {
+                                "name": "location"
+                            },
+                            {
+                                "name": "start_node_location"
+                            },
+                            {
+                                "name": "complete_node_location"
+                            }
+                        ]
+                    }, {
+                        "name": "BusinessObject",
+                        "properties":
+                        [
+                            {
+                                "name": "awp0CellProperties"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events": {
+                "success": [ {
+                    "name": "workflowDesignerGraph.drawGraph"
+                },
+                {
+                    "name": "workflowDesigner.fitGraph"
+                },
+                {
+                    "name": "workflowDesignerGraph.showTaskRelatedInfo"
+                } ]
+            },
+            "outputData": {
+                "workflowOutput": "output[0]"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "showFailureMessage"
+                    }
+                ]
+            }
+        },
+        "drawGraph": {
+            "actionType": "JSFunction",
+            "method": "drawGraph",
+            "inputData": {
+            "data": "{{data}}"
+            },
+            "outputData": {
+                "workflowDgmState": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "workflowDesigner.fitGraph"
+                } ]
+            },
+            "deps": "js/Awp0WorkflowDesignerGraphService"
+        },
+        "updateSelection": {
+            "actionType": "JSFunction",
+            "method": "updateContextSelection",
+            "inputData": {
+                "workflowDgmState":"{{data.workflowDgmState}}"
+            },
+            "outputData": {
+                "workflowDgmState":""
+            },
+            "deps": "js/Awp0WorkflowDesignerSelectionService"
+        },
+        "setNodeHeightOnWrappedHeightChanged": {
+            "actionType": "JSFunction",
+            "method": "setNodeHeightOnWrappedHeightChanged",
+            "inputData": {
+                "graphModel": "{{ctx.graph.graphModel}}",
+                "nodes": "{{data.eventMap['awGraph.wrappedHeightChanged'].wrappedHeightChangedNodes}}"
+            },
+            "deps": "js/Awp0WorkflowDesignerNodeService"
+        },
+        "registerWorkflowProp": {
+            "actionType": "JSFunction",
+            "method": "registerPropPolicy",
+            "deps": "js/Awp0WorkflowDesignerGraphService"
+        },
+        "unregisterWorkflowProp": {
+            "actionType": "JSFunction",
+            "method": "unRegisterPropPolicy",
+            "deps": "js/Awp0WorkflowDesignerGraphService"
+        },
+        "graphItemsMoved": {
+            "actionType": "JSFunction",
+            "method": "graphItemsMoved",
+            "inputData": {
+                "items": "{{data.eventMap['awGraph.graphItemsMoved'].items}}",
+                "graphModel": "{{data.graphModel}}",
+                "data":"{{data}}"
+            },
+
+            "deps": "js/Awp0WorkflowDesignerGraphService"
+        },
+        "setGraphEditMode" : {
+            "actionType": "JSFunction",
+            "method": "setGraphEditMode",
+            "inputData": {
+                "selectedProcessTemplate" : "{{ctx.xrtSummaryContextObject}}",
+                "ctx": "{{ctx}}"
+            },
+            "deps": "js/Awp0WorkflowDesignerGraphService"
+        },
+        "fitWorkflowGraph" : {
+            "actionType": "JSFunction",
+            "method": "fitGraphVisibility",
+            "inputData": {
+                "graphContext": "{{ctx.graph}}",
+                "data":"{{data}}"
+            },
+            "deps": "js/Awp0WorkflowDesignerGraphService"
+        },
+        "templateNodeCreateAction" : {
+            "actionType": "JSFunction",
+            "method": "templateNodeCreateAction",
+            "inputData": {
+                "data": "{{data}}",
+                "eventData": "{{data.eventMap['workflowDesigner.nodeCreated']}}"
+            },
+            "deps": "js/Awp0WorkflowDesignerCreateObjectService"
+        },
+        "onNodeEditCancelled": {
+            "actionType": "JSFunction",
+            "method": "onNodeEditCancelled",
+            "inputData": {
+                "graphModel": "{{ctx.graph.graphModel}}",
+                "eventData": "{{data.eventMap['workflowDesigner.nodeCreated']}}",
+                "data": "{{data}}"
+            },
+            "deps": "js/Awp0WorkflowDesignerCreateObjectService"
+        },
+        "onNodeEditCommitted": {
+            "actionType": "JSFunction",
+            "method": "onNodeEditCommitted",
+            "inputData": {
+                "eventData": "{{data.eventMap['workflowDesigner.nodeEditCommitted']}}"
+            },
+            "deps": "js/Awp0WorkflowDesignerCreateObjectService"
+        },
+        "createNodeObject" : {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2019-06-Workflow",
+            "method": "createOrUpdateTemplate",
+            "inputData": {
+                "input": "{{data.eventMap['workflowDesigner.CreateObjectEvent'].createInput}}"
+            },
+            "outputData": {
+                "graphData": "{{function:getCreateNodeResponse}}"
+            },
+            "policy": {
+                "types": [ {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "object_string"
+                            },
+                            {
+                                "name": "subtask_template"
+                            },
+                            {
+                                "name": "parent_task_template"
+                            },
+                            {
+                                "name": "successors"
+                            },
+                            {
+                                "name": "predecessors"
+                            },
+                            {
+                                "name": "location1"
+                            },
+                            {
+                                "name": "location"
+                            },
+                            {
+                                "name": "start_node_location"
+                            },
+                            {
+                                "name": "complete_node_location"
+                            }
+                        ]
+                    }, {
+                        "name": "BusinessObject",
+                        "properties":
+                        [
+                            {
+                                "name": "awp0CellProperties"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "showFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/Awp0WorkflowDesignerCreateObjectService"
+        },
+        "addNodeOnGraph" : {
+            "actionType": "JSFunction",
+            "method": "addNodeOnGraph",
+            "inputData": {
+                "graphModel": "{{ctx.graph.graphModel}}",
+                "response" : "{{data.eventMap['workflowdesigner.createNodeComplete'].createNodeData}}",
+                "data": "{{data}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "workflowTreetable.reset"
+                } ]
+            },
+            "deps": "js/Awp0WorkflowDesignerCreateObjectService"
+        },
+        "resetEditContextInfo" : {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "workflowDgmEditCtx"
+            }
+        },
+        "loadChildren": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2014-11-Workflow",
+            "method": "getWorkflowGraph",
+            "inputData": {
+                "input": [ {
+                    "selection": {
+                        "type": "{{data.eventMap['workflowDesigner.loadChildren'].object.type}}",
+                        "uid": "{{data.eventMap['workflowDesigner.loadChildren'].object.uid}}"
+                    },
+                    "workflowGraphInfo": {
+                        "workflowGraphContext": ["{{ctx.xrtSummaryContextObject.uid}}"]
+                    }
+                } ]
+            },
+            "policy": {
+                "types": [ {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "object_string"
+                            },
+                            {
+                                "name": "subtask_template"
+                            },
+                            {
+                                "name": "parent_task_template"
+                            },
+                            {
+                                "name": "successors"
+                            },
+                            {
+                                "name": "predecessors"
+                            },
+                            {
+                                "name": "location1"
+                            },
+                            {
+                                "name": "location"
+                            },
+                            {
+                                "name": "start_node_location"
+                            },
+                            {
+                                "name": "complete_node_location"
+                            }
+                        ]
+                    }, {
+                        "name": "BusinessObject",
+                        "properties":
+                        [
+                            {
+                                "name": "awp0CellProperties"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events": {
+                "success": [ {
+                    "name": "workflowDesigner.drawChildNodes"
+                } ]
+            },
+            "outputData": {
+                "workflowOutput": "output[0]"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "showFailureMessage"
+                    }
+                ]
+            }
+        },
+        "loadChildrenFixedLayout": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2014-11-Workflow",
+            "method": "getWorkflowGraph",
+            "inputData": {
+                "input": [ {
+                    "selection": {
+                        "type": "{{data.eventMap['workflowDesigner.loadChildren'].object.type}}",
+                        "uid": "{{data.eventMap['workflowDesigner.loadChildren'].object.uid}}"
+                    },
+                    "workflowGraphInfo": {
+                    }
+                } ]
+            },
+            "policy": {
+                "types": [ {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "object_string"
+                            },
+                            {
+                                "name": "subtask_template"
+                            },
+                            {
+                                "name": "parent_task_template"
+                            },
+                            {
+                                "name": "successors"
+                            },
+                            {
+                                "name": "predecessors"
+                            },
+                            {
+                                "name": "location1"
+                            },
+                            {
+                                "name": "location"
+                            },
+                            {
+                                "name": "start_node_location"
+                            },
+                            {
+                                "name": "complete_node_location"
+                            }
+                        ]
+                    }, {
+                        "name": "BusinessObject",
+                        "properties":
+                        [
+                            {
+                                "name": "awp0CellProperties"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events": {
+                "success": [ {
+                    "name": "workflowDesigner.drawChildNodes"
+                } ]
+            },
+            "outputData": {
+                "workflowOutput": "output[0]"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "showFailureMessage"
+                    }
+                ]
+            }
+        },
+        "drawChildNodes" : {
+            "actionType": "JSFunction",
+            "method": "drawGraph",
+            "inputData": {
+                "data": "{{data}}",
+                "node": "{{data.eventMap['workflowDesigner.loadChildren'].node}}"
+            },
+            "deps": "js/Awp0WorkflowDesignerGraphService"
+        },
+        "onEdgeEditCommitted": {
+            "actionType": "JSFunction",
+            "method": "quickEdgeCreateAction",
+            "inputData": {
+                "selTemplate" : "{{ctx.xrtSummaryContextObject}}",
+                "eventData": "{{data.eventMap['workflowDesigner.edgeCreated']}}"
+            },
+            "deps": "js/Awp0WorkflowDesignerCreateObjectService"
+        },
+        "createEdgeObject" : {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2019-06-Workflow",
+            "method": "createOrUpdateTemplate",
+            "inputData": {
+                "input": "{{data.eventMap['workflowDesigner.CreateEdgeEvent'].createInput}}"
+            },
+            "outputData": {
+                "graphEdgeData": "{{function:getCreateEdgeResponse}}"
+            },
+            "deps": "js/Awp0WorkflowDesignerCreateObjectService"
+        },
+        "addEdgeOnGraph" : {
+            "actionType": "JSFunction",
+            "method": "addEdgeOnGraph",
+            "inputData": {
+                "graphModel": "{{ctx.graph.graphModel}}",
+                "response": "{{data.eventMap['workflowdesigner.createEdgeComplete'].createEdgeData}}",
+                "data":"{{data}}"
+            },
+            "deps": "js/Awp0WorkflowDesignerCreateObjectService"
+        },
+        "onEdgeCreationCancelled" : {
+            "actionType": "JSFunction",
+            "method": "onEdgeCreationCancelled",
+            "inputData": {
+                "graphModel": "{{ctx.graph.graphModel}}",
+                "eventData": "{{data.eventMap['workflowDesigner.edgeCreated']}}",
+                "data": "{{data}}"
+            },
+            "deps": "js/Awp0WorkflowDesignerCreateObjectService"
+        },
+        "updateModelOnObjectChanged": {
+            "actionType": "JSFunction",
+            "method": "updateModelOnObjectChanged",
+            "inputData": {
+                "modelObjects": "{{data.eventMap['cdm.updated'].updatedObjects}}",
+                "graphModel": "{{ctx.graph.graphModel}}"
+            },
+            "deps": "js/Awp0WorkflowDesignerGraphService"
+        },
+        "updateGraphSelection": {
+            "actionType": "JSFunction",
+            "method": "updateGraphSelection",
+            "inputData": {
+                "selected": "{{data.eventMap['awGraph.selectionChanged'].selected}}",
+                "unselected": "{{data.eventMap['awGraph.selectionChanged'].unSelected}}",
+                "workflowDgmState":"{{data.workflowDgmState}}",
+                "selectionData": "{{props.subPanelContext.selectionData}}",
+                "currentTab":"{{ctx.state.params.ttab_name}}"
+            },
+            "outputData": {
+                "workflowDgmState":""
+            },
+            "events": {
+                "success": [ {
+                    "name": "workflowGraph.selectionChanged"
+                },
+                {
+                    "name": "workflowDesigner.resetConnectionMode",
+                    "condition": "conditions.isEdgeSelected"
+                } ]
+            },
+            "deps": "js/Awp0WorkflowDesignerSelectionService"
+        },
+        "resetSecondaryGraphURL": {
+            "actionType": "JSFunction",
+            "method": "updateURL",
+            "inputData": {
+                "parameters": {
+                    "sc_uid": null,
+                    "source_uid": null,
+                    "target_uid": null,
+                    "ttab_name": null
+                }
+            },
+            "deps": "js/Awp0WorkflowDesignerUtils"
+        },
+        "showTaskRelatedInfoPanel": {
+            "actionType": "JSFunction",
+            "method": "showTaskRelatedInfoPanel",
+            "inputData": {
+                "tabIdToShow": ""
+            },
+            "deps": "js/Awp0WorkflowDesignerGraphService"
+        },
+        "editNodeData" : {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2019-06-Workflow",
+            "method": "createOrUpdateTemplate",
+            "inputData": {
+                "input":  [
+                    {
+                        "clientID": "editNodeTemplate",
+                        "templateToUpdate": "{{data.eventMap['awGraph.nodeEditCommitted'].editNode.nodeId}}",
+                        "templateName": "{{data.eventMap['awGraph.nodeEditCommitted'].newValue}}",
+                        "additionalData": {
+                            "object_name": ["{{data.eventMap['awGraph.nodeEditCommitted'].newValue}}"]
+                        }
+                    }
+                 ]
+            },
+            "policy": {
+                "types": [ {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "object_string"
+                            },
+                            {
+                                "name": "subtask_template"
+                            },
+                            {
+                                "name": "parent_task_template"
+                            },
+                            {
+                                "name": "successors"
+                            },
+                            {
+                                "name": "predecessors"
+                            }
+                        ]
+                    }, {
+                        "name": "BusinessObject",
+                        "properties":
+                        [
+                            {
+                                "name": "awp0CellProperties"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events": {
+                "failure":[ {
+                    "name": "workflowDesiger.resetNodeName"
+                } ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "showFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/Awp0WorkflowDesignerCreateObjectService"
+        },
+        "resetNodeData": {
+            "actionType": "JSFunction",
+            "method": "resetNodeData",
+            "inputData": {
+                "editNode": "{{data.eventMap['awGraph.nodeEditCommitted'].editNode}}",
+                "data": "{{data}}",
+                "graphModel": "{{ctx.graph.graphModel}}"
+            },
+            "deps": "js/Awp0WorkflowDesignerGraphService"
+        },
+        "verifyEditNodeData": {
+            "actionType": "JSFunction",
+            "method": "verifyEditNodeData",
+            "inputData": {
+                "editNode": "{{data.eventMap['awGraph.nodeEditCommitted'].editNode}}",
+                "oldValue": "{{data.eventMap['awGraph.nodeEditCommitted'].oldValue}}",
+                "newValue": "{{data.eventMap['awGraph.nodeEditCommitted'].newValue}}"
+            },
+            "deps": "js/Awp0WorkflowDesignerGraphService"
+        },
+        "updateDiagramFixedLayoutChangeAction": {
+            "actionType": "JSFunction",
+            "method": "checkAndUpdateWorkflowDesignerPage",
+            "inputData": {
+                "ctx": "{{ctx}}",
+                "breadCrumb": null
+            },
+            "deps": "js/Awp0WorkflowDesignerGraphService"
+        },
+        "updateDiagramAction": {
+            "actionType": "JSFunction",
+            "method": "updateWorkflowDesignerPage",
+            "inputData": {
+                "ctx": "{{ctx}}",
+                "data": "{{data}}",
+                "breadCrumb": null
+            },
+            "deps": "js/Awp0WorkflowDesignerGraphService"
+        },
+        "updateDiagramOnLayoutChangeAction": {
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action": "updateDiagramFixedLayoutChangeAction",
+                    "condition": "conditions.isFixedLayoutMode"
+                },
+                {
+                    "action": "updateDiagramAction"
+                }
+            ]
+        },
+        "saveCreatedNodeProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2019-06-Workflow",
+            "method": "createOrUpdateTemplate",
+            "inputData": {
+                "input": "{{data.eventMap['workflowDesigner.CreateNodeUpdateEvent'].createInput}}"
+            },
+            "deps": "js/Awp0WorkflowDesignerCreateObjectService",
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "workflowDesigner.expandChildren",
+                        "condition": "data.eventMap['workflowDesigner.CreateNodeUpdateEvent'].openObject",
+                        "eventData":
+                        {
+                            "object": "{{data.eventMap['workflowDesigner.CreateNodeUpdateEvent'].openObject}}",
+                            "node":  "{{data.eventMap['workflowDesigner.CreateNodeUpdateEvent'].node}}"
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "showFailureMessage"
+                    }
+                ]
+            }
+        },
+        "syncPWASelectionInGraph": {
+            "actionType": "JSFunction",
+            "method": "syncPWASelectionInGraph",
+            "inputData": {
+                "selectionData":"{{props.subPanelContext.selectionData}}",
+                "selectionModel": "{{props.subPanelContext.selection}}",
+                "ctx": "{{ctx}}",
+                "workflowDgmState":"{{data.workflowDgmState}}"
+            },
+            "outputData": {
+                "workflowDgmState":""
+            },
+            "deps": "js/Awp0WorkflowDesignerSelectionService"
+        },
+        "expandChildren": {
+            "actionType": "JSFunction",
+            "method": "expandChildren",
+            "deps": "js/Awp0WorkflowDesignerGraphService",
+            "inputData": {
+                "graphModel": "{{data.graphModel}}",
+                "node": "{{data.eventMap['workflowDesigner.expandChildren'].node}}",
+                "workflowDgmState":"{{data.workflowDgmState}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "workflowDgmState": ""
+            }
+        },
+        "registerInitializeLayoutFromPreference": {
+            "actionType": "JSFunction",
+            "method": "registerCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "initializeLayoutFromPreference",
+                "value": true
+            }
+        }
+    },
+
+    "data": {
+        "legend": {
+            "tabModel": [
+
+            ]
+        },
+        "workflowDgmState": {
+            "initialValues": {
+                "taskLegendPaletteMode":false,
+                "isRemoveTaskTemplateCommandVisible":false,
+                "isGroupSelectedNode":false,
+                "selectedNodes":[],
+                "selectedEdges":[],
+                "selectedObject":null,
+                "isInvalidSelectionAssignmentTab":false,
+                "diagram":{
+                    "isAutoLayoutOn":true,
+                    "layoutOption":"GcLeftToRightLayout",
+                    "isSwitchingBetweenAutoLayout":true
+                },
+                "subTaskTemplateSelection":null
+            },
+            "meta": {}
+        },
+        "previewGraphModel": {
+            "uid": "uuid_previewGraphModel"
+        },
+        "graphModel": {
+            "uid": "uuid",
+            "config": {
+                "enableEdit": true,
+                "minZoom": 0,
+                "maxZoom": 1,
+                "autoEdgeRoutingType": "HV_SEGMENT3",
+                "fitViewPosition": "CENTER",
+                "hoverDelayTime": 500,
+                "suppressRoutingOnConnectionChanged": false,
+                "suppressBoundaryUpdateOnNestedNodeChanged": true,
+                "doubleClickSpeed": 300,
+                "movableItems": [
+                    "Node"
+                ],
+                "enableJumper": true,
+                "jumper": {
+                    "jumperType": "ARC",
+                    "jumperSize": {
+                        "width": 10,
+                        "height": 10
+                    },
+                    "jumperPriority": "HORIZONTAL"
+                },
+                "selectableItems": [
+                    "Node",
+                    "Edge"
+                ],
+                "layout": {
+                    "layoutMode": "IncUpdateLayout",
+                    "NodeGrowDirection": "leftToRight",
+                    "options": [
+                    ],
+                    "config": {
+                        "nodeToNodeDistance": {
+                            "x": 50,
+                            "y": 50
+                        },
+                        "edgeToEdgeDistance": {
+                            "x": 25,
+                            "y": 25
+                        }
+                    }
+                },
+                "showNodeOverlay": true,
+                "nodeOverlay": {
+                    "zoomThreshold": 0.7,
+                    "graphOverlayHandler": "js/Awp0WorkflowDesignerGraphOverlayHandler"
+                },
+
+                "inputMode": "viewInputMode",
+                "graphEditHandler": "js/Awp0WorkflowDesignerGraphEditHandler",
+                "tooltipHandler": "js/Awp0WorkflowDesignerTooltipHandler",
+                "dragAndDropModifierKey": {
+                    "copy": [
+                        "Ctrl"
+                    ]
+                },
+                "dragAndDropHandler": "js/Awp0WorkflowDesignerGraphEditHandler",
+                "moveWithoutSelection": true,
+                "enableAutoPan": true,
+                "enableMarqueeSelection": false,
+                "marqueeSelectionModifierKey": [ "shift" ],
+                "enableMultipleSelection": false,
+                "showOverview": true,
+                "enableObjectArrangement": true,
+                "snapToGridByAnchorPoint": false,
+                "showGrid": false,
+                "grid": {
+                    "lineStyle": "LINE",
+                    "lineColor": "rgb(129,182,196)",
+                    "showMajorLines": true,
+                    "showMinorLines": true,
+                    "bringToTop": false,
+                    "majorSpacing": 50,
+                    "minorLinesPerMajor": 5,
+                    "enableSnapping": true,
+                    "enableSnapConnections": false,
+                    "snapPointsPerMinor": 1,
+                    "snapConnectionTolerance": 0
+                },
+                "enableAlignment": false,
+                "alignment": {
+                    "strokeColor": "rgb(0,255,0)",
+                    "strokeWidth": 2,
+                    "strokeDashStyle": "SOLID",
+                    "tolerance": 10,
+                    "separateGridSnapAndAlignment": true
+                },
+                "defaults": {
+                    "nodeSize": {
+                        "width": 300,
+                        "height": 100
+                    },
+
+                    "nodeStyle": {
+                        "templateId": "WorkflowDesignerDummyNodeTemplate"
+                    },
+
+                    "edgeStyle": {
+                        "dashStyle": "DASH",
+                        "thickness": 1.0,
+                        "color": "(0,0,0)"
+                    },
+
+                    "edgeLabel": {
+                        "maxWidth": 128,
+                        "contentStyleClass": "aw-widgets-label aw-base-normal aw-graph-label aw-workflow-label",
+                        "placementRule": {
+                            "positionOption": "CENTER_OF_LONGEST_SEGMENT_HORIZONTAL",
+                            "rotationMode": "VFlipRightRotate"
+                        }
+                    },
+
+                    "portLabel": {
+                        "maxWidth": 96
+                    },
+
+                    "label": {
+                        "hasBackground": true,
+                        "backgroundFillColor": "rgb(1,244,244,244)",
+                        "backgroundStyleClass": "aw-graph-labelBackground",
+                        "backgroundAnchor": [ 0.5, 0.5 ],
+                        "textAnchor": [ 0.5, 0.5 ],
+                        "contentStyleClass": "aw-widgets-label aw-base-normal aw-graph-label aw-workflow-label",
+                        "allowWrapping": false,
+                        "maxMoveDistance": 500
+                    }
+                },
+                "shadowEffects": [],
+                "nodeTemplates": [
+                    "WorkflowDesignerTileNodeTemplate",
+                    "WorkflowDesignerDummyNodeTemplate",
+                    "WorkflowDesignerNodeNonInteractiveTemplate",
+                    "WorkflowDesignerGroupTileNodeTemplate",
+                    "WorkflowDesignerTileNodeFixedTemplate",
+                    "WorkflowDesignerGroupTileNodeFixedTemplate"
+                ]
+            },
+            "inputModes": {
+                "viewInputMode": {
+                    "editMode": false,
+                    "enableManualEdgeRouting": false,
+                    "enableNodeResize": false,
+                    "enableLabelEdit": false,
+                    "dragableCursorUrl": "cursor/openhand.cur",
+                    "draggingCursorUrl": "cursor/closedhand.cur"
+                },
+                "edgeCreationMode": {
+                    "editMode": true,
+                    "enableManualEdgeRouting": true,
+                    "enableNodeResize": false,
+                    "enableLabelEdit": false,
+                    "creatableItem": "Edge",
+                    "defaultCursor": "hand",
+                    "dragableCursorUrl": "cursor/openhand.cur",
+                    "draggingCursorUrl": "cursor/closedhand.cur",
+                    "enableSelfLoopConnection": true
+                },
+                "nodeCreationMode": {
+                    "editMode": true,
+                    "enableManualEdgeRouting": true,
+                    "enableNodeResize": true,
+                    "enableLabelEdit": true,
+                    "creatableItem": "Node",
+                    "dragableCursorUrl": "cursor/openhand.cur",
+                    "draggingCursorUrl": "cursor/closedhand.cur"
+                },
+                "editInputMode": {
+                    "editMode": true,
+                    "enableManualEdgeRouting": true,
+                    "enableNodeResize": true,
+                    "enableLabelEdit": true,
+                    "creatableItem": "",
+                    "dragableCursorUrl": "cursor/openhand.cur",
+                    "draggingCursorUrl": "cursor/closedhand.cur"
+                }
+            },
+            "hoverStyle": {
+                "node": "aw-widgets-cellListItemNodeHovered",
+                "edge": { "thicknessScale": 3.0 }
+            }
+        },
+        "provider": {
+            "crumbs": [
+                {
+                    "clicked": false,
+                    "displayName": "{{ctx.xrtSummaryContextObject.props.object_string.uiValues[0]}}",
+                    "selectedCrumb": false,
+                    "showArrow": true,
+                    "scopedUid": "{{ctx.xrtSummaryContextObject.uid}}",
+                    "template": "{{ctx.xrtSummaryContextObject}}"
+                }
+            ]
+        },
+
+        "breadCrumbConfig":{
+            "workflowDesignerBreadcrumbConfig": {
+                "type" : "navigate",
+                "vm" : "Awp0WorkflowDesignerBreadcrumbChevron",
+                "chevronDataProvider": "workflowDesignerChevronDataProvider",
+                "id": "workflowDesignerNativeBreadCrumb",
+                "noUpdate": false,
+                "displayProperty": "object_string",
+                "popuplist": "/html/defaultbreadcrumblist.html"
+            }
+        },
+        "useFixedLayout": false
+    },
+    "ctx":{
+        "graph":{
+            "type": "object"
+        },
+        "state.params.ttab_name":null,
+        "state.params.sc_uid":null,
+        "state.params.source_uid":null,
+        "state.params.target_uid":null,
+        "workflowDgmEditCtx":{
+            "type":"object"
+        }
+    },
+    "lifecycleHooks": {
+        "onUnmount": "resetSecondaryGraphURL",
+        "onUpdate":{
+            "action":"syncPWASelectionInGraph",
+            "observers": [ "props.subPanelContext.selection" ]
+        }
+    },
+    "onEvent": [
+    {
+        "eventId": "awGraph.initialized",
+        "action": "initLegendData",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "awGraph.initialized",
+        "action": "registerInitializeLayoutFromPreference"
+    },
+    {
+        "eventId": "workflowDesigner.setLegendData",
+        "action": "setLegendData",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "workflowDesigner.legendInitialized",
+        "action": "loadWorkflowGraph",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "workflowDesignerGraph.drawGraph",
+        "action": "drawGraph",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "awGraph.graphItemsMoved",
+        "action": "graphItemsMoved",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "awGraph.selectionChanged",
+        "action": "updateGraphSelection",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "workflowDesigner.updateGraphForSelectedTemplate",
+        "condition": "ctx.workflowDesignerCrumbSelectionUid",
+        "action": "updateDiagramAction"
+    },
+    {
+        "eventId": "awGraph.wrappedHeightChanged",
+        "action": "setNodeHeightOnWrappedHeightChanged",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "Awp0WorkflowDesignerGraph.contentLoaded",
+        "action": "registerWorkflowProp"
+    },
+    {
+        "eventId": "workflowDesignerGraph.showTaskRelatedInfo",
+        "action": "showTaskRelatedInfoPanel"
+    },
+    {
+        "eventId": "Awp0WorkflowDesignerGraph.contentUnloaded",
+        "action": "unregisterWorkflowProp"
+    },
+    {
+        "eventId": "workflowDesigner.saveGraphEdit",
+        "action": "setGraphEditMode"
+    },
+    {
+        "eventId": "workflowDesigner.fitGraph",
+        "action": "fitWorkflowGraph"
+    },
+    {
+        "eventId": "workflowDesigner.nodeCreated",
+        "action": "templateNodeCreateAction",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "workflowDesigner.nodeEditCancelled",
+        "action": "onNodeEditCancelled",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "workflowDesigner.nodeEditCommitted",
+        "action": "onNodeEditCommitted",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "workflowDesigner.CreateObjectEvent",
+        "action": "createNodeObject",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "workflowDesigner.loadChildren",
+        "cacheEventData": true,
+        "condition": "data.workflowDgmState && data.workflowDgmState.diagram.isAutoLayoutOn",
+        "action": "loadChildren"
+    },
+    {
+        "eventId": "workflowDesigner.loadChildren",
+        "cacheEventData": true,
+        "condition": "data.workflowDgmState && !data.workflowDgmState.diagram.isAutoLayoutOn",
+        "action": "loadChildrenFixedLayout"
+    },
+    {
+        "eventId": "workflowDesigner.drawChildNodes",
+        "cacheEventData": true,
+        "action": "drawChildNodes"
+    },
+    {
+        "eventId": "workflowDesigner.CreateEdgeEvent",
+        "action": "createEdgeObject",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "workflowDesigner.edgeCreated",
+        "action": "onEdgeEditCommitted",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "workflowDesigner.edgeCreationCancelled",
+        "action": "onEdgeCreationCancelled",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "cdm.updated",
+        "action": "updateModelOnObjectChanged",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "workflowdesigner.createNodeComplete",
+        "action": "addNodeOnGraph",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "workflowdesigner.createEdgeComplete",
+        "action": "addEdgeOnGraph",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "workflowDesigner.saveEdit",
+        "action": "setGraphEditMode"
+    },
+    {
+        "eventId": "workflowDesigner.nodePropsEditCommitted",
+        "action": "editNodeData"
+    },
+    {
+        "eventId": "awGraph.nodeEditCommitted",
+        "action": "verifyEditNodeData",
+        "condition": "conditions.isNotDummyNodeEdited",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "workflowDesiger.resetNodeName",
+        "action": "resetNodeData"
+    },
+    {
+        "eventId": "workflowDesigner.AutoLayoutToggled",
+        "action": "updateDiagramOnLayoutChangeAction"
+    },
+    {
+        "eventId": "workflowDesigner.CreateNodeUpdateEvent",
+        "action": "saveCreatedNodeProperties",
+        "cacheEventData": true
+    },
+    {
+        "eventId": "workflowDesigner.saveEdit",
+        "action": "updateDiagramFixedLayoutChangeAction"
+    },
+    {
+        "eventId": "workflowDesigner.expandChildren",
+        "cacheEventData": true,
+        "action": "expandChildren"
+    }
+    ],
+    "functions": {
+        "getCreateNodeResponse" : {
+            "functionName": "getCreateNodeResponse",
+            "parameters": []
+        },
+        "getCreateEdgeResponse" : {
+            "functionName": "getCreateEdgeResponse",
+            "parameters": []
+        }
+    },
+    "messages": {
+        "showFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "conditions": {
+        "isEdgeSelected": {
+            "expression": "data.eventMap['awGraph.selectionChanged'].selected[0].itemType ==='Edge' || data.eventMap['awGraph.selectionChanged'].selected[0].itemType === undefined"
+        },
+        "legendNeedsInitialized": {
+            "expression": "data.legend.legendViews === undefined"
+        },
+        "isMainGraphEvent": {
+            "expression": "sourceGraph === data.graphModel"
+        },
+        "isTemplateInEditMode" : {
+            "expression": "ctx.xrtSummaryContextObject && ctx.workflowDgmEditCtx.editObjectUids && ctx.workflowDgmEditCtx.editObjectUids.length > 0 && ctx.workflowDgmEditCtx.editObjectUids.indexOf( ctx.xrtSummaryContextObject.uid ) > -1"
+        },
+        "isNotDummyNodeEdited": {
+            "expression": "editNode.modelObject !== null && editNode.modelObject !== undefined"
+        },
+        "isFixedLayoutMode": {
+            "expression": "data.workflowDgmState && !data.workflowDgmState.diagram.isAutoLayoutOn"
+        }
+    },
+    "preferences":
+    [
+        "WRKFLW_use_fixed_position",
+        "EPM_enable_apply_template_changes",
+        "WRKFLW_preferred_diagram_layout"
+    ],
+    "i18n": {
+        "showChildren": [ "WorkflowCommandPanelsMessages" ],
+        "hideChildren": [ "WorkflowCommandPanelsMessages" ],
+        "startTooltip" : [ "WorkflowCommandPanelsMessages" ],
+        "finishTooltip" : [ "WorkflowCommandPanelsMessages" ]
+    }
+}

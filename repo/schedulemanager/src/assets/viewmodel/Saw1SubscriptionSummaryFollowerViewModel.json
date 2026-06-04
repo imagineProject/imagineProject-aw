@@ -1,0 +1,270 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "data": {
+        "isFollowersSectionUnfollowClicked": false
+    },
+
+    "dataProviders": {
+        "followerTableProvider": {
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+
+    "columnProviders": {
+        "followerTableColumnProvider": {
+            "columns": [ {
+                "name": "saw1Followers",
+                "displayName": "{{i18n.nameColumnTitle}}",
+                "typeName": "String",
+                "isTableCommand": false,
+                "pinnedLeft": false,
+                "enableColumnMenu": false
+            } ],
+            "frozenColumnIndex": -1
+        }
+    },
+
+    "grids": {
+        "scheduleSubscriptionFollowerTable": {
+            "dataProvider": "followerTableProvider",
+            "columnProvider": "followerTableColumnProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableGridMenu": false,
+                "enableSorting": false
+            }
+        }
+    },
+
+    "actions": {
+        "populateFollowersDataProvider": {
+            "actionType": "JSFunctionAsync",
+            "method": "populateFollowersDataProvider",
+            "inputData": {
+                "subscriptionObject" : "{{ctx.selected}}",
+                "dataProvider" : "{{data.dataProviders.followerTableProvider}}"
+            },
+            "outputData": {
+                "searchResults": "searchResults",
+                "totalFound": "totalFound",
+                "notificationData" : "notificationData"
+            },
+            "deps": "js/Saw1SubscriptionSummaryNotificationService"
+        },
+        "performUnFollow": {
+            "actionType": "JSFunction",
+            "method": "getInformationToUnfollow",
+            "inputData": {
+                "subscriptionObject" : "{{ctx.xrtSummaryContextObject}}",
+                "dataProvider" : "{{data.dataProviders.followerTableProvider.selectedObjects}}"
+            },
+            "outputData": {
+                "recipientsValue": "recipientsValue",
+                "isFollowersSectionUnfollowClicked": true
+            },
+            "deps": "js/Saw1SubscriptionSummaryNotificationService",
+            "events": {
+                "success":[
+                    {
+                        "name": "removeFromFollowers"
+                    }
+                ],
+                "failure":[
+                    {
+                        "name": "unFollowErrorNoAccess"
+                    }
+                ]
+            }
+        },
+        "unFollowSubscription": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "deleteSubscriptionEvent",
+                        "condition": "data.isFollowersSectionUnfollowClicked && data.dataProviders.followerTableProvider.selectedObjects.length === data.totalFound"
+                    },
+                    {
+                        "name": "updateFollowersEvent",
+                        "condition": "data.isFollowersSectionUnfollowClicked && data.dataProviders.followerTableProvider.selectedObjects.length !== data.totalFound"
+                    },
+                    {
+                         "name": "deleteSubscriptionEvent",
+                         "condition": "!data.isFollowersSectionUnfollowClicked && ctx.xrtSummaryContextObject.props.subscriber.dbValues[0] === ctx.userSession.props.user.dbValues[0]"
+                    },
+                    {
+                        "name": "updateFollowersEvent",
+                        "condition": "!data.isFollowersSectionUnfollowClicked && ctx.xrtSummaryContextObject.props.subscriber.dbValues[0] !== ctx.userSession.props.user.dbValues[0]"
+                    }
+                ]
+            }
+        },
+        "deleteSubscription": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "deleteObjects",
+            "inputData": {
+                "objects": ["{{ctx.xrtSummaryContextObject}}"]
+            },
+            "outputData": {
+                "ctx.unFollowPartialErrors": "partialErrors"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "primaryWorkarea.reset"
+                    }
+                ]
+            }
+        },
+        "updateFollowers":{
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2022-06-ScheduleManagement",
+            "method": "createOrUpdateNotificationRules",
+            "inputData": {
+                "notificationRuleInfos": "{{function:getUnfollowCommandSOAInput}}"
+            },
+            "outputData": {
+                "partialErorrs": "partialErrors"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": [
+                                "{{ctx.xrtSummaryContextObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "primaryWorkarea.reset"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "unFollowErrorNoAccess",
+                        "condition": "data.partialErorrs[0].errorValues[0].code==230045"
+                    },
+                    {
+                        "name": "unFollowError",
+                        "condition": "data.partialErorrs[0].errorValues[0].code!=230045"
+                    }
+                ]
+            },
+            "deps": "js/Saw1SubscriptionSummaryNotificationService"
+        }
+    },
+
+    "functions": {
+        "getUnfollowCommandSOAInput": {
+            "functionName": "getUnfollowCommandSOAInput",
+            "parameters":
+            [
+                "{{ctx.xrtSummaryContextObject}}",
+                "{{data.dataProviders.followerTableProvider}}",
+                "{{data.isFollowersSectionUnfollowClicked}}",
+                "{{ctx.userSession.props.user}}"
+            ]
+        }
+    },
+
+    "onEvent": [
+        {
+            "eventId": "unFollowSingleSubscriptionConfirmation",
+            "message": "unFollowSingleSubscriptionConfirmationMessage"
+        },
+        {
+            "eventId": "removeFromFollowers",
+            "message": "removeFromFollowersConfrimationMessage"
+        },
+        {
+            "eventId": "deleteSubscriptionEvent",
+            "action": "deleteSubscription"
+        },
+        {
+            "eventId": "updateFollowersEvent",
+            "action": "updateFollowers"
+        },
+        {
+            "eventId": "unFollowErrorNoAccess",
+            "message": "unFollowErrorMessageNoPrivs"
+        },
+        {
+            "eventId": "unFollowError",
+            "message": "unFollowErrorMessage"
+        }
+    ],
+
+    "lifecycleHooks": {
+        "onMount": "populateFollowersDataProvider"
+    },
+
+    "messages":
+    {
+        "removeFromFollowersConfrimationMessage":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.unFollowSingleSubscriptionConfirmationMsg}}",
+            "messageTextParams": [
+                "{{data.recipientsValue}}"
+            ],
+            "navigationOptions": [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.CancelText}}"
+                },
+                {
+                    "option": "Unfollow",
+                    "text": "{{i18n.unFollow}}",
+                    "action": "unFollowSubscription"
+                }
+            ]
+        },
+         "unFollowSingleSubscriptionConfirmationMessage": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.unFollowSingleSubscriptionConfirmationMsg}}",
+            "messageTextParams": [
+                "{{ctx.xrtSummaryContextObject.props.object_string.dbValues[0]}}"
+            ],
+            "navigationOptions": [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.CancelText}}"
+                },
+                {
+                    "option": "Unfollow",
+                    "text": "{{i18n.unFollow}}",
+                    "action": "unFollowSubscription"
+                }
+            ]
+        },
+        "unFollowErrorMessageNoPrivs": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.unFollowFailureNoPrivs}}",
+            "messageTextParams": [
+                "{{ctx.xrtSummaryContextObject.props.object_string.dbValues[0]}}"
+            ]
+        },
+        "unFollowErrorMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.unFollowFailure}}",
+            "messageTextParams": [
+                "{{data.partialErorrs[0].errorValues[0].message}}"
+            ]
+        }
+    },
+
+    "i18n": {
+        "nameColumnTitle": [ "ScheduleManagerMessages" ],
+        "unFollow": ["ScheduleManagerMessages"],
+        "CancelText": ["ScheduleManagerMessages"],
+        "unFollowSingleSubscriptionConfirmationMsg": ["ScheduleManagerMessages"],
+        "unFollowFailure": ["ScheduleManagerMessages"],
+        "unFollowFailureNoPrivs": ["ScheduleManagerMessages"]
+    }
+}

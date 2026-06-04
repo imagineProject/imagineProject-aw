@@ -1,0 +1,213 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {
+        "onMount": "initGridSettingsBatch",
+        "onUpdate": [
+            {
+                "action": "handlePrimaryVariantRuleSelectionChange",
+                "observers": [
+                    "props.subPanelContext.selection.uid",
+                    "props.subPanelContext.selection[0].uid",
+                    "props.subPanelContext.selection.length",
+                    "viewModel.ctx.ConfiguratorCtx.modulePerspectiveForMultiVariants"
+                ]
+            }
+        ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "data": {
+        "refreshFlag": false,
+        "loadVariantsMaxCountInGrid": 10,
+        "gridEditorMode": "multiSvrGrid",
+        "gridSettings": {
+            "initialValues": {
+                "columnWidth": 150,
+                "useCompactColumnWidth": false,
+                "useVerticalColumnHeader": false,
+                "includeSeverityInComparison": false,
+                "loadVariantsMaxCountInGrid": 10,
+                "newVariantsMaxCountInGrid": 2
+            },
+            "meta": {
+                "columnWidth": {
+                    "type": "INTEGER"
+                },
+                "useCompactColumnWidth": {
+                    "type": "BOOLEAN"
+                },
+                "useVerticalColumnHeader": {
+                    "type": "BOOLEAN"
+                },
+                "includeSeverityInComparison": {
+                    "type": "BOOLEAN"
+                },
+                "loadVariantsMaxCountInGrid": {
+                    "type": "INTEGER"
+                },
+                "newVariantsMaxCountInGrid": {
+                    "type": "INTEGER"
+                }
+            }
+        },
+        "singleSVRViewMode": {
+            "initialValues": {
+                "isListView": true
+            },
+            "meta": {
+                "isListView": {
+                    "type": "BOOLEAN"
+                }
+            }
+        }
+    },
+    "actions": {
+        "initGridSettingsBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "setIntialViewMode"
+                },
+                {
+                    "action": "initGridSettings"
+                }
+            ]
+        },
+        "initGridSettings": {
+            "actionType": "JSFunction",
+            "method": "initGridSettings",
+            "inputData": {
+                "gridSettings": "{{data.atomicDataRef.gridSettings}}",
+                "gridEditorMode": "{{data.gridEditorMode}}"
+            },
+            "outputData": {
+                "isGridSettingsLoaded": ""
+               
+            },
+            "deps": "js/pca0GridSettingsService"
+        },
+        "setIntialViewMode": {
+            "actionType": "JSFunction",
+            "method": "setIntialViewMode",
+            "inputData": {
+                "singleSVRViewMode": "{{data.atomicDataRef.singleSVRViewMode}}",
+                "selection": "{{props.subPanelContext.selection}}"
+            },
+            "deps": "js/pca0MultiSVRSaveCancelEditsService"
+        },
+        "toggleRefreshViewFlag": {
+            "actionType": "JSFunction",
+            "method": "toggleBooleanProperty",
+            "inputData": {
+                "refreshFlag": "{{data.refreshFlag}}"
+            },
+            "outputData": {
+                "refreshFlag": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        }, 
+        "switchToListViewDisplayModeBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "resetMultiSvrSelection"
+                },
+                {
+                    "action": "switchToListViewDisplayMode"
+                }
+            ]
+        },
+        "switchToListViewDisplayMode": {
+            "actionType": "JSFunction",
+            "method": "toggleListViewMode",
+            "inputData": {
+                "singleSVRViewMode": "{{data.atomicDataRef.singleSVRViewMode}}"
+            },
+            "outputData": {
+                "data.multiSvrSelection": ""
+            },
+            "deps": "js/pca0MultiSVRSaveCancelEditsService"
+        },
+        "resetMultiSvrSelection": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "multiSvrSelection": []
+            },
+            "outputData": {
+                "multiSvrSelection": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "handlePrimaryVariantRuleSelectionChange": {
+            "actionType": "JSFunction",
+            "method": "handlePrimaryVariantRuleSelectionChange",
+            "inputData": {
+                "selection": "{{props.subPanelContext.selection}}",
+                "singleSVRMode": "{{data.singleSVRViewMode}}",
+                "multiSvrSelection": "{{data.multiSvrSelection}}"
+            },
+            "deps": "js/pca0MultiSVRSaveCancelEditsService" 
+        },
+        "setPrimaryAreaSelectionInWrapper": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "selection": "{{parameters.eventData.selection}}"
+            },
+            "outputData": {
+                "multiSvrSelection": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        }
+        
+    },
+    "onEvent": [ {
+        "eventId": "Pca0GridEditorWrapper.refresh",
+        "action": "toggleRefreshViewFlag"
+        },
+        {
+            "eventId": "Pca0MultipleVariantsConfigurationWrapper.selectionChanged",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "setPrimaryAreaSelectionInWrapper"
+        },
+        {
+            "eventId": "Pca0MultipleVariantsConfigurationWrapper.setPrimaryAreaSelection",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "setPrimaryAreaSelectionInWrapper"
+        },
+        {
+            "eventId": "Pca0MultipleVariantsConfigurationWrapper.confirmedSelectionChanged",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "setPrimaryAreaSelectionInWrapper"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGridEditor.toggleListViewDisplayMode",
+            "action": "switchToListViewDisplayModeBatch"
+        }
+    ],
+    "conditions": {
+        "refreshTree": {
+            "expression": "data.refreshFlag"
+        },
+        "isGridSettingsLoaded": {
+            "expression": "data.isGridSettingsLoaded"
+        },
+        "isMultiVariantOrSingleSVRInGridView": {
+            "expression": "conditions.isMultipleSVRsSelected || !conditions.isSingleSVRListViewSelected"
+        },
+        "isSingleSVRListViewSelected":{
+           "expression": "data.singleSVRViewMode.isListView === true"
+        },
+        "isMultipleSVRsSelected": {
+            "expression": "data.multiSvrSelection.length > 1"
+        }
+    }
+}

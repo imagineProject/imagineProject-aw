@@ -1,0 +1,1682 @@
+{
+    "schemaVersion": "1.0.0",
+    "ports": {},
+    "actions": {
+        "onMountBatch": {
+            "actionType": "batchJob",
+            "steps": [
+            {
+                "action": "initFSCConfiguration",
+                "condition": "!conditions.isOpenedFromConfiguratorCtx"
+            },
+            {
+                "action": "updateDataForMountingBatch",
+                "condition": "conditions.isOpenedFromConfiguratorCtx && !data.isMounting"
+            } ]
+        },
+        "setIsMounting": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "isMounting": true
+            },
+            "outputData": {
+                "isMounting": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "resetIsMounting": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "isMounting": false
+            },
+            "outputData": {
+                "isMounting": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "applyConfiguration": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "policy": {
+                "types": "{{function:getPropertyPolicy}}",
+                "override":true
+            },
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{function:getFscConfigPerspective}}",
+                    "activeVariantRules": [ "{{ctx.fscContext.customVariantRule}}" ],
+                    "selectedExpressions": "{{function:convertSelectedExpressionJsonObjectToString}}",
+                    "requestInfo": {
+                        "requestType": [ "createRule" ],
+                        "configurationControlMode": [ "{{function:getConfigurationMode}}" ],
+                        "profileSettings": [ "{{function:getProfileSettingsForFsc}}" ],
+                        "ruleDateTranslationMode": [ "{{ctx.fscContext.appliedSettings.ruleDateTranslationMode === undefined ? \"\" : ctx.fscContext.appliedSettings.ruleDateTranslationMode}}" ],
+                        "expressionExpandedState": [ "{{function:getExpressionExpandedState}}" ]
+                    }
+                }
+            },
+            "outputData": {
+                "ctx.fscContext.customVariantRule": "{{function:getCreatedVariantRule}}",
+                "ServiceData": "ServiceData"
+            },
+            "deps": "js/configuratorUtils",
+            "events": {
+                "success": [ {
+                    "name": "Pca0FullScreenConfiguration.configureContent",
+                    "eventData": {
+                        "variantRules": [ "{{ctx.fscContext.customVariantRule.uid}}" ]
+                    }
+                } ],
+                "failure": [ {
+                    "name": "Pca0FullScreenConfiguration.processPartialError",
+                    "eventData": {
+                        "ServiceData": "{{data.ServiceData}}"
+                    }
+
+                } ]
+            }
+        },
+        "resetDirtyFlag": {
+            "actionType": "JSFunction",
+            "method": "resetDirtyFlag",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "fscState": "{{data.atomicDataRef.fscState}}",
+                "variantRuleData": "{{data.atomicDataRef.variantRuleData}}"
+            },
+            "deps": "js/configuratorUtils"
+        },
+        "updateFSCVariantRule": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "policy": {
+                "types": "{{function:getPropertyPolicy}}",
+                "override":true
+            },
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{function:getFscConfigPerspective}}",
+                    "selectedContext": "{{function:getSelectionForVariantContext}}",
+                    "activeVariantRules": [
+                        "{{data.eventData.variantRule}}"
+                    ],
+                    "selectedExpressions": "{{function:convertSelectedExpressionJsonObjectToString}}",
+                    "payloadStrings": "{{ctx.fscContext.payloadStrings}}",
+                    "requestInfo": {
+                        "requestType": [ "createUpdateVariantRule" ],
+                        "configurationControlMode": [ "{{function:getConfigurationMode}}" ],
+                        "profileSettings": [ "{{function:getProfileSettingsForFsc}}" ],
+                        "ruleDateTranslationMode": [ "{{ctx.fscContext.appliedSettings.ruleDateTranslationMode === undefined ? \"\" : ctx.fscContext.appliedSettings.ruleDateTranslationMode}}" ],
+                        "expressionExpandedState": [ "{{function:getExpressionExpandedState}}" ]
+                    }
+                }
+            },
+            "outputData": {
+                "serviceData": "ServiceData"
+            },
+            "deps": "js/configuratorUtils",
+            "events": {
+                "success": [ {
+                    "name": "customVariantRule.variantRuleDirty",
+                    "eventData": {
+                        "variantRulePanelDirty": false,
+                        "selectedCtx": "{{data.eventData.selectedCtx}}"
+                    },
+                    "condition": "data.serviceData.partialErrors === undefined"
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "displayErrorCode"
+                } ]
+            }
+        },
+        "fetchActiveSettings": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "policy": {
+                "types": "{{function:getPropertyPolicyForVCV}}",
+                "override":true
+            },
+            "inputData": {
+                "input": {
+                    "selectedContext": "{{function:getSelectionForVariantContext}}",
+                    "activeVariantRules": "{{function:getActiveVariantRules}}",
+                    "configPerspective": "{{function:getConfigPerspective}}",
+                    "requestInfo": {
+                        "requestType": [ "getConfigSettings" ],
+                        "mode": [ "fetchActiveSettings" ]
+                    }
+                }
+            },
+            "outputData": {
+                "ctx.fscContext.appliedSettings": "{{function:initSettings}}",
+                "ServiceData": "ServiceData"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0FullScreenConfiguration.resetIsMounting"
+                } ],
+                "failure": [ {
+                    "name": "Pca0FullScreenConfiguration.processPartialError",
+                    "eventData": {
+                        "ServiceData": "{{data.ServiceData}}"
+                    }
+                } ]
+            },
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "fetchDefaultActiveSettingsBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "fetchDefaultActiveSettings",
+                "condition": "conditions.areNotCachedDefaultSettings"
+            } ]
+        },
+        "fetchDefaultActiveSettings": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "inputData": {
+                "input": {
+                    "configPerspective": {},
+                    "selectedContext": "{{function:getSelectionForVariantContext}}",
+                    "activeVariantRules": [],
+                    "requestInfo": {
+                        "requestType": [ "getConfigSettings" ],
+                        "mode": [ "fetchActiveSettings" ]
+                    }
+                }
+            },
+            "outputData": {
+                "ctx.fscContext.appliedSettings": "{{function:initSettings}}",
+                "ServiceData": "ServiceData"
+            },
+            "events": {
+                "failure": [ {
+                    "name": "Pca0FullScreenConfiguration.processPartialError",
+                    "eventData": {
+                        "ServiceData": "{{data.ServiceData}}"
+                    }
+                } ]
+            },
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "handleSaveSVRCommandVisibility": {
+            "actionType": "JSFunction",
+            "method": "handleSaveSVRCommandVisibility",
+            "inputData": {
+                "data": "{{data.eventData}}",
+                "fscState": "{{data.atomicDataRef.fscState}}"
+            },
+            "deps": "js/configuratorUtils"
+        },
+        "handlePWAEditCommandVisibility": {
+            "actionType": "JSFunction",
+            "method": "handlePWAEditCommandVisibility",
+            "inputData": {
+                "fscState": "{{data.atomicDataRef.fscState}}"
+            },
+            "deps": "js/configuratorUtils"
+        },
+        "updateCommandVisibilityAndEditHandleContext": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "updateEditHandlerToFscContext"
+                },
+                {
+                    "action": "handleSaveSVRCommandVisibility"
+                },
+                {
+                    "action": "handlePWAEditCommandVisibility",
+                    "condition": "ctx.TABLE_CONTEXT !== undefined"
+                },
+                {
+                    "action": "resetExpressionExpandedState"
+                }
+            ]
+        },
+        "handleSVRChange": {
+            "actionType": "JSFunction",
+            "method": "handleSVRChange",
+            "inputData": {
+                "fscState": "{{data.atomicDataRef.fscState}}",
+                "variantRuleData": "{{data.atomicDataRef.variantRuleData}}"
+            },
+            "deps": "js/pca0LoadSavedVariantsService",
+            "events": {
+                "success": [ {
+                    "name": "Pca0FullScreenConfiguration.updateSVRListInSummary"
+                },
+                {
+                    "name": "Pca0FullScreenConfiguration.closeAllDialogs"
+                } ]
+            }
+        },
+        "resetExpressionExpandedState": {
+            "actionType": "JSFunction",
+            "method": "resetExpressionExpandedState",
+            "deps": "js/configuratorUtils"
+        },
+        "handleSVRUnloadEvent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "Pca0LoadSavedVariants.wipConfirmSVRUnload",
+                        "condition": "conditions.isDirtyAndRuleLoaded"
+                    },
+                    {
+                        "name": "Pca0LoadSavedVariants.handleSVRUnload",
+                        "condition": "conditions.isDirtyAndNoRuleLoaded"
+                    },
+                    {
+                        "name": "Pca0LoadSavedVariants.handleSVRUnload",
+                        "condition": "conditions.isNotDirty"
+                    },
+                    {
+                        "name": "Pca0FullScreenConfiguration.closeAllDialogs"
+                    }
+                ]
+            }
+        },
+        "handleSVRUnload": {
+            "actionType": "JSFunction",
+            "method": "handleSVRUnload",
+            "inputData": {
+                "fscState": "{{data.atomicDataRef.fscState}}",
+                "variantRuleData": "{{data.atomicDataRef.variantRuleData}}"
+            },
+            "deps": "js/pca0LoadSavedVariantsService",
+            "events": {
+                "success": [ {
+                        "name": "Pca0FullScreenConfiguration.fetchActiveSettings",
+                        "condition": "conditions.areNotCachedDefaultSettings"
+                    },{
+                        "name": "Pca0FullScreenConfiguration.resetPerspective",
+                        "condition": "!conditions.areNotCachedDefaultSettings && ctx.fscContext.defaultAppliedSettings !== undefined"
+                    },
+                    {
+                        "name": "Pca0FullScreenConfiguration.updateConfigurationModulesPanelVisibility"
+                    },
+                    {
+                        "name": "Pca0Scopes.loadedSVRChanged"
+                    },
+
+                    {
+                        "name": "Pca0FullScreenConfiguration.updateSVRListInSummary"
+                    }
+                ]
+            }
+        },
+        "handleUnloadSVRInGridView": {
+            "actionType": "JSFunction",
+            "method": "handleUnloadSVRInGridView",
+            "inputData": {
+                "variantRuleUID": "{{data.eventData.variantRuleUID}}",
+                "fscState": "{{data.atomicDataRef.fscState}}",
+                "variantRuleData": "{{data.atomicDataRef.variantRuleData}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0FullScreenConfiguration.fetchActiveSettings",
+                        "condition": "conditions.isSingleSVRLoaded"
+                    }
+                ]
+            },
+            "deps": "js/pca0LoadSavedVariantsService"
+        },
+        "handleSVRSaveUnload": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "policy": {
+                "types": "{{function:getPropertyPolicyForVCV}}",
+                "override":true
+            },
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{function:getConfigPerspective}}",
+                    "selectedContext": "{{function:getSelectionForVariantContext}}",
+                    "activeVariantRules": [ {
+                        "type": "VariantRule",
+                        "uid": "{{ctx.fscContext.initialVariantRule.uid}}"
+                    } ],
+                    "selectedExpressions": "{{function:convertSelectedExpressionJsonObjectToString}}",
+                    "payloadStrings": "{{ctx.fscContext.payloadStrings}}",
+                    "requestInfo": {
+                        "requestType": [ "createUpdateVariantRule" ],
+                        "configurationControlMode": [ "guided" ],
+                        "profileSettings": [ "{{function:getProfileSettingsForFsc}}" ],
+                        "expressionExpandedState": [ "{{function:getExpressionExpandedState}}" ]
+                    }
+                }
+            },
+            "outputData": {
+                "ServiceData": "ServiceData"
+            },
+            "events": {
+                "failure": [ {
+                    "name": "Pca0FullScreenConfiguration.processPartialError",
+                    "eventData": {
+                        "ServiceData": "{{data.ServiceData}}"
+                    }
+                } ],
+                "success": [ {
+                        "name": "customVariantRule.variantRuleDirty",
+                        "eventData": {
+                            "variantRulePanelDirty": false,
+                            "selectedCtx": "fscContext"
+                        }
+                    },
+                    {
+                        "name": "Pca0FullScreenConfiguration.updateSVRListInSummary"
+                    },
+                    {
+                        "name": "Pca0LoadSavedVariants.handleSVRUnload"
+                    }
+                ]
+            },
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "showGridViewBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "fetchDefaultActiveSettingsBatch"
+                },
+                {
+                    "action": "showGridView"
+                }
+            ]
+        },
+        "showGridView": {
+            "actionType": "JSFunction",
+            "method": "showGridView",
+            "inputData": {
+                "reset": true,
+                "context": "{{data.atomicDataRef}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0FullScreenConfiguration.updateSVRListInSummary"
+                } ]
+            },
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "initFSCConfigurationBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "initFSCConfiguration",
+                "condition": "conditions.isSwitchingFromGridView"
+            } ]
+        },
+        "reloadFSCConfigurationBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "resetContextAndAtomicData"
+                },
+                {
+                    "action": "initFSCConfiguration"
+                },
+                {
+                    "action": "triggerFetchingOfActiveSettings",
+                    "condition": "conditions.isReloadingWithAppliedSVR"
+                },
+                {
+                    "action": "resetViolationStatus"
+                }
+            ]
+        },
+        "resetViolationStatus": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0Scopes.clearScopesViolations"
+                },
+                {
+                    "name": "Pca0Features.removeViolationsFromAllGroupLevel"
+                },
+                {
+                    "name": "Pca0Features.removeViolationsFromCurrentGroup"
+                } ]
+            }
+        },
+        "triggerFetchingOfActiveSettings": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0FullScreenConfiguration.fetchActiveSettings"
+                } ]
+            }
+        },
+        "resetContextAndAtomicData": {
+            "actionType": "JSFunction",
+            "method": "resetContextAndAtomicData",
+            "inputData": {
+                "fscState": "{{data.atomicDataRef.fscState}}",
+                "variantRuleData": "{{data.atomicDataRef.variantRuleData}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "initFSCConfiguration": {
+            "actionType": "JSFunction",
+            "method": "initFSCConfiguration",
+            "inputData": {
+                "fscState": "{{data.atomicDataRef.fscState}}",
+                "variantRuleData": "{{data.atomicDataRef.variantRuleData}}",
+                "eventData": "{{data.eventMap['Pca0FullScreenConfiguration.reload']}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "outputData": {
+                "vcvLayoutSettings": "result.vcvLayoutSettings",
+                "fscInitialized": true
+            },
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "destroyFSCConfiguration": {
+            "actionType": "JSFunction",
+            "method": "destroyFSCConfiguration",
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "updateEditHandlerToFscContext": {
+            "actionType": "JSFunction",
+            "method": "updateEditHandlerToFscContext",
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "updateEditHandlerToTableContext": {
+            "actionType": "JSFunction",
+            "method": "updateEditHandlerToTableContext",
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "wipConfirmHandleSVRChange": {
+            "actionType": "JSFunction",
+            "method": "wipConfirmHandleSVRChange",
+            "inputData": {
+                "eventData": "{{data.eventMap['Pca0FullScreenConfiguration.reload']}}"
+            },
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "getNextRequiredFamily": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "policy": {
+                "types": "{{function:getPropertyPolicyForVCV}}",
+                "override":true
+            },
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{function:getConfigPerspective}}",
+                    "scopes": [ "{{ctx.fscContext.currentScope ? ctx.fscContext.currentScope : ''}}" ],
+                    "selectedExpressions": "{{function:convertSelectedExpressionJsonObjectToString}}",
+                    "payloadStrings": "{{ctx.fscContext.payloadStrings}}",
+                    "requestInfo": {
+                        "requestType": [ "computeNextIncompleteFamily" ],
+                        "configurationControlMode": [ "guided" ],
+                        "populateConfigurationForProductHierarchy": [ "{{function:getPopulateConfigurationForProductHierarchyFlag}}" ],
+                        "currentSelection": [ "{{function:getCurrentSelection}}" ],
+                        "isPrevious": [ "{{ctx.fscContext.goPrevious === undefined ? \"\" : ctx.fscContext.goPrevious}}" ],
+                        "profileSettings": [ "{{function:getProfileSettingsForFsc}}" ],
+                        "moduleHierarchy": [ "{{ctx.fscContext.configurationModuleHierarchy ? ctx.fscContext.configurationModuleHierarchy : ''}}" ],
+                        "statsCollectorScopeName": [ "{{ctx.state.urlAttributes.configuratorDebugMode !== undefined ? 'getNextRequiredFamily' : '' }}" ]
+                    }
+                }
+            },
+            "outputData": {
+                "responseInfo": "responseInfo",
+                "firstGetNextExecuted": "{{function:setFirstGetNextExecuted}}",
+                "incompleteFamiliesInfo": "{{function:initIncompleteFamiliesInfo}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0FullScreenSummary.updateCompletenessStatusAndViolations",
+                    "condition": "data.responseInfo && data.responseInfo.configurationForProductHierarchy !== undefined",
+                    "eventData": {
+                        "CompletenessStatus": "{{responseInfo}}",
+                        "shouldResetModules": true
+                    }
+                } ]
+            },
+            "deps": "js/fullScreenConfigurationService",
+            "actionMessages": {
+                "failure": [ {
+                    "message": "displayErrorCode"
+                } ]
+            }
+        },
+        "processCurrentVariantRuleChange": {
+            "actionType": "JSFunction",
+            "method": "processCurrentVariantRuleChange",
+            "inputData": {
+                "newSVR": "{{props.subPanelContext.context.occContext.productContextInfo.props.awb0CurrentVariantRules.dbValues}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "Pca0FullScreenConfiguration.closeAllDialogs"
+                    }
+                ]
+            },
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "updateCreationState": {
+            "actionType": "JSFunction",
+            "method": "updateCreationState",
+            "inputData": {
+                "variantRuleData": "{{data.atomicDataRef.variantRuleData}}",
+                "isConstraintsData": false
+            },
+            "deps": "js/configuratorUtils"
+        },
+        "updateDataForSelectionChangeBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateDataForSelectionChange",
+                    "condition": "data.isMounting === false"
+                }
+            ]
+        },
+        "updateDataForMountingBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setIsMounting"
+                },
+                {
+                    "action": "updateDataForSelectionChange"
+                }
+            ]
+        },
+        "updateDataForSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "checkForLeaveConfirmationAndReloadFullScreen",
+                    "condition": "conditions.isPWAVariantsTableNotInEditModeAndNotInCreationState"
+                },
+                {
+                    "action": "updateXrtContextAndPopulateSyncObject",
+                    "condition": "conditions.isPWAVariantsTableInEditModeAndNotInCreationState"
+                },
+                {
+                    "action": "reloadFullScreenConfiguration",
+                    "condition": "conditions.isPWAVariantsTableInEditModeAndNotInCreationState"
+                },
+                {
+                    "action": "initializeEditHandler",
+                    "condition": "conditions.isNewVariantCreatedInCreationState"
+                },
+                {
+                    "action": "updateCreationState",
+                    "condition": "conditions.isNewVariantCreatedInCreationState"
+                }
+            ]
+        },
+        "checkForLeaveConfirmationAndReloadFullScreen": {
+            "actionType": "JSFunctionAsync",
+            "method": "leaveConfirmation",
+            "inputData": {},
+            "events": {
+                "success": [ {
+                    "name": "Pca0FullScreenConfiguration.updateXrtContextAndSyncObjectAndReloadFullScreen"
+                } ]
+            },
+            "deps": "js/editHandlerService"
+        },
+        "updateXrtContextAndSyncObjectAndReloadFullScreen": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "updateXrtContextAndPopulateSyncObject"
+                },
+                {
+                    "action": "reloadFullScreenConfiguration"
+                }
+            ]
+        },
+        "updateXrtContextAndPopulateSyncObject": {
+            "actionType": "JSFunction",
+            "method": "updateXrtContextAndPopulateSyncObject",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}",
+                "isVCVOpenedFromConfigurator": true
+            },
+            "deps": "js/pca0VariantRuleService"
+        },
+        "reloadFullScreenConfiguration": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0FullScreenConfiguration.reloadConfirmed"
+                } ]
+            }
+        },
+        "initializeEditHandler": {
+            "actionType": "JSFunction",
+            "method": "initializeEditHandler",
+            "inputData": {
+                "fscState": "{{data.atomicDataRef.fscState}}",
+                "variantRuleData": "{{data.atomicDataRef.variantRuleData}}"
+            },
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "resetIncompleteFamiliesCache": {
+            "actionType": "JSFunction",
+            "method": "resetIncompleteFamiliesCache",
+            "inputData": {
+                "context": "{{ctx.fscContext}}",
+                "familyUID": null
+            },
+            "deps": "js/Pca0IncompleteFamiliesService"
+        },
+        "resetNextExecutedFlag": {
+            "actionType": "JSFunction",
+            "method": "setNextExecutedFlag",
+            "inputData": {
+                "response": "{{data.response}}",
+                "firstGetNextExecuted": "{{data.firstGetNextExecuted}}",
+                "reset": true
+            },
+            "outputData": {
+                "firstGetNextExecuted": ""
+            },
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "applyConfigModuleSelection": {
+            "actionType": "JSFunction",
+            "method": "getModuleSelectionDetails",
+            "inputData": {
+                "selectedObject": "{{parameters.eventData.selectedObject}}"
+            },
+            "outputData": {
+                "configurationModuleHierarchy": "configurationModuleHierarchy",
+                "isModuleConfiguredOut": "isModuleConfiguredOut"
+            },
+            "deps": "js/fullScreenConfigurationService",
+            "events": {
+                "success": [ {
+                        "name": "Pca0FullScreenConfiguration.applyConfigModuleSelectionToServer",
+                        "eventData": {
+                            "configurationModuleHierarchy": "{{data.configurationModuleHierarchy}}"
+                        },
+                        "condition": "parameters.eventData.selectedObject !== undefined"
+                    },
+                    {
+                        "name": "Pca0FullScreenConfiguration.resetIncompleteFamiliesCache",
+                        "condition": "parameters.eventData.selectedObject !== undefined"
+                    }
+                ]
+            }
+        },
+        "updateCreationStateAndConfigurationModulesPanelVisibility": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "updateCreationState",
+                    "condition": "conditions.isNewVariantCreatedInCreationState"
+                },
+                {
+                    "action": "updateConfigurationModulesPanelVisibility"
+                }
+            ]
+        },
+        "updateConfigurationModulesPanelVisibility": {
+            "actionType": "JSFunction",
+            "method": "updateConfigurationModulesPanelVisibility",
+            "inputData": {
+                "data": "fscContext"
+            },
+            "outputData": {
+                "showConfigurationModules": ""
+            },
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "handleCompletenessStatusStaleBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "triggerDisableCompletenessStatusChip"
+                },
+                {
+                    "action": "resetNextExecutedFlag"
+                }
+            ]
+        },
+        "triggerDisableCompletenessStatusChip": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0Summary.disableCompletenessStatusChip"
+                } ]
+            }
+        },
+        "getPropertiesForPerspective": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": [
+                    { "uid": "{{parameters.response}}" }
+                ],
+                "attributes": ["*"]
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "Cfg0ConfiguratorPerspective",
+                        "properties": [
+                            {
+                                "name": "cfg0ConfigurationModules"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "rootModuleHasChildren":"{{function:checkRootModuleHasChildren}}"
+            },
+            "events": {
+                "success":[
+                    {
+                        "name":"Pca0FullScreenConfiguration.showModulesInfo"
+                    }
+                ]
+            },
+            "deps":"js/fullScreenConfigurationService"
+        },
+        "closeAllDialogs": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "Pca0Settings.closeDialog"
+                    },
+                    {
+                        "name": "Pca0SaveVariant.closePanel"
+                    }
+                ]
+            }
+        },
+        "updateVCVLayoutSettings": {
+            "actionType": "JSFunction",
+            "method": "vcvViewSettings",
+            "inputData": {
+                "eventData":"{{parameters.eventData}}"
+            },
+            "outputData": {
+                "vcvLayoutSettings": "",
+                "fscState.isLayoutResize": true
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "Pca0SingleSVRFscShowGridViewEventAction": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "Pca0FullScreenConfiguration.Pca0SingleSVRFscShowGridViewDirectly",
+                        "condition": "conditions.isNotDirty"
+                    },
+                    {
+                        "name": "Pca0FullScreenConfiguration.Pca0SingleSVRFscShowGridViewConfirmSwitching",
+                        "condition": "conditions.isDirty"
+                    }
+                ]
+            }
+        },
+        "Pca0SingleSVRFscShowGridView": {
+            "actionType": "JSFunction",
+            "method": "toggleSingleSVRView",
+            "inputData": {
+                "singleSVRViewMode": "{{props.subPanelContext.singleSVRViewMode}}",
+                "isListView": false
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "toggleSelectionSummary":{
+            "actionType": "JSFunction",
+            "method": "toggleSelectionSummary",
+            "inputData": {
+                "isSelectionSummaryOpened":"{{data.isSelectionSummaryOpened}}",
+                "isSelectionSummaryOpenedFromChip": "{{data.isSelectionSummaryOpenedFromChip}}"
+            },
+            "outputData": {
+                "isSelectionSummaryOpened":"isSelectionSummaryOpened",
+                "isSelectionSummaryOpenedFromChip": "isSelectionSummaryOpenedFromChip"
+            },
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "openSelectionSummaryFromChip": {
+            "actionType": "JSFunction",
+            "method": "toggleSelectionSummary",
+            "inputData": {
+                "isSelectionSummaryOpened": "{{data.isSelectionSummaryOpened}}",
+                "isSelectionSummaryOpenedFromChip": true
+            },
+            "outputData": {
+                "isSelectionSummaryOpened":"isSelectionSummaryOpened",
+                "isSelectionSummaryOpenedFromChip": "isSelectionSummaryOpenedFromChip"
+            },
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "updateStalenessFlagForSelectionSummary": {
+            "actionType": "JSFunction",
+            "method": "updateStalenessFlagForSelectionSummary",
+            "inputData": {
+                "isStale": "{{parameters.isStale}}"
+            },
+            "outputData": {
+                "isStale": ""
+            },
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "resetPerspective": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "inputData": {
+                "input": "{{function:getResetPerspectiveInput}}"
+            },
+            "outputData": {
+                "soaResponseApplySettings": ""
+            },
+            "events": {
+                "failure": [ {
+                    "name": "Pca0FullScreenConfiguration.processPartialError",
+                    "eventData": {
+                        "ServiceData": "{{data.soaResponseApplySettings.ServiceData}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "clearAllSelectionsEvent": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearAllSelectionsFromContext"
+                },
+                {
+                    "action": "clearAllSelectionsInFeaturesEvent"
+                },
+                {
+                    "action": "clearAllSelectionsInScopesEvent"
+                }
+            ]
+        },
+        "clearAllSelectionsFromContext": {
+           "actionType": "JSFunction",
+            "method": "clearAllSelectionsFromContext",
+            "deps": "js/configuratorUtils"
+        },
+        "clearAllSelectionsInScopesEvent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "Pca0Scopes.clearAllViolations"
+                } ]
+            }
+        },
+        "clearAllSelectionsInFeaturesEvent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                    "name": "Pca0Features.clearAllSelections"
+                } ]
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0Features.allSelectionsCleared"
+                } ]
+            }
+        },
+        "clearSystemSelectionsInManualModeEvent": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearSystemSelectionsInManualModeFromContext"
+                },
+                {
+                    "action": "clearSystemSelectionsInManualModeInFeaturesEvent"
+                }
+            ]
+        },
+        "clearSystemSelectionsInManualModeFromContext": {
+            "actionType": "JSFunction",
+             "method": "clearSystemSelectionsFromSelectionsMap",
+             "inputData": {
+                "fscState": "{{data.atomicDataRef.fscState}}"
+             },
+             "deps": "js/configuratorUtils"
+         },
+        "clearSystemSelectionsInManualModeInFeaturesEvent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0Features.clearSystemSelectionsInManualMode"
+                } ]
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0FullScreenSummary.updateCompletenessStatusAndViolations",
+                    "eventData": {
+                        "CompletenessStatus": { "criteriaStatus": [] }
+                    }
+                },
+                {
+                    "name": "Pca0Features.SystemSelectionsInManualModeCleared"
+                } ]
+            }
+        },
+        "createVariantRuleFromHostedConfigurator": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Core-2012-10-DataManagement",
+            "method": "createRelateAndSubmitObjects",
+            "inputData": {
+                "inputs": "{{function:getCreateVariantRuleInputHostedConfigurator}}"
+            },
+            "outputData": {
+                "variantRule": "{{function:getCreatedVariantRule}}",
+                "ServiceData": "ServiceData"
+            },
+            "events": {
+                "failure": [ {
+                    "name": "Pca0FullScreenConfiguration.processPartialError",
+                    "eventData": {
+                        "ServiceData": "{{data.ServiceData}}"
+                    }
+                },
+                {
+                    "name": "Pca0FullScreenConfiguration.hostSaveConfigurationComplete",
+                    "eventData": {
+                        "queryStatus": "failed"
+                    }
+                } ]
+            },
+            "deps": "js/configuratorUtils"
+        },
+        "setExpressionHostedConfigurator": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "policy": {
+                "types": "{{function:getPropertyPolicyForVCV}}",
+                "override":true
+            },
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{function:getConfigPerspective}}",
+                    "selectedContext": "{{function:getSelectionForVariantContext}}",
+                    "activeVariantRules": "{{function:getActiveVariantRuleForSettingExpression}}",
+                    "scopes": [ "{{ctx.fscContext.currentScope ? ctx.fscContext.currentScope : ''}}" ],
+                    "selectedExpressions": "{{function:convertSelectedExpressionJsonObjectToString}}",
+                    "payloadStrings": "{{ctx.fscContext.payloadStrings}}",
+                    "requestInfo": {
+                        "requestType": [ "createUpdateVariantRule" ],
+                        "configurationControlMode": [ "{{function:getConfigurationMode}}" ],
+                        "profileSettings": [ "{{function:getProfileSettingsForFsc}}" ],
+                        "attachVariantRuleToContent": [ "false" ],
+                        "ruleDateTranslationMode": [ "{{ctx.fscContext.appliedSettings.ruleDateTranslationMode === undefined ? \"\" : ctx.fscContext.appliedSettings.ruleDateTranslationMode}}" ],
+                        "expressionExpandedState": [ "{{function:getExpressionExpandedState}}" ]
+                    }
+                }
+            },
+            "outputData": {
+                "response":"",
+                "variantRuleVMO": "{{function:getVariantRuleVMO}}",
+                "ServiceData": "ServiceData"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0SaveVariant.resetDirtyFlag",
+                        "eventData": {
+                            "variantRuleVMO": "{{data.variantRuleVMO}}",
+                            "variantContext": "fscContext"
+                        }
+                    },
+                    {
+                        "name": "Pca0FullScreenConfiguration.hostSaveConfigurationComplete",
+                        "eventData": {
+                            "svrPersistentUid": "{{function:getSVRPersistentUid}}",
+                            "queryStatus": "success"
+                        }
+                    }
+                ],
+                "failure": [ {
+                    "name": "Pca0FullScreenConfiguration.processPartialError",
+                    "eventData": {
+                        "ServiceData": "{{data.ServiceData}}"
+                    }
+                },
+                {
+                    "name": "Pca0FullScreenConfiguration.hostSaveConfigurationComplete",
+                    "eventData": {
+                        "queryStatus": "failed"
+                    }
+                } ]
+            },
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "createOrUpdateVariantRuleFromHostedConfigurator": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "createVariantRuleFromHostedConfigurator",
+                    "condition": "parameters.eventData.actionType === 'create'"
+                },
+                {
+                    "action": "setExpressionHostedConfigurator"
+                }
+            ]
+        }
+    },
+    "data": {
+        "fscState": {
+            "initialValues": {
+                "completenessStatus": "",
+                "isCompletenessStatusChipEnabled": true,
+                "violationSeverity": "",
+                "isSwitchingFromGridToListView": false,
+                "variantRuleDirty": false,
+                "guidedMode": true,
+                "isManualConfiguration": false,
+                "isHorizontalLayout": true,
+                "isLayoutResize": false,
+                "treeDisplayMode": false,
+                "isGridDirty": false,
+                "flagLoadInGuidedMode": false,
+                "isValidationInProgress": false,
+                "savedVariant": false,
+                "unloadedVariant": false,
+                "violationMessages": "",
+                "showModuleHierarchy": false
+            },
+            "meta": {}
+        },
+        "variantRuleData": {
+            "initialValues": {
+                "isExpressionNonGridable": false,
+                "initialVariantRule": {},
+                "variantRulesToLoad": [],
+                "configPerspective": {},
+                "defaultConfigPerspective": {},
+                "useDefaultConfigPerspective": true,
+                "newVariantCreationState": "idle"
+            },
+            "meta": {
+                "initialVariantRule": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "variantRulesToLoad": {
+                    "field": "true",
+                    "type": "ARRAY"
+                },
+                "defaultConfigPerspective": {
+                    "field": "false",
+                    "type": "OBJECT"
+                },
+                "configPerspective": {
+                    "field": "false",
+                    "type": "OBJECT"
+                }
+            }
+        },
+        "rootModuleHasChildren":true,
+        "isSelectionSummaryOpened": false,
+        "isSelectionSummaryOpenedFromChip": false,
+        "isStale": false,
+        "isModuleConfiguredOut": false
+    },
+    "conditions": {
+        "isNewVariantCreatedInCreationState": {
+            "expression": "data.variantRuleData.newVariantCreationState === 'creating'"
+        },
+        "isFscContext": {
+            "expression": "ctx.fscContext !== undefined"
+        },
+        "CfgHorizontalLayout": {
+            "expression": "data.fscState.isHorizontalLayout"
+        },
+        "CfgLayoutWithSummary": {
+            "expression": "ctx.fscContext && (ctx.fscContext.showSummary === undefined || ctx.fscContext.showSummary)"
+        },
+        "isDirty": {
+            "expression": "data.fscState.variantRuleDirty"
+        },
+        "isDirtyAndRuleLoaded": {
+            "expression": "data.fscState.variantRuleDirty && (ctx.fscContext.initialVariantRule.length === 1 || ctx.fscContext.initialVariantRule.uid !== undefined)"
+        },
+        "isDirtyAndNoRuleLoaded": {
+            "expression": "data.fscState.variantRuleDirty && (ctx.fscContext.initialVariantRule.length === 0 || ctx.fscContext.initialVariantRule.uid === undefined)"
+        },
+        "isNotDirty": {
+            "expression": "data.fscState.variantRuleDirty === false"
+        },
+        "isFscInListView": {
+            "expression": "ctx.fscContext === undefined || ctx.fscContext !== undefined && data.fscState.treeDisplayMode === false"
+        },
+        "isSwitchingFromGridView": {
+            "expression": "data.fscState.isSwitchingFromGridToListView"
+        },
+        "areNotCachedDefaultSettings": {
+            "expression": "data.variantRuleData.useDefaultConfigPerspective && data.variantRuleData.defaultConfigPerspective.uid === undefined"
+        },
+        "isSingleSVRLoaded": {
+            "expression": "data.variantRuleData.variantRulesToLoad.length === 1"
+        },
+        "isReloadingWithAppliedSVR": {
+            "expression": "ctx.fscContext.currentAppliedVRs !== undefined && ctx.fscContext.currentAppliedVRs[ 0 ] !== undefined && ctx.fscContext.currentAppliedVRs.length === 1"
+        },
+        "isPWAVariantsTableNotInEditModeAndNotInCreationState": {
+            "expression": "conditions.isPWAVariantsTableNotInEditMode && !conditions.isNewVariantCreatedInCreationState"
+        },
+        "isPWAVariantsTableNotInEditMode": {
+            "expression": "ctx.TABLE_CONTEXT._editing !== true && (subPanelContext.activeTab.data.isVCVOpenedFromConfigurator || subPanelContext.isVCVOpenedFromConfigurator)"
+        },
+        "isOpenedFromConfiguratorCtx": {
+            "expression": "props.subPanelContext.context.clientScopeURI === 'Pca0VariantRule'"
+        },
+        "isPWAVariantsTableInEditModeAndNotInCreationState": {
+            "expression": "conditions.isPWAVariantsTableInEditMode && !conditions.isNewVariantCreatedInCreationState"
+        },
+        "isPWAVariantsTableInEditMode": {
+            "expression": "ctx.TABLE_CONTEXT._editing && (subPanelContext.activeTab.data.isVCVOpenedFromConfigurator || subPanelContext.isVCVOpenedFromConfigurator)"
+        },
+        "isFullScreen": {
+            "expression": "props.subPanelContext.fullScreenState.value"
+        },
+        "isMultiLevelSVRSelectedInVariants": {
+            "expression": "props.subPanelContext.context.clientScopeURI === 'Pca0VariantRule' && conditions.isProductHierarchyDepth && data.fscState.showModuleHierarchy"
+        },
+        "isProductHierarchyDepth": {
+            "expression": "ctx.fscContext.appliedSettings.configSettings.props.pca0ProductHierarchyDepth !== undefined && ctx.fscContext.appliedSettings.configSettings.props.pca0ProductHierarchyDepth.dbValues[0] !== '1'"
+        },
+        "shouldShowConfigurationModules": {
+            "expression": "(!conditions.isVCVOpenedFromConfigurator && data.fscState.showModuleHierarchy && (conditions.isProductHierarchyDepth && data.rootModuleHasChildren)) || conditions.isMultiLevelSVRSelectedInVariants"
+        },
+        "isConfigurationModuleHierarchyEmpty": {
+            "expression": "ctx.fscContext.configurationModuleHierarchy === undefined || ctx.fscContext.configurationModuleHierarchy === ''"
+        },
+        "isFirstCallOnRootNodeInModularConfig": {
+            "expression": "conditions.isProductHierarchyDepth && conditions.isConfigurationModuleHierarchyEmpty && data.firstGetNextExecuted === 1"
+        },
+        "doesRootModuleHaveChildren": {
+            "expression": "!data.rootModuleHasChildren && ctx.fscContext.appliedSettings.configSettings.props.pca0ProductHierarchyDepth !== undefined && ctx.fscContext.appliedSettings.configSettings.props.pca0ProductHierarchyDepth.dbValues[0] !== '1'"
+        },
+        "showGroupsAsTab": {
+            "expression": "data.vcvLayoutSettings.showGroupsAsTab"
+        },
+        "shouldShowSelectionSummary": {
+            "expression": "data.isSelectionSummaryOpened"
+        },
+        "isModuleConfiguredOut": {
+            "expression": "data.isModuleConfiguredOut"
+        }
+    },
+    "functions": {
+        "getSelectionForVariantContext": {
+            "functionName": "getSelectionForVariantContext",
+            "parameters": [ "fscContext", "{{props.subPanelContext}}" ]
+        },
+        "getExpressionExpandedState": {
+            "functionName": "getExpressionExpandedState"
+        },
+        "getConfigurationMode": {
+            "functionName": "getConfigurationMode",
+            "parameters": [ "fscContext" ]
+        },
+        "getProfileSettingsForFsc": {
+            "functionName": "getProfileSettingsForFsc"
+        },
+        "getActiveVariantRules": {
+            "functionName": "getActiveVariantRules",
+            "parameters": [ "{{data.atomicDataRef.variantRuleData}}" ]
+        },
+        "getConfigPerspective": {
+            "functionName": "getConfigPerspective",
+            "parameters": [ "{{data.atomicDataRef.variantRuleData}}" ]
+        },
+        "getFscConfigPerspective": {
+            "functionName": "getFscConfigPerspective",
+            "parameters": [ "{{data.atomicDataRef.variantRuleData}}" ]
+        },
+        "initIncompleteFamiliesInfo": {
+            "functionName": "initIncompleteFamiliesInfo"
+        },
+        "convertSelectedExpressionJsonObjectToString": {
+            "functionName": "convertSelectedExpressionJsonObjectToString",
+            "parameters": [ "{{ctx.fscContext.selectedExpressions}}" ]
+        },
+        "initSettings": {
+            "functionName": "initSettings",
+            "parameters": [ "{{data.atomicDataRef.variantRuleData}}" ]
+        },
+        "setFirstGetNextExecuted": {
+            "functionName": "setNextExecutedFlag",
+            "parameters": [ "{{data.firstGetNextExecuted}}" ]
+        },
+        "getPopulateConfigurationForProductHierarchyFlag": {
+            "functionName": "getPopulateConfigurationForProductHierarchyFlag",
+            "parameters": [ "{{data.firstGetNextExecuted}}" ]
+        },
+        "checkRootModuleHasChildren": {
+            "functionName": "checkRootModuleHasChildren"
+        },
+        "getCurrentSelection": {
+            "functionName": "getCurrentSelection"
+        },
+        "getPropertyPolicyForVCV": {
+            "functionName": "getPropertyPolicyForVCV"
+        },
+        "getPropertyPolicy": {
+            "functionName": "getPropertyPolicy",
+            "parameters": [ "variantConfigurationView" ]
+        },
+        "getResetPerspectiveInput": {
+            "functionName": "prepareSOAInputForPerspectiveReset",
+            "parameters": [ "{{data.atomicDataRef.variantRuleData}}" ]
+        },
+       "getVariantRuleVMO": {
+            "functionName": "getVariantRuleVMO"
+        },
+        "getCreateVariantRuleInputHostedConfigurator": {
+            "functionName": "getCreateVariantRuleInputHostedConfigurator",
+            "parameters": [
+                "{{parameters.eventData}}"
+            ]
+        },
+        "getSVRPersistentUid": {
+            "functionName": "getSVRPersistentUid",
+            "parameters": [
+                "{{data.response}}"
+            ]
+        },
+        "getActiveVariantRuleForSettingExpression": {
+            "functionName": "getActiveVariantRuleForSettingExpression",
+            "parameters": [ "{{parameters.eventData}}", "{{data.variantRule}}" ]
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "onMountBatch",
+        "onUnmount": "destroyFSCConfiguration",
+        "onUpdate": [ {
+                "action": "initFSCConfigurationBatch",
+                "observers": [ "viewModel.atomicData.fscState.isSwitchingFromGridToListView" ]
+            },
+            {
+                "action": "fetchDefaultActiveSettingsBatch",
+                "observers": [ "viewModel.atomicData.variantRuleData.value.useDefaultConfigPerspective" ]
+            },
+            {
+                "action": "processCurrentVariantRuleChange",
+                "observers": [ "props.subPanelContext.context.occContext.productContextInfo.props.awb0CurrentVariantRules" ]
+            }
+        ]
+    },
+    "ctx": {
+        "fscContext": {
+            "type": "object"
+        },
+        "fscContext.showConfigurationModules": null
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+
+    "onEvent": [ {
+            "eventId": "Pca0Features.updateLayoutSettings",
+            "action": "updateVCVLayoutSettings",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.applyConfiguration",
+            "criteria": {
+                "conditionFlag": "false"
+            },
+            "action": "applyConfiguration"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.updateXrtContextAndSyncObjectAndReloadFullScreen",
+            "action": "updateXrtContextAndSyncObjectAndReloadFullScreen"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.updateVariantRule",
+            "cacheEventData": true,
+            "action": "updateFSCVariantRule"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.fetchActiveSettings",
+            "action": "fetchActiveSettings"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.fetchDefaultActiveSettings",
+            "action": "fetchDefaultActiveSettingsBatch"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.reload",
+            "condition": "!conditions.isDirty",
+            "action": "reloadFSCConfigurationBatch",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.reload",
+            "condition": "conditions.isDirty",
+            "action": "wipConfirmHandleSVRChange",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.reloadConfirmed",
+            "cacheEventData": true,
+            "action": "reloadFSCConfigurationBatch"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.syncAppliedSVR",
+            "condition": "!conditions.isDirty",
+            "action": "handleSVRChange"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.syncAppliedSVR",
+            "condition": "conditions.isDirty",
+            "action": "wipConfirmHandleSVRChange"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.syncAppliedSVRConfirmed",
+            "action": "handleSVRChange"
+        },
+        {
+            "eventId": "customVariantRule.variantRuleDirty",
+            "cacheEventData": true,
+            "action": "updateCommandVisibilityAndEditHandleContext"
+        },
+        {
+            "eventId": "Pca0LoadSavedVariants.unloadSVR",
+            "action": "handleSVRUnloadEvent"
+        },
+        {
+            "eventId": "Pca0LoadSavedVariants.handleSVRUnload",
+            "action": "handleSVRUnload"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.switchToGridView",
+            "cacheEventData": true,
+            "action": "showGridViewBatch"
+        },
+        {
+            "eventId": "Pca0LoadSavedVariants.wipConfirmSVRUnload",
+            "message": "wipConfirmSVRUnload"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.unloadSVR",
+            "action": "handleUnloadSVRInGridView",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.confirmSwitchingToTreeMode",
+            "message": "confirmSwitchingToTreeMode"
+        },
+
+        {
+            "eventId": "Pca0FullScreenConfiguration.getNextRequired",
+            "action": "getNextRequiredFamily"
+        },
+        {
+            "eventId": "Pca0SaveVariant.resetDirtyFlag",
+            "cacheEventData": true,
+            "action": "resetDirtyFlag"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.applyConfigModuleSelectionFromCfgExplorer",
+            "action": "applyConfigModuleSelection",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Settings.applySettings",
+            "action": "updateCreationStateAndConfigurationModulesPanelVisibility"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.updateConfigurationModulesPanelVisibility",
+            "action": "updateConfigurationModulesPanelVisibility"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.activeSettingsLoaded",
+            "action": "updateConfigurationModulesPanelVisibility"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.resetIncompleteFamiliesCache",
+            "action": "resetIncompleteFamiliesCache"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.CompletenessStatusStale",
+            "action": "handleCompletenessStatusStaleBatch"
+        },
+        {
+            "eventId": "Pca0FullScreenConfigurationContent.getPropertiesForPerspective",
+            "action": "getPropertiesForPerspective",
+            "inputArgs": {
+                "response": "{{eventData.configPerspectiveUid}}"
+            }
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.showModulesInfo",
+            "message": "showModulesInfo",
+            "condition": "conditions.doesRootModuleHaveChildren"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.closeAllDialogs",
+            "action": "closeAllDialogs"
+        },
+        {
+            "eventId": "Pca0FullScreenConfigurationContent.setCreationState",
+            "action": "updateCreationState",
+            "condition": "!conditions.isNewVariantCreatedInCreationState"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.Pca0SingleSVRFscShowGridViewConfirmSwitching",
+            "message": "Pca0SingleSVRFscShowGridViewConfirmSwitchingMessage"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.Pca0SingleSVRFscShowGridView",
+            "action": "Pca0SingleSVRFscShowGridViewEventAction"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.Pca0SingleSVRFscShowGridViewDirectly",
+            "action": "Pca0SingleSVRFscShowGridView"
+        },
+        {
+            "eventId": "Pca0SelectionSummary.toggle",
+            "action": "toggleSelectionSummary"
+        },
+        {
+            "eventId":"Pca0FullScreenConfiguration.openSelectionSummaryFromChip",
+            "action":"openSelectionSummaryFromChip"
+        },
+        {
+            "eventId": "Pca0Features.Pca0Expanded",
+            "action": "updateStalenessFlagForSelectionSummary",
+            "inputArgs": {
+                "isStale": false
+            }
+        },
+        {
+            "eventId": "customVariantRule.userSelectionChanged",
+            "action": "updateStalenessFlagForSelectionSummary",
+            "inputArgs": {
+                "isStale": true
+            }
+        },
+        {
+            "eventId": "Pca0Features.allSelectionsCleared",
+            "action": "updateStalenessFlagForSelectionSummary",
+            "inputArgs": {
+                "isStale": true
+            }
+        },
+        {
+            "eventId": "Pca0Features.SystemSelectionsInManualModeCleared",
+            "action": "updateStalenessFlagForSelectionSummary",
+            "inputArgs": {
+                "isStale": true
+            }
+        },
+        {
+            "eventId": "Pca0MultipleVariantsConfigurationWrapper.selectionChanged",
+            "action": "updateDataForSelectionChangeBatch"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.resetIsMounting",
+            "action": "resetIsMounting"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.resetPerspective",
+            "action": "resetPerspective"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.clearAllSelectionsInFsc",
+            "message": "confirmToClearAllSelections"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.clearSystemSelectionsInFsc",
+            "message": "confirmToClearSystemSelectionsInManualMode"
+        },
+        {
+            "eventId": "Pca0HostedConfigurator.saveVariantRule",
+            "action": "createOrUpdateVariantRuleFromHostedConfigurator",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+     ],
+    "messages": {
+        "confirmToClearAllSelections": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.clearAllSelections}}",
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}",
+                    "action": ""
+                },
+                {
+                    "option": "Clear",
+                    "text": "{{i18n.clear}}",
+                    "action": "clearAllSelectionsEvent"
+                }
+            ]
+        },
+        "confirmToClearSystemSelectionsInManualMode": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.clearSystemSelections}}",
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}",
+                    "action": ""
+                },
+                {
+                    "option": "Clear",
+                    "text": "{{i18n.clear}}",
+                    "action": "clearSystemSelectionsInManualModeEvent"
+                }
+            ]
+        },
+        "Pca0SingleSVRFscShowGridViewConfirmSwitchingMessage": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.switchToGridViewConfirmation}}",
+            "navigationOptions": [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}",
+                    "action": ""
+                },
+                {
+                    "option": "Switch",
+                    "text": "{{i18n.switch}}",
+                    "action": "Pca0SingleSVRFscShowGridView"
+                }
+            ]
+        },
+        "wipConfirmSVRUnload": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.unloadSaveConfirmation}}",
+            "messageTextParams": [
+                "{{ctx.fscContext.initialVariantRule.cellHeader1}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Save",
+                    "text": "{{i18n.saveCmd}}",
+                    "action": "handleSVRSaveUnload"
+                },
+                {
+                    "option": "Discard",
+                    "text": "{{i18n.discardCmd}}",
+                    "action": "handleSVRUnload"
+                }
+            ]
+        },
+        "displayErrorCode": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "confirmSwitchingToTreeMode": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.switchToTreeModeConfirmation}}",
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}",
+                    "action": ""
+                },
+                {
+                    "option": "Switch",
+                    "text": "{{i18n.switch}}",
+                    "action": "showGridView"
+                }
+            ]
+        },
+        "showModulesInfo": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.modulesNotFound}}"
+        }
+    },
+    "i18n": {
+        "cancel": [ "FullScreenConfigurationMessages" ],
+        "clear": [ "FullScreenConfigurationMessages" ],
+        "customConfigurationTitle": [ "FullScreenConfigurationMessages" ],
+        "reload": [ "FullScreenConfigurationMessages" ],
+        "syncSVRChangeConfirmation": [ "FullScreenConfigurationMessages" ],
+        "unloadSaveConfirmation": [ "FullScreenConfigurationMessages" ],
+        "saveCmd": [ "FullScreenConfigurationMessages" ],
+        "discardCmd": [ "FullScreenConfigurationMessages" ],
+        "switchToTreeModeConfirmation": [ "FullScreenConfigurationMessages" ],
+        "switch": [ "FullScreenConfigurationMessages" ],
+        "aw_single_select_message": [ "FullScreenConfigurationMessages" ],
+        "allowedRange": [ "FullScreenConfigurationMessages" ],
+        "modulesNotFound": [ "FullScreenConfigurationMessages" ],
+        "switchToGridViewConfirmation": [ "FullScreenConfigurationMessages" ],
+        "emptyConfigurationViewTitle": [ "FullScreenConfigurationMessages" ],
+        "emptyConfigurationViewHint": [ "FullScreenConfigurationMessages" ],
+        "clearAllSelections": [ "FullScreenConfigurationMessages"   ],
+        "clearSystemSelections": [ "FullScreenConfigurationMessages" ]
+    }
+}

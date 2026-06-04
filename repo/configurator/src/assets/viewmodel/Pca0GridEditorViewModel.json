@@ -1,0 +1,814 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-splm-table.directive",
+        "js/aw-toolbar.directive"
+    ],
+    "data": {
+        "clientScopeURI":"",
+        "columnConfigId":"",
+        "gridSelectionState": {
+            "initialValues": {
+                "selectionInfo": {},
+                "isFreeFormOptionValueSelected": false
+            },
+            "meta": {
+                "selectionInfo": {
+                    "type": "OBJECT",
+                    "field": "true"
+                },
+                "isFreeFormOptionValueSelected": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                }
+            }
+        }
+    },
+    "actions": {
+        "loadColumns": {
+            "actionType": "JSFunction",
+            "method": "loadGridColumns",
+            "inputData": {
+                "variabilityData": "{{props.variabilityData}}",
+                "gridDataProvider": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "vmGridSelectionState": "{{data.atomicDataRef.gridSelectionState}}",
+                "serverColumns": "{{parameters.eventData.serverColumns}}",
+                "gridEditorMode": "{{props.gridEditorMode}}",
+                "gridData": "{{props.pca0GridProps}}",
+                "gridSettings": "",
+                "gridOptions": "{{props.pca0GridOptions}}"
+            },
+            "outputData": {
+                "dataProviders.pca0GridTreeDataProvider.columnConfig": ""
+            },
+            "events": {
+                "success": [
+                    {
+                    "name": "Pca0Grid.refreshTreeAndHeaderData"
+                    }
+                ]
+            },
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "loadDataProvider": {
+            "actionType": "JSFunction",
+            "method": "loadGridDataProvider",
+            "inputData": {
+                "treeLoadInput": "{{data.treeLoadInput.parentNode}}",
+                "dataProvider": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "columnProvider": "{{data.columnProviders.treeColumnProvider}}",
+                "variabilityData": "{{props.variabilityData}}",
+                "gridProps": "{{props.pca0GridProps}}",
+                "gridEditorMode": "{{props.gridEditorMode}}",
+                "gridOptions": "{{props.pca0GridOptions}}"
+            },
+            "outputData": {
+                "gridTreeLoadResult": "result.gridTreeResult",
+                "dataProviders.pca0GridTreeDataProvider.objectSetUri": "result.objectSetUri"
+            },
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "refreshTreeAndHeaderData": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "refreshTreeData"
+                },
+                {
+                    "action": "refreshHeaderData"
+                }
+            ]
+        },
+        "refreshTreeData": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "pca0Grid.plTable.reload"
+                    }
+                ]
+            }
+        },
+        "refreshHeaderData": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0Grid.refreshHeader"
+                    }
+                ]
+            }
+        },
+        "updateGridSummaryAndHeight": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateNodeSummary"
+                },
+                {
+                    "action": "updateGridHeight"
+                }
+            ]
+        },
+        "updateNodeSummary": {
+            "actionType": "JSFunction",
+            "method": "updateNodeSummary",
+            "inputData": {
+                "viewModelTreeNode": "{{parameters.eventData}}",
+                "treeDataProvider": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "gridData": "{{props.pca0GridProps}}",
+                "gridEditorMode": "{{props.gridEditorMode}}"
+            },
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "updateGridHeight": {
+            "actionType": "JSFunction",
+            "method": "updateTopAndBottomTableHeight",
+            "inputData": {
+                "viewModelTreeNode": "{{parameters.eventData}}",
+                "isTopGrid": true,
+                "variabilityProps": "{{props.variabilityData}}"
+            },
+            "deps": "js/pca0ConstraintsDisplayService"
+        },
+        "updateAllNodeSummaries": {
+            "actionType": "JSFunction",
+            "method": "updateAllNodesSummary",
+            "inputData": {
+                "treeDataProvider": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "selectionMap": "{{props.pca0GridProps.value.businessObjectToSelectionMap}}",
+                "viewModelObjectMap": "{{props.pca0GridProps.viewModelObjectMap}}"
+            },
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "updateColWidth": {
+            "actionType": "JSFunction",
+            "method": "updateColumnWidth",
+            "inputData": {
+                "eventData": "{{parameters.eventData.newColumnWidth}}",
+                "treeDataProviders": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "variabilityData": "{{props.variabilityData}}"
+            },
+            "outputData": {
+                "dataProviders.pca0GridTreeDataProvider.columnConfig": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0Grid.refreshHeader"
+                    }
+                ]
+            },
+            "deps": "js/pca0GridSettingsService"
+        },
+        "addVariabilityToConstraintTree": {
+            "actionType": "JSFunction",
+            "method": "addVariabilityToConstraintTree",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}",
+                "targetDataProvider": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "gridData": "{{props.pca0GridProps}}",
+                "variabilityProps": "{{props.variabilityData}}"
+            },
+            "deps": "js/pca0AddVariabilityService"
+        },
+        "addRangeExpressionToConstraintTree": {
+            "actionType": "JSFunction",
+            "method": "addRangeExpressionToVariabilityTree",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}",
+                "targetDataProvider": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "gridData": "{{props.pca0GridProps}}",
+                "variabilityProps": "{{props.variabilityData}}",
+                "viewModelData": "{{data}}"
+            },
+            "deps": "js/pca0AddVariabilityService"
+        },
+        "initializeAddVariabilityDialogData": {
+            "actionType": "JSFunction",
+            "method": "initializeAddVariabilityDialogData",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}",
+                "dataProvider": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "gridData": "{{props.pca0GridProps.value}}",
+                "gridEditorMode": "{{props.gridEditorMode}}"
+            },
+            "deps": "js/pca0ConstraintsGridService"
+        },
+        "updateConstraintPropertiesInformation": {
+            "actionType": "JSFunction",
+            "method": "updateConstraintPropertiesInformation",
+            "inputData": {
+                "propertiesInfo": "{{parameters.eventData}}",
+                "treeDataProvider": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "variabilityData": "{{props.variabilityData}}",
+                "gridSettingsData": "{{props.gridSettingsData}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0Grid.refreshHeader"
+                    }
+                ]
+            },
+            "deps": "js/pca0ConstraintsGridService"
+        },
+        "updateDirtyVMOs": {
+            "actionType": "JSFunction",
+            "method": "updateDirtyVMOs",
+            "inputData": {
+                "treeDataProvider": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "selectionMap": "{{props.pca0GridProps.value.businessObjectToSelectionMap}}",
+                "eventData": "{{parameters.eventData.unsavedColumns}}"
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "addSplitColumnToGrid": {
+            "actionType": "JSFunction",
+            "method": "addSplitColumnToGrid",
+            "inputData": {
+                "splitColumnUID": "{{parameters.eventData.splitColumnUID}}",
+                "treeDataProvider": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "gridData": "{{props.pca0GridProps}}",
+                "variabilityData": "{{props.variabilityData}}",
+                "vmGridSelectionState": "{{data.atomicDataRef.gridSelectionState}}"
+            },
+            "outputData": {
+                "dataProviders.pca0GridTreeDataProvider.columnConfig": "treeColumnConfig"
+            },
+            "events": {
+                "success": [ {
+                        "name": "Pca0Grid.refreshHeader"
+                    },
+                    {
+                        "name": "Pca0Grid.colorifyHeaderCells"
+                    },
+                    {
+                        "name": "Pca0Grid.updateAllNodeSummaries"
+                    }
+                ]
+            },
+            "deps": "js/pca0ConstraintsDisplayService"
+        },
+        "addNewConstraintToGrid": {
+            "actionType": "JSFunction",
+            "method": "addNewConstraintToGrid",
+            "inputData": {
+                "constraints": "{{parameters.eventData.constraints}}",
+                "treeDataProvider": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "variabilityData": "{{props.variabilityData}}",
+                "gridData": "{{props.pca0GridProps}}",
+                "vmGridSelectionState": "{{data.atomicDataRef.gridSelectionState}}",
+                "gridEditorMode": "{{props.gridEditorMode}}"
+            },
+            "outputData": {
+                "dataProviders.pca0GridTreeDataProvider.columnConfig": "treeColumnConfig"
+            },
+            "events": {
+                "success": [ {
+                        "name": "Pca0Grid.refreshHeader"
+                    },
+                    {
+                        "name": "Pca0Grid.colorifyHeaderCells"
+                    },
+                    {
+                        "name": "Pca0ConstraintsGridEditor.newConstraintAddedToGrid",
+                        "eventData": {
+                            "gridID": "pca0Grid"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/pca0ConstraintsDisplayService"
+        },
+        "colorifyHeaderCells": {
+            "actionType": "JSFunction",
+            "method": "colorifyConstraintsHeaderCells",
+            "inputData": {
+                "variabilityProps": "{{props.variabilityData}}"
+            },
+            "deps": "js/pca0ConstraintsHeaderService"
+        },
+        "removeSplitColumns": {
+            "actionType": "JSFunction",
+            "method": "removeSplitColumns",
+            "inputData": {
+                "treeDataProvider": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "splitColumnsToRemove": "{{parameters.eventData.splitColumnsToRemove}}",
+                "gridData": "{{props.pca0GridProps}}"
+            },
+            "outputData": {
+                "dataProviders.pca0GridTreeDataProvider.columnConfig": "treeColumnConfig"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0Grid.refreshHeader"
+                    }
+                ]
+            },
+            "deps": "js/pca0ConstraintsGridService"
+        },
+        "revertDataProviderToBackupContent": {
+            "actionType": "JSFunction",
+            "method": "setPropertiesToValue",
+            "inputData": {
+                "treeDataProvider": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "reset": true,
+                "needToUpdateSummary": false,
+                "variabilityData": "{{props.pca0GridProps.value.businessObjectToSelectionMap}}",
+                "viewModelObjectMap": "{{props.pca0GridProps.viewModelObjectMap}}",
+                "gridEditorMode": "{{props.gridEditorMode}}",
+                "skipDataProviderUpdate": true
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0ConstraintsGridEditor.revertDataProviderToBackupContentComplete",
+                        "eventData": {
+                        "gridID": "pca0Grid"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/pca0GridAuthoringService"
+        },
+        "markEmptyColumns": {
+            "actionType": "JSFunction",
+            "method": "markEmptyColumns",
+            "inputData": {
+                "treeDataProvider": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "topGridSelectionMap": "{{props.pca0GridProps.value.businessObjectToSelectionMap}}",
+                "bottomGridSelectionMap": "{{parameters.eventData.bottomGridSelectionMap}}"
+            },
+            "outputData": {
+                "dataProviders.pca0GridTreeDataProvider.columnConfig": "treeColumnConfig"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0Grid.refreshHeader"
+                    }
+                ]
+            },
+            "deps": "js/pca0ConstraintsGridService"
+        },
+        "clearColumnSelections": {
+            "actionType": "JSFunction",
+            "method": "clearColumnSelections",
+            "inputData": {
+                "variabilityProps": "{{props.variabilityData}}",
+                "gridSettings": "{{props.gridSettingsData}}",
+                "treeDataProvider": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "gridData": "{{props.pca0GridProps}}",
+                "eventData": "{{parameters.eventData}}",
+                "gridEditorMode": "{{props.gridEditorMode}}"
+            },
+            "deps": "js/pca0ConstraintsGridService"
+        },
+        "pasteSelectionsOnColumn": {
+            "actionType": "JSFunction",
+            "method": "pasteSelectionsOnColumn",
+            "inputData": {
+                "variabilityProps": "{{props.variabilityData}}",
+                "gridSettings": "{{props.gridSettingsData}}",
+                "treeDataProvider": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "gridData": "{{props.pca0GridProps}}",
+                "eventData": "{{parameters.eventData}}",
+                "gridEditorMode": "{{props.gridEditorMode}}"
+            },
+            "deps": "js/pca0ConstraintsGridService"
+        },
+        "freezeColumnInTable":{
+            "actionType": "JSFunction",
+            "method": "freezeColumn",
+            "deps": "js/splmTableMenuUtility",
+            "inputData": {
+                "gridId": "pca0Grid",
+                "columnDef": "{{parameters.eventData.columnDef}}",
+                "isFreezeCommand": "{{parameters.eventData.isFreezeCommand}}",
+                "defaultColumnPinIndex": "{{parameters.eventData.defaultColumnPinIndex}}",
+                "gridContextDispatcher": "{{dataProviders.pca0GridTreeDataProvider.gridContextDispatcher}}"
+            }
+        },
+        "handleColumnArrange": {
+            "actionType": "JSFunction",
+            "method": "handleColumnArrange",
+            "inputData": {
+                "gridDataProvider": "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "eventData": "{{parameters.eventData}}"
+            },
+            "outputData": {
+                "dataProviders.pca0GridTreeDataProvider.columnConfig": ""
+            },
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "updateGridHeaderOrientationAndSize": {
+            "actionType": "JSFunction",
+            "method": "updateGridHeaderOrientationAndSize",
+            "inputData": {
+                "columnConfig": "{{data.dataProviders.pca0GridTreeDataProvider.columnConfig}}",
+                "useVerticalColumnHeader": "{{props.gridSettingsData.value.useVerticalColumnHeader}}",
+                "gridId": "pca0Grid",
+                "gridEditorMode": "{{props.gridEditorMode}}",
+                "gridOptions": "{{data.grids.pca0Grid.gridOptions}}"
+            },
+            "outputData": {
+                "dataProviders.pca0GridTreeDataProvider.columnConfig": ""
+            },
+            "deps": "js/pca0GridSettingsService"
+        },
+        "doInitActions": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "initGridOptions"
+                },
+                {
+                    "action": "getClientScopeURIAndColumnConfigId"
+                }
+            ]
+        },
+        "initGridOptions": {
+            "actionType": "JSFunction",
+            "method": "initializeEnableHeaderResizingOnGrid",
+            "inputData": {
+                "gridId": "pca0Grid",
+                "gridOptions": "{{data.grids.pca0Grid.gridOptions}}",
+                "useVerticalColumnHeader": "{{props.gridSettingsData.value.useVerticalColumnHeader}}"
+            },
+            "deps": "js/pca0ConfiguratorExplorerCommonUtils"
+        },
+        "getClientScopeURIAndColumnConfigId": {
+            "actionType": "JSFunction",
+            "method": "getClientScopeURIAndColumnConfigId",
+            "inputData": {
+                "gridOptions": "{{props.pca0GridOptions}}"
+            },
+            "outputData": {
+                "clientScopeURI": "result.clientScopeURI",
+                "columnConfigId": "result.columnConfigId"
+            },
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "columnArrangeBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "handleColumnArrange"
+                },
+                {
+                    "action": "doArrangeEvent"
+                }
+            ]
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{parameters.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI": "{{data.clientScopeURI}}",
+                        "columnConfigId": "{{data.columnConfigId}}",
+                        "columns": "{{function:getColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "outputData": {
+                "dataProviders.pca0GridTreeDataProvider.columnConfig": "{{function:postArrangeFunction}}"
+            },
+            "events": {
+                "success": [{
+                    "name": "Pca0Grid.postColumnArrange",
+                    "eventData": {
+                        "columnConfig": "{{data.dataProviders.pca0GridTreeDataProvider.columnConfig}}",
+                        "arrangeType": "saveAndLoad"
+                    }
+                } ]
+            }
+        },
+        "saveColumnConfigData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI": "{{data.clientScopeURI}}",
+                        "columnConfigId": "{{data.columnConfigId}}",
+                        "columns": "{{function:getColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "outputData": {},
+            "events": {
+                "success": [{
+                    "name": "Pca0Grid.postColumnArrange",
+                    "eventData": {
+                        "columnConfig": "{{data.dataProviders.pca0GridTreeDataProvider.columnConfig}}",
+                        "arrangeType": "save"
+                    }
+                } ]
+            }
+        },
+        "resetColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [ {
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos": [ {
+                            "clientScopeURI": "{{data.clientScopeURI}}",
+                            "operationType": "union",
+                            "typeNames": [],
+                            "columnsToExclude": []
+                        } ],
+                        "businessObjects": [ {} ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "dataProviders.pca0GridTreeDataProvider.columnConfig": "{{function:postResetFunction}}"
+            },
+            "events": {
+                "success": [{
+                    "name": "Pca0Grid.postColumnArrange",
+                    "eventData": {
+                        "columnConfig": "{{data.dataProviders.pca0GridTreeDataProvider.columnConfig}}",
+                        "arrangeType": "reset"
+                    }
+                }]
+            }
+        }
+    },
+    "dataProviders": {
+        "pca0GridTreeDataProvider": {
+            "action": "loadDataProvider",
+            "initializeAction": "loadDataProvider",
+            "columnMenuCommandsAnchor": "aw_pca0Grid_splmTable_columnMenu",
+            "commandsAnchor": "aw_pca0Grid_splmTable_commandsMenu",
+            "objectSetUri":"{{props.pca0GridOptions.clientScopeURI}}",
+            "gridId": "pca0Grid",
+            "inputData": {
+                "accessMode": "tree",
+                "topNodeUid": "variabilityTreeData"
+            },
+            "treeLoadResult": "{{data.gridTreeLoadResult}}"
+        }
+    },
+    "columnProviders": {
+        "treeColumnProvider": {
+            "columns": "{{data.columns}}",
+            "saveColumnAction": "saveColumnConfigData",
+            "saveColumnAndLoadAction": "saveColumnConfigLoadData",
+            "resetColumnAction": "resetColumnConfig"
+        }
+    },
+    "grids": {
+        "pca0Grid": {
+            "dataProvider": "pca0GridTreeDataProvider",
+            "columnProvider": "treeColumnProvider",
+            "addIconColumn": false,
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "useStaticFirstCol": true,
+                "headerHeight": "{{props.gridSettingsData.value.useVerticalColumnHeader ? 100 : ( props.gridEditorMode !== 'Cfg0AbsMatrixRule' && 40 )}}",
+                "enableSorting": false,
+                "enableExpansionStateCaching": false,
+                "isFilteringEnabled": true,
+                "enableCellHeaderSelection": true,
+                "enableColumnSelection": true,
+                "enableGridMenu": true
+            }
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "doInitActions",
+        "onUpdate": [
+            {
+                "action": "refreshTreeData",
+                "observers": [
+                "props.pca0GridProps.value.expandAll"
+                ]
+            }
+        ]
+    },
+    "conditions": {
+        "isVariabilityDataLoaded": {
+            "expression": "props.variabilityData.soaResponse !== undefined"
+        }
+    },
+    "functions": {
+        "postResetFunction": {
+            "functionName": "postResetUpdateColumnConfig",
+            "parameters": [
+                "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "{{data.atomicDataRef.gridSelectionState}}",
+                "ConfiguratorCtx",
+                "{{props.gridEditorMode}}"
+            ],
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "postArrangeFunction": {
+            "functionName": "postArrangeUpdateColumnConfig",
+            "parameters": [
+                "{{data.dataProviders.pca0GridTreeDataProvider}}",
+                "{{data.atomicDataRef.gridSelectionState}}",
+                "ConfiguratorCtx",
+                "{{props.gridEditorMode}}"
+            ],
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "getColumns": {
+            "functionName": "getGridServerColumns",
+            "parameters": [ "{{data.dataProviders.pca0GridTreeDataProvider.newColumns}}" ],
+            "deps": "js/pca0GridCommonUtils"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "Pca0Grid.loadColumns",
+            "action": "loadColumns",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Grid.reloadData",
+            "action": "refreshTreeData"
+        },
+        {
+            "eventId": "Pca0Grid.refreshTreeAndHeaderData",
+            "action": "refreshTreeAndHeaderData"
+        },
+        {
+            "eventId": "pca0Grid.plTable.toggleTreeNode",
+            "action": "updateGridSummaryAndHeight",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Grid.updateColumnWidth",
+            "action": "updateColWidth",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Constraints.addVariabilityToConstraintTree",
+            "action": "addVariabilityToConstraintTree",
+            "criteria": {
+                "isTopGrid": true
+            },
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "columnArrange",
+            "action": "columnArrangeBatch",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "criteria": {
+                "name": "pca0Grid"
+            }
+        },
+        {
+            "eventId": "Pca0AddRangeFeaturePanel.addRangeExpression",
+            "action": "addRangeExpressionToConstraintTree",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "criteria": {
+                "isTopGrid": true
+            }
+        },
+        {
+            "eventId": "editHandlerStateChange",
+            "action": "updateConstraintPropertiesInformation",
+            "criteria": {
+                "state": "saved",
+                "dataSource.context": "INFO_PANEL_CONTEXT"
+            },
+            "inputArgs": {
+                "eventData": "{{eventData.dataSource.atomicData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Grid.updateDirtyVMOs",
+            "action": "updateDirtyVMOs",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0ConstraintsGrid.addSplitColumnToGrid",
+            "action": "addSplitColumnToGrid",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0ConstraintsGrid.addNewConstraintToGrid",
+            "action": "addNewConstraintToGrid",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Grid.colorifyHeaderCells",
+            "action": "colorifyHeaderCells"
+        },
+        {
+            "eventId": "Pca0ConstraintsGrid.removeSplitColumns",
+            "action": "removeSplitColumns",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Grid.revertGridToBackupContent",
+            "action": "revertDataProviderToBackupContent"
+        },
+        {
+            "eventId": "Pca0Grid.markEmptyColumns",
+            "action": "markEmptyColumns",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Grid.performClearAction",
+            "action": "clearColumnSelections",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Grid.performPasteAction",
+            "action": "pasteSelectionsOnColumn",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Grid.performFreezeAction",
+            "action": "freezeColumnInTable",
+            "inputArgs":{
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Constraints.initializeAddVariabilityDialogData",
+            "action": "initializeAddVariabilityDialogData",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Grid.updateAllNodeSummaries",
+            "action": "updateAllNodeSummaries"
+        },
+        {
+            "eventId": "Pca0Grid.updateHeaderOrientation",
+            "action": "updateGridHeaderOrientationAndSize"
+        }
+    ],
+    "props": {
+        "pca0-grid-props": {
+            "type": "object"
+        },
+        "pca0-grid-options": {
+            "type": "object"
+        },
+        "variability-data": {
+            "type": "Object"
+        },
+        "grid-settings-data": {
+            "type": "Object"
+        },
+        "parent-data": {
+            "type": "Object"
+        },
+        "grid-editor-mode": {
+            "type": "String"
+        }
+    }
+}

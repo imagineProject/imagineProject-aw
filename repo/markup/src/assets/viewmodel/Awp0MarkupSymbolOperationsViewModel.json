@@ -1,0 +1,180 @@
+{
+    "schemaVersion" : "1.0.0",
+    "actions":
+    {
+        "showMarkupSymbolPanel":
+        {
+            "actionType": "JSFunctionAsync",
+            "method": "showMarkupSymbolPanel",
+            "inputData": {
+                "context": "{{subPanelContext}}"
+            },
+            "outputData": {
+                "symbolList": "symbolList"
+            },
+            "deps": "js/Awp0MarkupService"
+        },
+        "symbolSizeChanged":
+        {
+            "actionType": "JSFunction",
+            "method": "setSymbolSize",
+            "inputData": {
+                "list": "{{data.sizeValue.dbValue}}"
+            },
+            "deps": "js/Awp0MarkupService"
+        },
+        "symbolFilterChanged":
+        {
+            "actionType": "JSFunction",
+            "method": "symbolFilterChanged",
+            "inputData": {
+                "text": "{{data.symbolFilter.dbValue}}"
+            },
+            "outputData": {
+                "symbolList": "symbolList"
+            },
+            "deps": "js/Awp0MarkupService"
+        },
+        "getSelectedSymbolDetails":
+        {
+            "actionType": "JSFunction",
+            "method": "getSelectedSymbolDetails",
+            "inputData": {
+                "list": "{{data.symbolList}}",
+                "ctx": "{{ctx}}"
+            },
+            "outputData": {
+                "selectedSymbols": "selectedSymbols",
+                "symbolGroup.dbValue": "symbolGroup",
+                "symbolGroup.uiValue": "symbolGroup",
+                "symbolName.dbValue": "symbolName"
+            },
+            "deps": "js/Awp0MarkupService"
+        },
+        "publishSymbols":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Markup-2022-06-Markup",
+            "method": "processMarkups",
+            "inputData": {
+                "baseObject": "{{data.eventData.baseObject}}",
+                "action": "{{data.eventData.action}}",
+                "version": "{{data.eventData.version}}",
+                "message": "{{data.eventData.message}}",
+                "markups": "{{data.eventData.markups}}"
+            },
+            "outputData":
+            {
+                "symbolList": "{{function:processSymbols}}"
+            },
+            "deps": "js/Awp0MarkupService"
+        }
+    },
+    "data":
+    {
+        "symbolFilter": {
+            "type": "STRING",
+            "dbValue": "",
+            "uiValue": "",
+            "requiredText": "{{i18n.filterSymbolGroupOrName}}"
+        },
+        "sizeValue":
+        {
+            "displayName": "{{i18n.symbolSize}}",
+            "type": "STRING",
+            "hasLov": "true",
+            "dbValue": "32",
+            "uiValue": "{{i18n.medium}}"
+        },
+        "sizeList":
+        {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.extraSmall}}",
+                    "propInternalValue": "16"
+                },
+                {
+                    "propDisplayValue": "{{i18n.small}}",
+                    "propInternalValue": "24"
+                },
+                {
+                    "propDisplayValue": "{{i18n.medium}}",
+                    "propInternalValue": "32"
+                },
+                {
+                    "propDisplayValue": "{{i18n.large}}",
+                    "propInternalValue": "48"
+                },
+                {
+                    "propDisplayValue": "{{i18n.extraLarge}}",
+                    "propInternalValue": "64"
+                }
+            ]
+        },
+        "symbolGroup": {
+            "displayName": "{{i18n.symbolGroup}}",
+            "type": "STRING",
+            "dbValue": "",
+            "uiValue": "",
+            "isSelectOnly": false
+        },
+        "symbolName":
+        {
+            "displayName": "{{i18n.symbolName}}",
+            "type": "STRING",
+            "dbValue": "",
+            "uiValue": "",
+            "requiredText": "{{i18n.enterSymbolName}}"
+        },
+        "selectedSymbols": [],
+        "symbolList": []
+    },
+    "dataProviders": {
+    },
+    "i18n":
+    {
+        "symbolGroup": [ "MarkupMessages" ],
+        "symbolName": [ "MarkupMessages" ],
+        "enterSymbolName": [ "MarkupMessages" ],
+        "symbolSize": [ "MarkupMessages" ],
+        "extraSmall": [ "MarkupMessages" ],
+        "small": [ "MarkupMessages" ],
+        "medium": [ "MarkupMessages" ],
+        "large": [ "MarkupMessages" ],
+        "extraLarge": [ "MarkupMessages" ],
+        "filterSymbolGroupOrName": [ "MarkupMessages" ]
+    },
+    "functions": {
+        "processSymbols": {
+            "functionName": "processSymbols",
+            "parameters": [
+                "{{data.response}}"
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "showMarkupSymbolPanel"
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "condition.expressionValueChanged",
+            "action": "symbolFilterChanged",
+            "criteria": {
+                "condition": "conditions.symbolFilterCondition"
+            }
+        },
+        {
+            "eventId": "awMarkupSymbolService.publishSymbols",
+            "action": "publishSymbols",
+            "cacheEventData": true
+        }
+    ],
+    "conditions": {
+        "symbolFilterCondition": {
+            "expression": "data.symbolFilter.dbValue",
+            "trackValues": true
+        }
+    }
+}

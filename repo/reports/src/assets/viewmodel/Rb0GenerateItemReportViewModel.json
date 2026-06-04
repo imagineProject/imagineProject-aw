@@ -1,0 +1,778 @@
+{
+    "schemaVersion" : "1.0.0",
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "data": {
+        "searchFilterTabModels": {
+            "isArray": "true",
+            "dbValue": [
+                {
+                    "tabKey": "results",
+                    "pageId": "results",
+                    "name": "Results",
+                    "recreatePanel": true,
+                    "priority": 0
+                },
+                {
+                    "tabKey": "filters",
+                    "pageId": "filters",
+                    "name": "Filters",
+                    "recreatePanel": true,
+                    "priority": 1
+                }
+            ]
+        },
+        "addPanelState": {
+            "initialValues": {
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {
+                "sourceObjects": {
+                "field": "true",
+                "type": "OBJECTARRAY"
+                },
+                "selectedTab": {
+                "field": "true",
+                "type": "OBJECT"
+                }
+            }
+        },
+        "typeFilter": {
+            "type": "STRING",
+            "dbValue": "{{props.subPanelContext.selectionData.selected[0].props.rd_class.dbValues[0]}}"
+        },
+        "selectionMode": "single",
+        "selectStyleSheet":
+        {
+            "displayName": "{{i18n.selectStyleSheet}}",
+            "type": "STRING",
+            "hasLov": true
+        },
+        "runReportAsync":
+        {
+            "displayName":"{{i18n.runReportAsync}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true"
+        },
+        "packedbom":
+        {
+            "displayName": "{{i18n.packedBOM}}",
+            "type": "STRING",
+            "hasLov": true
+        },
+        "revRuleProp": {
+            "displayName": "{{i18n.revisionRule}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "hasLov": true,
+            "labelPosition": "PROPERTY_LABEL_AT_TOP",
+            "dbValue": "{{ctx.userSession.props.awp0RevRule.displayValues[0]}}",
+            "uiValues": [
+                "{{ctx.userSession.props.awp0RevRule.displayValues[0]}}"
+            ],
+            "uiValue": "{{ctx.userSession.props.awp0RevRule.displayValues[0]}}",
+            "dispValue": "{{ctx.userSession.props.awp0RevRule.displayValues[0]}}"
+        },
+        "displayLocale":
+        {
+            "displayName": "{{i18n.displayLocale}}",
+            "type": "STRING",
+            "hasLov": true
+        },
+        "saveToDataSet":
+        {
+            "displayName": "{{i18n.saveToDataSet}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "",
+            "maxLength": "125"
+        },
+        "doLiveIntegration":
+        {
+            "displayName":"{{i18n.doLiveIntegration}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue":false
+        },
+        "process":
+        {
+            "displayName":"{{i18n.process}}"
+        },
+
+        "output":
+        {
+            "displayName":"{{i18n.output}}"
+        },
+
+        "methodName":
+        {
+            "displayName":"{{i18n.methodName}}"
+        }
+    },
+    "i18n":
+    {
+        "generateReport":
+        [
+            "ReportMessages"
+        ],
+        "selectStyleSheet":
+        [
+            "ReportMessages"
+        ],
+        "trueVal":
+        [
+            "ReportMessages"
+        ],
+        "falseVal":
+        [
+            "ReportMessages"
+        ],
+        "runReportAsync":
+        [
+            "ReportMessages"
+        ],
+        "packedBOM":
+        [
+            "ReportMessages"
+        ],
+        "revisionRule":
+        [
+            "ReportMessages"
+        ],
+        "properties":[
+            "ReportChartMessages"
+        ],
+        "customPanel":
+        [
+            "ReportMessages"
+        ],
+        "additionalParams":
+        [
+            "ReportMessages"
+        ],
+        "displayLocale":
+        [
+            "ReportMessages"
+        ],
+        "saveToDataSet":
+        [
+            "ReportMessages"
+        ],
+        "doLiveIntegration":
+        [
+            "ReportMessages"
+        ],
+        "process":
+        [
+            "ReportMessages"
+        ],
+        "output":
+        [
+            "ReportMessages"
+        ],
+        "methodName":
+        [
+            "ReportMessages"
+        ],
+        "showAsyncReportMessage":
+        [
+            "ReportMessages"
+        ],
+        "showDownloadReportMessage":
+        [
+            "ReportMessages"
+        ],
+        "showObjectLimitMessage":
+        [
+            "ReportMessages"
+        ],
+        "showVolumeErrorMessage":
+        [
+            "ReportMessages"
+        ],
+        "showAsyncConfigErrorMessage":
+        [
+            "ReportMessages"
+        ],
+        "showReportFailureMessage":
+        [
+            "ReportMessages"
+        ],
+        "reportsPage":
+        [
+            "ReportMessages"
+        ]
+    },
+    "dataProviders": {
+        "objectsDataProvider": {
+            "type": "Static",
+            "response": "{{data.addPanelState.sourceObjects}}",
+            "commandsAnchor": "Rb0_Reports_sourceObjectCellCommands"
+        }
+    },
+    "actions": {
+        "startLoadingObjectsAndSelectFirstItem": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getLanguageList",
+                    "condition": "!data.languageList"
+                },
+                {
+                    "action": "startLoadingObjects"
+                }
+            ]
+        },
+        "startLoadingObjects": {
+            "actionType": "dataProvider",
+            "method": "objectsDataProvider"
+        },
+        "updatePanelOnSelectionChange":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "loadReportCriteriaAndGetRevisionRuleAndOfficeStylesheet",
+                "condition": "conditions.hasGeneratePrivilege"
+            }, {
+                "action": "closePanel",
+                "condition": "!conditions.hasGeneratePrivilege"
+            }]
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        },
+                        "condition": "!subPanelContext.panelPinned"
+                    }
+                ]
+            }
+        },
+        "loadReportCriteriaAndGetRevisionRuleAndOfficeStylesheet": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadReportCriteria"
+                },
+                {
+                    "action": "getRevisionRuletoPopulateWidget",
+                    "condition": "subPanelContext.selectionReportDef.props.rd_parameters.dbValues[0]=='BOM_REPORT'"
+                },
+                {
+                    "action": "getOfficeTemplates",
+                    "condition": "data.isOfficeSource"
+                }
+            ]
+        },
+        "loadReportCriteria":{
+            "actionType": "JSFunction",
+            "method": "loadReportCriteria",
+            "inputData":
+            {
+                "context": {
+                    "selectedReport": "{{subPanelContext.selectionReportDef}}",
+                    "languageList": "{{data.languageList}}"
+                },
+                "data":{
+                    "i18n": "{{data}}",
+                    "selectStyleSheet": "{{data.selectStyleSheet}}",
+                    "process": "{{data.process}}",
+                    "output": "{{data.output}}",
+                    "methodName": "{{data.methodName}}"
+                },
+                "runReportAsync": "{{data.runReportAsync}}"
+            },
+            "outputData":{
+                "reportStylesheets": "stylesheets",
+                "languageList": "languageList",
+                "packedbombooleanValues": "packBOM",
+                "isOfficeSource": "isOfficeSource",
+                "runReportAsync": "runReportAsync",
+                "customProps": "customProps",
+                "customreportPropConfig": "customConfigProp"
+            },
+            "deps": "js/Awp0InContextReportsService"
+        },
+        "getRevisionRuletoPopulateWidget": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-LOV",
+            "deps": "js/Awp0InContextReportsService",
+            "method": "getInitialLOVValues",
+            "inputData": {
+                "initialData": {
+                    "filterData": {
+                        "filterString": "",
+                        "maxResults": 2000,
+                        "numberToReturn": 100,
+                        "order": 1,
+                        "sortPropertyName": ""
+                    },
+                    "lov": {
+                        "type": "unknownType",
+                        "uid": "AAAAAAAAAAAAAA"
+                    },
+                    "lovInput": {
+                        "boName": "UserSession",
+                        "operationName": "Create",
+                        "owningObject": {
+                            "uid": "{{ctx.userSession.uid}}",
+                            "type": "UserSession"
+                        },
+
+                        "propertyValues": {}
+
+                    },
+                    "propertyName": "awp0RevRule"
+                }
+
+            },
+            "outputData": {
+                "revRuleLovList": "{{function:getRevRuleLovListFromLovValues}}"
+
+            }
+        },
+        "getOfficeTemplates": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Awp0AdvancedSearch"
+                    },
+                    "inflateProperties": false,
+                    "saveColumnConfigData": {},
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0SavedQuerySearchProvider",
+                        "searchCriteria": {
+                            "queryName": "Items_ref_by_ReportDefinition",
+                            "searchID": "REPORTSOFFICESTYLESHEETS",
+                            "typeOfSearch": "ADVANCED_SEARCH",
+                            "utcOffset": 0,
+                            "ReportID": "{{subPanelContext.selectionReportDef.props.rd_id.dbValues[0]}}",
+                            "lastEndIndex": "0",
+                            "totalObjectsFoundReportedToClient": "0"
+                        }
+                    }
+                },
+                "1": {
+                    "types": [ {
+                        "name": "ExcelTemplate",
+                        "properties": [ {
+                                "name": "object_name",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "object_type",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Template",
+                        "properties": [ {
+                                "name": "object_name",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            },
+                            {
+                                "name": "object_type",
+                                "modifiers": [ {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                } ]
+                            }
+                        ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "reportStylesheets": "{{function:getOfficeStyleSheets}}"
+            }
+        },
+        "getLanguageList": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-04-LanguageInformation",
+            "method": "getLanguagesList",
+            "inputData": {
+                "scenario": "supportedLanguages"
+            },
+            "outputData": {
+                "languageList": "{{function:prepareLanguageList}}"
+            },
+            "deps": "js/Awp0InContextReportsService"
+        },
+        "generateReport": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "generateReportFromServer",
+                    "condition": "subPanelContext.selectionReportDef.props.rd_source.dbValues[0] !== 'Active Workspace' && ( subPanelContext.selectionReportDef.props.rd_type.dbValues[0] === '1' || subPanelContext.selectionReportDef.props.rd_type.dbValues[0] === '2')"
+                },
+                {
+                    "action": "fireOpenEventForGwt",
+                    "condition": "subPanelContext.selectionReportDef.props.rd_source.dbValues[0] === 'Active Workspace' && subPanelContext.selectionReportDef.props.rd_type.dbValues[0] === '1'"
+                }]
+        },
+        "generateReportFromServer": {
+            "actionType": "TcSoaService",
+            "serviceName": "Reports-2015-03-CrfReports",
+            "method": "generateReport",
+            "inputData":
+            {
+                "inputs":
+                [
+                    {
+                        "contextObjects": "{{function:getSelectedObjects}}",
+                        "rdTag": "{{subPanelContext.selectionReportDef}}",
+                        "stylesheetTag": "{{function:getStylesheetTag}}",
+                        "reportOptionsNames":"{{function:getReportOptionNames}}",
+                        "reportOptionsValues":"{{function:getReportOptionValues}}",
+                        "criteriaNames": "{{function:getCriteriaNames}}",
+                        "criteriaValues": "{{function:getCriteriaValues}}",
+                        "datasetName": "{{data.saveToDataSet.dbValue}}"
+                    }
+                ]
+            },
+
+            "outputData":
+            {
+                "m_async": "asyncFlagInfo",
+                "m_fileTicket": "transientFileTicketInfos[0].ticket",
+                "m_reportExtn": "{{function:getTicketExtension}}"
+            },
+
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "generateReport.processAsyncReport",
+                        "condition": "data.m_async === true"
+                    },
+                    {
+                        "name": "getIncontextReportPresenter.showHTMLReport",
+                        "condition": "data.m_async === false && data.m_reportExtn === 'html'"
+                    },
+                    {
+                        "name": "generateReport.openFile",
+                        "condition": "data.m_async === false && data.m_reportExtn !== 'html'"
+
+                    }
+                ],
+
+                "failure":
+                [
+                    {
+                        "name": "generateReport.openFile",
+                        "condition": "errorCode.code === 223201 || errorCode.code === 223036"
+                    }
+                ]
+            },
+
+            "actionMessages":
+            {
+                "success":
+                [
+                    {
+                        "message": "showDownloadReportMessage",
+                        "condition": "data.m_async === false && data.m_reportExtn !== 'html'"
+                    }
+                ],
+                "failure":
+                [
+                    {
+                        "message": "showObjectLimitMessage",
+                        "condition": "errorCode.code === 26032"
+                    },
+                    {
+                        "message": "showVolumeErrorMessage",
+                        "condition": "errorCode.code === 14043 || errorCode.code === 14112"
+                    },
+                    {
+                        "message": "showAsyncConfigErrorMessage",
+                        "condition": "errorCode.code === 214070"
+                    },
+                    {
+                        "message": "showExportFailureMessage",
+                        "condition": "errorCode.code === 515005"
+                    },
+                    {
+                        "message": "showReportFailureMessage",
+                        "condition": "errorCode.code !== 515005 && errorCode.code !== 14043 && errorCode.code !== 14112 && errorCode.code !== 223201 && errorCode.code !== 214070 && errorCode.code !== 223036 && errorCode.code !== 26032"
+                    }
+                ]
+            },
+
+            "deps": "js/Awp0InContextReportsService"
+        },
+        "fireOpenEventForGwt": {
+
+            "actionType": "JSFunction",
+            "method": "openFileInNewTab",
+            "inputData":
+            {
+                "vMO": "{{subPanelContext.searchState.pwaSelection[0]}}",
+                "fileTicket": "{{data.m_fileTicket}}",
+                "data": "{{data}}",
+                "panelContext": "{{subPanelContext}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        },
+                        "condition": "!subPanelContext.panelPinned"
+                    }
+                ]
+            },
+            "deps": "js/Awp0InContextReportsService"
+        },
+        "processAsyncReport": {
+            "actionType": "JSFunction",
+            "method": "processAsyncReport",
+            "inputData":
+            {
+                "data": "{{data}}"
+
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        },
+                        "condition": "!subPanelContext.panelPinned"
+                    }
+                ]
+            },
+            "deps": "js/Awp0InContextReportsService"
+        },
+        "openFile":
+        {
+            "actionType": "JSFunction",
+            "method": "openFile",
+            "inputData":
+            {
+                "fileTicket": "{{data.m_fileTicket}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        },
+                        "condition": "!subPanelContext.panelPinned"
+                    }
+                ]
+            },
+            "deps": "js/fmsUtils"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [ {
+            "action": "startLoadingObjectsAndSelectFirstItem",
+            "observers": [
+                "viewModel.atomicData.addPanelState.sourceObjects.length"
+            ]
+        }, {
+            "action": "updatePanelOnSelectionChange",
+            "observers": [
+                "props.subPanelContext.selectionReportDef.uid"
+            ]
+        }]
+    },
+    "conditions":
+    {
+        "hasGeneratePrivilege": {
+            "expression": "props.subPanelContext.selectionReportDef.type === 'ReportDefinition' && props.subPanelContext.selectionReportDef.props.rd_source.dbValues[0] !== 'TcRA' && !(props.subPanelContext.selectionReportDef.props.rd_source.dbValues[0] === 'Active Workspace' && props.subPanelContext.selectionReportDef.props.rd_type.dbValues[0] === '0')"
+        },
+        "showifBOM":
+        {
+            "expression": "subPanelContext.selectionReportDef.props.rd_parameters.dbValues[0]==='BOM_REPORT'"
+        },
+        "showifSourceIsTc":
+        {
+            "expression": "subPanelContext.selectionReportDef.props.rd_source.dbValues[0]=='Teamcenter'"
+        },
+        "showforOfficeTemplate":
+        {
+            "expression": "subPanelContext.selectionReportDef.props.rd_source.dbValues[0]=='Office Template'"
+        },
+        "showForCustomRD":
+        {
+            "expression": "subPanelContext.selectionReportDef.props.rd_type.dbValues[0]=='2'"
+        },
+        "isCriteriaAvailable":{
+            "expression": "data.addPanelState.sourceObjects.length > 0"
+        }
+
+    },
+    "functions":
+    {
+        "getRevRuleLovListFromLovValues":
+        {
+            "functionName": "getRevRuleLovListFromLovValues",
+            "parameters": [
+                "{{response}}"
+            ]
+        },
+        "getOfficeStyleSheets": {
+            "functionName": "getOfficeStyleSheets",
+            "parameters": [],
+            "deps": "js/Awp0InContextReportsService"
+        },
+        "prepareLanguageList": {
+            "functionName": "prepareLanguageList",
+            "parameters": []
+        },
+        "getSelectedObjects":
+        {
+            "functionName": "getSelectedObjects",
+            "parameters":
+            ["{{data.addPanelState.sourceObjects}}"]
+        },
+        "getStylesheetTag":
+        {
+            "functionName": "getStylesheetTag",
+            "parameters":
+            [
+                "{{data.selectStyleSheet.uiValue}}",
+                "{{subPanelContext.selectionReportDef}}"
+            ]
+        },
+        "getReportOptionNames":
+        {
+            "functionName": "getReportOptionNames",
+            "parameters":
+            [
+                "{{data}}",
+                "{{subPanelContext.selectionReportDef}}"
+            ]
+        },
+        "getReportOptionValues":
+        {
+            "functionName": "getReportOptionValues",
+            "parameters":
+            [
+                "{{data}}"
+            ]
+        },
+        "getCriteriaNames":
+        {
+            "functionName": "getCriteriaNames",
+            "parameters":
+            [
+                "{{data}}",
+                "{{subPanelContext.selectionReportDef}}"
+            ]
+        },
+        "getCriteriaValues":
+        {
+            "functionName": "getCriteriaValues",
+            "parameters":
+            [
+                "{{data}}"
+            ]
+        }
+    },
+    "onEvent":[
+        {
+            "eventId": "generateReport.processAsyncReport",
+            "action": "processAsyncReport"
+        },
+        {
+            "eventId": "getIncontextReportPresenter.showHTMLReport",
+            "action": "fireOpenEventForGwt"
+        },
+        {
+            "eventId": "generateReport.openFile",
+            "action": "openFile"
+        }
+    ],
+    "messages":
+    {
+        "showAsyncReportMessage":
+        {
+            "messageType": "INFO",
+            "messageText": "{{i18n.showAsyncReportMessage}}",
+            "messageTextParams": [
+                "{{data.addPanelState.sourceObjects[0].props.object_string.dbValues[0]}}"
+            ]
+        },
+        "showDownloadReportMessage":
+        {
+            "messageType": "INFO",
+            "messageText": "{{i18n.showDownloadReportMessage}}",
+            "messageTextParams": [
+                "{{subPanelContext.selectionReportDef.props.rd_name.uiValues[0]}}"
+            ]
+        },
+        "showObjectLimitMessage":
+        {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.showObjectLimitMessage}}"
+        },
+        "showVolumeErrorMessage":
+        {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.showVolumeErrorMessage}}"
+        },
+        "showAsyncConfigErrorMessage":
+        {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.showAsyncConfigErrorMessage}}"
+        },
+        "showExportFailureMessage":
+        {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.showExportFailureMessage}}",
+            "messageTextParams": [
+                "{{data.addPanelState.sourceObjects[0].props.object_string.dbValues[0]}}"
+            ]
+        },
+        "showReportFailureMessage":
+        {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.showReportFailureMessage}}",
+            "messageTextParams": [
+                "{{subPanelContext.selectionReportDef.props.rd_name.dbValues[0]}}"
+            ]
+        }
+    }
+}

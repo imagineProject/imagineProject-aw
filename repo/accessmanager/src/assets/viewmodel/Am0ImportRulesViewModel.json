@@ -1,0 +1,277 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "fileChangeAction": {
+            "actionType": "JSFunction",
+            "method": "setFileParameters",
+            "inputData": {
+                "fileName": "{{parameters.fileName}}",
+                "validFile": "{{parameters.validFile}}",
+                "fileNameNoExt": "{{parameters.fileNameNoExt}}",
+                "fileExt": "{{parameters.fileExt}}",
+                "formData": "{{parameters.formData}}"
+            },
+            "outputData": {
+                "fileName": "fileName",
+                "validFile": "validFile",
+                "fileNameNoExt": "fileNameNoExt",
+                "fileExt": "fileExt",
+                "formData": "formData"
+            },
+            "deps": "js/fileUploadUtils"
+        },
+        "Am0ImportRuleTreeAction": {
+            "actionType": "batchJob",
+            "steps": [ 
+                {
+                    "action": "startImportProgressBar"
+                },
+                {
+                    "action": "dummyAction"
+                },
+                {
+                    "action": "getTransientFileTicketsForUpload"
+                }
+            ]
+        }, 
+        "startImportProgressBar": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "progress.start"
+                    }
+                ]
+            }
+        },
+        "dummyAction": {
+            "actionType": "JSFunction",
+            "method": "dummyAction",
+            "outputData": {
+                "isEnabledCloseBtn": false
+            },
+            "deps": "js/Am0ImportExportService"
+        },            
+        "getTransientFileTicketsForUpload": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-01-FileManagement",
+            "method": "getTransientFileTicketsForUpload",
+            "inputData": {
+                "transientFileInfos": [ {
+                    "fileName": "{{data.fileName}}",
+                    "isBinary": false,
+                    "deleteFlag": false
+                } ]
+            },
+            "outputData": {
+                "fmsTicket": "transientFileTicketInfos[0].ticket"
+            },
+            "events": {
+                "success": [ {
+                    "name": "fmsTicket.generated"
+                } ]
+            }
+        },
+        "updateFormData":
+        {
+            "actionType": "JSFunction",
+            "method": "updateFormData",
+            "deps": "js/fileUploadUtils",
+            "inputData":
+            {
+                "formData": "{{data.formData}}",
+                "key": "fmsTicket",
+                "value": "{{data.fmsTicket}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "Am0ImportAMTree.fileTicketCreated"
+                    }
+                ]
+            }
+        },
+        "uploadFile": {
+            "actionType": "RESTService",
+            "serviceName": "",
+            "method": "POST",
+            "inputData": {
+                "request": {
+                    "method": "POST",
+                    "url": "{{Constants.fmsUrl}}",
+                    "headers": {
+                        "Content-type": "undefined"
+                    },
+
+                    "data": "{{data.formData}}"
+                }
+            },
+            "events": {
+                "success": [ 
+                    {
+                        "name": "Am0ImportAMTree.import"
+                    } 
+                ],
+                "failure":
+                [
+                    {
+                        "name": "Am0ImportAMTree.closeImportPopup"
+                    },
+                    {
+                        "name": "progress.end"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [ 
+                    {
+                        "message": "Am0FileUploadFailureMessage"
+                    }
+                ]
+            }
+        },
+        "importAmRuleTree": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2023-06-AwAccessManager",
+            "method": "importAMTree",
+            "inputData": {
+                "fileTicket": "{{data.fmsTicket}}"
+            },
+            "outputData": {
+                "importPartialErrors": "{{function:processPartialErrors}}",
+                "isEnabledCloseBtn": true
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                       "name": "primaryWorkarea.reset"
+                    },
+                    {
+                        "name": "Am0ImportAMTree.closeImportPopup"
+                    },
+                    {
+                        "name": "progress.end"
+                    }                                       
+                ],
+                "failure":
+                [
+                    {
+                        "name": "Am0ImportAMTree.closeImportPopup"
+                    },
+                    {
+                        "name": "progress.end"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "Am0ImportTreeSuccessMessage"
+                    }
+                ],
+                "failure": [ 
+                    {
+                        "condition": "data.importPartialErrors",
+                        "message": "Am0ImportFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/Am0ImportExportService"
+        },
+        "closeImportPopupWindow": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "inputData": {
+                "popupId": "{{data.popupId}}"
+            },
+            "deps": "js/popupService"
+        }
+    },
+    "data": {
+        "isEnabledCloseBtn": true
+    },
+    "messages": {
+        "Am0ImportFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.Am0ImportFailureMessage}}",
+            "messageTextParams": [
+                "{{data.fileName}}",
+                "{{data.importPartialErrors}}"
+            ]
+        },
+        "Am0ImportTreeSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.Am0ImportTreeSuccess}}",
+            "messageTextParams": [
+                "{{data.fileName}}"
+            ]
+        },
+        "importTreeInfoMessage": {
+            "messageType": "INFO",
+            "messageText":  "{{i18n.Am0ImportTreeInfoMessage}}"
+        },
+        "invalidFileError": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.invalidFileError}}",
+            "navigationOptions": [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}"
+                }
+            ]
+        },
+        "Am0FileUploadFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.Am0FileUploadFailureMessage}}",
+            "messageTextParams": [
+                "{{data.fileName}}"
+            ]
+        }
+    },
+    "i18n": {
+        "Am0ImportTreeTitle": [ "AccessmgmtConstants" ],
+        "Am0ImportAMTreeBtn": [ "AccessmgmtConstants" ],
+        "Am0ImportTreeInfoMessage": [ "AccessmgmtConstants" ],
+        "Am0ImportTreeSuccess": [ "AccessmgmtConstants" ],
+        "Am0ImportFailureMessage": [ "AccessmgmtConstants" ],
+        "Am0ImportRuleTree": [ "AccessmgmtConstants" ],
+        "Am0ClosePopup": [ "AccessmgmtConstants" ],
+        "invalidFileError": [ "AccessmgmtConstants" ],
+        "Am0FileUploadFailureMessage": [ "AccessmgmtConstants" ], 
+        "cancel": [ "AccessmgmtConstants" ]
+    },
+    "conditions": {
+        "showImportBtn": {
+            "expression": "data.fileName && data.fileName !== null && data.fileName != '' && data.isEnabledCloseBtn"
+        },
+        "isEnabledCloseBtn": {
+            "expression": "data.isEnabledCloseBtn"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "fmsTicket.generated",
+            "action": "updateFormData"
+        },
+        {
+            "eventId": "Am0ImportAMTree.import",
+            "action": "importAmRuleTree"
+        },
+        {
+            "eventId": "Am0ImportAMTree.fileTicketCreated",
+            "action": "uploadFile"
+        },
+        {
+            "eventId": "Am0ImportAMTree.closeImportPopup",
+            "action": "closeImportPopupWindow"
+        },
+        {            
+            "eventId": "invalidFileSelected",
+            "message": "invalidFileError"
+        }
+    ]
+}

@@ -1,0 +1,290 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-panel-body.directive",
+        "js/aw-default-cell.directive",
+        "js/aw-list.directive"
+    ],
+    "actions": {
+        "intialize": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadMergeCandidates",
+                    "condition": "conditions.isNotUsageBOM"
+                },
+                {
+                    "action": "getIncorporateRelationDetails"
+                }
+            ]
+        },
+        "mergeCandidateReload": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "callGetMergeCandidatesSoa"
+                },
+                {
+                    "action": "getIncorporateRelationDetails"
+                }
+            ]
+        },
+        "getIncorporateRelationDetails":{
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-09-DataManagement",
+            "method": "expandGRMRelationsForPrimary",
+            "deps": "js/Cm1RevertMergeUtils",
+            "inputData": {
+                "primaryObjects": "{{function:getTargetPrimaryObjectsInput}}",
+                "pref": {
+                    "expItemRev": true,
+                    "returnRelations": true,
+                    "info": [ {
+                        "relationTypeName": "Cm0Incorporates",
+                        "otherSideObjectTypes": ""
+                    } ]
+                }
+            },
+            "outputData": {
+                
+                "enableSkipRemainingButton": "{{function:processResponseForIncorporateRelation}}"
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "Cm0Incorporates",
+                        "properties": [
+                            {
+                                "name": "cm0MergeStatus"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "loadMergeCandidates":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadObjects"
+                },
+                {
+                    "action": "callGetMergeCandidatesSoa"
+                }
+            ]
+        },
+        "loadObjects": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/Cm1RevertMergeUtils",
+            "method": "loadObjects",
+            "outputData": {
+                "sourceObjectName": "sourceObjectName"
+            }
+        },
+        "callGetMergeCandidatesSoa": {
+            "actionType": "JSFunction",
+            "deps": "js/Cm1RevertMergeUtils",
+            "method": "callGetMergeCandidatesSoa",
+            "inputData": {
+                "data":"{{data}}"
+            },
+            "outputData": {
+                "showMergeAllButton": "showMergeAllButton"
+            }
+        },
+        "updateMergeCandidateProvider": {
+            "actionType": "JSFunction",
+            "method": "updateMergeCandidateProvider",
+            "inputData": {
+                "mergeCandidates": "{{data.mergeCandidates}}",
+                "data":"{{data}}"
+            },
+            "outputData": {
+                "showMergeAllButton": "showMergeAllButton"
+            },
+            "deps": "js/Cm1RevertMergeUtils"
+        },
+        "callGetMergeCandidatesSoaForUsgBomMerge": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "callGetMergeCandidatesSoaForUsgBomMerge",
+                        "condition": "props.subPanelContext.isUsageMerge"
+                    }
+                ]
+            }
+        },
+        "callMergeChangesSoa": {
+            "actionType": "TcSoaService",
+            "deps": "js/Cm1RevertMergeUtils",
+            "serviceName": "Internal-CmAws-2020-12-Changes",
+            "method": "mergeRedLineChanges",
+            "inputData": {
+                "mergeRedLineChangesInput": "{{function:getInputForMerge}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "getMergeCandidates.reload"
+                    },
+                    {
+                        "name": "updateStartFreshNavigation"
+                    }
+                ]
+            }
+        },
+        "launchMarkAsCompleteNotyMsg": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "cm1Merge.launchMarkAsCompMsg"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "markAsCompleteConfMsg"
+                    }
+                ]
+            }
+        },
+        "callMarkAsCompleteSoa": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2008-06-DataManagement",
+            "method": "createOrUpdateRelations",
+            "inputData": {
+                "infos": "{{function:getInputToCreateIncorporateRelation}}",
+                "sync": false
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "getMergeCandidates.reload"
+                    }
+                ]
+            },
+            "policy":
+            {
+                "types":
+                [
+                    {
+                        "name": "Cm0IncorporatesRelation",
+                        "properties":
+                        [
+                            {
+                                "name": "Cm0Incorporates"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Cm0Incorporates",
+                        "properties": [
+                            {
+                                "name": "cm0MergeStatus"
+                            }
+                        ]
+                    }
+                ]
+            },
+            
+
+           "deps": "js/Cm1RevertMergeUtils"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "intialize"
+    },
+    "messages": {
+        "markAsCompleteConfMsg": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.markAsComplete}}",
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancelText}}"
+                },
+                {
+                    "option": "Ok",
+                    "text": "{{i18n.okbuttonText}}",
+                    "action": "callMarkAsCompleteSoa"
+                }
+            ],
+            "messageTextParams": [
+                "{{data.sourceObjectName}}"
+            ]
+        } 
+    },
+    "onEvent": [
+        {
+            "eventId": "callGetMergeCandidatesSoaForUsgBomMerge",
+            "action": "loadMergeCandidates"
+        },
+        {
+            "eventId": "getMergeCandidates.retrieved",
+            "action": "updateMergeCandidateProvider"
+        },
+        {
+            "eventId": "getMergeCandidates.reload",
+            "action":  "mergeCandidateReload",
+            "condition": "conditions.isNotUsageBOM"
+        }
+    ],
+    "dataProviders": {
+        "mergeCandidatesDataProvider": {
+            "response": "{{data.mergeCandidates}}",
+            "totalFound": "{{data.totalFound}}"
+        }
+    },
+    "functions": {
+        "getInputForMerge": {
+            "functionName": "getInputForMerge",
+            "parameters": [
+                "{{data.dataProviders.mergeCandidatesDataProvider.viewModelCollection.loadedVMObjects}}"
+            ]
+        },
+        "getTargetPrimaryObjectsInput": {
+            "functionName": "getTargetPrimaryObjectsInput"
+        },
+        "processResponseForIncorporateRelation": {
+            "functionName": "processResponseForIncorporateRelation"
+        },
+        "getInputToCreateIncorporateRelation": {
+            "functionName": "getSoaToCreateIncorporateRelation"
+        }
+    },
+    "props": {
+        "sub-panel-context":{
+            "type":"object"
+        }
+    },
+    "i18n": {
+        "Cm1MergeCandidatesTitle": [
+            "ChangeMessages"
+        ],
+        "Cm1MergeAllTitle":[
+            "ChangeMessages"
+        ],
+        "markAsComplete":[
+            "ChangeMessages"
+        ],
+        "Cm1SkipRemaining":[
+            "ChangeMessages"
+        ],
+        "okbuttonText":[
+            "ChangeMessages"
+        ],
+        "cancelText":[
+            "ChangeMessages"
+        ]
+    },
+    "conditions":{
+        "isNotUsageBOM":{
+            "expression":"subPanelContext.isUsageMerge === false"
+        }
+    }
+}

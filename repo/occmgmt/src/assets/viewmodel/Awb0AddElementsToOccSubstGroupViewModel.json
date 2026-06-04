@@ -1,0 +1,175 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {},
+    "ctx": {
+        "selected": {
+            "type": "object"
+        },
+        "preferences": {
+            "type": "object"
+        }
+    },
+    "actions": {
+        "reveal": {
+            "actionType": "dataProvider",
+            "method": "performSearch"
+        },
+        "search": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient"
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awb0SubstitutesProvider",
+                        "searchCriteria": {
+                            "selectedElement": "{{props.subPanelContext.occContext.pwaSelection[0].uid}}",
+                            "substituteGroup": "{{data.ctx.selected.fnd0OccSubstGroupObj.uid}}",
+                            "usecase": "AddElementsToSubstituteGroup",
+                            "isOccSubstituteGroup":"true"
+
+                        },
+                        "searchFilterFieldSortType": "Priority"
+                    }
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}"
+            }
+        },
+        "addElementsToGroup": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getBOMLineForSelectedPWAElement"
+                },
+                {
+                    "action": "addPrimaryElementsToGroup"
+
+                }
+            ]
+        },
+        "getBOMLineForSelectedPWAElement": {
+            "actionType": "JSFunction",
+            "method": "getBackingObjectsSync",
+            "inputData": {
+                "viewModelObjects": "{{subPanelContext.context.occContext.pwaSelection}}"
+            },
+            "outputData": {
+                "selectedBOMLines": ""
+            },
+            "deps": "js/aceBackingObjectProviderService"
+        },
+        "addPrimaryElementsToGroup": {
+            "actionType": "TcSoaService",
+            "serviceName": "StructureManagement-2024-12-Substitutes",
+            "method": "deleteOrUpdateSubstituteGroups",
+            "inputData": {
+                "updateSubstituteGroups": [{
+                    "bomLineHavingSubstituteGroup": "{{data.selectedBOMLines[0]}}",
+                    "substituteGroup": "{{ctx.selected.fnd0OccSubstGroupObj}}",
+                    "updateSubstituteGroupBomLines": {
+                        "primaryBOMLinesToBeAdded":"{{function:getBOMLineForSelectedSWAElement}}"
+                    }
+                }]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "reloadsubstituteGroupTable"
+                    },
+                    {
+                        "name": "closePanelAfterAddingElementsToGroup"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "addPrimaryLineFailure"
+                    }
+                ]
+            },
+            "deps": "js/aceBackingObjectProviderService"
+        },
+
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "CREATE_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "lifecycleHooks": {},
+    "dataProviders": {
+        "performSearch": {
+            "action": "search",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "primaryWorkArea.selectionChangeEvent",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "substituteGroupDataProvider.selectionChangeEvent",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "closePanelAfterAddingElementsToGroup",
+            "action": "closePanel"
+        }
+    ],
+    "functions": {
+        "getPropertiesInput": {
+            "functionName": "getPropertiesInput",
+            "parameters": [
+                "{{ctx.selected.fnd0SubstituteGroupObj.uid}}",
+                "{{data.dataProviders.performSearch.selectedObjects}}"
+            ]
+        },
+        "getBOMLineForSelectedSWAElement": {
+            "functionName": "getBackingObjectsSync",
+            "parameters": [
+                "{{data.dataProviders.performSearch.selectedObjects}}"
+            ]
+        }
+    },
+    "messages": {
+        "addPrimaryLineFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n": {
+        "addElementBtn": [
+            "OccurrenceManagementConstants"
+        ],
+        "addElements": [
+            "OccurrenceManagementConstants"
+        ],
+        "toTitle": [
+            "OccurrenceManagementConstants"
+        ],
+        "Elements": [
+            "OccurrenceManagementConstants"
+        ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

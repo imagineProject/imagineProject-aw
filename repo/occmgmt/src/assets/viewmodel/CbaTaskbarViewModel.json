@@ -1,0 +1,452 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "ports": {
+        "occContextSrcTaskbar": {
+            "syncObject": {},
+            "onChangeAction": "updateSourceContext"
+        },
+        "occContextTrgTaskbar": {
+            "syncObject": {},
+            "onChangeAction": "updateTargetContext"
+        },
+        "updateCBAContextTaskbar": {
+            "syncObject": {},
+            "onChangeAction": "updateCBAContextInTaskBar"
+        },
+        "SrcTreeLoadedTaskbar":{
+            "syncObject": {},
+            "onChangeAction": "updateSrcTreeLoadedInTaskBar"
+        },
+        "TrgTreeLoadedTaskbar":{
+            "syncObject": {},
+            "onChangeAction": "updateTrgTreeLoadedInTaskBar"
+        },
+        "toggleSrcChange": {
+            "syncObject": {}
+        },
+        "toggleTrgChange":
+        {
+            "syncObject": {}
+        }
+    },
+    "data": {
+        "cbaTaskBarContext": {
+            "initialValues": {
+               "CBASrcContext":{},
+               "CBATrgContext":{},
+               "isSrcTreeLoaded": false,
+               "isTrgTreeLoaded": false,
+               "backgroundOption":false
+            },
+            "meta": {}
+        },
+        "cbaContext": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "runInBackground":{
+            "displayName":"{{i18n.runInBackground}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dispValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue":false
+        },
+        "isRedLineMode":{
+            "displayName": "{{i18n.showRedLines}}",
+            "type": "BOOLEAN",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "isEditable": "true",
+            "dbValue": "{{ctx.cadbomalignment.redLineMode.isChangeEnabled}}"
+        },
+        "alignmentCheckToggle": {
+            "displayName": "{{i18n.Awb0ShowAlignmentStatus}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": false,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+    "actions": {
+        "updateSourceContext": {
+            "actionType": "JSFunction",
+            "method": "updateTaskBarContext",
+            "inputData": {
+                "taskBarInfo": "{{fields.cbaTaskBarContext}}",
+                "srcContext": "{{ports.occContextSrcTaskbar.syncObject}}"
+            },
+            "outputData": {
+                "cbaTaskBarContext": ""
+            },
+            "deps": "js/cbaTaskbarCommandService"
+        },
+        "updateTargetContext": {
+            "actionType": "JSFunction",
+            "method": "updateTaskBarContext",
+            "inputData": {
+                "taskBarInfo": "{{fields.cbaTaskBarContext}}",
+                "trgContext": "{{ports.occContextTrgTaskbar.syncObject}}"
+            },
+            "outputData": {
+                "cbaTaskBarContext": ""
+            },
+            "deps": "js/cbaTaskbarCommandService"
+        },
+        "updateCBAContextInTaskBar": {
+            "actionType": "JSFunction",
+            "method": "updateTaskBarContext",
+            "inputData": {
+                "cbaContextTaskBar": "{{fields.cbaContext}}",
+                "cbaContext": "{{ports.updateCBAContextTaskbar.syncObject}}"
+            },
+            "outputData": {
+                "cbaContext": ""
+            },
+            "deps": "js/cbaTaskbarCommandService"
+        },
+        "clearFindAlignedIndicators": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "cbaContext.findAlignedContext.findAlignedInfo",
+                "value": {}
+            },
+            "deps": "js/appCtxService"
+        },
+        "executeAlignmentCheckBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearFindAlignedIndicators"
+                },
+                {
+                    "action": "updateAlignmentCheckStatus"
+                },{
+                    "action": "explodeEBOMStructureEvent",
+                    "condition": "conditions.canModeBeChanged"
+                },
+                {
+                    "action": "executeAlignmentCheck",
+                    "condition": "conditions.canAlignmentBeChecked"
+                }
+            ]
+        },
+        "updateBackgroundOptionOnTaskbarContext": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "deps": "js/occmgmtUtils",
+            "inputData": {
+                "path": "backgroundOption",
+                "value": "{{parameters.isAlignmentCheckInBackground}}",
+                "target": "{{data.cbaTaskBarContext}}"
+            }
+        },
+        "explodeEBOMStructureEvent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "cba.explodeEBOMStructure"
+                } ]
+            }
+        },
+        "executeAlignmentCheckPostPartCADUnAlign": {
+            "actionType": "JSFunction",
+            "method": "reExecuteAlignmentCheck",
+            "inputData": {
+                "objects":  "{{function:getAffectedObjectUIDPostPartCADAlignmentUpdate}}"
+            },
+            "deps": "js/CadBomOccAlignmentCheckService"
+        },
+
+        "executeAlignmentCheck": {
+            "actionType": "JSFunction",
+            "method": "executeAlignmentCheck",
+            "inputData":
+            {
+                "backgroundOption":"{{fields.cbaTaskBarContext.backgroundOption}}",
+                "isScroll" : false,
+                "taskBarInfo": "{{fields.cbaTaskBarContext}}"
+            },
+            "deps": "js/CadBomOccAlignmentCheckService"
+        },
+        "updateAlignmentCheckStatus": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "cbaContext.alignmentCheckContext.flags",
+                "value": {
+                    "alignmentCheckClicked": true,
+                    "alignmentCheckON": true
+                }
+            },
+            "deps": "js/appCtxService"
+        },
+        "handleRedLineToggleChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "handleSrcChange"
+                },
+                {
+                    "action": "handleTrgChange"
+                },
+                {
+                    "action": "updateRedLineState"
+                }
+            ]
+        },
+        "handleSrcChange": {
+            "actionType": "Sync",
+            "inputData": {
+                "port": "toggleSrcChange",
+                "syncObject":
+                {
+                    "isRedLineMode": "{{data.isRedLineMode.dbValue}}"
+                }
+            }
+        },
+        "handleTrgChange": {
+            "actionType": "Sync",
+            "inputData": {
+                "port": "toggleTrgChange",
+                "syncObject":
+                {
+                    "isRedLineMode": "{{data.isRedLineMode.dbValue}}"
+                }
+            }
+        },
+        "updateRedLineState": {
+            "actionType": "JSFunction",
+            "method": "updateRedLineState",
+            "inputData": {
+                "redLineToggleState": "{{data.isRedLineMode.dbValue}}",
+                "cbaContextTaskBar": "{{fields.cbaContext}}"
+            },
+            "deps": "js/cbaRedLineService"
+        },
+        "updateRedLineToggleState": {
+            "actionType": "JSFunction",
+            "method": "updateRedLineToggleState",
+            "inputData": {
+                "redLineToggleState": "{{data.isRedLineMode.dbValue}}"
+            },
+            "outputData": {
+                "isRedLineMode.dbValue":""
+            },
+            "deps": "js/cbaRedLineService"
+        },
+        "clearAlignmentCheckOnToggleOff": {
+            "actionType": "JSFunction",
+            "method": "clearAlignmentCheckStatus",
+            "inputData": {
+                "dataProviderActionType": "{{data.eventMap['productContextChangedEvent'].dataProviderActionType}}"
+            },
+            "deps": "js/CadBomOccAlignmentCheckService"
+        },
+        "updateAlignmentStatusOnUrlParams":{
+            "actionType": "JSFunction",
+            "method": "updateURLParams",
+            "deps": "js/CadBomAlignmentUtil",
+            "inputData": {
+                "parameter":{
+                    "acStatus": "{{data.alignmentCheckToggle.dbValue}}"
+                }
+            }
+        },
+        "alignmentCheckToggleAction":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateAlignmentStatusOnUrlParams"
+                },
+                {
+                    "action": "executeAlignmentCheckBatch",
+                    "condition":"data.alignmentCheckToggle.dbValue"
+                },
+                {
+                    "action": "clearAlignmentCheckOnToggleOff",
+                    "condition":"!data.alignmentCheckToggle.dbValue"
+                }
+            ]
+        },
+        "alignmentCheckInBackgroundMode":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateBackgroundOptionOnTaskbarContext",
+                    "inputArg": {
+                        "isAlignmentCheckInBackground": true
+                    }
+                },
+                {
+                    "action": "executeAlignmentCheckBatch"
+                },
+                {
+                    "action": "updateBackgroundOptionOnTaskbarContext",
+                    "inputArg": {
+                        "isAlignmentCheckInBackground": false
+                    }
+                }
+            ]
+        },
+        "updateAlignmentStatusToggle":{
+            "actionType": "JSFunction",
+            "method": "updateToggleDataValues",
+            "inputData":{
+                "data": "{{alignmentCheckToggle}}",
+                "urlParam":"acStatus"
+            },
+            "outputData":{
+                "alignmentCheckToggle":""
+            },
+            "deps":"js/CadBomAlignmentUtil"
+        },
+        "updateSrcTreeLoadedInTaskBar":{
+            "actionType": "JSFunction",
+            "method": "updateTaskBarContext",
+            "inputData": {
+                "taskBarInfo": "{{fields.cbaTaskBarContext}}",
+                "isSrcTreeLoaded": "{{ports.SrcTreeLoadedTaskbar.syncObject}}"
+            },
+            "outputData": {
+                "cbaTaskBarContext": ""
+            },
+            "deps": "js/cbaTaskbarCommandService"
+        },
+        "updateTrgTreeLoadedInTaskBar":{
+            "actionType": "JSFunction",
+            "method": "updateTaskBarContext",
+            "inputData": {
+                "taskBarInfo": "{{fields.cbaTaskBarContext}}",
+                "isTrgTreeLoaded": "{{ports.TrgTreeLoadedTaskbar.syncObject}}"
+            },
+            "outputData": {
+                "cbaTaskBarContext": ""
+            },
+            "deps": "js/cbaTaskbarCommandService"
+        },
+        "executeAlignmentCheckOnTreeLoad":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "executeAlignmentCheck",
+                    "condition":"ctx.state.params.acStatus.toString() === 'true' && conditions.isSrcAndTrgTreeLoaded && !conditions.isAlignmentCheckReportOpened "
+                }
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "updateAlignmentStatusToggle",
+        "onUpdate": [
+            {
+                "action": "executeAlignmentCheckOnTreeLoad",
+                "observers": [ "fields.cbaTaskBarContext.isSrcTreeLoaded", "fields.cbaTaskBarContext.isTrgTreeLoaded" ]
+            },
+            {
+                "action": "updateRedLineToggleState",
+                "observers": [ "fields.cbaTaskBarContext.CBASrcContext.supportedFeatures.Awb0ChangeFeature" ]
+            },
+            {
+                "action": "updateRedLineToggleState",
+                "observers": [ "fields.cbaTaskBarContext.CBATrgContext.supportedFeatures.Awb0ChangeFeature" ]
+            }
+        ]
+    },
+    "onEvent":[{
+        "eventId":"CbaTaskbar.updateBackgroundOption",
+        "action":"updateBackgroundOptionCtx"
+    },
+    {
+        "eventId":"cba.turnOnAlignmentStatusToggle",
+        "action":"updateAlignmentStatusToggle"
+    }],
+    "conditions": {
+        "isModeChangeRequired":{
+            "expression": "ctx.preferences.FND0_IS_COMPARE_MODE_EXPLODED && ( ( conditions.isSummarizedMode && ctx.preferences.FND0_IS_COMPARE_MODE_EXPLODED[0] === 'true' ) || ( conditions.isExplodedMode && ctx.preferences.FND0_IS_COMPARE_MODE_EXPLODED[0] === 'false' ) )"
+        },
+        "isAlignmentCheckRequired":{
+            "expression": "ctx.preferences.FND0_IS_COMPARE_MODE_EXPLODED && ( ( conditions.isSummarizedMode && ctx.preferences.FND0_IS_COMPARE_MODE_EXPLODED[0] === 'false' ) || ( conditions.isExplodedMode && ctx.preferences.FND0_IS_COMPARE_MODE_EXPLODED[0] === 'true' ) )"
+        },
+        "canModeBeChanged":{
+            "expression": "( conditions.isModeChangeRequired || ( !ctx.preferences.FND0_IS_COMPARE_MODE_EXPLODED && conditions.isSummarizedMode ) )"
+        },
+        "canAlignmentBeChecked":{
+            "expression": "( conditions.isAlignmentCheckRequired || ( !ctx.preferences.FND0_IS_COMPARE_MODE_EXPLODED && conditions.isExplodedMode ) )"
+        },
+        "isTaskbarFullScreen":{
+            "expression": "ctx.taskbarfullscreen && ctx.taskbarfullscreen === 'true'"
+        },
+        "isExplodedMode": {
+            "expression": "data.cbaTaskBarContext.CBATrgContext.productContextInfo.props.awb0ShowExplodedLines.dbValues[0]==='1'"
+        },
+        "isSummarizedMode": {
+            "expression": "!conditions.isExplodedMode"
+        },
+        "isEntCBASubLocation": {
+            "expression": "ctx.splitView && ctx.splitView.mode===true && ctx.sublocation.nameToken === 'com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation' && (conditions.isSchemeApplied || !conditions.isSchemeApplied)"
+        },
+        "AlignmentCheckCommandCondition": {
+            "expression": "( ( data.runInBackground.dbValue === false && ctx.cadbomalignment.commands.isAlignmentCheckCmdVisible === true ) || ( data.runInBackground.dbValue === true && ctx.cadbomalignment.commands.isAlignmentCheckRunInBackgroundCmdVisible === true ) )"
+        },
+        "enableAccCheckRunInBackground": {
+            "expression": "( ctx.cadbomalignment.commands.isAlignmentCheckRunInBackgroundCmdVisible === true )"
+        },
+        "enableAlignmentCheck132Onwards": {
+            "expression": "conditions.isEntCBASubLocation && !ctx.cadbomalignment.ImpactAnalysis.isImpactAnalysisMode"
+        },
+        "enableAlignmentCheckPriorTo132": {
+            "expression": "false"
+        },
+        "isImpactAnalysisMode": {
+            "expression":"ctx.cadbomalignment.ImpactAnalysis.isImpactAnalysisMode"
+        },
+        "isAlignmentCheckApplicableCondition":{
+            "expression": "conditions.isEntCBASubLocation && ctx.cadbomalignment.commands.areMultipleStructuresInCBA && conditions.isSrcAndTrgTreeLoaded"
+        },
+        "isSrcAndTrgTreeLoaded":{
+            "expression": "data.cbaTaskBarContext.isSrcTreeLoaded === true && data.cbaTaskBarContext.isTrgTreeLoaded === true"
+        },
+        "isAlignmentCheckReportOpened":{
+            "expression":"ctx.state.params.datasetUid !== undefined"
+        },
+        "showChangeCondition": {
+            "expression": "conditions.isEntCBASubLocation && ( data.cbaTaskBarContext.CBASrcContext.supportedFeatures.Awb0ChangeFeature === true || data.cbaTaskBarContext.CBATrgContext.supportedFeatures.Awb0ChangeFeature === true )"
+        }
+
+    },
+    "i18n":
+    {
+        "Awb0EntCBAAlignTaskTitle":
+        [
+            "CadBomAlignmentConstants"
+        ],
+        "runInBackground":
+        [
+            "CadBomAlignmentConstants"
+        ],
+        "Awb0EntCBAAlignmentReport":
+        [
+            "CadBomAlignmentConstants"
+        ],
+        "Awb0ShowAlignmentStatus":
+        [
+            "CadBomAlignmentConstants"
+        ],
+        "showRedLines": [
+            "ChangeMessages"
+        ]
+
+    },
+    "ctx": {
+        "workareaToolBarContext": {
+            "parser": {
+                "method": "getWorkareaToolBarContext",
+                "deps": "js/awDefaultSublocationService"
+            }
+        }
+    }
+}

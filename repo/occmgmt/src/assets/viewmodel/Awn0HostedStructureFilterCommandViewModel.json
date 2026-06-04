@@ -1,0 +1,179 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions":
+    {
+        "navigateBackToDiscoverySubPanel": {
+            "actionType": "JSFunction",
+            "method": "navigateBackToDiscoverySubPanel",
+            "inputData": {
+                "activeViewSharedData": "{{data.activeViewSharedData}}",
+                "sharedData": "{{data.sharedData}}",
+                "nextActiveView": "Awb0DiscoveryFilterCommandSubPanel"
+            },
+            "outputData":{
+                "activeViewSharedData" : "newViewSharedData",
+                "sharedData": "sharedData"
+            },
+            "deps": "js/occmgmtSubsetUtils"
+        },
+        "updateSharedActiveViewBasedOnPCI": {
+            "actionType": "JSFunction",
+            "method": "updateSharedActiveViewBasedOnPCI",
+            "inputData": {
+                "activeViewSharedData": "{{data.activeViewSharedData}}"
+            },
+            "outputData":{
+                "activeViewSharedData" : ""
+            },
+            "deps": "js/hostedDiscoveryFilterService"
+        },
+        "closeFilterPanel" : {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "complete",
+                    "eventData": {
+                        "source": "toolAndInfoPanel"
+                    }
+                },
+                {
+                    "name": "complete",
+                    "eventData": {
+                        "source": "navigationPanel"
+                    }
+                } ]
+            }
+        },
+        "onMount": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "callGetOccs"
+                },
+                {
+                    "action": "updateSharedActiveViewBasedOnPCI"
+                }
+            ]
+        },
+        "callGetOccs": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2022-06-OccurrenceManagement",
+            "method": "getOccurrences4",
+            "inputData": {
+                "inputData": {
+                    "product": {
+                        "type": "Fnd0WorksetRevision",
+                        "uid": "{{ctx.aw_hosting_state.worksetUid}}"
+                    },
+                    "requestPref": {
+                        "savedSessionMode": [ "ignore" ],
+                        "component": [ "NX" ],
+                        "calculateFilters": ["true"]
+
+                    }
+                }
+            },
+            "outputData": {
+                "allProducts": "{{function:getProductsInfo}}",
+                "totalFound": "parentChildrenInfos[0].childrenInfo.length"
+            },
+            "events": {
+                "success": [ {
+                    "name": "populateFilterInformation"
+                }, {
+                    "name": "updateAdvancedFilterPanel"
+                }]
+            },
+            "deps": "js/hostedDiscoveryFilterService"
+        },
+        "updateAdvancedFilterPanel": {
+            "actionType": "JSFunction",
+            "method": "updateAdvancedFilterPanel",
+            "inputData": {
+                "data": "{{data.allProducts}}"
+            },
+            "deps": "js/hostedDiscoveryFilterService"
+        },
+        "populateFilterInformation":{
+            "actionType": "JSFunction",
+            "method": "populateFilterInformation",
+            "inputData": {
+            },
+            "outputData": {
+                "occContext": "occContext"
+            },
+            "deps": "js/hostedDiscoveryFilterService"
+        }
+    },
+    "data":
+    {
+        "sharedData": {
+            "initialValues": {
+                "clickedObj": null,
+                "IsEmbeddedComponent": true,
+                "autoApply": false,
+                "enableFilterApply": false
+            },
+            "meta": {
+            }
+        },
+        "activeViewSharedData": {
+            "initialValues": {
+                "activeView": ""
+            },
+            "meta": {
+
+            }
+        }
+    },
+    "props":
+    {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "i18n": {
+        "filter" :  ["NXConstants"],
+        "ProximitySubPanel": ["NXConstants"],
+        "EditProximitySubPanel": ["NXConstants"],
+        "PlaneZoneSubPanel": ["NXConstants"],
+        "BoxZoneSubPanel": ["NXConstants"]
+    },
+    "lifecycleHooks": {
+        "onMount": "onMount"
+    },
+    "conditions": {
+        "isStructureFilterSupported": {
+            "expression": "props.subPanelContext.occContext.supportedFeatures.Awb0StructureFilterFeature === true && !ctx.hiddenCommands.Awb0StructureFilter"
+        },
+
+        "isPartitionView": {
+            "expression": "data !== null && data.sharedData !== undefined && data.sharedData.clickedObj !== null && data.sharedData.clickedObj.categoryName === 'Partition Scheme'"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "productContextChangedEvent",
+            "action": "closeFilterPanel",
+            "condition": "(dataProviderActionType === 'productChangedOnSelectionChange' || dataProviderActionType === 'initializeAction' ) && !conditions.isStructureFilterSupported"
+        },
+        {
+            "eventId": "occDataLoadedEvent",
+            "action": "updateSharedActiveViewBasedOnPCI"
+        },
+        {
+            "eventId": "productContextChangedEvent",
+            "action": "updateSharedActiveViewBasedOnPCI",
+            "condition": "dataProviderActionType === 'initializeAction' || dataProviderActionType === 'productChangedOnSelectionChange'"
+        },
+        {
+            "eventId": "updateAdvancedFilterPanel",
+            "action": "updateAdvancedFilterPanel"
+        },
+        {
+            "eventId": "populateFilterInformation",
+            "action": "populateFilterInformation"
+        }
+    ]
+}

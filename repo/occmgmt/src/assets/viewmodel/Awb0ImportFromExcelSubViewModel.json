@@ -1,0 +1,112 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "updateFormData": {
+            "actionType": "JSFunction",
+            "method": "updateFormData",
+            "inputData": {
+                "fileName": "{{parameters.fileName}}",
+                "fileNameNoExt": "{{parameters.fileNameNoExt}}",
+                "validFile": "{{parameters.validFile}}",
+                "formData": "{{parameters.formData}}"
+            },
+            "outputData": {
+                "fileName": "fileName",
+                "fileNameNoExt": "fileNameNoExt",
+                "validFile": "validFile",
+                "formData": "formData"
+            },
+            "events": {
+                "success":[{
+                    "name": "import.resetExcelImportData",
+                    "condition": "!data.fileName && !data.validFile"
+                }]
+            },
+            "deps": "js/importBOMService"
+        },
+        "getFileDataForPanel":{
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getFilePickerConfiguration"
+                },
+                {
+                    "action": "getPreviewFileData",
+                    "condition": "!conditions.nonPreviewCall"
+                }
+            ]
+        },
+        "getPreviewFileData":{
+            "actionType": "JSFunction",
+            "method": "getPreviewFileData",
+            "inputData":{
+                "uploadedFileName": "{{data.selectExcelFile}}"
+            },
+            "outputData":{
+                "selectExcelFile": "uploadedFileName"
+            },
+            "deps":"js/importBOMService"
+        },
+        "getFilePickerConfiguration": {
+            "actionType": "JSFunction",
+            "method": "getFilePickerConfiguration",
+            "inputData": {
+                "fileConfigRootType": "importFromExcel"
+            },
+            "outputData": {
+                "uploadFileProvider": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "cleanUp": {
+            "actionType": "JSFunction",
+            "method": "resetUploadFileSelectionData",
+            "inputData": {
+                "uploadFileSelectionData": "{{data.uploadFileSelectionData}}"
+            },
+            "outputData": {
+                "uploadFileSelectionData": ""
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+
+    "data": {
+        "uploadFileSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "selectExcelFile": {
+            "displayName": "{{i18n.selectExcelFile}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "dbValue": "",
+            "uiValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP"
+        }
+    },
+
+    "onEvent": [
+
+    ],
+
+    "conditions": {
+        "showFileUploadWidget": {
+            "expression": "ctx.sublocation.clientScopeURI !== 'Awb0ImportPreview'"
+        },
+        "nonPreviewCall": {
+            "expression": "data.uploadFileSelectionData.selectedFileInfo"
+        }
+    },
+    "messages": {
+
+    },
+    "i18n": {
+        "selectExcelFile": [
+            "OccmgmtImportExportConstants"
+        ]
+    },
+    "lifecycleHooks": {
+        "onMount": "getFileDataForPanel",
+        "onUnmount": "cleanUp"
+    }
+}

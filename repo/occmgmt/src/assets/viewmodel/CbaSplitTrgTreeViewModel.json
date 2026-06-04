@@ -1,0 +1,1798 @@
+{
+    "schemaVersion": "1.0.0",
+    "ports": {
+        "partSelection": {
+            "syncObject": {}
+        },
+        "findAlignedPartsInput": {
+            "syncObject": {},
+            "onChangeAction": "selectAlignedParts"
+        },
+        "partsInputAlignedDesigns": {
+            "syncObject": {},
+            "onChangeAction": "isSelectionValidToRefreshSecondary"
+        },
+        "designsOutputAlignedParts": {
+            "syncObject": {}
+        },
+        "updateTrgShowRedlinesToggle": {
+            "syncObject": {},
+            "onChangeAction": "updateRedLineMode"
+        },
+        "trgTreeLoaded":{
+            "syncObject": {}
+        }
+
+    },
+    "actions": {
+        "updateRedLineMode":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "activateWindow"
+                },
+                {
+                    "action": "toggleChangesActionRight",
+                    "condition": "ports.updateTrgShowRedlinesToggle.syncObject.isRedLineMode !== undefined"
+                }
+            ]
+        },
+        "toggleChangesActionRight": {
+            "actionType": "JSFunction",
+            "method": "updateCtxWithRedLineMode",
+            "inputData":
+            {
+                "activeContext": "{{props.subPanelContext.provider.contextKey}}",
+                "isRedLineMode":"{{ports.updateTrgShowRedlinesToggle.syncObject.isRedLineMode}}"
+            },
+            "deps": "js/cbaRedLineService",
+            "events": {
+                "success": [
+                    {
+                        "name": "cba.refreshSelectedObjectInPWARight"
+                    },
+                    {
+                        "name": "cba.setDecoratorToggle"
+                    }
+                ]
+            }
+        },
+        "refreshPwaWithStartFreshNavigationRight": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "inputData": {
+                "path": "",
+                "value": {
+                    "transientRequestPref": {
+                        "useProductIndex": false,
+                        "startFreshNavigation": true
+                    },
+                    "pwaReset": true
+                },
+                "target": "{{props.subPanelContext.provider.occContext}}"
+            },
+            "deps": "js/occmgmtUtils"
+        },
+        "setDecoratorToggle": {
+            "actionType": "JSFunction",
+            "method": "setDecoratorToggle",
+            "deps": "js/occmgmtUtils",
+            "inputData": {
+                "value": "{{ports.updateTrgShowRedlinesToggle.syncObject.isRedLineMode}}",
+                "restoreOldValue": true
+            }
+        },
+        "selectObjectsInTree": {
+            "actionType": "JSFunction",
+            "method": "selectObjectsInTree",
+            "deps": "js/cbaFindAlignedService",
+            "inputData": {
+                "eventData":"{{parameters.eventData}}"
+            }
+        },
+        "activateWindow": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "ace.activateWindow",
+                        "eventData": {
+                            "key": "{{props.subPanelContext.provider.contextKey}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "fireAceLoadAndSelectProvidedObjectInTree": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "aceLoadAndSelectProvidedObjectInTree",
+                        "eventData": {
+                            "objectsToSelect": "{{ports.findAlignedPartsInput.syncObject.objectsToFind}}",
+                            "viewToReact": "{{props.subPanelContext.provider.contextKey}}",
+                            "productContextInfo": "{{props.subPanelContext.provider.occContext.productContextInfo}}",
+                            "nodeToExpandAfterFocus": "{{ports.findAlignedPartsInput.syncObject.objectsToFind[0].props.awb0BreadcrumbAncestor.dbValues[0]}}"
+                        }
+                    }
+                ]
+            },
+            "events": {
+                "success": [{
+                        "name": "cba.selectObjectsInTree",
+                        "eventData": {
+                            "overwriteSelections": false,
+                            "objectsToSelect": "{{ports.findAlignedPartsInput.syncObject.objectsToFind}}",
+                            "viewToReact": "{{props.subPanelContext.provider.contextKey}}",
+                            "occContext": "{{props.subPanelContext.provider.occContext}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "selectSingleAlignedPart": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "deps": "js/occmgmtUtils",
+            "inputData": {
+                "path": "selectionsToModify",
+                "value": {
+                    "elementsToSelect": "{{ports.findAlignedPartsInput.syncObject.firstObjectToFind}}",
+                    "overwriteSelections": "{{parameters.overwriteSelections}}"
+                },
+                "target": "{{props.subPanelContext.provider.occContext}}"
+            }
+        },
+        "selectMultipleAlignedParts": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "deps": "js/occmgmtUtils",
+            "inputData": {
+                "path": "selectionsToModify",
+                "value": {
+                    "elementsToSelect": "{{ports.findAlignedPartsInput.syncObject.restObjectToFind}}",
+                    "overwriteSelections":true
+                },
+                "target": "{{props.subPanelContext.provider.occContext}}"
+            },
+            "events": {
+                "success": [{
+                        "name": "cba.selectSingleAlignedPart",
+                        "eventData": {
+                            "overwriteSelections": false
+                        }
+                    }
+                ]
+            }
+        },
+        "clearSelections": {
+            "actionType": "JSFunction",
+            "method": "updateSelectionOnContext",
+            "deps": "js/cbaSelectionService",
+            "inputData": {
+                "elementsToSelect" : [],
+                "occContext" : "{{props.subPanelContext.provider.occContext}}"
+            }
+        },
+        "selectParts": {
+            "actionType": "JSFunction",
+            "method": "updateSelectionOnContext",
+            "deps": "js/cbaSelectionService",
+            "inputData": {
+                "elementsToSelect" : "{{ports.findAlignedPartsInput.syncObject.objectsToFind}}",
+                "occContext" : "{{props.subPanelContext.provider.occContext}}"
+            }
+        },
+        "selectAlignedParts": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearSelections"
+                },
+                {
+                    "action": "activateWindow"
+                },
+                {
+                    "action": "selectParts"
+                }
+            ]
+        },
+        "isSelectionValidToRefreshSecondary": {
+            "actionType": "JSFunction",
+            "method": "isSelectedObjectExistInList",
+            "inputData": {
+                "selectedObject": "{{ctx.CBATrgContext.pwaSelection[0]}}",
+                "objects": "{{ports.partsInputAlignedDesigns.syncObject}}"
+            },
+            "outputData": {
+                "isValidSelection":""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "cdm.relatedModified",
+                        "condition":"isValidSelection && ctx.CBATrgContext.activeTab.id !== 'Awb0ViewerFeature'",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relations": "",
+                            "relatedModified": [
+                                "{{ctx.CBATrgContext.pwaSelection[0]}}"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "deps": "js/CadBomAlignmentUtil"
+        },
+        "UpdateObjectToFindInCtx":{
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "cbaContext.findAlignedPartsInput",
+                "value": {
+                    "objectsToFind": "{{data.eventMap['cba.findAlignedParts'].objectsToFind}}",
+                    "sourceObject": "{{data.eventMap['cba.findAlignedParts'].sourceObject}}",
+                    "firstObjectToFind": "{{data.eventMap['cba.findAlignedParts'].firstObjectToFind}}",
+                    "restObjectToFind": "{{data.eventMap['cba.findAlignedParts'].restObjectToFind}}"
+                }
+            },
+            "deps": "js/appCtxService"
+        },
+        "cbaUpdateSelectionsEvent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "aceElementsSelectionUpdatedEvent",
+                        "eventData": {
+                            "objectsToSelect": "{{data.eventMap['cba.updateSelections'].sourceSelections}}",
+                            "silentSelection": true,
+                            "viewToReact": "{{data.eventMap['cba.updateSelections'].sourceContextName}}"
+                        }
+                    },
+                    {
+                        "name": "aceElementsSelectionUpdatedEvent",
+                        "condition": "data.eventMap['cba.updateSelections'].targetSelections>0",
+                        "eventData": {
+                            "objectsToSelect": "{{data.eventMap['cba.updateSelections'].targetSelections}}",
+                            "silentSelection": true,
+                            "viewToReact": "{{data.eventMap['cba.updateSelections'].targetContextName}}"
+                        }
+                    },
+                    {
+                        "name": "aceElementsSelectionUpdatedEvent",
+                        "condition": "data.eventMap['cba.updateSelections'].targetSelections===undefined",
+                        "eventData": {
+                            "objectsToSelect": [],
+                            "silentSelection": true,
+                            "viewToReact": "{{data.eventMap['cba.updateSelections'].targetContextName}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "aceElementsSelectionUpdatedEvent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "aceElementsSelectionUpdatedEvent",
+                        "eventData": {
+                            "objectsToSelect": "{{ctx.cbaContext.findAlignedPartsInput.restObjectToFind}}",
+                            "silentSelection": true,
+                            "viewToReact": "CBATrgContext"
+                        }
+                    }
+                ]
+            }
+        },
+        "focusOnElementsEvent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "focusOnElementsEvent",
+                        "eventData": {
+                            "elementsToFocus": "{{ctx.cbaContext.findAlignedPartsInput.firstObjectToFind}}",
+                            "silentSelection": true,
+                            "viewToReact": "CBATrgContext"
+                        }
+                    }
+                ]
+            }
+        },
+        "fetchAlignedParts": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-EntCba-2021-12-Alignments",
+            "method": "findAlignedOccurrences",
+            "inputData": {
+                "targetContext": {
+                    "type":"{{ctx.CBATrgContext.topElement.type}}",
+                    "uid":"{{ctx.CBATrgContext.topElement.uid}}"
+                },
+                "occurrences":  [
+                    {
+                        "type":"{{ctx.cbaContext.findAlignedPartsInput.sourceObject.type}}",
+                        "uid":"{{ctx.cbaContext.findAlignedPartsInput.sourceObject.uid}}"
+                    }
+                ]
+
+            },
+            "outputData": {
+                "findAlignedResponse":"{{function:processFindAlignedResponse}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "cba.clearAlignmentCheckIndicators"
+                    },
+                    {
+                        "name": "cba.updateSelections",
+                        "eventData": {
+                            "sourceSelections": "{{data.findAlignedResponse.sourceObjects}}",
+                            "sourceContextName":"CBASrcContext",
+                            "targetSelections": "{{data.findAlignedResponse.objectsToFind}}",
+                            "targetContextName":"CBATrgContext",
+                            "contextName":"CBATrgContext",
+                            "objectsToFind":"{{data.findAlignedResponse.objectsToFind}}"
+                        }
+                    },
+                    {
+                        "name": "cba.updateFindAlignedInfo",
+                        "condition":"data.findAlignedResponse.findAlignedInfo !== undefined",
+                        "eventData": {
+                            "findAlignedInfo": "{{data.findAlignedResponse.findAlignedInfo}}",
+                            "contextName":"CBATrgContext"
+                        }
+                    },
+                    {
+                        "name": "cba.findAlignedParts",
+                        "condition":"data.findAlignedResponse.findAlignedInfo !== undefined",
+                        "eventData": {
+                            "objectsToFind": "{{data.findAlignedResponse.objectsToFind}}",
+                            "sourceObject": "{{data.findAlignedResponse.sourceObject}}",
+                            "firstObjectToFind": "{{data.findAlignedResponse.firstObjectToFind}}",
+                            "restObjectToFind": "{{data.findAlignedResponse.restObjectToFind}}"
+                        }
+                    }
+                ]
+            },
+            "actionMessages":{
+                "success":[
+                    {
+                        "condition":"data.findAlignedResponse.objectsToFind===undefined",
+                        "message":"FindAlignedNoAlignmentMessage"
+                    }
+                ],
+                "failure":[
+                    {
+                        "message":"FindAlignedNoAlignmentERRORMessage"
+                    }
+                ]
+            },
+            "deps": "js/cbaFindAlignedService"
+        },
+        "notifyVMOPropertiesUpdated":{
+            "actionType": "JSFunction",
+            "method": "notifyVMOPropertiesUpdated",
+            "inputData": {
+                "data": {
+                    "findAlignedInfo":"{{data.eventData.findAlignedInfo}}",
+                    "sourceContext":"CBASrcContext",
+                    "sourceColumn":"srcAlignmentIndication",
+                    "targetColumn":"trgAlignmentIndication"
+                }
+            },
+            "deps": "js/cbaFindAlignedService"
+        },
+        "updateFindAlignedInfo":{
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "cbaContext.findAlignedContext.findAlignedInfo",
+                "value": "{{data.findAlignedResponse.findAlignedInfo}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "cba.vmoPropsUpdated",
+                        "eventData": {
+                            "findAlignedInfo": "{{data.findAlignedResponse.findAlignedInfo}}",
+                            "contextName":"CBATrgContext"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/appCtxService"
+        },
+        "findAlignedParts": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "UpdateObjectToFindInCtx"
+                },
+                {
+                    "action": "aceElementsSelectionUpdatedEvent",
+                    "condition": "ctx.cbaContext.findAlignedPartsInput.objectsToFind.length > 0"
+                },
+                {
+                    "action": "focusOnElementsEvent",
+                    "condition": "ctx.cbaContext.findAlignedPartsInput.firstObjectToFind !== undefined"
+                },
+                {
+                    "action": "fetchAlignedParts",
+                    "condition": "ctx.cbaContext.findAlignedPartsInput.objectsToFind.length == 0"
+                }
+            ]
+        },
+        "fireFindAlignedParts": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "aceElementsSelectionUpdatedEvent",
+                        "eventData": {
+                            "objectsToSelect": "{{ports.findAlignedPartsInput.syncObject.sourceObject}}",
+                            "silentSelection": true,
+                            "viewToReact": "CBASrcContext"
+                        }
+                    },
+                    {
+                        "name": "cba.findAlignedParts",
+                        "eventData": {
+                            "objectsToFind": "{{ports.findAlignedPartsInput.syncObject.objectsToFind}}",
+                            "sourceObject": "{{ports.findAlignedPartsInput.syncObject.sourceObject}}",
+                            "firstObjectToFind": "{{ports.findAlignedPartsInput.syncObject.firstObjectToFind}}",
+                            "restObjectToFind": "{{ports.findAlignedPartsInput.syncObject.restObjectToFind}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{function:addNameToArrangeEventData}}"
+            },
+            "deps": "js/CadBomColumnArrangeService"
+        },
+        "addTargetPCIOnUrl": {
+            "actionType": "JSFunction",
+            "method": "addParametersOnUrl",
+            "inputData": {
+                "paramsToBeStoredOnUrl": {
+                    "pci_uid2": "{{ctx.CBATrgContext.productContextInfo.uid}}"
+                }
+            },
+            "deps": "js/CadBomOccurrenceAlignmentUtil"
+        },
+        "publishTreeTableRowToggledEvent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "treeTableRowToggled",
+                    "eventData": {
+                        "vmos": "{{data.dataProviders.trgOccDataProvider.viewModelCollection.loadedVMObjects}}",
+                        "row": "{{data.eventData}}"
+                    }
+                } ]
+            }
+        },
+        "loadInitialOccurrences": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeTableData",
+            "inputData": {
+                "methodArgument": {
+                    "treeLoadInput":     "request.treeLoadInput",
+                    "dataProviderActionType": "initializeAction",
+                    "loadIDs":           "request.loadIDs",
+                    "grid": "{{data.grids.cbaTargetTree}}",
+                    "uwDataProvider":    "{{data.dataProviders.trgOccDataProvider}}",
+                    "declViewModel":     "{{data}}",
+                    "sortCriteria":      "{{data.columnProviders.trgOccColumnProvider.sortCriteria}}",
+                    "subPanelContext":"{{props.subPanelContext.provider}}",
+                    "occContext": "{{props.subPanelContext.occContext}}"
+                }
+            },
+            "outputData": {
+                "ctx.CBATrgContext.productContextInfo":          "result.treeLoadResult.productContextInfo",
+                "ctx.CBATrgContext.vmc":                         "result.treeLoadResult.vmc",
+                "ctx.CBATrgContext.sublocation.clientScopeURI":  "result.treeLoadResult.productContextInfo.props.awb0ClientScopeUri.dbValues[0]",
+                "ctx.CBATrgContext.topElement":                 "result.treeLoadResult.topModelObject",
+                "dataProviders.trgOccDataProvider.objectSetUri": "result.treeLoadResult.productContextInfo.props.awb0ClientScopeUri.dbValues[0]",
+                "dataProviders.trgOccDataProvider.columnConfig": "result.treeLoadResult.columnConfig",
+                "ctx.CBATrgContext.startFreshNavigation": "result.treeLoadResult.startFreshNavigation",
+                "ctx.CBATrgContext.treeDataProvider": "result.treeLoadResult.treeDataProvider",
+                "ctx.CBATrgContext.openedElement": "result.treeLoadResult.openedModelObject",
+                "newOccContext":"result.treeLoadResult.newOccContext",
+                "ctx.CBATrgContext.isChangeEnabled": "result.treeLoadResult.isChangeEnabled"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "cba.clearAlignmentCheckFlag"
+                    },
+                    {
+                        "name": "targetPCILoaded"
+                    },
+                    {
+                        "name": "occDataLoadedEvent",
+                        "eventData": {
+                            "contextKey": "{{props.subPanelContext.provider.contextKey}}",
+                            "dataProviderActionType": "initializeAction",
+                            "occContext": "{{props.subPanelContext.provider.occContext}}"
+                        }
+                    },{
+                        "name": "entCBA.visibilityStateChanged",
+                        "eventData": {
+                            "viewToReact": "CBATrgContext",
+                            "subPanelContext": "{{props.subPanelContext}}"
+                         },
+                         "condition":"subPanelContext.provider.cbaContext.srcStructure && subPanelContext.provider.cbaContext.trgStructure"
+                    },{
+
+                        "name": "updateActiveContextEvent",
+                        "eventData": {
+                            "contextKey": "{{props.subPanelContext.provider.contextKey}}"
+                        }
+                    },
+                    {
+                        "name": "cba.executeAlignmentCheck",
+                        "condition":"ctx.cbaContext.alignmentCheckContext.flags.alignmentCheckClicked === true"
+                    }
+                ]
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "loadOccurrencesWithFocus": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadOccurrencesWithFocusInTreeTable",
+            "inputData": {
+                "methodArgument": {
+                    "treeLoadInput":    "request.treeLoadInput",
+                    "dataProviderActionType": "focusAction",
+                    "loadIDs":          "request.loadIDs",
+                    "grid": "{{data.grids.cbaTargetTree}}",
+                    "uwDataProvider":   "{{data.dataProviders.trgOccDataProvider}}",
+                    "declViewModel":    "{{data}}",
+                    "sortCriteria":     "{{data.columnProviders.trgOccColumnProvider.sortCriteria}}",
+                    "subPanelContext":  "{{props.subPanelContext.provider}}",
+                    "occContext": "{{props.subPanelContext.occContext}}"
+                }
+            },
+            "outputData": {
+                "ctx.CBATrgContext.isRestoreOptionApplicableForProduct":"result.treeLoadResult.isRestoreOptionApplicableForProduct",
+                "dataProviders.trgOccDataProvider.columnConfig": "result.treeLoadResult.columnConfig"
+            },
+            "events": {
+                "success": [{
+                        "name": "targetPCILoaded"
+                    },
+                    {
+                        "name": "occDataLoadedEvent",
+                        "eventData": {
+                            "contextKey": "{{props.subPanelContext.provider.contextKey}}",
+                            "dataProviderActionType": "focusAction",
+                            "occContext": "{{props.subPanelContext.provider.occContext}}"
+                        }
+                    },
+                    {
+                        "name": "updateActiveContextEvent",
+                        "eventData": {
+                            "contextKey": "{{props.subPanelContext.provider.contextKey}}"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "loadNextOccurrences": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadNextOccurrencesInTreeTable",
+            "inputData": {
+                "methodArgument": {
+                    "treeLoadInput":    "request.treeLoadInput",
+                    "dataProviderActionType": "nextAction",
+                    "loadIDs":          "request.loadIDs",
+                    "grid": "{{data.grids.cbaTargetTree}}",
+                    "uwDataProvider":   "{{data.dataProviders.trgOccDataProvider}}",
+                    "declViewModel":    "{{data}}",
+                    "sortCriteria":     "{{data.columnProviders.trgOccColumnProvider.sortCriteria}}",
+                    "subPanelContext":  "{{props.subPanelContext.provider}}",
+                    "occContext": "{{props.subPanelContext.occContext}}"
+                }
+            },
+            "outputData": {
+                "dataProviders.trgOccDataProvider.columnConfig": "result.treeLoadResult.columnConfig"
+            },
+            "events": {
+                "success": [{
+                        "name": "targetPCILoaded"
+                    },
+                    {
+                        "name": "occDataLoadedEvent",
+                        "eventData": {
+                            "contextKey": "{{props.subPanelContext.provider.contextKey}}",
+                            "dataProviderActionType": "nextAction",
+                            "occContext" :"{{props.subPanelContext.provider.occContext}}"
+                        }
+                    },
+                    {
+                        "name": "updateActiveContextEvent",
+                        "eventData": {
+                            "contextKey": "{{props.subPanelContext.provider.contextKey}}"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "loadPreviousOccurrences": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadPreviousOccurrencesInTreeTable",
+            "inputData": {
+                "methodArgument": {
+                    "treeLoadInput":    "request.treeLoadInput",
+                    "dataProviderActionType": "previousAction",
+                    "loadIDs":          "request.loadIDs",
+                    "grid": "{{data.grids.cbaTargetTree}}",
+                    "uwDataProvider":   "{{data.dataProviders.trgOccDataProvider}}",
+                    "declViewModel":    "{{data}}",
+                    "sortCriteria":     "{{data.columnProviders.trgOccColumnProvider.sortCriteria}}",
+                    "subPanelContext":  "{{props.subPanelContext.provider}}",
+                    "occContext": "{{props.subPanelContext.occContext}}"
+                }
+            },
+            "outputData": {
+                "dataProviders.trgOccDataProvider.columnConfig": "result.treeLoadResult.columnConfig"
+            },
+            "events": {
+                "success": [{
+                        "name": "targetPCILoaded"
+                    },
+                    {
+                        "name": "occDataLoadedEvent",
+                        "eventData": {
+                            "contextKey": "{{props.subPanelContext.provider.contextKey}}",
+                            "dataProviderActionType": "previousAction",
+                            "occContext" :"{{props.subPanelContext.provider.occContext}}"
+                        }
+                    },
+                    {
+                        "name": "updateActiveContextEvent",
+                        "eventData": {
+                            "contextKey": "{{props.subPanelContext.provider.contextKey}}"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "loadTrgOccProperties": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeTableProperties",
+            "inputData": {
+                "methodArgument": {
+                    "propertyLoadInput": "request.propertyLoadInput",
+                    "propertyLoadContext": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "{{data.dataProviders.trgOccDataProvider.objectSetUri}}",
+                        "typesForArrange": "{{data.dataProviders.trgOccDataProvider.columnConfig.typesForArrange}}",
+                        "addedColumnNames": "{{data.dataProviders.trgOccDataProvider.addedColumnNames}}"
+                    },
+                    "contextKey": "{{props.subPanelContext.provider.contextKey}}",
+                    "declViewModel": "{{data}}",
+                    "uwDataProvider": "{{data.dataProviders.trgOccDataProvider}}",
+                    "subPanelContext": "{{props.subPanelContext.provider}}"
+                }
+            },
+            "outputData": {
+                "dataProviders.trgOccDataProvider.columnConfig": "result.propertyLoadResult.columnConfig",
+                "ctx.searchResponseInfo.columnConfig":        "result.propertyLoadResult.columnConfig",
+                "dataProviders.trgOccDataProvider.addedColumnNames": []
+            },
+            "deps": "js/aceTreeTableDataService",
+            "events":{
+                "success":[{
+                        "name": "entCBA.visibilityStateChanged",
+                        "eventData": {
+                            "viewToReact": "CBATrgContext",
+                            "isTreePropertiesLoaded":true
+                        }
+                    },
+                    {
+                        "name":"cba.isTrgStructureLoadedInCBA"
+                    },
+                    {
+                        "name": "Pma1ImpactAnalysis.enableFocusMode",
+                        "condition": "ctx.cadbomalignment.ImpactAnalysis.isImpactAnalysisMode && ctx.cbaContext.ImpactAnalysis.isFocusMode !== false"
+                    }
+                ]
+            }
+        },
+        "loadOccColumns": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeTableColumns",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.trgOccDataProvider}}",
+                "columnProvider": "{{data.columnProviders.trgOccColumnProvider}}",
+                "contextKey": "{{props.subPanelContext.provider.contextKey}}"
+            },
+            "outputData":{
+                "dataProviders.trgOccDataProvider.columnConfig": "columnConfig"
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "resetColumnConfig" : {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [{
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos": [{
+                                "clientScopeURI": "{{data.dataProviders.trgOccDataProvider.objectSetUri}}",
+                                "operationType": "union",
+                                "typeNames": "{{data.dataProviders.trgOccDataProvider.columnConfig.typesForArrange}}",
+                                "columnsToExclude": "{{ctx.CBATrgContext.columnsToExclude}}"
+                        }],
+                        "businessObjects": [{}]
+                    }]
+                }
+            },
+            "outputData": {
+                "dataProviders.trgOccDataProvider.columnConfig": "{{function:postResetFunction}}",
+                "newColumnConfig": "{{function:postResetFunction}}",
+                "dataProviders.trgOccDataProvider.resetColumnConfigs": "columnConfigurations"
+            },
+            "events": {
+                "success": [ {
+                    "name": "cbaTargetTree.updateCBASplitTreeColumns"
+                } ]
+            }
+        },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [{
+                            "clientScopeURI" : "{{data.dataProviders.trgOccDataProvider.objectSetUri}}",
+                            "columnConfigId" : "{{data.dataProviders.trgOccDataProvider.columnConfig.columnConfigId}}",
+                            "columns": "{{data.dataProviders.trgOccDataProvider.newColumns}}",
+                            "scope" : "LoginUser",
+                            "scopeName": ""
+                    }]
+                }
+            },
+            "outputData": {},
+            "events": {
+                "success": [ {
+                    "name": "cba.trgColumnConfigSaved"
+                } ]
+            }
+        },
+        "saveColumnConfigData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI" : "{{data.dataProviders.trgOccDataProvider.objectSetUri}}",
+                        "columnConfigId" : "{{data.dataProviders.trgOccDataProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.trgOccDataProvider.newColumns}}",
+                        "scope" : "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "outputData": {}
+        },
+        "loadDataForSavedColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "getTableViewModelProperties",
+            "deps": "js/tcViewModelObjectService",
+            "inputData": {
+                "vmNodes": "{{data.dataProviders.trgOccDataProvider.viewModelCollection.loadedVMObjects}}",
+                "context": {
+                    "clientScopeURI": "{{data.dataProviders.trgOccDataProvider.objectSetUri}}",
+                    "clientName": "AWClient",
+                    "columnsToExclude": "{{ctx.CBATrgContext.columnsToExclude}}"
+                }
+            }
+        },
+        "updateDisplayNames" : {
+            "actionType": "JSFunction",
+            "method": "updateDisplayNames",
+            "inputData": {
+                "loadedVMObjects": "{{data.dataProviders.trgOccDataProvider.viewModelCollection.loadedVMObjects}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps":  "js/aceTreeTableDataService"
+        },
+        "updateTargetContextWithRowSelection": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateTrgSelectionInCbaContext",
+                    "condition": "data.eventData.selectedObjects.length === 1"
+                },
+                {
+                    "action": "updateTargetContextWithRowSelectionInCba"
+                }
+            ]
+        },
+        "updateTrgSelectionInCbaContext": {
+            "actionType": "JSFunction",
+            "method": "updateSelectionOnContext",
+            "deps": "js/cbaSelectionService",
+            "inputData": {
+                "elementsToSelect" : "{{data.eventData.selectedObjects}}",
+                "occContext" : "{{props.subPanelContext.provider.occContext}}"
+            }
+        },
+        "updateTargetContextWithRowSelectionInCba":
+        {
+            "actionType": "JSFunction",
+            "method": "updateCBAContextOnRowSelection",
+            "inputData":
+            {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "cbaTargetTree.addStateParametersOnUrl"
+                } ]
+            },
+            "deps": "js/CadBomOccurrenceAlignmentUtil"
+        },
+        "plTableClientRefresh": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "cbaTargetTree.plTable.clientRefresh"
+                } ]
+            }
+        },
+        "updateAlignmentCheckStatus":{
+            "actionType": "JSFunction",
+            "method": "updateAlignmentCheckStatus",
+            "inputData": {
+                "contextKey": "CBATrgContext",
+                "uids":"{{data.eventData.targetIdsToUpdate}}",
+                "supportedColumnTostatus":"{{data.supportedStatusToColumn}}"
+            },
+            "deps": "js/CadBomOccAlignmentCheckService"
+        },
+        "updateCBASplitTreeColumns": {
+            "actionType": "JSFunction",
+            "method": "updateOccMgmtTreeTableColumns",
+            "inputData": {
+                "data": "{{data}}",
+                "dataProvider": "{{data.dataProviders.trgOccDataProvider}}",
+                "subPanelContext": "{{props.subPanelContext.provider}}"
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "setCBATrgOccVisibility": {
+            "actionType": "JSFunction",
+            "method": "setOccVisibility",
+            "inputData": {
+                "loadedVMObjects": "{{data.dataProviders.trgOccDataProvider.viewModelCollection.loadedVMObjects}}",
+                "contextKey": "CBATrgContext",
+                "gridId": "cbaTargetTree"
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "actionSetOccVisbilityWithAlignementCheck": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setCBATrgOccVisibility"
+                },
+                {
+                    "action": "executeAlignmentCheck",
+                    "condition": "ctx.state.params.acStatus === true || ctx.state.params.acStatus === 'true'"
+                }
+            ]
+        },
+        "updateCBATrgTableVisibility": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "cbaTargetTree.plTable.visibilityStateChanged"
+                } ]
+            }
+        },
+        "cbaTrgToggleTreeNodeHierarchy": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "toggleTreeNodeHierarchy",
+                    "eventData": {
+                        "data": "{{data}}",
+                        "row": "{{data.eventData}}"
+                    }
+                } ]
+            }
+        },
+        "updatedPartSelectionInOccContext": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "deps": "js/occmgmtUtils",
+            "inputData": {
+                "path": "selectionsToModify",
+                "value": {
+                    "elementsToSelect": ["{{parameters.eventData.vmo}}"],
+                    "overwriteSelections":true
+                },
+                "target": "{{props.subPanelContext.provider.occContext}}"
+
+            }
+        },
+        "updatedPartSelectionAtPort": {
+            "actionType": "Sync",
+            "inputData": {
+                "port": "partSelection",
+                "syncObject": "{{parameters.eventData}}"
+            }
+        },
+        "updatedFindAlignedSourcePart": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updatedPartSelectionInOccContext"
+                },
+                {
+                    "action": "updatedPartSelectionAtPort"
+                }
+            ]
+        },
+        "updateDesignsOutputAlignedPartsPort": {
+            "actionType": "Sync",
+            "inputData": {
+                "port": "designsOutputAlignedParts",
+                "syncObject": "{{data.eventData.secondarySelection}}"
+            }
+        },
+        "addStateParametersOnUrl": {
+            "actionType": "JSFunction",
+            "method": "addParametersOnUrl",
+            "inputData": {
+                "paramsToBeStoredOnUrl": {
+                    "c_uid2":"{{ctx.CBATrgContext.currentState.c_uid}}",
+                    "o_uid2":"{{ctx.CBATrgContext.currentState.o_uid}}"
+                }
+            },
+            "deps": "js/CadBomOccurrenceAlignmentUtil"
+        },
+        "resetDataForSavedColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "resetDataForSavedColumnConfig",
+            "deps": "js/aceTreeTableDataService",
+            "inputData": {
+                "operationType": "{{eventData.operationType}}",
+                "columnConfig": "{{dataProviders.trgOccDataProvider.columnConfig}}",
+                "vmNodes": "{{data.dataProviders.trgOccDataProvider.viewModelCollection.loadedVMObjects}}"
+            },
+            "outputData": {
+                "dataProviders.trgOccDataProvider.columnConfig": ""
+            }
+        },
+        "bufferExtraPages": {
+            "actionType": "JSFunction",
+            "method": "bufferExtraPages",
+            "inputData": {
+                "gridId": "cbaTargetTree",
+                "uwDataProvider": "{{data.dataProviders.trgOccDataProvider}}",
+                "scrollEventData": "{{data.eventData}}",
+                "subPanelContext": "{{props.subPanelContext.provider}}"
+            },
+            "outputData": {
+                "dataProviders.trgOccDataProvider.scrollPosition": ""
+            },
+            "events":{
+                "success":[
+                    {
+                        "name": "cba.executeAlignmentCheck",
+                        "condition":"ctx.cbaContext.alignmentCheckContext.flags.alignmentCheckClicked === true && (ctx.state.params.acStatus === true || ctx.state.params.acStatus === 'true') "
+                    }
+                ]
+            },
+            "deps": "js/aceTreeTableBufferService"
+        },
+        "clearAlignmentCheckFlag": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "cbaContext.alignmentCheckContext.flags.alignmentCheckClicked",
+                "value": false
+            },
+            "deps": "js/appCtxService"
+        },
+        "executeAlignmentCheck": {
+            "actionType": "JSFunction",
+            "method": "executeAlignmentCheck",
+            "inputData":
+            {
+                "backgroundOption": "{{ctx.cbaContext.backgroundOption}}",
+                "isScroll": true
+            },
+            "deps": "js/CadBomOccAlignmentCheckService",
+            "events": {
+                "success": [ {
+                    "name": "cba.refreshTree"
+                } ]
+            }
+        },
+        "clearFlagAndExecuteAlignmentCheck": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearAlignmentCheckFlag"
+                },
+                {
+                    "action": "updateBackgroundOption"
+                },
+                {
+                    "action": "executeAlignmentCheck"
+                }
+            ]
+        },
+        "updateBackgroundOption": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [{
+                    "name": "CbaTaskbar.updateBackgroundOption"
+                }]
+            }
+        },
+        "updateValueOnCtxWithProvidedValue": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "{{data.eventData.path}}",
+                "value": "{{data.eventData.value}}"
+            },
+            "deps": "js/appCtxService"
+        },
+        "changeEBOMToDefaultMode": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "CBATrgContext.configContext",
+                "value": {
+                    "startFreshNavigation": true
+                }
+            },
+            "events": {
+                "success": [ {
+                        "name": "updateContextInfo",
+                        "eventData": {
+                            "path": "aceActiveContext.context.transientRequestPref",
+                            "value": {
+                                "jitterFreePropLoad" : true,
+                                "showExplodedLines": false,
+                                "useProductIndex": false
+                            }
+                        }
+                    }
+                ]
+
+            },
+            "deps": "js/appCtxService"
+        },
+        "fireAceElementsSelectedEvent":{
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "aceElementsSelectedEvent",
+                    "eventData": {
+                        "viewToReact": "CBATrgContext",
+                        "elementsToSelect": "{{function:getAlignedObjects}}",
+                        "silentSelection": true
+                    }
+                } ]
+            },
+            "deps": "js/CadBomAlignmentUtil"
+        },
+        "cbaUpdateValueOnCtxWithProvidedValue": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "{{parameters.path}}",
+                "value": "{{parameters.value}}"
+            },
+            "deps": "js/appCtxService"
+        },
+        "selectAlignedPartPostAlignInExplodedMode":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cbaUpdateValueOnCtxWithProvidedValue",
+                    "inputArg": {
+                        "path": "cbaContext.selectAlignedLine",
+                        "value": false
+                    }
+                },
+                {
+                    "action": "fireAceElementsSelectedEvent"
+                }
+            ]
+        },
+        "getCBATreeNodeState":{
+            "actionType": "JSFunction",
+            "method": "getTreeNodeState",
+            "inputData": {
+                "treeNode": "{{data.eventData}}"
+            },
+            "outputData": {
+                "treeNodeState": ""
+            },
+            "deps": "js/CadBomOccAlignmentCheckService"
+        },
+        "addNodeToExpansionState": {
+            "actionType": "JSFunction",
+            "method": "addNodeToExpansionState",
+            "inputData": {
+                "node": "{{data.eventData.nodeToExpand}}",
+                "data": "{{data}}"
+            },
+            "deps": "js/aceTreeTableStateService"
+        },
+        "addNodeToCollapsedState":{
+            "actionType": "JSFunction",
+            "method": "addNodeToCollapsedState",
+            "inputData": {
+                "data": "{{data}}",
+                "row": "{{data.eventData}}"
+            },
+            "deps": "js/aceTreeTableStateService"
+        },
+        "clearAlignmentCheckStatus": {
+            "actionType": "JSFunction",
+            "method": "clearAlignmentCheckStatus",
+            "inputData": {
+                "dataProviderActionType": "{{data.eventMap['productContextChangedEvent'].dataProviderActionType}}"
+             },
+            "deps": "js/CadBomOccAlignmentCheckService"
+        },
+        "explodeEBOMStructure": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cbaUpdateConfigContextAction"
+                },{
+                    "action": "cbaUpdateConfigContextInCtxAction"
+                },{
+                    "action": "cbaUpdateTransientPreferenceInCtxAction"
+                },{
+                    "action": "cbaFireNavigatorResetEventAction"
+                }
+            ]
+        },
+        "cbaUpdateConfigContextAction":{
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "inputData": {
+                "path": "CBATrgContext",
+                "value": {
+                    "transientRequestPref": {
+                        "startFreshNavigation": true,
+                        "jitterFreePropLoad" : true,
+                        "showExplodedLines": true,
+                        "useProductIndex": false,
+                        "packSimilarElements": false
+                    }
+                },
+                "target": "{{props.subPanelContext.provider.occContext}}"
+            },
+            "deps": "js/occmgmtUtils"
+        },
+        "cbaUpdateConfigContextInCtxAction":{
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "CBATrgContext.startFreshNavigation",
+                "value": true
+            },
+            "deps": "js/appCtxService"
+        },
+        "cbaUpdateTransientPreferenceInCtxAction":{
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "CBATrgContext.transientRequestPref",
+                "value": {
+                    "jitterFreePropLoad" : true,
+                    "showExplodedLines": "{{!ctx.preferences.FND0_IS_COMPARE_MODE_EXPLODED || ctx.preferences.FND0_IS_COMPARE_MODE_EXPLODED[0] === 'true'}}",
+                    "useProductIndex": false,
+                    "packSimilarElements": false
+                }
+            },
+            "deps": "js/appCtxService"
+        },
+        "cbaFireNavigatorResetEventAction":{
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "awDataNavigator.reset",
+                    "eventData":{
+                        "viewToReset": "CBATrgContext"
+                    }
+                } ]
+            }
+        },
+        "ebomNodeAdded": {
+            "actionType": "JSFunction",
+            "method": "updateLoadedVMOsInTreeDataProvider",
+            "deps": "js/CadBomOccurrenceAlignmentUtil",
+            "inputData": {
+                "loadedViewModelObjects": "{{parameters.eventData}}",
+                "occContext": "{{props.subPanelContext.provider.occContext}}"
+            }
+        },
+        "updateTreeNodeStates":{
+            "actionType": "JSFunction",
+            "method": "updateTreeNodeStates",
+            "inputData": {
+                "vmNodes": "{{data.dataProviders.trgOccDataProvider.viewModelCollection.loadedVMObjects}}",
+                "data": "{{data}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/aceTreeTableStateService"
+        },
+        "executeAlignmentCheckWithNodeExpansionCmd":{
+            "actionType": "JSFunction",
+            "method": "executeAlignmentCheckWithNodeExpansionCmd",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "treeNodeState": ""
+            },
+            "deps": "js/CadBomOccAlignmentCheckService"
+        },
+        "updateTreeNodeStatesBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateTreeNodeStates"
+                },{
+                    "action": "executeAlignmentCheckWithNodeExpansionCmd"
+                }
+            ]
+        },
+        "swaTabChange": {
+            "actionType": "JSFunction",
+            "method": "swaTabChange",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext.provider}}"
+            },
+            "deps": "js/aceSwaService"
+        },
+        "handleAltPwaChange": {
+            "actionType": "JSFunction",
+            "method": "handleAltPwaChange",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext.provider}}"
+            },
+            "deps": "js/aceSwaService"
+        },
+        "updateTrgTreeLoadedAtPort": {
+            "actionType": "Sync",
+            "inputData": {
+                "port": "trgTreeLoaded",
+                "syncObject":
+                {
+                    "isTrgTreeLoaded": true
+                }
+            }
+        },
+        "configurationChanged":{
+            "actionType": "JSFunction",
+            "method": "configurationChanged",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext.provider.cbaContext}}",
+                "isConfigurationChanged": true,
+                "optionalConfiguration": {
+                    "isImpactAnalysisMode": false
+                }
+            },
+            "deps": "js/CadBomOccAlignmentCheckUtil"
+        },
+        "checkValidUserGestureForConfigChange":{
+            "actionType":"JSFunction",
+            "method": "isValidUserGestureForConfigChange",
+            "inputData": {
+                "occContextUserGesture":"{{props.subPanelContext.provider.occContext.transientRequestPref.userGesture}}",
+                "newOccContextUserGesture":"{{data.newOccContext.transientRequestPref.userGesture}}"
+            },
+            "outputData":{
+                "isConfigurationUpdated": ""
+            },
+            "events":{
+                "success":[
+                    {
+                        "name": "entcba.configurationChangeStarted",
+                        "condition":"data.isConfigurationUpdated"
+                    }
+                ]
+            },
+            "deps": "js/CadBomOccAlignmentCheckUtil"
+        },
+        "updateTrgTableViewModelPropertiesForGivenObjects": {
+            "actionType": "JSFunction",
+            "method": "updateTableViewModelPropertiesForGivenObjects",
+            "inputData": {
+                "updatedElementUids": "{{parameters.eventData.updatedElementUids}}",
+                "vmNodes": "{{data.dataProviders.trgOccDataProvider.viewModelCollection.loadedVMObjects}}",
+                "context":{
+                    "clientScopeURI": "{{data.dataProviders.trgOccDataProvider.objectSetUri}}",
+                    "clientName": "AWClient"
+                }
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "selectMultipleElements":{
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "aceElementsSelectedEvent",
+                        "eventData": {
+                            "elementsToSelect": "{{parameters.eventData.elementsToSelect}}",
+                            "overwriteSelections" :"{{parameters.eventData.overwriteSelections}}",
+                            "viewToReact": "{{parameters.eventData.viewToReact}}"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "data": {
+        "columns": [
+            {
+                "name": "trgAlignmentIndication",
+                "displayName": "{{i18n.AlignmentColumnTitle}}",
+                "clientColumn":true,
+                "columnOrder":10,
+                "maxWidth": 30,
+                "minWidth": 30,
+                "width": 30,
+                "enableColumnMenu": false,
+                "enableSorting": false,
+                "enableColumnMoving": false,
+                "enableColumnResizing": false
+            },
+            {
+                "name": "trgAdvanceIndication",
+                "displayName": "{{i18n.AdvanceIndicationColumnTitle}}",
+                "clientColumn":true,
+                "columnOrder":20,
+                "maxWidth": 30,
+                "minWidth": 30,
+                "width": 30,
+                "enableColumnMenu": false,
+                "enableSorting": false,
+                "enableColumnMoving": false,
+                "enableColumnResizing": false
+            }
+        ],
+        "supportedStatusToColumn":[
+            {
+                "columnName":"trgAlignmentIndication",
+                "statuses":[ 1, 2, 3, 4, 5, 6, 7, 101, 102, 103, 273, 284, 357, 359, 360, 377, 397, 485, 488, 614, 869, 913, 2000, 2869, 2896, 2909, 2980, 2985, 3000, 3009, 3024, 3037, 4000 ]
+            },
+            {
+                "columnName":"trgAdvanceIndication",
+                "statuses":[ 1, 2, 3, 4, 5, 6, 7, 101, 102, 103, 273, 284, 357, 359, 360, 377, 397, 485, 488, 614, 869, 913, 2000, 2869, 2896, 2909, 2980, 2985, 3000, 3009, 3024, 3037 ]
+            }
+        ]
+    },
+    "i18n": {
+        "AlignmentColumnTitle":["CadBomAlignmentConstants"],
+        "AdvanceIndicationColumnTitle":["CadBomAlignmentConstants"],
+        "FindAlignedNoAlignment":["CadBomAlignmentMessages"]
+    },
+    "dataProviders": {
+        "trgOccDataProvider": {
+            "initializeAction":    "loadInitialOccurrences",
+            "nextAction":          "loadNextOccurrences",
+            "previousAction":      "loadPreviousOccurrences",
+            "focusAction":         "loadOccurrencesWithFocus",
+            "editContext":         "trgOccDataProvider",
+            "treeLoadResult":      "action.result.treeLoadResult",
+            "selectionModelMode":  "multiple",
+            "treePageSize": 250,
+            "cacheCollapse": true,
+            "inputData": {
+                "selectionModel":  "{{subPanelContext.selectionModel}}",
+                "accessMode":      "tree",
+                "topNodeUid":      "{{ctx.aceActiveContext.context.currentState.uid}}"
+            },
+            "commandsAnchor": "cba_tree_cell_commands"
+        },
+        "trgOccPropertyProvider": {
+            "action": "loadTrgOccProperties",
+            "propertyLoadResult": "action.result.propertyLoadResult"
+        }
+    },
+
+    "columnProviders": {
+        "trgOccColumnProvider": {
+            "loadColumnAction": "loadOccColumns",
+            "clientColumns": "{{data.columns}}",
+            "saveColumnAction": "saveColumnConfigData",
+            "saveColumnAndLoadAction" : "saveColumnConfigLoadData",
+            "resetColumnAction" : "resetColumnConfig",
+            "frozenColumnIndex":2
+        }
+    },
+    "grids": {
+        "cbaTargetTree": {
+            "dataProvider": "trgOccDataProvider",
+            "propertyProvider": "trgOccPropertyProvider",
+            "columnProvider": "trgOccColumnProvider",
+            "enableArrangeMenu": true,
+            "addIconColumn": false,
+            "gridOptions": {
+                "useStaticFirstCol": true,
+                "enableSorting": true
+            }
+        }
+    },
+
+    "functions": {
+        "getContextKeyFromParentScope": {
+            "functionName": "getContextKeyFromParentScope",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getAlignedObjects":{
+            "functionName": "getAlignedObjects",
+            "parameters": [
+                "{{ctx.CBASrcContext.pwaSelection[0].uid}}",
+                "CBASrcContext"
+            ]
+        },
+        "processFindAlignedResponse":{
+            "functionName": "processFindAlignedResponse",
+            "parameters": [
+                "CBASrcContext"
+            ]
+        },
+        "postResetFunction": {
+            "functionName": "postResetFunction",
+            "parameters": [
+                "{{data.dataProviders.trgOccDataProvider.columnConfig}}"
+            ],
+            "deps": "js/tcarrange.service"
+        },
+        "addNameToArrangeEventData": {
+            "functionName": "addNameToArrangeEventData",
+            "parameters": [
+                "{{data.eventData}}",
+                "cbaTargetTree"
+            ]
+        }
+    },
+    "conditions": {
+        "isExplodedMode": {
+            "expression": "data.cbaTaskBarContext.CBATrgContext.productContextInfo.props.awb0ShowExplodedLines.dbValues[0]==='1'"
+        },
+        "isSummarizedMode": {
+            "expression": "!conditions.isExplodedMode"
+        },
+        "isModeChangeRequired":{
+            "expression": "ctx.preferences.FND0_IS_COMPARE_MODE_EXPLODED && ( ( conditions.isSummarizedMode && ctx.preferences.FND0_IS_COMPARE_MODE_EXPLODED[0] === 'true' ) || ( conditions.isExplodedMode && ctx.preferences.FND0_IS_COMPARE_MODE_EXPLODED[0] === 'false' ) )"
+        },
+        "isAlignmentCheckClicked":{
+            "expression": "ctx.cbaContext.alignmentCheckContext.alignmentCheckClicked === true"
+        },
+        "canModeBeChanged":{
+            "expression": "( conditions.isModeChangeRequired || ( !ctx.preferences.FND0_IS_COMPARE_MODE_EXPLODED && conditions.isSummarizedMode ) )"
+        },
+        "isAlignmentCheckInExplodedMode":{
+            "expression": "conditions.isAlignmentCheckClicked && conditions.canModeBeChanged"
+        }
+    },
+    "onEvent":[ {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent",
+            "condition": "name === 'cbaTargetTree'"
+        },
+        {
+            "eventId": "trgOccDataProvider.modelObjectsUpdated",
+            "cacheEventData": true,
+            "action": "updateDisplayNames"
+        },
+        {
+            "eventId": "vmc.modified.trgOccDataProvider",
+            "cacheEventData": true,
+            "action": "updateDisplayNames"
+        },
+        {
+            "eventId": "trgOccDataProvider.rowToggled",
+            "cacheEventData": true,
+            "action": "publishTreeTableRowToggledEvent"
+        },
+        {
+            "eventId": "targetPCILoaded",
+            "action": "addTargetPCIOnUrl"
+        },
+        {
+            "eventId": "trgOccDataProvider.selectionChangeEvent",
+            "cacheEventData":true,
+            "action": "updateTargetContextWithRowSelection"
+        },
+        {
+            "eventId": "primaryWorkarea.multiSelectActionForAce",
+            "action": "plTableClientRefresh"
+        },
+        {
+            "eventId": "cba.alignmentCheckComplete",
+            "cacheEventData": true,
+            "action": "updateAlignmentCheckStatus"
+        },
+        {
+            "eventId": "cbaTargetTree.updateCBASplitTreeColumns",
+            "action": "updateCBASplitTreeColumns"
+        },
+        {
+            "eventId": "entCBA.visibilityStateChanged",
+            "action": "setCBATrgOccVisibility"
+        },
+        {
+            "eventId": "entCBA.visibilityStateChanged",
+            "action": "updateCBATrgTableVisibility"
+        },
+        {
+            "eventId": "trgOccDataProvider.toggleTreeNodeHierarchy",
+            "cacheEventData": true,
+            "action": "cbaTrgToggleTreeNodeHierarchy"
+        },
+        {
+            "eventId": "cba.findAlignedObject",
+            "action": "updatedFindAlignedSourcePart",
+            "criteria": {
+                "contextName": "CBATrgContext"
+            },
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "cba.partDesignUnAlignment",
+            "cacheEventData": true,
+            "action": "updateDesignsOutputAlignedPartsPort",
+            "criteria": {
+                "contextName": "CBATrgContext"
+            }
+        },
+        {
+            "eventId": "cba.partDesignAlignment",
+            "cacheEventData": true,
+            "action": "updateDesignsOutputAlignedPartsPort",
+            "criteria": {
+                "contextName": "CBATrgContext"
+            }
+        },
+        {
+            "eventId": "cba.trgColumnConfigSaved",
+            "action": "resetDataForSavedColumnConfig",
+            "condition": "!ctx.editInProgress"
+        },
+        {
+            "eventId": "cba.refreshTree",
+            "action": "plTableClientRefresh"
+        },
+        {
+            "eventId": "cbaTargetTree.addStateParametersOnUrl",
+            "action": "addStateParametersOnUrl"
+        },
+        {
+            "eventId": "cba.executeAlignmentCheck",
+            "cacheEventData": true,
+            "action": "clearFlagAndExecuteAlignmentCheck"
+        },
+        {
+            "eventId": "cba.changeEBOMToDefaultMode",
+            "cacheEventData": true,
+            "action": "changeEBOMToDefaultMode",
+            "condition": "ctx.CBATrgContext.productContextInfo.props.awb0ShowExplodedLines.dbValues[0]==='1'"
+        },
+        {
+            "eventId": "updateContextInfo",
+            "action": "updateValueOnCtxWithProvidedValue",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "cba.alignmentCheckComplete",
+            "cacheEventData": true,
+            "action": "selectAlignedPartPostAlignInExplodedMode",
+            "condition": "ctx.cbaContext.selectAlignedLine===true"
+        },
+        {
+            "eventId": "cbaTargetTree.plTable.toggleTreeNode",
+            "cacheEventData": true,
+            "action": "getCBATreeNodeState"
+        },
+        {
+            "eventId": "cbaTargetTree.expandBelowTreeNode",
+            "cacheEventData": true,
+            "action": "getCBATreeNodeState"
+        },
+        {
+            "eventId": "trgOccDataProvider.addNodeToExpansionState",
+            "cacheEventData": true,
+            "action": "addNodeToExpansionState"
+        },
+        {
+            "eventId":"trgOccDataProvider.addNodeToCollapsedState",
+            "cacheEventData":true,
+            "action":"addNodeToCollapsedState"
+        },
+        {
+            "eventId":"cba.findAlignedParts",
+            "cacheEventData":true,
+            "action":"findAlignedParts"
+        },
+        {
+            "eventId":"cba.updateFindAlignedInfo",
+            "cacheEventData":true,
+            "action":"updateFindAlignedInfo",
+            "criteria": {
+                "contextName": "CBATrgContext"
+            }
+        },
+        {
+            "eventId":"cba.vmoPropsUpdated",
+            "cacheEventData":true,
+            "action":"notifyVMOPropertiesUpdated",
+            "criteria": {
+                "contextName": "CBATrgContext"
+            }
+        },
+        {
+            "eventId":"cba.updateSelections",
+            "cacheEventData":true,
+            "action":"cbaUpdateSelectionsEvent"
+        },
+        {
+            "eventId": "cba.explodeEBOMStructure",
+            "action": "explodeEBOMStructure"
+        },
+        {
+            "eventId": "cba.selectSingleAlignedPart",
+            "action": "selectSingleAlignedPart",
+            "inputArgs": {
+                "overwriteSelections": "{{eventData.overwriteSelections}}"
+            }
+        },
+        {
+            "eventId": "cba.selectObjectsInTree",
+            "action": "selectObjectsInTree",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "cba.ebomNodeAdded",
+            "action": "ebomNodeAdded",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "occMgmt.visibilityStateChanged",
+            "condition": "viewToReact ? viewToReact === 'CBATrgContext' : true",
+            "action": "actionSetOccVisbilityWithAlignementCheck"
+        },
+        {
+            "eventId": "cba.clearAlignmentCheckFlag",
+            "action": "clearAlignmentCheckFlag"
+        },
+        {
+            "eventId": "cba.refreshSelectedObjectInPWARight",
+            "action": "refreshPwaWithStartFreshNavigationRight"
+        },
+        {
+            "eventId": "cba.setDecoratorToggle",
+            "action": "setDecoratorToggle"
+        },
+        {
+            "eventId":"cba.isTrgStructureLoadedInCBA",
+            "action":"updateTrgTreeLoadedAtPort"
+        },
+        {
+            "eventId": "configurationChangeStarted",
+            "cacheEventData": true,
+            "action": "configurationChanged"
+        },
+        {
+            "eventId": "tree.packUnpackSuccessful",
+            "action": "configurationChanged"
+        },
+        {
+            "eventId": "entcba.configurationChangeStarted",
+            "action": "configurationChanged"
+        },
+        {
+            "eventId": "ace.contentUpdated",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "updateTrgTableViewModelPropertiesForGivenObjects"
+        },
+        {
+            "eventId": "cba.selectMultipleElements",
+            "criteria": {
+                "viewToReact": "CBATrgContext"
+            },
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "selectMultipleElements"
+        }
+    ],
+    "messages": {
+        "FindAlignedNoAlignmentMessage":{
+            "messageType": "ERROR",
+            "messageText": "{{i18n.FindAlignedNoAlignment}}",
+            "messageTextParams": [
+                "{{ctx.cbaContext.findAlignedPartsInput.sourceObject}}"
+            ]
+        },
+        "FindAlignedNoAlignmentERRORMessage":{
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [ {
+            "action": "updateTreeNodeStatesBatch",
+            "observers": [ "viewModel.dataProviders.trgOccDataProvider.viewModelCollection.loadedVMObjects" ]
+        },
+        {
+            "action": "swaTabChange",
+            "observers": [ "props.subPanelContext.provider.pageContext.sublocationState.secondaryActiveTabId" ]
+        },
+        {
+            "action": "handleAltPwaChange",
+            "observers": [ "props.subPanelContext.provider.pageContext.sublocationState.viewModeContext.displayedViewModes.altPwaViews" ]
+        },
+        {
+            "action": "checkValidUserGestureForConfigChange",
+            "observers": [ "props.subPanelContext.provider.occContext.transientRequestPref.userGesture", "viewModel.newOccContext.transientRequestPref.userGesture" ]
+        }
+     ]
+    }
+}
+

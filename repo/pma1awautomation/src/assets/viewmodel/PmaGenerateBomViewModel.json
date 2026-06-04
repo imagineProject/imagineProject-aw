@@ -1,0 +1,237 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-popup-panel2.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-textarea.directive",
+        "js/aw-checkbox.directive",
+        "js/aw-button.directive",
+        "js/exist-when.directive",
+        "js/enable-when.directive"
+    ],
+    "actions": {
+        "hidePopup": {
+            "actionType": "JSFunctionAsync",
+            "method": "hide",
+            "inputData": {
+                "popupEl": "{{data.popupId}}"
+            },
+            "deps": "js/popupService"
+        },
+        "evaluateActionForBOMGeneration": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "GenerateBOM.generateTargetInProgress"
+                    },
+                    {
+                        "name": "GenerateBOM.generateTargetInForegroundMode",
+                        "condition": "data.runInBackground.dbValue === false"
+                    },
+                    {
+                        "name": "GenerateBOM.generateTargetInBackgroundMode",
+                        "condition": "data.runInBackground.dbValue === true"
+                    }
+                ]
+            }
+        },
+        "actionForGeneratingTargetBOMFromSourceBOMInBackground": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-BOMAutomation-2020-05-GenerateBOM",
+            "method": "generateTargetBOMFromSourceBOM",
+            "inputData": {
+                "sourceOccurrences": "{{subPanelContext.pasteContext.sourceObject}}",
+                "srcProductContextInfo": "{{subPanelContext.pasteContext.srcProductContextInfo}}",
+                "targetOccurrence": "{{subPanelContext.pasteContext.targetObject}}",
+                "userOptions": {
+                    "runInBackground": "true"
+                }
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "condition": "data.targetObject.value.modelType.typeHierarchyArray.indexOf('Awb0PartElement') > -1",
+                        "message": "partGenerationProgressNotification"
+                    },
+                    {
+                        "condition": "data.targetObject.value.modelType.typeHierarchyArray.indexOf('Awb0DesignElement') > -1",
+                        "message": "designGenerationProgressNotification"
+                    }
+                ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "GenerateBOM.hidePopup"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "GenerateBOM.hidePopup"
+                    }
+                ]
+            }
+        },
+        "actionForGeneratingTargetBOMFromSourceBOMInForeground": {
+            "actionType": "JSFunction",
+            "method": "addSrcBomToTgtBom",
+            "inputData": {
+                "sourceObjects": "{{subPanelContext.pasteContext.sourceObject}}",
+                "targetObject": "{{subPanelContext.pasteContext.targetObject}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "GenerateBOM.hidePopup"
+                    },
+                    {
+                        "name": "cba.notifyViewerAlignmentUpdated",
+                        "eventData": {
+                            "contextName": "{{ctx.aceActiveContext.key}}",
+                            "primarySelection": "{{ctx.pselected}}",
+                            "secondarySelection": "{{ctx.mselected}}"
+                        },
+                        "excludeLocalDataCtx": true
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "GenerateBOM.hidePopup"
+                    }
+                ]
+            },
+            "deps": "js/Pma1PasteHandlerService"
+        },
+        "disableGenerateBtn": {
+            "actionType": "JSFunction",
+            "method": "isGenerateBOMActionEnabled",
+            "inputData": {},
+            "outputData":
+            {
+                "generateBOMEnabled": ""
+            },
+            "deps": "js/Pma1PasteHandlerService"
+        },
+        "notifyViewerAlignmentUpdated": {
+            "actionType": "JSFunction",
+            "method": "notifyStructureViewers",
+            "deps": "js/cbaViewerService",
+            "inputData": {
+                "contextName": "{{data.eventData.contextName}}",
+                "primarySelection": "{{data.eventData.primarySelection}}",
+                "secondarySelection": "{{data.eventData.secondarySelection}}",
+                "skipDeltaUpdate" : true
+            }
+        }
+    },
+    "messages": {
+        "partGenerationProgressNotification": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.partGenerationProgressNotification}}",
+            "messageTextParams": []
+        },
+        "designGenerationProgressNotification": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.designGenerationProgressNotification}}",
+            "messageTextParams": []
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "GenerateBOM.hidePopup",
+            "action": "hidePopup"
+        },
+        {
+            "eventId": "GenerateBOM.generateTargetInForegroundMode",
+            "action": "actionForGeneratingTargetBOMFromSourceBOMInForeground"
+        },
+        {
+            "eventId": "GenerateBOM.generateTargetInBackgroundMode",
+            "action": "actionForGeneratingTargetBOMFromSourceBOMInBackground"
+        },
+        {
+            "eventId": "GenerateBOM.generateTargetInProgress",
+            "action": "disableGenerateBtn"
+        },
+        {
+            "eventId": "cba.notifyViewerAlignmentUpdated",
+            "action": "notifyViewerAlignmentUpdated",
+            "cacheEventData": true
+        }
+    ],
+    "data": {
+        "runInBackground": {
+            "displayName": "{{i18n.runInBackground}}",
+            "type": "BOOLEAN",
+            "dbValue": true,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "generateBOMEnabled" : true,
+        "generateDBOMconfirmationMessage": {
+            "displayName": {
+                "text": "{{i18n.generateDBOMconfirmationMessage}}",
+                "params": [
+                    "{{subPanelContext.pasteContext.targetObject.props.object_string.uiValues[0]}}"
+                ]
+            },
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "",
+            "type": "STRING"
+        },
+        "generateEBOMconfirmationMessage": {
+            "displayName": {
+                "text": "{{i18n.generateEBOMconfirmationMessage}}",
+                "params": [
+                    "{{subPanelContext.pasteContext.targetObject.props.object_string.uiValues[0]}}"
+                ]
+            },
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "",
+            "type": "STRING"
+        },
+        "targetObject": {
+            "dbValue": "{{subPanelContext.pasteContext.targetObject}}"
+        }
+    },
+    "conditions": {
+        "isSourceDesign": {
+            "expression": "subPanelContext.pasteContext.sourceObject[0].modelType.typeHierarchyArray.indexOf('Awb0DesignElement') > -1"
+        },
+        "isSourcePart": {
+            "expression": "subPanelContext.pasteContext.sourceObject[0].modelType.typeHierarchyArray.indexOf('Awb0PartElement') > -1"
+        },
+        "isGenerateBOMEnabled" : {
+            "expression": "data.generateBOMEnabled"
+        }
+    },
+    "ctx": {
+        "aceActiveContext.context.productContextInfo": null
+    },
+    "i18n": {
+        "cancel": [
+            "PMA1AutomationConstants"
+        ],
+        "generate": [
+            "PMA1AutomationConstants"
+        ],
+        "runInBackground": [
+            "PMA1AutomationConstants"
+        ],
+        "generateEBOMconfirmationMessage": [
+            "PMA1AutomationConstants"
+        ],
+        "generateDBOMconfirmationMessage": [
+            "PMA1AutomationConstants"
+        ],
+        "partGenerationProgressNotification": [
+            "PMA1AutomationMessages"
+        ],
+        "designGenerationProgressNotification": [
+            "PMA1AutomationMessages"
+        ]
+    }
+}

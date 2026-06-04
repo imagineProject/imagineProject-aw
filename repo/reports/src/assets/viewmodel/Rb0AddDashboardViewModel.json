@@ -1,0 +1,158 @@
+{
+    "schemaVersion": "1.0.0",
+    "i18n": {
+        "addDashboard": [ "ReportChartMessages" ],
+        "editDashboard": [ "ReportChartMessages" ],
+        "addDashboardReportWithPanelTitle": [ "ReportChartMessages" ]
+    },
+    "actions":{
+        "updateActiveView":{
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{subPanelContext.searchState}}",
+                "value": {
+                    "dashboardActiveView": null
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "loadAction":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "getReportReportId",
+                "condition": "!subPanelContext.searchState.editingDashboard || subPanelContext.searchState.dashboardTabObject.props.owning_user.dbValues[0] !== ctx.userSession.props.user.dbValues[0]"
+            }]
+        },
+        "getReportReportId":{
+            "actionType": "TcSoaService",
+            "serviceName": "Reports-2007-01-CrfReports",
+            "method": "generateReportDefintionIds",
+            "inputData": {
+                "inputCriteria": [ {
+                    "category": "SummaryReport",
+                    "clientId": "",
+                    "source": "",
+                    "status": ""
+                } ]
+            },
+            "outputData": {
+                "submitPanelState.dashboardId": "{{function:getNewReportId}}"
+            },
+            "deps": "js/addNewReportService"
+        },
+        "updateEditingDashboard": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.searchState}}",
+                "value": {
+                    "editingDashboard": null,
+                    "dashboardReports": null,
+                    "dashboardReportsAsKeys": null
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateDashboardContextAndLoadAction": {
+            "actionType": "batchJob",
+            "steps": [{
+                "action": "updateDashboardReportsForAdd",
+                "condition": "!props.subPanelContext.searchState.editingDashboard"
+            },{
+                "action": "getReportsList",
+                "condition": "props.subPanelContext.searchState.editingDashboard"
+            },{
+                "action": "getReportListAsKeys",
+                "condition": "props.subPanelContext.searchState.editingDashboard"
+            }, {
+                "action": "updateDashboardReportsForEdit",
+                "condition": "props.subPanelContext.searchState.editingDashboard"
+            },{
+                "action": "updateDashboardContext"
+            }, {
+                "action": "loadAction",
+                "condition": "!props.subPanelContext.searchState.dashboardTabObject"
+            }]
+        },
+        "updateDashboardContext":{
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{fields.submitPanelState}}",
+                "value": {
+                    "dashboardName": "{{props.subPanelContext.searchState.editingDashboard ? props.subPanelContext.searchState.dashboardTabObject.props.rb0DashboardName.dbValues[0] : ''}}",
+                    "dashboardDesc": "{{props.subPanelContext.searchState.editingDashboard ? props.subPanelContext.searchState.dashboardTabObject.props.rb0DashboardDescription.dbValues[0] : ''}}",
+                    "dashboardId": {
+                        "dbValue":"{{props.subPanelContext.searchState.dashboardTabObject.props.rb0DashboardId.dbValues[0]}}"
+                    }
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "getReportsList": {
+            "actionType": "JSFunction",
+            "method": "getReportsList",
+            "outputData": {
+                "reportsList": ""
+            },
+            "deps": "js/showMyDashboardService"
+        },
+        "getReportListAsKeys": {
+            "actionType": "JSFunction",
+            "method": "getReportListAsKeys",
+            "inputData": {
+                "reportList": "{{data.reportsList}}"
+            },
+            "outputData": {
+                "reportListAsKeys": ""
+            },
+            "deps": "js/showMyDashboardService"
+        },
+        "updateDashboardReportsForAdd": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.searchState}}",
+                "value": {
+                    "dashboardReports": [],
+                    "dashboardReportsAsKeys": []
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateDashboardReportsForEdit": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.searchState}}",
+                "value": {
+                    "dashboardReports": "{{data.reportsList}}",
+                    "dashboardReportsAsKeys": "{{data.reportListAsKeys}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "data": {
+        "submitPanelState": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "dashboardId":{}
+    },
+    "functions": {
+        "getNewReportId":{
+            "functionName": "getNewReportId",
+            "parameters": ["{{data.dashboardId}}"]
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "updateDashboardContextAndLoadAction",
+        "onUpdate": [ {
+            "action": "loadAction",
+            "observers": [ "props.subPanelContext.searchState.dashboardTabObject" ]
+        }],
+        "onUnmount": "updateEditingDashboard"
+    }
+}

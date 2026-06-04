@@ -1,0 +1,210 @@
+{
+    "data": {
+        "missingTargetInfoButton": {
+            "iconName": "cmdShowInfoPanel"
+        },
+        "target": {
+            "displayName": "{{i18n.targetPropLabel}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "isEditable": "false"
+        },
+        "unitOfMeasurement":{
+            "type": "STRING",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "distance": {
+            "displayName": "{{i18n.distancePropLabel}}",
+            "type": "DOUBLE",
+            "isRequired": "true",
+            "isEditable": "true"
+        },
+        "validTargetsForProximity": {
+            "isArray": "true",
+            "dbValue": []
+        },
+        "displayNSelected": {
+            "type": "STRING",
+            "isRequired": "false"
+
+        },
+        "isExpanded": {
+            "type": "BOOLEAN",
+            "isEditable": "true",
+            "isRequired": "false",
+            "dbValue": false
+        },
+        "elementNotFoundMessage":{
+            "displayName": "{{i18n.elementNotFoundMessage}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false"
+        },
+        "tooltipForElementNotFound": "MissingProximityTargetTooltip",
+        "isPanelInitializedWithProximityRecipe": false,
+        "extendedTooltipOptions": {"placement" : "top"}
+},
+    "actions": {
+        "initializeProximityPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "initializeProximityDataFromRecipeTerm",
+                    "condition": "props.subPanelContext.sharedData.recipeTermToAdd !== undefined && props.subPanelContext.sharedData.spatialRecipeIndexToUpdate >= 0"
+                },
+                {
+                    "action": "getDistanceText"
+                }
+            ]
+        },
+        "initializeProximityDataFromRecipeTerm":{
+            "actionType": "JSFunction",
+            "method": "initializeProximityDataFromRecipeTerm",
+            "inputData":{
+                "sharedData": "{{props.subPanelContext.sharedData}}"
+               },
+            "outputData": {
+                "distance.dbValue": "distanceValue"
+            },
+            "deps": "js/proximityFilterService"
+        },
+        "getDistanceText": {
+            "actionType": "JSFunction",
+            "method": "getDistanceText",
+            "outputData": {
+                "unitOfMeasurement.uiValue": ""
+            },
+            "deps": "js/proximityFilterService"
+        },
+        "loadData": {
+            "actionType": "dataProvider",
+            "method": "selectedObjects"
+        },
+
+        "populateValidTargets": {
+            "actionType": "JSFunctionAsync",
+            "method": "getValidProximityTarget",
+            "inputData":{
+             "isPanelInitializedWithProximityRecipe" : "{{data.isPanelInitializedWithProximityRecipe}}",
+             "inputValidTargets": "{{data.validTargets}}",
+             "recipeValidTargets": "{{data.recipeValidTargets}}",
+             "sharedData": "{{props.subPanelContext.sharedData}}",
+             "occContext": "{{props.subPanelContext.occContext}}"
+            },
+            "outputData": {
+                "validTargetsForProximity": "validTargets",
+                "recipeValidTargets" : "recipeValidTargets",
+                "isPanelInitializedWithProximityRecipe": "isPanelInitializedWithProximityRecipe",
+                "isInputChanged": "isInputChanged",
+                "elementNotFound": "elementNotFound",
+                "displayNSelected.propertyDisplayName": "displayNSelectedText"
+            },
+
+            "deps": "js/proximityFilterService"
+        },
+        "invokeProximityAction":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "setActiveGroupIndexToZero",
+                "condition": "!conditions.isAdvFilterEnabled"
+            },
+            {
+                "action": "applyProximity"
+            }
+        ]
+        },
+        "setActiveGroupIndexToZero":{
+            "actionType": "JSFunction",
+            "method": "setActiveGroupIndexToZero",
+            "inputData": {
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "subPanelNavigateBack": true
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "applyProximity":{
+            "actionType": "JSFunction",
+            "method": "applyProximityFilterInRecipe",
+            "inputData": {
+                "distanceValue": "{{data.distance.dbValue}}",
+                "validTargets": "{{data.validTargetsForProximity}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "activeViewSharedData": "{{props.subPanelContext.activeViewSharedData}}",
+                "elementNotFound": "{{data.elementNotFound}}"
+            },
+            "deps": "js/proximityFilterService"
+        },
+        "expandSelection": {
+            "actionType": "JSFunction",
+            "method": "toggleExpand",
+            "inputData": {
+                "value": "{{data.isExpanded.dbValue}}"
+            },
+            "outputData": {
+                "isExpanded.dbValue":""
+            },
+            "deps": "js/proximityFilterService"
+        }
+    },
+    "dataProviders": {
+        "selectedObjects": {
+            "action": "populateValidTargets",
+            "response": "{{data.validTargetsForProximity}}",
+            "totalFound": "{{data.validTargetsForProximity.length}}",
+            "selectionModelMode": "none"
+        }
+    },
+    "conditions": {
+        "isInputChanged": {
+            "expression": "data.isInputChanged || (data.distance.dbValue !== undefined  && data.distance.dbValue != null  && data.distance.dbValue !== '' && data.distance.dbValue >= 0 && data.distance.dbValue !== props.subPanelContext.sharedData.recipeTermToAdd.criteriaValues[props.subPanelContext.sharedData.recipeTermToAdd.criteriaValues.length-1] )"
+        },
+        "isDistanceSpecified": {
+            "expression": "(data.distance.dbValue !== undefined  && data.distance.dbValue != null  && data.distance.dbValue !== '' && data.distance.dbValue >= 0 )"
+        },
+        "areValidTargetsSet" : {
+            "expression": "data.validTargetsForProximity && data.validTargetsForProximity.length > 0"
+        },
+        "isAdvFilterEnabled": {
+            "expression": "ctx.preferences.AW_Discovery_Advanced_Filter[0] === 'true'"
+        }
+    },
+    "i18n": {
+        "Add": [
+            "OccurrenceManagementSubsetConstants"
+        ],
+        "distancePropLabel": [
+            "OccurrenceManagementSubsetConstants"
+        ],
+        "negativeValidationError": [
+            "OccurrenceManagementSubsetConstants"
+         ],
+         "targetPropLabel": [
+            "OccurrenceManagementSubsetConstants"
+        ],
+        "elementNotFoundMessage": [
+            "OccurrenceManagementSubsetConstants"
+        ],
+        "Update":  [
+            "OccurrenceManagementSubsetConstants"
+        ],
+        "proximityTargetMissing": [
+            "OccurrenceManagementSubsetConstants"
+        ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "onEvent": [ {
+        "eventId":"tree.packUnpackSuccessful",
+        "action":"loadData"
+    }],
+    "lifecycleHooks": {
+        "onMount": "initializeProximityPanel",
+        "onUpdate": [{
+            "action": "loadData",
+            "observers": [ "props.subPanelContext.occContext.pwaSelection" ]
+        }]
+    }
+}

@@ -1,0 +1,232 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "init":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "initialize"
+                },
+                {
+                    "action": "handleUpdatedObjectSetSelection"
+                }
+            ]
+        },
+        "initialize": {
+            "actionType": "JSFunction",
+            "method": "initialize",
+            "inputData": {
+                "objsetdata": "{{props.objsetdata}}",
+                "displayModeState": "{{fields.displayModeState}}",
+                "objectSetState": "{{fields.objectSetState}}",
+                "selectionModel": "{{selectionModels.objectSetSelectionModel}}",
+                "placementTracker": "{{data.placementTracker}}",
+                "selectionData": "{{fields.selectionData}}",
+                "props": "{{props}}"
+            },
+            "outputData": {
+                "displayModeState": "displayModeState",
+                "placementTracker": "placementTracker",
+                "context": "context"
+            },
+            "deps": "js/AwObjectSetService"
+        },
+        "cleanup": {
+            "actionType": "JSFunction",
+            "method": "cleanup",
+            "inputData": {
+                "placementTracker": "{{data.placementTracker}}"
+            },
+            "outputData": {},
+            "deps": "js/AwObjectSetService"
+        },
+        "handleSelectionChange": {
+            "actionType": "JSFunction",
+            "method": "handleSelectionChange",
+            "inputData": {
+                "localSelectionData": "{{data.selectionData}}",
+                "parentSelectionData": "{{props.selectionData}}",
+                "isClearedComponent": "{{data._isClearedComponent}}",
+                "dispatch": "{{data.dispatch}}",
+                "vmo": "{{props.vmo}}"
+            },
+            "deps": "js/AwObjectSetService"
+        },
+        "handleFocusChange": {
+            "actionType": "JSFunction",
+            "method": "handleFocusChange",
+            "inputData": {
+                "localSelectionData": "{{data.selectionData}}",
+                "focusComponent": "{{props.focusComponent}}",
+                "selectionModel": "{{selectionModels.objectSetSelectionModel}}",
+                "dispatch": "{{data.dispatch}}"
+            },
+            "deps": "js/AwObjectSetService"
+        },
+        "handleActiveComponentChange": {
+            "actionType": "JSFunction",
+            "method": "handleActiveComponentChange",
+            "inputData": {
+                "localSelectionData": "{{data.selectionData}}",
+                "isSublocationActive": "{{subPanelContext.pageContext.sublocationState.isSublocationActive}}",
+                "parentSelectionModel": "{{props.selectionModel}}",
+                "localSelectionModel": "{{selectionModels.objectSetSelectionModel}}"
+            },
+            "deps": "js/AwObjectSetService"
+        },
+        "render": {
+            "method": "awObjectSetRenderFunction",
+            "deps": "js/AwObjectSetService",
+            "options": {
+                "elementRefList": [ "objectset", "objectSetHeightAndWidthStyle" ]
+            }
+        },
+        "handleUpdatedObjectSetSelection": {
+            "actionType": "JSFunctionAsync",
+            "method": "handleUpdatedSelection",
+            "inputData": {
+                "localSelectionData": "{{data.selectionData}}"
+            },
+            "outputData": {
+                "selectedObjects": ""
+            },
+            "deps": "js/AwObjectSetService"
+        },
+        "fileUploadPopup": {
+            "actionType": "popup",
+            "inputData": {
+                "options": {
+                    "caption": "{{i18n.fileUploadPopupCaption}}",
+                    "view": "FileUploadProgressPopup",
+                    "clickOutsideToClose": false,
+                    "draggable": true
+                }
+            }
+        }
+    },
+    "selectionModels": {
+        "objectSetSelectionModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "lifecycleHooks": {
+        "render": "render",
+        "onUnmount": "cleanup",
+        "onUpdate": [ {
+            "action": "handleSelectionChange",
+            "observers": [ "viewModel.atomicData.selectionData" ]
+        }, {
+            "action": "handleFocusChange",
+            "observers": [ "props.focusComponent" ]
+        }, {
+            "action": "init",
+            "observers": [ "props.objsetdata" ]
+        },{
+            "action": "handleActiveComponentChange",
+            "observers": [ "props.subPanelContext.pageContext.sublocationState.isSublocationActive" ]
+        }, {
+            "action": "handleUpdatedObjectSetSelection",
+            "observers": [ "viewModel.atomicData.selectionData.selected" ]
+        } ]
+    },
+    "data": {
+        "displayModeState": {
+            "initialValues": {
+                "activeDisplay": "listDisplay"
+            },
+            "meta": {}
+        },
+        "objectSetState": {
+            "initialValues": {
+                "showCheckBox": false,
+                "totalFound": -1,
+                "unreadableCount": -1
+            },
+            "meta": {}
+        },
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "i18n": {
+        "error": [
+            "XRTMessages"
+        ],
+        "fileUploadPopupCaption": [
+            "XRTMessages"
+        ]
+    },
+    "onEvent": [],
+    "props": {
+        "objsetdata": {
+            "type": "object"
+        },
+        "first-page-uids": {
+            "type": "array"
+        },
+        "vmo": {
+            "type": "object"
+        },
+        "title-key": {
+            "type": "string"
+        },
+        "displaytitle": {
+            "type": "string"
+        },
+        "columns": {
+            "type": "array"
+        },
+        "grid-info": {
+            "type": "object"
+        },
+        "operation-type": {
+            "type": "string"
+        },
+        "obj-set-uri": {
+            "type": "string"
+        },
+        "selection-data": {
+            "type": "object"
+        },
+        "selection-model": {
+            "type": "object"
+        },
+        "xrt-context": {
+            "type": "object"
+        },
+        "object-set-info": {
+            "type": "object"
+        },
+        "focus-component": {
+            "type": "string"
+        },
+        "edit-context-key": {
+            "type": "string"
+        },
+        "is-refresh-all-object-sets": {
+            "type": "boolean"
+        },
+        "reload": {
+            "type": "boolean"
+        },
+        "dp-ref": {
+            "type": "object"
+        },
+        "total-found": {
+            "type": "integer"
+        },
+        "unreadable-objects-count": {
+            "type": "integer"
+        },
+        "parent-uid": {
+            "type": "string"
+        },
+        "use-section": {
+            "type": "boolean"
+        },
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

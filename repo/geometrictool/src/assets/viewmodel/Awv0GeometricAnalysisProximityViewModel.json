@@ -1,0 +1,165 @@
+{
+    "schemaVersion" : "1.0.0",
+    "actions": {
+        "openProximityPanel":
+        {
+            "actionType": "JSFunction",
+            "method": "proximityPanelRevealed",
+            "inputData":
+            {
+                "targetRange":"{{data.targetRange}}",
+                "localeTextBundle": "{{data.i18n}}",
+                "geoAnalysisProximitySearch": "{{fields.geoAnalysisProximitySearch}}",
+                "viewerContextData": "{{props.viewerContextData}}",
+                "occmgmtContext": "{{props.subPanelContext.context.occContext}}",
+                "viewId": "{{props.subPanelContext.popupOptions.popupId}}"
+            },
+            "outputData":
+            {
+                "targetRange":"targetRange"
+            },
+
+            "deps": "js/Awv0GeometricAnalysisProximitySearchService"
+        },
+
+
+        "getAllTargetsAction":
+        {
+            "actionType": "dataProvider",
+            "method": "proximitySearchPanelDataProvider"
+        },
+        "getAllTargets":
+        {
+            "actionType": "JSFunction",
+            "method": "getAllTargets",
+            "inputData":
+            {
+                "geoAnalysisProximitySearch": "{{fields.geoAnalysisProximitySearch}}",
+                "viewerContextData": "{{props.viewerContextData}}"
+            },
+            "outputData":
+            {
+                "allTargets": "allTargets",
+                "totalFound": "totalFound"
+            },
+            "deps": "js/Awv0GeometricAnalysisProximitySearchService"
+        },
+        "executeProximitySearch":
+        {
+            "actionType": "JSFunction",
+            "method": "executeProximitySearch",
+            "inputData":
+            {
+                "range": "{{data.targetRange.dbValue}}",
+                "geoAnalysisProximitySearch": "{{fields.geoAnalysisProximitySearch}}",
+                "viewerContextData": "{{props.viewerContextData}}"
+            },
+            "deps": "js/Awv0GeometricAnalysisProximitySearchService"
+        },
+        "proximityPanelBatchAction": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "openProximityPanel"
+                },
+                {
+
+                    "action": "getAllTargetsAction"
+                }
+            ]
+        },
+        "closeProximityPanel": {
+            "actionType": "JSFunction",
+            "method": "notifyProximityPanelClosed",
+            "inputData":
+            {
+                "geoAnalysisProximitySearch": "{{fields.geoAnalysisProximitySearch}}",
+                "occmgmtContext": "{{props.subPanelContext.context.occContext}}"
+            },
+            "deps": "js/Awv0GeometricAnalysisProximitySearchService"
+        }
+    },
+    "data": {
+        "geoAnalysisProximitySearch": {
+            "initialValues": {
+                "usedProductContextUid": "",
+                "targetListPkdCsids":[],
+                "targetCsidList":[],
+                "updateTargetList":false
+            },
+            "meta": {}
+        },
+        "addRemoveCommands" :"awv0_addRemoveCommands",
+        "targetRange":
+        {
+            "type": "DOUBLE",
+            "isEditable": "true",
+            "dbValue": "",
+            "validationCriteria":
+            [
+                {
+                    "condition": "conditions.invalidProximityRangeValue",
+                    "value": "{{i18n.invalidProximityValue}}"
+                }
+            ]
+        },
+        "proximityUnitText":
+        {
+            "type": "STRING",
+            "uiValue": "",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        }
+    },
+    "dataProviders":
+    {
+        "proximitySearchPanelDataProvider":
+        {
+            "action": "getAllTargets",
+            "response": "{{data.allTargets}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "single",
+            "commandsAnchor": "viewer_proximity_cell_commands"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "proximityPanelBatchAction",
+        "onUpdate": [ {
+            "action": "getAllTargetsAction",
+            "observers":[ "viewModel.atomicData.geoAnalysisProximitySearch.updateTargetList"]
+        }],
+        "onUnmount": "closeProximityPanel"
+    },
+    "conditions":
+    {
+        "hasTargets":
+        {
+            "expression": "data.totalFound !== undefined && data.totalFound > 0"
+        },
+        "invalidProximityRangeValue":
+        {
+            "expression": "data.targetRange.dbValue === '' || data.targetRange.dbValue < 0 "
+        }
+    },
+    "i18n":
+    {
+        "proximityTabText":["GeometricAnalysisMessages"],
+        "emptyTargetList":["GeometricAnalysisMessages"],
+        "filterButtonText":["GeometricAnalysisMessages"],
+        "seedPartsText":["GeometricAnalysisMessages"],
+        "proximityLabelText":["GeometricAnalysisMessages"],
+        "proximityUnitText":["GeometricAnalysisMessages"],
+        "removeTarget":["GeometricAnalysisMessages"],
+        "openTarget":["GeometricAnalysisMessages"],
+        "invalidProximityValue":["GeometricAnalysisMessages"],
+        "mm":["GeometricAnalysisMessages"],
+        "cm":["GeometricAnalysisMessages"],
+        "m":["GeometricAnalysisMessages"],
+        "in":["GeometricAnalysisMessages"],
+        "ft":["GeometricAnalysisMessages"],
+        "yd":["GeometricAnalysisMessages"],
+        "um":["GeometricAnalysisMessages"],
+        "dm":["GeometricAnalysisMessages"],
+        "km":["GeometricAnalysisMessages"],
+        "mils":["GeometricAnalysisMessages"]
+    }
+
+}

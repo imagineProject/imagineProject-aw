@@ -1,0 +1,134 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "disableRemoveButton": {
+            "actionType": "JSFunction",
+            "method": "disableButton",
+            "inputData": {
+                "buttonName": "remove",
+                "dataProvider": "{{data.dataProviders.orgTreeTableDataProvider}}"
+            },
+            "deps": "js/ShareTemplateService"
+        },
+        "unRegisterOrgInShareReportContext": {
+            "actionType": "JSFunction",
+            "method": "unRegisterOrgInShareReportContext",
+            "deps": "js/ShareTemplateService",
+            "inputData": {
+            }
+        },
+        "handleOrgTreeSelection": {
+            "actionType": "JSFunction",
+            "method": "disableButton2",
+            "inputData": {
+                "buttonName": "remove",
+                "selectionData": "{{data.selectionData}}",
+                "shareReportState": "{{props.shareReportState}}"
+            },
+            "deps": "js/ShareTemplateService"
+        },
+        "handleSelectionBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "handleOrgTreeSelection"
+                }
+            ]
+        },
+        "updateOrgTreeSelectionAfterShareReportStateUpdate": {
+            "actionType": "JSFunction",
+            "method": "updateOrgTreeSelectionAfterShareReportStateUpdate",
+            "inputData": {
+                "selectionData": "{{data.selectionData}}",
+                "shareReportState": "{{props.shareReportState}}",
+                "selectionDataUpdater": "{{data.updateAtomicData}}"
+            },
+            "deps": "js/ShareTemplateService"
+        },
+        "updateSharedWithStateWithAddAndRemoveButtonVisibility":{
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.shareReportState}}",
+                "value": {
+                    "sharedWithTableSelection" : false,
+                    "availableTableSelection" : false,
+                    "disableAddButton" : true,
+                    "disableRemoveButton" : true
+                }
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "conditions": {},
+    "onEvent": [
+    ],
+    "data": {
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "searchState": {
+            "initialValues": {
+                "autoApplyFilters": true,
+                "criteria": {
+                    "searchString": ""
+                },
+                "label": {
+                    "source": "/i18n/SearchMessages",
+                    "key": "resultsText"
+                },
+                "provider": "Awp0OrgTreeProvider",
+                "hideSectionHeaders":true
+            },
+            "meta": {
+                "categories": [ {
+                    "filterValues": [ {
+                        "selected": {
+                            "field": "true",
+                            "type": "ViewModelProperty"
+                        }
+                    } ]
+                } ]
+            }
+        }
+    },
+    "selectionModels": {
+        "activeFolderShareRuleSelectionModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "dataProviders": {
+    },
+    "columnProviders": {
+    },
+    "grids": {
+    },
+    "dataParseDefinitions": {
+    },
+    "lifecycleHooks": {
+        "onMount":"updateSharedWithStateWithAddAndRemoveButtonVisibility",
+        "onUnmount": "unRegisterOrgInShareReportContext",
+        "onUpdate": [
+            {
+                "action": "handleSelectionBatchJob",
+                "observers": [
+                    "viewModel.atomicData.selectionData.selected"
+                ]
+            },
+            {
+                "action": "updateOrgTreeSelectionAfterShareReportStateUpdate",
+                "observers": [
+                    "props.shareReportState"
+                ]
+            }
+        ]
+    },
+    "messages": {},
+    "i18n": {},
+    "props": {
+        "share-report-state": {
+            "type": "object"
+        }
+    }
+}

@@ -1,0 +1,132 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "data": {
+        "privilege": {
+            "type": "STRING",
+            "hasLov": true,
+            "dbValue": "",
+            "displayName": "{{i18n.role}}"
+        }
+    },
+    "actions": {
+        "setSelectedPrivilege": {
+            "actionType": "JSFunction",
+            "method": "setSelectedPrivilege",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/Saw1SearchFilterService"
+        },
+        "populatePrivilegeList": {
+            "actionType": "JSFunction",
+            "method": "populatePrivilegeList",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "privilegeList" : "privilegeList",
+                "privilege" : "privilege"
+            },
+            "deps": "js/Saw1SearchFilterService"
+        },
+        "reveal": {
+            "actionType": "dataProvider",
+            "method": "listDataProvider"
+        },
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "maxToLoad": "{{subPanelContext.searchState.maxToLoad}}",
+                        "maxToReturn": "{{subPanelContext.searchState.maxToReturn}}",
+                        "providerName": "{{subPanelContext.searchState.provider}}",
+                        "searchCriteria": "{{subPanelContext.searchState.criteria}}",
+                        "searchFilterFieldSortType": "{{subPanelContext.searchState.sortType}}",
+                        "startIndex": "{{data.dataProviders.listDataProvider.startIndex}}",
+                        "searchFilterMap6": "{{subPanelContext.searchState.activeFilterMap}}",
+                        "searchSortCriteria": "{{subPanelContext.searchState.sortCriteria}}"
+                    },
+                    "inflateProperties": false
+                },
+                "1": {
+                    "types": [ {
+                        "name": "BusinessObject",
+                        "properties": [ {
+                            "name": "awp0CellProperties"
+                        } ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "output": "{{function:processOutput}}"
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "schSearchListErrorMsg"
+                } ]
+            }
+        }
+    },
+    "functions": {
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.searchState}}"
+            ],
+            "deps": "js/Saw1SearchFilterService"
+        }
+    },
+    "dataProviders": {
+        "listDataProvider": {
+            "action": "loadData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "schedulesSearchList.contentLoaded",
+            "action": "populatePrivilegeList"
+        }
+    ],
+    "messages": {
+        "schSearchListErrorMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n": {
+        "coordinator": [ "ScheduleManagerMessages" ],
+        "participant": [ "ScheduleManagerMessages" ],
+        "observer": [ "ScheduleManagerMessages" ],
+        "role": [ "ScheduleManagerMessages" ]
+    },
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "reveal",
+                "observers": [
+                    "props.subPanelContext.searchState.criteria.searchString",
+                    "props.subPanelContext.searchState.filterString"
+                ]
+            },
+            {
+                "action": "setSelectedPrivilege",
+                "observers": [
+                    "props.subPanelContext.searchState.criteria.privilege"
+                ]
+            }
+        ]
+    }
+}

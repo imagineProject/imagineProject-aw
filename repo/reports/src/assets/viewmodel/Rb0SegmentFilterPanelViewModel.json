@@ -1,0 +1,301 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "updateSearchStateAfterFilterAction": {
+            "actionType": "JSFunction",
+            "method": "updateSearchStateAfterFilterAction",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.searchState}}",
+                "showPrefilter": false
+            },
+            "deps": "js/searchCommonUtils"
+        },
+        "constructBreadCrumbTitle": {
+            "actionType": "JSFunctionAsync",
+            "method": "buildTitle",
+            "inputData": {
+                "searchObject": "{{props.subPanelContext.searchState}}"
+            },
+            "outputData": {
+                "crumbTitle": ""
+            },
+            "deps": "js/AwSearchBreadcrumbUtils"
+        },
+        "updateResultsCaption":{
+            "actionType": "JSFunction",
+            "method": "updateResultsCaption",
+            "inputData": {
+                "resultsText": "{{i18n.results}}",
+                "searchState": "{{subPanelContext.searchState}}",
+                "customResultsCount": "{{subPanelContext.searchState.customResultsCount}}"
+            },
+            "outputData": {
+                "resultsText": "resultsText"
+            },
+            "deps": "js/advancedSearchService"
+        },
+        "callSOaForSearchInProgressTrue":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "updateRelationsPathWithFilter",
+                "condition": "props.subPanelContext.searchState.getValue().searchInProgress"
+            }, {
+                "action": "performSearchForSelectedRelations",
+                "condition": "props.subPanelContext.searchState.getValue().searchInProgress"
+            } ]
+        },
+        "updateRelationsPathWithFilter":{
+            "actionType": "JSFunctionAsync",
+            "method": "updateRelationsPathWithFilter",
+            "inputData": {
+                "localReportsState":"{{fields.localReportsState}}",
+                "searchState": "{{props.subPanelContext.searchState}}"
+            },
+            "deps": "js/AddRelationDialogService"
+        },
+        "updateLocalResportsState":{
+            "actionType": "JSFunctionAsync",
+            "method": "updateLocalReportsStateWithSelectedNode",
+            "inputData": {
+                "localReportsState": "{{fields.localReportsState}}",
+                "reportsState": "{{props.subPanelContext.reportsState}}",
+                "selectedNode": "{{props.subPanelContext.activeState.selectedNode}}",
+                "searchState": "{{props.subPanelContext.searchState}}"
+            },
+            "outputData":{
+                "localReportsState": ""
+            },
+            "deps": "js/AddRelationDialogService"
+        },
+        "performSearchForSelectedRelations":{
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "",
+                        "columnsToExclude": [],
+                        "hostingClientName": ""
+                    },
+                    "saveColumnConfigData": {
+                        "columnConfigId": "",
+                        "clientScopeURI": "",
+                        "columns": [],
+                        "scope": "",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "searchSortCriteria": "",
+                        "attributesToInflate": [],
+                        "internalPropertyName": "",
+                        "maxToLoad": -1,
+                        "maxToReturn": -1,
+                        "providerName": "Rb0ReportsDataProvider",
+                        "searchCriteria": "{{function:callRepGetSearchCriteria}}",
+                        "startIndex": 0
+                    },
+                    "inflateProperties": false,
+                    "noServiceData": false
+                }
+            },
+            "outputData":{
+                "totalRelatedFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "output": "{{function:processOutputForRelations}}"
+            }
+        },
+        "toggleFilterView":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "updateSearchStateSearchInProgress"
+            },{
+                "action": "setActiveView"
+            } ]
+        },
+        "setActiveView": {
+            "actionType": "JSFunctionAsync",
+            "method": "toggleFilterView",
+            "inputData": {
+                "activeSection": "{{data.activeSection}}"
+            },
+            "outputData": {
+                "activeSection": ""
+            },
+            "deps": "js/searchCommonUtils"
+        },
+        "updateSearchStateSearchInProgress": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.searchState}}",
+                "value": {
+                    "searchInProgress": true
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "backAction":{
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.activeState}}",
+                "value": {
+                    "activeView": "AddRelationDialog"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "getRelatedFilteredObjects":{
+            "actionType": "JSFunctionAsync",
+            "method": "getRelatedFilteredObjects",
+            "inputData": {
+                "searchResults":"{{data.searchResults}}"
+            },
+            "outputData": {
+                "relatedFilteredObjs": ""
+            },
+            "deps": "js/AddRelationDialogService"
+        },
+        "resetSearchStateAndActiveFilterMap":{
+            "actionType": "JSFunction",
+            "method": "cleanupSegmentFilterPanel",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.searchState}}",
+                "selectionModel": "{{props.subPanelContext.selectionModel}}",
+                "value": {
+                    "activeFilterMap": {},
+                    "activeFilters": {}
+                }
+            },
+            "deps": "js/AddRelationDialogService"
+        },
+        "addFilterAction": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "addFilter"
+            }, {
+                "action": "backAction"
+            } ]
+        },
+        "addFilter": {
+            "actionType": "JSFunctionAsync",
+            "method": "addFilterAction",
+            "inputData": {
+                "searchState":"{{props.subPanelContext.searchState}}",
+                "reportsState":"{{props.subPanelContext.reportsState}}",
+                "selectedNode":"{{props.subPanelContext.activeState.selectedNode}}"
+            },
+            "deps": "js/AddRelationDialogService"
+        }
+    },
+    "data": {
+        "relationValue":{
+            "displayName": "{{i18n.relationName}}",
+            "type": "STRING",
+            "dispValue": "{{props.subPanelContext.activeState.selectedNode.label}}",
+            "isSelectOnly": false,
+            "isEditable": false
+        },
+        "activeSection": "filter",
+        "filterCommand": {
+            "action": "toggleFilterView",
+            "iconName": "cmdFilterActive",
+            "tooltip": "{{i18n.filters}}"
+        },
+        "localReportsState": {
+            "initialValues": {},
+            "meta":{}
+        }
+    },
+    "dataProviders": {
+        "searchListDataProvider": {
+            "action": "getRelatedFilteredObjects",
+            "response": "{{data.relatedFilteredObjs}}",
+            "totalFound": "{{data.relatedFilteredObjs.length}}",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "selectionData": "{{subPanelContext.selectionData}}"
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "functions": {
+        "processOutputForRelations": {
+            "functionName": "processOutputForFilters",
+            "parameters": [
+                "{{data}}",
+                "{{props.subPanelContext.searchState}}",
+                "{{data.dataProviders.searchListDataProvider}}"
+            ],
+            "deps": "js/AddRelationDialogService"
+        },
+        "callRepGetSearchCriteria":{
+            "functionName": "callRepGetSearchCriteria",
+            "parameters": [
+                "{{data.localReportsState}}",
+                "true"
+            ],
+            "deps": "js/AddRelationDialogService"
+        }
+    },
+    "i18n": {
+        "relationName": [
+            "ReportChartMessages"
+        ],
+        "addFilter": [
+            "ReportChartMessages"
+        ],
+        "saveReport": [
+            "ReportChartMessages"
+        ],
+        "filters": [
+            "ReportChartMessages"
+        ],
+        "results":[
+            "ReportChartMessages"
+        ],
+        "filterPanelCategoryFilterPlaceholderText": [
+            "SearchMessages"
+        ]
+    },
+    "lifecycleHooks": {
+        "onMount": "updateLocalResportsState",
+        "onUpdate": [{
+            "action": "updateSearchStateAfterFilterAction",
+            "observers": [
+                "props.subPanelContext.searchState"
+            ]
+        },{
+            "action": "constructBreadCrumbTitle",
+            "observers": [
+                "props.subPanelContext.searchState"
+            ]
+        },{
+            "action": "updateResultsCaption",
+            "observers": [
+                "props.subPanelContext.searchState.cursorInfoString"
+            ]
+        },{
+            "action": "callSOaForSearchInProgressTrue",
+            "observers": [
+                "props.subPanelContext.searchState.searchInProgress"
+            ]
+        }],
+        "onUnmount": "resetSearchStateAndActiveFilterMap"
+    },
+    "conditions": {
+        "isSaveEnabled":{
+            "expression": "!props.subPanelContext.searchState.searchInProgress && data.totalRelatedFound"
+        },
+        "showApplyAllButton": {
+            "expression": "!subPanelContext.searchState.autoApplyFilters && subPanelContext.searchState.bulkFiltering && (subPanelContext.searchState.positivePendingFilters && subPanelContext.searchState.positivePendingFilters.length > 0 || subPanelContext.searchState.negativePendingFilters && subPanelContext.searchState.negativePendingFilters.length > 0 || subPanelContext.searchState.additionalSearchString && subPanelContext.searchState.additionalSearchString.length > 0)"
+        }
+    }
+}

@@ -1,0 +1,169 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-panel-body.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-i18n.directive",
+        "js/aw-xrt.directive",
+        "js/visible-when.directive",
+        "js/aw-form.directive"
+    ],
+    "actions": {
+        "saveAsVariantRule": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2019-12-OccurrenceConfiguration",
+            "method": "createOrUpdateClassicVariantRule",
+            "inputData": {
+                "inputData": {
+                    "productContext": {
+                        "type": "Awb0ProductContextInfo",
+                        "uid": "{{props.subPanelContext.occContext.productContextInfo.uid}}"
+                    },
+                    "variantRuleName": "{{function:fetchVariantRuleName}}",
+                    "variantContent": {
+                        "variantRule": {
+                        },
+                        "variantOptionValueEntry": "{{function:fetchSelectedOptions}}"
+                    }
+                }
+            },
+            "outputData": {
+                "classicVariants": "{{function:processSaveClassicVariantResponse}}"
+            },
+            "deps": "js/classicVariantService",
+            "events": {
+                "success": [
+                    {
+                        "name":"Awb0SaveVariantPanel.clearCache"
+                    },
+                    {
+                        "name": "Awb0SaveVariantPanel.setMountFlag"
+                    },
+                    {
+                        "name": "updateTitle"
+                    },
+                    {
+                        "name": "backToDefineClassicVariantRule"
+                    },
+                    {
+                        "name": "Awb0SaveVariantPanel.resetDirtyFlag"
+                    }     
+                ]
+            }
+        },
+        "backToDefineClassicVariantRule": {
+            "actionType": "JSFunction",
+            "method": "goToPrevPanel",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}"
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "updateTitle":{
+            "actionType": "JSFunction",
+            "method": "updateTitleOfView",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "panelId": "Awb0DefineClassicVariantRule",
+                "value": "{{data.ctx.variantConfigContext.initialVariantRule.props.object_string.dbValue}}"
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "setMountFlag": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "path": "classicCfgContext.isOnMountTrue",
+                "value": false
+            }
+        },
+        "resetDirtyFlag": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "path": "classicCfgContext.isSavePanelDirty",
+                "value": false
+            }
+        },
+        "clearDataProviderCache": {
+            "actionType": "JSFunction",
+            "method": "clearDataProviderCache",
+            "deps": "js/classicVariantService",
+            "inputData": {
+              "data": "{{data}}"
+            }
+        }
+    },
+    "data": {
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "functions": {
+        "fetchSelectedOptions": {
+            "functionName": "fetchSelectedOptions",
+            "parameters": ["{{ctx.classicCfgContext}}"]
+        },
+        "fetchVariantRuleName":{
+            "functionName": "fetchVariantRuleName",
+            "parameters": ["{{data}}", "{{editHandlers.addPanelEditHandler}}"]
+        },
+        "processSaveClassicVariantResponse": {
+            "functionName": "processSaveClassicVariantResponse",
+            "parameters": []
+        }
+    },
+
+    "onEvent": [ 
+        {
+            "eventId": "backToDefineClassicVariantRule",
+            "action": "backToDefineClassicVariantRule"
+        },
+        {
+            "eventId": "Awb0SaveVariantPanel.resetDirtyFlag",
+            "action": "resetDirtyFlag"
+        },
+        {
+            "eventId": "Awb0SaveVariantPanel.setMountFlag",
+            "action": "setMountFlag"
+        },
+        {
+            "eventId": "Awb0SaveVariantPanel.clearCache",
+            "action": "clearDataProviderCache"
+        },
+        {
+            "eventId": "updateTitle",
+            "action": "updateTitle"
+        }
+    ],
+
+    "i18n": {
+        "saveButtonText": [
+            "OccurrenceManagementConstants"
+        ]
+    },
+
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

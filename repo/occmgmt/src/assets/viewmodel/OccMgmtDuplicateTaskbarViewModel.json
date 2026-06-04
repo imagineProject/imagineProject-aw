@@ -1,0 +1,271 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "data": {
+        "runInBackgroundCheckBox": {
+            "displayName": "{{i18n.runInBackground}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": true
+        }
+    },
+    "actions": {
+        "occMgmtDuplicateNavigateToBack": {
+            "actionType": "JSFunction",
+            "method": "goBack",
+            "deps": "js/locationNavigation.service"
+        },
+        "openNewObject": {
+            "actionType": "JSFunction",
+            "method": "go",
+            "inputData": {
+                "showObject": "com_siemens_splm_clientfx_tcui_xrt_showObject",
+                "toParams": {
+                    "uid": "{{data.eventData.created}}",
+                    "page": "Content",
+                    "pageId": "tc_xrt_Content"
+                },
+                "option": {
+                    "inherit": false
+                }
+            },
+            "events": {
+                "success": [ {
+                    "name": "complete",
+                    "eventData": {
+                        "source": "toolAndInfoPanel"
+                    }
+                } ]
+            },
+            "deps": "js/locationNavigation.service"
+        },
+        "clearDuplicateInfo": {
+            "actionType": "JSFunction",
+            "method": "clearDuplicateInfo",
+            "deps": "js/occMgmtDuplicateActionService"
+        },
+        "initiateDuplicate": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "OccMgmtDuplicatePanel.saveDuplicateExecutionSettings"
+                }, {
+                    "name": "occMgmtDuplicate.preDuplicateProcessing"
+                } ]
+            }
+        },
+        "preDuplicateProcessing": {
+            "actionType": "JSFunction",
+            "method": "preDuplicateProcessing",
+            "inputData": {},
+            "outputData": {
+                "dataMap": "dataMap",
+                "cloneFlags": "cloneFlags",
+                "panelSetting": "panelSetting"
+            },
+            "events": {
+                "success": [ {
+                    "name": "OccMgmtDuplicate.cloneContent"
+                } ]
+            },
+            "deps": "js/occMgmtDuplicateActionService"
+        },
+        "cloneContent": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2019-06-OccurrenceManagement",
+            "method": "cloneContent",
+            "inputData": {
+                "inputs": [ {
+                    "productContextInfo": "{{ctx.occmgmtContext.productContextInfo}}",
+                    "defaultName": {
+                        "autogen": "{{data.panelSetting.autogen}}",
+                        "fromString": "{{data.panelSetting.fromString}}",
+                        "toString": "{{data.panelSetting.toString}}",
+                        "prefix": "{{data.panelSetting.prefix}}",
+                        "suffix": "{{data.panelSetting.suffix}}"
+                    },
+                    "dataList": "{{data.dataMap}}",
+                    "cloneFlags": "{{data.cloneFlags}}",
+                    "defaultFolder": { "uid": "AAAAAAAAAAAAAA", "type": "unknownType" }
+                } ]
+            },
+            "outputData": {
+                "duplicateAndReplaceResponse": "",
+                "clonedObject": "{{function:setClonedObject}}"
+            },
+            "actionMessages": {
+                "success": [ {
+                        "message": "occMgmtDuplicateSyncSuccessMessage",
+                        "condition": "!ctx.occmgmtContext.runInBackgroundValue && data.duplicateAndReplaceResponse.created[0]"
+                    },
+                    {
+                        "message": "occMgmtDuplicateTitleAsyncSuccessMessage",
+                        "condition": "ctx.occmgmtContext.runInBackgroundValue"
+                    }
+                ],
+                "failure": [ {
+                    "message": "cloneContentFailure"
+                } ]
+            },
+            "events": {
+                "success": [ {
+                        "name": "occMgmtDuplicate.clearDuplicateInfo"
+                    },
+                    {
+                        "name": "occTreeDuplicateTable.resetDuplicateActions",
+                        "condition": "ctx.occmgmtContext.runInBackgroundValue"
+                    },
+                    {
+                        "name": "occMgmtDuplicate.occMgmtDuplicateNavigateToBack",
+                        "condition": "ctx.occmgmtContext.runInBackgroundValue"
+                    },
+                    {
+                        "name": "occMgmtDuplicate.openNewObject",
+                        "eventData": {
+                            "created": "{{data.duplicateAndReplaceResponse.created[0]}}"
+                        },
+                        "condition": "!ctx.occmgmtContext.runInBackgroundValue && data.duplicateAndReplaceResponse.created[0]"
+                    }
+                ]
+            },
+            "deps": "js/occMgmtDuplicateActionService"
+        },
+        "showConfirmationMessageForDuplicate": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "complete",
+                    "eventData": {
+                        "source": "toolAndInfoPanel"
+                    }
+                } ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "cancelDuplicate"
+                } ]
+            }
+        },
+        "cancelDuplicateDataAndNavigateBack": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "cancelDuplicateModeAndClearData"
+                },
+                {
+                    "action": "occMgmtDuplicateNavigateToBack"
+                }
+            ]
+        },
+        "cancelDuplicateModeAndClearData": {
+            "actionType": "JSFunction",
+            "method": "cancelDuplicateModeAndClearData",
+            "deps": "js/occMgmtDuplicateActionService"
+        },
+        "updateRunInBackGroundFlag": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "occmgmtContext.runInBackgroundValue",
+                "value": "{{data.runInBackgroundCheckBox.dbValue}}"
+            },
+            "deps": "js/appCtxService"
+        }
+    },
+    "functions": {
+        "setClonedObject": {
+            "functionName": "setClonedObject"
+        }
+    },
+    "messages": {
+        "cancelDuplicate": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.occMgmtDuplicateConfirmation}}",
+            "navigationOptions": [ {
+                    "option": "Stay",
+                    "text": "{{i18n.stay}}"
+                },
+                {
+                    "option": "Discard",
+                    "text": "{{i18n.discard}}",
+                    "action": "cancelDuplicateDataAndNavigateBack"
+                }
+            ]
+        },
+        "occMgmtDuplicateSyncSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.occMgmtDuplicateSyncSuccessMessage}}",
+            "messageTextParams": [
+                "{{ctx.occmgmtContext.clonedElement.props.object_string.uiValues}}",
+                "{{ctx.occmgmtContext.sourceElement.props.object_string.uiValues}}"
+            ]
+        },
+        "occMgmtDuplicateTitleAsyncSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.occMgmtDuplicateTitleAsyncSuccessMessage}}"
+        },
+        "cloneContentFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "OccMgmtDuplicate.cloneContent",
+            "action": "cloneContent"
+        },
+        {
+            "eventId": "occMgmtDuplicate.openNewObject",
+            "action": "openNewObject",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "occMgmtDuplicate.clearDuplicateInfo",
+            "action": "clearDuplicateInfo"
+        },
+        {
+            "eventId": "occMgmtDuplicate.preDuplicateProcessing",
+            "action": "preDuplicateProcessing"
+        },
+        {
+            "eventId": "occMgmtDuplicate.occMgmtDuplicateNavigateToBack",
+            "action": "occMgmtDuplicateNavigateToBack"
+        }
+    ],
+    "conditions": {
+        "isTaskbarFullScreen": {
+            "expression": "ctx.taskbarfullscreen && ctx.taskbarfullscreen === 'true'"
+        },
+        "exportToExcelCommandCondition": {
+            "expression": "'true' === 'true'"
+        }
+    },
+    "i18n": {
+        "cancel": [
+            "OccurrenceManagementConstants"
+        ],
+        "occMgmtDuplicateTitle": [
+            "OccMgmtDuplicateConstants"
+        ],
+        "occMgmtDuplicateConfirmation": [
+            "OccMgmtDuplicateMessages"
+        ],
+        "stay": [
+            "OccurrenceManagementConstants"
+        ],
+        "discard": [
+            "OccurrenceManagementConstants"
+        ],
+        "runInBackground": [
+            "OccurrenceManagementConstants"
+        ],
+        "occMgmtDuplicateSyncSuccessMessage": [
+            "OccMgmtDuplicateMessages"
+        ],
+        "occMgmtDuplicateTitleAsyncSuccessMessage": [
+            "OccMgmtDuplicateMessages"
+        ]
+    }
+}

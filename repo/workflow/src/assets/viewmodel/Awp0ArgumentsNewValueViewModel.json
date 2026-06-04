@@ -1,0 +1,320 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+    ],
+    "actions": {
+        "populateArgumentValueslist" : {
+            "actionType": "JSFunction",
+            "method": "populateArgumentValueslist",
+            "inputData": {
+                "data":"{{data}}",
+                "handlerRelatedData": "{{props.subPanelContext.data}}",
+                "vmo": "{{props.subPanelContext.vmo}}",
+                "argumentToValueMap":"{{props.argumentToValueMap}}",
+                "ctx":"{{ctx}}",
+                "props":"{{props}}"
+
+            },
+            "outputData":{
+                "argumentValueslist":"argumentValueslist",
+                "multiselect":  "multiselect",
+                "argHasFreeFormText" :"argHasFreeFormText",
+                "argHasNullValue" :"argHasNullValue",
+                "readOnlyArgumentName":"readOnlyArgumentName",
+                "argumentValueTextBox" :"argumentValueTextBox",
+                "argumentValuesMultiselect" :"argumentValuesMultiselect",
+                "argumentValues" :"argumentValues",
+                "argumentNameTextBox" :"argumentNameTextBox",
+                "argumentNames":"argumentNames"
+            },
+            "deps": "js/Awp0CreateOrUpdateTaskHandlers"
+        },
+        "populateArgumentNameslist" : {
+            "actionType": "JSFunction",
+            "method": "populateArgumentNameslist",
+            "inputData": {
+                "data": "{{data}}",
+                "handlerRelatedData": "{{props.subPanelContext.data}}",
+                "props":"{{props}}"
+            },
+            "outputData":{
+                "argumentNameList":"argumentNameList"
+            },
+            "deps": "js/Awp0CreateOrUpdateTaskHandlers"
+        },
+        "populateArgumentValues" : {
+            "actionType": "JSFunction",
+            "method": "populateArgumentValues",
+            "inputData": {
+                "data": "{{data}}",
+                "handlerRelatedData": "{{props.subPanelContext.data}}",
+                "vmo": "{{props.subPanelContext.vmo}}",
+                "argumentToValueMap":"{{props.argumentToValueMap}}",
+                "ctx":"{{ctx}}",
+                "props":"{{props}}"
+            },
+            "outputData":{
+                "argumentValueslist":"argumentValueslist",
+                "multiselect":  "multiselect",
+                "argHasFreeFormText" :"argHasFreeFormText",
+                "argHasNullValue" :"argHasNullValue",
+                "readOnlyArgumentName":"readOnlyArgumentName",
+                "argumentValueTextBox" :"argumentValueTextBox",
+                "argumentValuesMultiselect" :"argumentValuesMultiselect",
+                "argumentValues" :"argumentValues",
+                "argumentNameTextBox" :"argumentNameTextBox",
+                "argumentNames":"argumentNames"
+            },
+            "deps": "js/Awp0CreateOrUpdateTaskHandlers"
+        },
+        "updateArgumentValueMap" : {
+            "actionType": "JSFunction",
+            "method": "updateArgumentValueMap",
+            "inputData": {
+                "argumentToValueMap": "{{props.argumentToValueMap}}",
+                "data":"{{data}}",
+                "ctx":"{{ctx}}",
+                "props":"{{props}}",
+                "vmo":"{{props.subPanelContext.vmo}}"
+
+            },
+            "deps": "js/Awp0CreateOrUpdateTaskHandlers"
+        },
+        "clearArgumentValueTextBoxAction": {
+            "actionType": "JSFunction",
+            "method": "clearArgumentValueTextBoxAction",
+            "inputData": {
+                "data": "{{data}}",
+                "selectedHandlerArguments": "{{data.eventMap['clearArgumentValueTextBoxEvent'].selectedArgument}}"
+            },
+            "deps": "js/Awp0CreateOrUpdateTaskHandlers"
+        },
+        "populateData": {
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action": "populateArgumentValueslist"
+                }
+            ]
+        },
+        "updateArgumentMap": {
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action": "updateArgumentValueMap",
+                    "condition": "data.argumentValues.valueUpdated || data.argumentValuesMultiselect.valueUpdated || data.argumentValueTextBox.valueUpdated || data.argumentNameTextBox.valueUpdated"
+                }
+            ]
+        },
+        "getIncrementalList": {
+            "actionType": "JSFunction",
+            "method": "generateListValues",
+            "inputData": {
+                "startChildNdx": "request.listLoadInput.startChildNdx",
+                "filter": "request.listLoadInput.filter",
+                "data": "{{data}}"
+
+            },
+            "outputData": {
+                "listVals": "vals",
+                "moreValuesExist": "moreValuesExist"
+            },
+            "deps": "js/Awp0CreateOrUpdateTaskHandlers"
+        }
+
+    },
+    "ctx": {
+        "preferences":{
+            "type": "Object"
+        }
+    },
+    "functions": {
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "clearArgumentValueTextBoxEvent",
+            "action": "clearArgumentValueTextBoxAction",
+            "cacheEventData": true
+        }
+    ],
+    "dataProviders": {
+        "argumentValuelistProvider": {
+            "initializeAction": "getIncrementalList",
+            "nextAction": "getIncrementalList",
+            "response": "{{data.listVals}}",
+            "totalFound": "{{data.argumentValueslist.length}}",
+            "moreValuesExist": "{{data.moreValuesExist}}"
+        },
+        "argumentNamelistProvider": {
+            "action": "populateArgumentNameslist",
+            "response": "{{data.argumentNameslist}}",
+            "moreValuesExist": false
+        }
+    },
+    "columnProviders": {
+    },
+    "props": {
+        "sub-panel-context":{
+            "type":"object"
+        },
+        "argument-to-value-map":{
+            "type":"object"
+        },
+        "selected-handler-arguments":{
+            "type":"object"
+        }
+    },
+    "data": {
+        "argumentValues":
+        {
+            "displayName": "{{i18n.argumentValue}}",
+            "type": "STRING",
+            "hasLov": true,
+            "isEditable": "true",
+            "dbValue": "",
+            "labelPosition": "NO_PROPERTY_LABEL",
+            "requiredText": "{{i18n.TypeInRequiredValue}}"
+        },
+        "argumentNames":
+        {
+            "displayName": "{{i18n.arguments}}",
+            "type": "STRING",
+            "hasLov": true,
+            "isEditable": "true",
+            "dbValue": "",
+            "labelPosition": "NO_PROPERTY_LABEL",
+            "dataProvider": "argumentNamelistProvider"
+        },
+        "argumentValueTextBox":
+        {
+            "displayName": "{{i18n.argumentValue}}",
+            "type": "STRING",
+            "isEditable": "true",
+            "dbValue": "",
+            "labelPosition": "NO_PROPERTY_LABEL",
+            "requiredText": "{{i18n.TypeInRequiredValue}}"
+        },
+        "argumentNameTextBox":
+        {
+            "displayName": "{{i18n.arguments}}",
+            "type": "STRING",
+            "isEditable": "true",
+            "dbValue": "",
+            "labelPosition": "NO_PROPERTY_LABEL",
+            "requiredText": "{{i18n.TypeInRequiredValue}}"
+        },
+        "argumentValuesMultiselect": {
+            "displayName": "{{i18n.argumentValue}}",
+            "type": "CHECKBOX",
+            "isArray": true,
+            "dataProvider": "argumentValuelistProvider",
+            "labelPosition": "NO_PROPERTY_LABEL",
+            "renderingHint":"checkboxoptionlov"
+        },
+        "readOnlyArgumentName":
+        {
+            "displayName": "{{i18n.arguments}}",
+            "type": "STRING",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "undefinedArgValueRadioButton": {
+            "displayName": "{{i18n.entryType}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "isEditable": "true",
+            "dbValue":"false",
+            "uiValue": "false",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "undefinedArgValueRadioValues": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.predefined}}",
+                    "propInternalValue": "false"
+                },
+                {
+                    "propDisplayValue": "{{i18n.undefined}}",
+                    "propInternalValue": "true"
+                }
+            ]
+        },
+        "argumentValueslist":
+        {
+            "type": "STRING",
+            "isArray": true
+        },
+        "argumentNameslist":
+        {
+            "type": "STRING",
+            "isArray": true
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate":[{
+            "action": "populateData",
+            "observers": [
+                        "props.subPanelContext.vmo"
+            ]
+        },
+        {
+            "action": "updateArgumentMap",
+            "observers": [
+                        "viewModel.argumentValues",
+                        "viewModel.argumentValuesMultiselect",
+                        "viewModel.argumentValueTextBox",
+                        "viewModel.argumentNameTextBox"
+            ]
+        }
+      ],
+      "onMount":"populateArgumentNameslist"
+    },
+    "conditions": {
+        "showArgumentTextBox":
+        {
+            "expression": "props.subPanelContext.data.handlerData==='' && !props.subPanelContext.vmo"
+        },
+        "showArgumentValueTextBox":
+        {
+            "expression": "props.subPanelContext.data.handlerData=='' || data.argumentValueslist.length === 0 || data.undefinedArgValueRadioButton.dbValue === 'true' || data.argHasFreeFormText === true"
+        },
+        "isFreeFromCheckBoxEnable":
+        {
+            "expression": "data.undefinedArgValueRadioButton.dbValue === 'true' && !props.subPanelContext.vmo"
+        },
+        "isArgHasNullValue":
+        {
+            "expression": "data.argHasNullValue"
+        },
+        "isUndefinedArgValue":
+        {
+            "expression": "props.subPanelContext.vmo.isUndefinedArgRow"
+        }
+    },
+    "preferences":
+    [
+        "EPM_ARG_target_user_group_list_separator"
+    ],
+    "i18n": {
+        "taskName": [ "InboxMessages" ],
+        "arguments": [ "WorkflowDesignerMessages" ],
+        "handler" : [ "WorkflowDesignerMessages" ],
+        "action_type" : [ "WorkflowDesignerMessages" ],
+        "actionHandler" : [ "WorkflowDesignerMessages" ],
+        "ruleHandler" : [ "WorkflowDesignerMessages" ],
+        "argumentName" : [ "WorkflowDesignerMessages" ],
+        "argumentValue" : [ "WorkflowDesignerMessages" ],
+        "addArguments" : [ "WorkflowDesignerMessages" ],
+        "addTitle" : [ "WorkflowDesignerMessages" ],
+        "save" : [ "InboxMessages" ],
+        "entryType" : [ "WorkflowDesignerMessages" ],
+        "predefined" : [ "WorkflowDesignerMessages" ],
+        "undefined" : [ "WorkflowDesignerMessages" ],
+        "predefinedValues" : [ "WorkflowDesignerMessages" ],
+        "undefinedValues" : [ "WorkflowDesignerMessages" ],
+        "invalidValue":["WorkflowDesignerMessages"],
+        "TypeInRequiredValue":["WorkflowDesignerMessages"],
+        "hintMessageForTargetTaskArg": ["WorkflowDesignerMessages"]
+    }
+}

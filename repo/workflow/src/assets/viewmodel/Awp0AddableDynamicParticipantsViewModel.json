@@ -1,0 +1,133 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "actions": {
+        "initPanel": {
+            "actionType": "dataProvider",
+            "method": "addableParticipantsProvider"
+        },
+
+        "getAddableParticipants": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Awp0DynaParticipantsColConfig"
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0ParticipantTypeProvider",
+                        "searchCriteria": {
+                            "parentUid": "{{function:getAdaptedObjects}}",
+                            "addableParticipants": "true",
+                            "searchString": "{{data.filterBox.dbValue}}"
+                        },
+                        "searchFilterFieldSortType": "Priority",
+                        "searchFilterMap6": {},
+                        "searchSortCriteria": [],
+                        "startIndex": "{{data.dataProviders.addableParticipantsProvider.startIndex}}"
+                    },
+                    "inflateProperties": true
+                },
+                "1": {
+                    "types": [ {
+                        "name": "Fnd0ParticipantByType",
+                        "properties": [
+                            {
+                                "name": "fnd0Participant"
+                            },
+                            {
+                                "name": "fnd0ParticipantType"
+                            },
+                            {
+                                "name": "fnd0IsRequired"
+                            },
+                            {
+                                "name": "fnd0IsMultiValued"
+                            }
+                        ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "searchResults": "{{json:searchResultsJSON}}",
+                "totalFound": "totalFound"
+            }
+        },
+        "handleParticipantTypeSelection": {
+            "actionType": "JSFunction",
+            "method": "handleParticipantTypeSelection",
+            "inputData": {
+                "selectedType": "{{data.dataProviders.addableParticipantsProvider.selectedObjects}}",
+                "addTitle": "{{i18n.Add_Title}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "outputData": {
+                "sharedData":""
+            },
+            "deps": "js/Awp0ParticipantService"
+        }
+    },
+
+    "dataProviders": {
+        "addableParticipantsProvider": {
+            "action": "getAddableParticipants",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "single"
+        }
+    },
+
+    "functions": {
+        "modifyAddableParticipantTypes": {
+            "functionName": "modifyAddableParticipantTypes",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getAdaptedObjects": {
+            "functionName": "getAdaptedObjectsForSelectedObjects",
+            "deps": "js/AddParticipant"
+        }
+    },
+    "data": {
+        "filterBox": {
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "participants": {
+            "dispValue": "{{i18n.dynamicParticipantLabel}}"
+        }
+    },
+    "messages": {
+
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "ctx": {
+
+    },
+    "lifecycleHooks": {
+        "onMount": "initPanel"
+    },
+    "onEvent": [
+        {
+            "eventId": "addableParticipantsProvider.selectionChangeEvent",
+            "action": "handleParticipantTypeSelection"
+        }
+    ],
+    "conditions": {
+
+    },
+    "i18n": {
+        "Add_Title": [ "WorkflowCommandPanelsMessages" ],
+        "dynamicParticipantLabel": [ "WorkflowCommandPanelsMessages" ]
+    }
+}

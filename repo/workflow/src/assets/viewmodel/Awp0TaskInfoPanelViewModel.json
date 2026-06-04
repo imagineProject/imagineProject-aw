@@ -1,0 +1,100 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {        
+        "decisionsToRetain":
+        {
+            "displayName": "{{i18n.DecisionsToRetain}}",
+            "type": "STRING",
+            "hasLov": true,
+            "isEditable": "false",
+            "dataProvider": "getDecisionToRetainValues",
+            "emptyLOVEntry": true
+        }
+    },
+    "actions": {
+        "getDecisionToRetainOptions": {
+            "actionType": "JSFunction",
+            "method": "getDecisionToRetainOptions",
+            "inputData": {
+                "workflowDgmState": "{{props.subPanelContext}}"
+            },
+            "outputData" : {
+                "decisionsToRetainLov": ""
+            },
+            "deps": "js/Awp0TemplateProperties"
+        },
+        "loadPropertiesForDecisionsToRetain": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": [
+                    "{{props.subPanelContext.selected}}"
+                ],
+                "attributes": [
+                    "fnd0DecisionsToRetain",
+                    "last_mod_date"
+                ]
+            }
+        },
+        "initPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadPropertiesForDecisionsToRetain"
+                },
+                {
+                    "action": "populatePanelData"
+                }
+            ]
+        },
+        "populatePanelData" : {
+            "actionType": "JSFunction",
+            "method" : "populatePanelDataForInfo",
+            "inputData" : {
+                "data" : "{{data}}",
+                "ctx" : "{{ctx}}",
+                "props" : "{{props.subPanelContext}}",
+                "fields": "{{fields}}"
+            },
+            "deps": "js/Awp0TemplateProperties"
+        },
+        "updateDataSource": {
+            "actionType": "JSFunction",
+            "method": "addHtmlPanelPropertiesInDataSource",
+            "inputData": {
+                "updatedProperties": [
+                        "{{data.decisionsToRetain}}"
+                ],
+                "type": "INFO_PANEL_CONTEXT"
+            },
+            "deps": "js/xrtUtilities"
+        }
+    },
+    "dataProviders": {
+        "getDecisionToRetainValues": {
+            "action": "getDecisionToRetainOptions",
+            "response": "{{data.decisionsToRetainLov}}",
+            "moreValuesExist": false,
+            "totalFound": "{{data.decisionsToRetainLov.length}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initPanel",
+        "onUpdate": {
+            "action": "updateDataSource",
+            "observers": ["viewModel.data.decisionsToRetain"]
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "editHandlerStateChange",
+            "action" : "initPanel"
+        }
+    ],
+    "i18n":
+    {
+        "DecisionsToRetain": [ "WorkflowDesignerMessages" ]
+    }
+}

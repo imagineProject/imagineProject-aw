@@ -1,0 +1,429 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-add.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-i18n.directive",
+        "js/aw-form.directive"
+    ],
+    "data": {
+        "reference": {
+            "displayName": "{{i18n.reference}}",
+            "type": "STRING",
+            "hasLov": true
+        },
+        "datasetType": {
+            "displayName": "{{i18n.datasetType}}",
+            "type": "STRING",
+            "hasLov": true
+        },
+        "addPanelState": {
+            "initialValues": {
+                "creationType": "",
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {}
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub",
+                "context": {}
+            },
+            "meta": {}
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {}
+        },
+        "triggerCreate": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_SUB_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions": {
+        "assignObject": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateAttachmentsSectionRequired",
+                    "condition": "conditions.isPaletteObjectAdded"
+                },
+                {
+                    "action": "updateAttachmentsDataWithPaletteObject",
+                    "condition": "conditions.isPaletteObjectAdded"
+                },
+                {
+                    "action": "navigateToCreateChangePanel",
+                    "condition": "conditions.isPaletteObjectAdded"
+                }
+            ]
+        },
+        "createObject": {
+            "actionType": "JSFunction",
+            "method": "updateCreateTrigger",
+            "inputData": {
+                "triggerCreate": "{{data.triggerCreate}}",
+                "value": true
+            },
+            "outputData": {
+                "triggerCreate": "triggerCreate"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "performPostProcessingAfterCreate": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateAttachmentsSectionRequired",
+                    "condition": "conditions.isObjectCreated"
+                },
+                {
+                    "action": "updateAttachmentsData",
+                    "condition": "conditions.isObjectCreated"
+                },
+                {
+                    "action": "navigateToCreateChangePanel",
+                    "condition": "conditions.isObjectCreated"
+                }
+            ]
+        },
+        "updateAttachmentsSectionRequired": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{subPanelContext.attachmentsState}}",
+                "value" : {
+                    "updateAttachmentsSection": true
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateAttachmentsData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.attachmentsState}}",
+                "value": {
+                    "addAttachments": ["{{addPanelState.createdObject}}"]
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "navigateToCreateChangePanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "Cm1CreateChangeSub"
+            }
+        },
+        "updateAttachmentsDataWithPaletteObject": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.attachmentsState}}",
+                "value": {
+                    "addAttachments": "{{addPanelState.sourceObjects}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "genericAddObjectCM": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2016-09-DataManagement",
+            "method": "createAttachAndSubmitObjects",
+            "inputData": {
+                "inputs": "{{function:getCreateInput}}"
+            },
+            "outputData": {
+                "createdMainObject": "output[0].objects[0]",
+                "createdObject": "{{function:getCreatedObject}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "addObjectCM.assignProjects",
+                        "condition": "data.dataProviders.getAssignedProjectsProvider.viewModelCollection.loadedVMObjects.length>0"
+                    },
+                    {
+                        "name": "addObjectCM.objectcreated",
+                        "eventData": {
+                            "createdObject": "{{data.createdObject}}"
+                        }
+                    },
+                    {
+                        "name": "complete.subPanel",
+                        "eventData": {
+                            "source": "Cm1AddAttachmentSub"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "assignProjectsToCreatedObjectCM": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-09-ProjectLevelSecurity",
+            "method": "assignOrRemoveObjects",
+            "inputData": {
+                "assignedOrRemovedobjects": [
+                    {
+                        "projects": "{{data.dataProviders.getAssignedProjectsProvider.viewModelCollection.loadedVMObjects}}",
+                        "objectToAssign": [
+                            "{{data.createdMainObject}}"
+                        ],
+                        "objectToRemove": []
+                    }
+                ]
+            }
+        },
+        "uploadFileCM": {
+            "actionType": "RESTService",
+            "serviceName": "",
+            "method": "POST",
+            "inputData": {
+                "request": {
+                    "method": "POST",
+                    "url": "{{Constants.fmsUrl}}",
+                    "headers": {
+                        "Content-type": "undefined"
+                    },
+                    "data": "{{data.formData}}"
+                }
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "datasetCM.fileUploaded"
+                    }
+                ]
+            }
+        },
+        "commitDatasetFilesCM": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-FileManagement",
+            "method": "commitDatasetFiles",
+            "inputData": {
+                "commitInput": [
+                    {
+                        "dataset": "{{data.commitInfos.dataset}}",
+                        "createNewVersion": true,
+                        "datasetFileTicketInfos": [
+                            {
+                                "datasetFileInfo": {
+                                    "clientId": "{{data.commitInfos.datasetFileTicketInfos[0].datasetFileInfo.clientId}}",
+                                    "fileName": "{{data.commitInfos.datasetFileTicketInfos[0].datasetFileInfo.fileName}}",
+                                    "namedReferencedName": "{{data.commitInfos.datasetFileTicketInfos[0].datasetFileInfo.namedReferenceName}}",
+                                    "isText": "{{data.commitInfos.datasetFileTicketInfos[0].datasetFileInfo.isText}}",
+                                    "allowReplace": "{{data.commitInfos.datasetFileTicketInfos[0].datasetFileInfo.allowReplace}}"
+                                },
+                                "ticket": "{{data.fmsTicket}}"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "addObjectCM.objectcreated",
+                        "eventData": {
+                            "createdObject": "{{data.createdObject}}"
+                        }
+                    },
+                    {
+                        "name": "complete.subPanel",
+                        "eventData": {
+                            "source": "Cm1AddAttachmentSub"
+                        }
+                    }
+                ]
+            }
+        },
+        "updateFormDataCM": {
+            "actionType": "JSFunction",
+            "method": "updateFormData",
+            "inputData": {
+                "fileData": {
+                    "key": "fmsTicket",
+                    "value": "{{data.fmsTicket}}"
+                },
+                "data": "{{data}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "datasetCM.datasetCreated"
+                    }
+                ]
+            },
+            "deps": "js/declUtils"
+        },
+        "deleteDatasetCM": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "deleteObjects",
+            "inputData": {
+                "objects": [
+                    "{{data.createdObject}}"
+                ]
+            }
+        },
+        "setActiveView":{
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "addDatasetToAttachmentsBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "addDatasetToAttachments",
+                    "condition": "!data.addPanelState.fileInputForms || data.addPanelState.fileInputForms.length === 0"
+                }
+            ]
+        },
+        "addDatasetToAttachments":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateAttachmentsSectionRequired",
+                    "condition": "data.eventData.createdObjs && data.eventData.createdObjs.length > 0"
+                },
+                {
+                    "action": "updateDatasetAttachments",
+                    "condition": "data.eventData.createdObjs && data.eventData.createdObjs.length > 0"
+                },
+                {
+                    "action": "navigateToCreateChangePanel",
+                    "condition":"data.eventData.createdObjs && data.eventData.createdObjs.length > 0"
+                }
+            ]
+        },
+        "updateDatasetAttachments": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.attachmentsState}}",
+                "value": {
+                    "addAttachments": "{{data.eventData.createdObjs}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "conditions": {
+        "isNewTabAddButtonVisible": {
+            "expression": "addPanelState.creationType && !addPanelState.isDatasetCreate"
+        },
+        "isPaletteSearchTabAddButtonVisible": {
+            "expression": "addPanelState.selectedTab.view!='NewTabPageSub' && addPanelState.sourceObjects.length>0"
+        },
+        "isObjectCreated": {
+            "expression": "addPanelState.createdObject && addPanelState.createdObject.uid"
+        },
+        "isPaletteObjectAdded": {
+            "expression": "addPanelState.sourceObjects && addPanelState.sourceObjects.length>0"
+        }
+    },
+    "functions": {
+        "getCreateInput": {
+            "functionName": "getCreateInput",
+            "parameters": [
+                "{{data}}",
+                "",
+                "{{addPanelState.creationType}}",
+                "{{editHandlers.addPanelEditHandler}}"
+            ]
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "changeReferences.assignobject",
+            "action": "navigateToCreateChangePanel"
+        },
+        {
+            "eventId": "addObjectCM.objectcreated",
+            "action": "navigateToCreateChangePanel"
+        },
+        {
+            "eventId": "genericCM.createObject",
+            "action": "genericAddObjectCM"
+        },
+        {
+            "eventId": "addObjectCM.assignProjects",
+            "action": "assignProjectsToCreatedObjectCM"
+        },
+        {
+            "eventId": "datasetCM.datasetCreated",
+            "action": "uploadFileCM"
+        },
+        {
+            "eventId": "datasetCM.fileUploaded",
+            "action": "commitDatasetFilesCM"
+        },
+        {
+            "eventId": "datasetCM.commitFailed",
+            "action": "deleteDatasetCM"
+        },
+        {
+            "eventId": "fmsTicketCM.update",
+            "action": "updateFormDataCM"
+        },
+        {
+            "eventId": "gwt.CreateOrAddObjectCompleteEvent",
+            "cacheEventData": true,
+            "action": "addDatasetToAttachmentsBatchJob"
+        }
+    ],
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "performPostProcessingAfterCreate",
+                "observers": ["viewModel.atomicData.addPanelState.createdObject"]
+            }
+    ]
+    },
+
+    "i18n": {
+        "ADD_BUTTON_TITLE": [
+            "BaseMessages"
+        ],
+        "BACK_BUTTON_TITLE": [ "BaseMessages" ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

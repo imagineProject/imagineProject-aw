@@ -1,0 +1,95 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "render": {
+            "method": "awPcaObjectTypeLOVComponentRenderFunction",
+            "deps": "js/PcaObjectTypeLOVComponentService"
+        },
+        "getApplicableObjectTypes": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getApplicableObjectTypesFromCache",
+                    "condition": "conditions.shouldLoadTypesFromCacheCondition"
+                },
+                {
+                    "action": "getApplicableObjectTypesFromServer",
+                    "condition": "conditions.shouldLoadTypesFromServerCondition"
+                }
+            ]
+        },
+        "getApplicableObjectTypesFromCache": {
+            "actionType": "JSFunction",
+            "method": "getApplicableObjectTypesFromCache",
+            "inputData": {
+                "listVals": "{{data.listVals}}",
+                "objectTypesCachedValues": "{{props.vmo.props.object_type.objectTypesCachedValues}}"
+            },
+            "outputData": {
+                "listVals": "",
+                "moreValuesExist": false
+            },
+            "deps": "js/PcaObjectTypeLOVComponentService"
+        },
+        "getApplicableObjectTypesFromServer": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-04-DataManagement",
+            "method": "findDisplayableSubBusinessObjectsWithDisplayNames",
+            "inputData": {
+                "input": "{{function:getInputForApplicableTypes}}"
+            },
+            "outputData": {
+                "listVals": "{{function:processSoaResponseForBOTypes}}",
+                "moreValuesExist": false
+            },
+            "events": {
+                "success": [ {
+                    "name": "PcaObjectTypeLOVComponent.cacheLoadedObjectTypes",
+                    "eventData": {
+                        "boTypeName": "{{data.ctx.selected.type}}",
+                        "loadedObjectTypes": "{{data.listVals}}",
+                        "vmoUid": "{{props.vmo.uid}}"
+                    }
+                } ]
+            },
+            "deps": "js/PcaObjectTypeLOVComponentService"
+        }
+    },
+    "data": {},
+    "conditions": {
+        "shouldLoadTypesFromCacheCondition": {
+            "expression": "props.vmo.props.object_type.objectTypesCachedValues !== undefined || data.listVals !== undefined"
+        },
+        "shouldLoadTypesFromServerCondition": {
+            "expression": "!conditions.shouldLoadTypesFromCacheCondition"
+        }
+    },
+    "onEvent": [],
+    "dataProviders": {
+        "objTypeProvider": {
+            "action": "getApplicableObjectTypes",
+            "response": "{{data.listVals}}",
+            "moreValuesExist": "{{data.moreValuesExist}}"
+        }
+    },
+    "functions": {
+        "getInputForApplicableTypes":{
+            "functionName": "getInputForApplicableTypes",
+            "parameters": [
+                "{{data.ctx.selected.absType}}"
+            ]
+        },
+        "processSoaResponseForBOTypes": {
+            "functionName": "processSoaResponseForBOTypes",
+            "parameters": []
+        }
+    },
+    "lifecycleHooks": {
+        "render": "render"
+    },
+    "props": {
+        "prop": {
+            "type": "field"
+        }
+    }
+}
+

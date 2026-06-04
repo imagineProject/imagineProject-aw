@@ -1,0 +1,199 @@
+{
+    "schemaVersion" : "1.0.0",
+    "actions":
+    {
+        "initPanel":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "populateSecondaryPanel"
+                },
+                {
+                    "action": "populateTaskPanelLOV"
+                }
+            ]
+        },
+        "populateSecondaryPanel": {
+            "actionType": "JSFunction",
+            "method": "populateTargetPanelData",
+            "deps": "js/Awp0TargetCompleteTask",
+            "inputData": {
+                "data": "{{data}}",
+                "name": "{{props.subPanelContext.selected}}"
+            },
+            "outputData": {
+                "workflowTask": "workflowTask",
+                "workflowTasksList": "workflowTasksList",
+                "workflowTasksLOV": "workflowTasksLOV"
+            }
+        },
+        "populateTaskPanelLOV": {
+            "actionType": "JSFunction",
+            "method": "updateTaskPanel",
+            "deps": "js/Awp0TargetCompleteTask",
+            "inputData":
+             {
+                "selectedJob": "{{data.workflowTasksList[0].propInternalValue}}",
+                "data":"{{data}}",
+                "selectedItem": "{{props.subPanelContext.selected}}"
+             },
+            "outputData":
+             {
+                "isTaskPerformable": "isTaskPerformable",
+                "taskToPerform": "taskToPerform",
+                "activePerformTaskPanelId": "activePerformTaskPanelId"
+             }
+        },
+        "updateTaskPanel": {
+            "actionType": "JSFunction",
+            "method": "updateTaskPanel",
+            "deps": "js/Awp0TargetCompleteTask",
+            "inputData": {
+                "selectedJob": "{{data.dataProviders.workflowTasksListProvider.selectedObjects[0].propInternalValue}}",
+                "data":"{{data}}",
+                "selectedItem": "{{props.subPanelContext.selected}}"
+            },
+            "outputData": {
+                "isTaskPerformable": "isTaskPerformable",
+                "taskToPerform": "taskToPerform",
+                "activePerformTaskPanelId": "activePerformTaskPanelId"
+            }
+        },
+        "updateTaskPanelWhenTaskOpenInViewer": {
+            "actionType": "JSFunction",
+            "method": "updateTaskPanel",
+            "deps": "js/Awp0TargetCompleteTask",
+            "inputData": {
+               "selectedJob": "{{props.subPanelContext.xrtState.value.customContext.selectedProcess}}",
+               "data":"{{data}}",
+               "selectedItem": "{{props.subPanelContext.selected}}"
+            },
+            "outputData": {
+                "isTaskPerformable": "isTaskPerformable",
+                "taskToPerform": "taskToPerform",
+                "activePerformTaskPanelId": "activePerformTaskPanelId"
+            }
+        },
+        "handleCdmRelatedModifiedTargetBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "isRefreshTargetPanelNeeded",
+                    "condition": "parameters.eventData.refreshLocationFlag"
+                },
+                {
+                    "action": "populateSecondaryPanel",
+                    "condition": "parameters.eventData.refreshLocationFlag && data.isRefreshTargetPanel"
+                },
+                {
+                    "action": "populateTaskPanelLOV",
+                    "condition": "parameters.eventData.refreshLocationFlag && data.isRefreshTargetPanel && (conditions.isMultipleProcessPresent || parameters.eventData.subsequentTask || (data.workflowTasksList && data.workflowTasksList.length === 1 && !parameters.eventData.subsequentTask) )"
+                }
+            ]
+        },
+        "isRefreshTargetPanelNeeded": {
+            "actionType": "JSFunction",
+            "method": "isRefreshLocationNeeded",
+            "deps": "js/Awp0WorkflowUtils",
+            "inputData": {
+                "eventdata": "{{parameters.eventData}}",
+                "selection": [
+                    "{{props.subPanelContext.selected}}",
+                    "{{data.taskToPerform}}"
+                ]
+            },
+            "outputData": {
+                "isRefreshTargetPanel": ""
+            }
+        },
+        "refreshPanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Awp0PerformTask.updateInternalPanel"
+                } ]
+            }
+        }
+    },
+    "data": {
+        "workflowTask": {
+            "displayName": "{{i18n.Workflow}}",
+            "type": "STRING",
+            "isEditable" : "false",
+            "uiValue": "",
+            "dbValue": "",
+            "renderingHint":"label"
+        },
+        "workflowTasksLOV": {
+            "displayName": "{{i18n.Workflow}}",
+            "type": "STRING",
+            "hasLov": true,
+            "dataProvider": "workflowTasksListProvider",
+            "uiValue": "",
+            "dbValue": "",
+            "emptyLOVEntry": false
+        },
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "dataProviders": {
+        "workflowTasksListProvider": {
+            "response": "{{data.workflowTasksList}}",
+            "totalFound": "{{data.workflowTasksList.length}}",
+            "totalLoaded": "{{data.workflowTasksList.length}}",
+            "selectionModelMode": "single",
+            "inputData": {
+                "selectionData": "{{fields.selectionData}}"
+            }
+        }
+    },
+    "functions":
+    {
+
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "cdm.relatedModified",
+            "action": "handleCdmRelatedModifiedTargetBatchAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "cdm.updated",
+            "cacheEventData": true,
+            "action": "refreshPanel"
+        }
+    ],
+
+    "lifecycleHooks":{
+        "onMount" : "initPanel",
+        "onUpdate": [
+            {
+                "action": "updateTaskPanelWhenTaskOpenInViewer",
+                "observers": [ "props.subPanelContext.xrtState.value.customContext.selectedProcess" ]
+            },
+            {
+                "action": "updateTaskPanel",
+                "observers": [ "viewModel.atomicData.selectionData.selected" ]
+            }
+        ]
+    },
+
+    "conditions": {
+        "isSingleProcessPresent": {
+            "expression": "data.workflowTasksList && data.workflowTasksList.length === 1"
+        },
+        "isMultipleProcessPresent": {
+            "expression": "data.workflowTasksList && data.workflowTasksList.length > 1"
+        }
+    },
+    "i18n":
+    {
+        "Workflow": [ "WorkflowCommandPanelsMessages" ]
+    }
+}

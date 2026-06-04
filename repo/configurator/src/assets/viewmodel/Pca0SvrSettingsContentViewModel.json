@@ -1,0 +1,544 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "settingsTabReveal": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "initializeSettingsCache"
+                },
+                {
+                    "action": "initializeEffectivity"
+                },
+                {
+                    "action": "loadSettingsData"
+                }
+            ]
+        },
+        "settingsTabUpdateBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "resetProfile"
+                },
+                {
+                    "action": "settingsTabReveal"
+                }
+            ]
+        },
+        "resetProfile": {
+           "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "inputVal": ""
+            },
+            "outputData": {
+                "profileProp.dbValue": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "initializeSettingsCache": {
+            "actionType": "JSFunction",
+            "method": "initializeSettingsCache",
+            "inputData": {
+                "svrSettings": "{{subPanelContext.svrSettings}}"
+            },
+            "deps": "js/pca0SvrSettingsService"
+        },
+        "initializeEffectivity": {
+            "actionType": "JSFunction",
+            "method": "initializeEffectivity",
+            "inputData": {
+                "svrSettings": "{{subPanelContext.svrSettings}}"
+            },
+            "deps": "js/pca0SvrSettingsService"
+        },
+        "profileChanged": {
+            "actionType": "JSFunction",
+            "method": "handleProfileSelectionChange",
+            "inputData": {
+                "data": "{{data}}",
+                "svrSettings": "{{subPanelContext.svrSettings}}"
+            },
+            "outputData": {
+                "validationSeverityProperties": "validationSeverityProperties",
+                "expansionSeverityProperties": "expansionSeverityProperties",
+                "allowMultipleSelections": "allowMultipleSelections",
+                "applyConstraints": "applyConstraints",
+                "enableExplicitContentConfiguration": "enableExplicitContentConfiguration"
+            },
+            "deps": "js/pca0SvrSettingsService"
+        },
+        "loadSettingsData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{subPanelContext.svrSettings.value.configPerspective}}",
+                    "requestInfo": {
+                        "requestType": [
+                            "getConfigSettings"
+                        ],
+                        "mode": [
+                            "getLOVs"
+                        ]
+                    }
+                }
+            },
+            "outputData": {
+                "settingsMO": "{{function:initSettingsLOVs}}",
+                "ServiceData": "ServiceData"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "errorInGettingPreferredConfigInfo"
+                    }
+                ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0SvrSettings.initializeValidationUI"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "Pca0FullScreenConfiguration.processPartialError",
+                        "eventData": {
+                            "ServiceData": "{{data.ServiceData}}"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/pca0SvrSettingsService"
+        },
+        "initializeValidationUI": {
+            "actionType": "JSFunction",
+            "method": "initializeValidationUI",
+            "inputData": {
+                "svrSettingsAtomicData": "{{subPanelContext.svrSettings}}",
+                "profileList": "{{data.profileList}}",
+                "profileProp": "{{data.profileProp}}",
+                "validationSeverityLabel": "{{data.validationSeverityLabel}}",
+                "expansionSeverityLabel": "{{data.expansionSeverityLabel}}",
+                "productHierarchyDepthLabel": "{{data.productHierarchyDepthLabel}}",
+                "selectionBehaviorLabel": "{{data.selectionBehaviorLabel}}",
+                "contentConfigurationLabe": "{{data.contentConfigurationLabel}}",
+                "expansionBehaviorLabel": "{{data.expansionBehaviorLabel}}",
+                "validationSeverityProperties": "{{data.validationSeverityProperties}}",
+                "expansionSeverityProperties": "{{data.expansionSeverityProperties}}",
+                "allowValidationRulesToExpand": "{{data.allowValidationRulesToExpand}}",
+                "allowMultipleSelections": "{{data.allowMultipleSelections}}",
+                "applyConstraints": "{{data.applyConstraints}}",
+                "enableExplicitContentConfiguration": "{{data.enableExplicitContentConfiguration}}"
+            },
+            "outputData": {
+                "profileList": "result.profileList",
+                "profileProp": "result.profileProp",
+                "validationSeverityLabel": "result.validationSeverityLabel",
+                "expansionSeverityLabel": "result.expansionSeverityLabel",
+                "productHierarchyDepthLabel": "result.productHierarchyDepthLabel",
+                "selectionBehaviorLabel": "result.selectionBehaviorLabel",
+                "contentConfigurationLabe": "result.contentConfigurationLabel",
+                "expansionBehaviorLabel": "result.expansionBehaviorLabel",
+                "validationSeverityProperties": "result.validationSeverityProperties",
+                "expansionSeverityProperties": "result.expansionSeverityProperties",
+                "allowValidationRulesToExpand": "result.allowValidationRulesToExpand",
+                "allowMultipleSelections": "result.allowMultipleSelections",
+                "applyConstraints": "result.applyConstraints",
+                "enableExplicitContentConfiguration": "result.enableExplicitContentConfiguration"
+            },
+            "deps": "js/pca0SvrSettingsService"
+        },
+        "updateAppliedSettings": {
+            "actionType": "JSFunction",
+            "method": "updateAppliedSettings",
+            "inputData": {
+                "svrSettings": "{{subPanelContext.svrSettings}}"
+            },
+            "deps": "js/pca0SvrSettingsService"
+        },
+        "applySettings": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "updateAppliedSettings"
+                },
+                {
+                    "action": "applySettingsSoaCall"
+                }
+            ]
+        },
+        "applySettingsSoaCall": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{subPanelContext.svrSettings.value.configPerspective}}",
+                    "selectedExpressions": "{{subPanelContext.selectedExpressions}}",
+                    "payloadStrings": "",
+                    "requestInfo": {
+                        "configurationControlMode": [ "manual" ],
+                        "switchingToGuidedMode": [ "" ],
+                        "requestType": [ "getConfigSettings" ],
+                        "configSettings": [ "{{function:getFilterCriteriaToApply}}" ],
+                        "mode": [ "fetchFilterCriteria" ]
+                    }
+                }
+            },
+            "outputData": {
+                "soaResponseApplySettings": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0SvrSettings.updateVariantRule"
+                } ],
+                "failure": [ {
+                    "name": "Pca0FullScreenConfiguration.processPartialError",
+                    "eventData": {
+                        "ServiceData": "{{data.soaResponseApplySettings.ServiceData}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0SvrSettingsService"
+        },
+        "updateVariantRule": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "policy": {
+                "types": "{{function:getPropertyPolicy}}",
+                "override":true
+            },
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{subPanelContext.svrSettings.value.configPerspective}}",
+                    "selectedContext": "",
+                    "activeVariantRules": [ {
+                        "type": "{{subPanelContext.columnDef.sourceType}}",
+                        "uid": "{{subPanelContext.columnDef.field}}"
+                    } ],
+                    "selectedExpressions": "{{subPanelContext.selectedExpressions}}",
+                    "payloadStrings": "",
+                    "requestInfo": {
+                        "requestType": [ "createUpdateVariantRule" ],
+                        "configurationControlMode": [ "manual" ],
+                        "profileSettings": [ "{{function:getProfileSettingsForVariant}}" ],
+                        "statsCollectorScopeName": [ "{{ctx.state.urlAttributes.configuratorDebugMode ? 'createUpdateVariantRule' : '' }}" ],
+                        "ruleDateTranslationMode": [ "{{subPanelContext.svrSettings.value.appliedSettings.ruleDateTranslationMode === undefined ? \"\" : subPanelContext.svrSettings.value.appliedSettings.ruleDateTranslationMode}}" ],
+                        "expressionExpandedState": [ "false" ]
+                    }
+                }
+            },
+            "outputData": {
+                "serviceData": "ServiceData"
+            },
+            "events": {
+                "success": [ {
+                        "name": "Pca0SvrSettings.savedVariantRule",
+                        "eventData": {
+                            "svrUid": "{{subPanelContext.columnDef.field}}"
+                        }
+                    },
+                    {
+                    "name": "Pca0SvrSettings.closeDialog"
+                } ],
+                "failure": [ {
+                    "name": "Pca0SvrSettings.closeDialog"
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "displayErrorCode"
+                } ]
+            },
+            "deps": "js/pca0SvrSettingsService"
+        },
+        "closeDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "showConfirmationMessageForSwitchConfigurationMode": {
+            "actionType": "JSFunction",
+            "method": "switchConfigurationMode",
+            "deps": "js/pca0SvrSettingsService"
+        },
+        "applySettingsBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "applySettings",
+                    "condition": "conditions.canApply"
+                },
+                {
+                    "action": "showConfirmationMessageForSwitchConfigurationMode",
+                    "condition": "conditions.isProfileSettingsDirty"
+                }
+            ]
+        }
+    },
+    "dataProviders": {
+        "profilePropDataProvider": {
+            "response": "{{data.profileList}}"
+        }
+    },
+    "data": {
+        "profileProp": {
+            "displayName": "{{i18n.profile}}",
+            "name": "profileProp",
+            "type": "STRING",
+            "emptyLOVEntry": false,
+            "isRequired": "true",
+            "dataProvider": "profilePropDataProvider",
+            "dbValue": ""
+        },
+        "validationSeverityLabel": {
+            "displayName": "{{i18n.validationSeverity}}",
+            "isRequired": "true",
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "expansionSeverityLabel": {
+            "displayName": "{{i18n.expansionSeverity}}",
+            "isRequired": "true",
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "selectionBehaviorLabel": {
+            "displayName": "{{i18n.selectionBehavior}}",
+            "isRequired": "true",
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "allowMultipleSelections": {
+            "displayName": "{{i18n.allowMultipleSelections}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "contentConfigurationLabel": {
+            "displayName": "{{i18n.contentConfiguration}}",
+            "isRequired": "true",
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "applyConstraints": {
+            "displayName": "{{i18n.applyConstraints}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "enableExplicitContentConfiguration": {
+            "displayName": "{{i18n.explicitContentConfiguration}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "expansionBehaviorLabel": {
+            "displayName": "{{i18n.expansionBehavior}}",
+            "isRequired": "true",
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "allowValidationRulesToExpand": {
+            "displayName": "{{i18n.allowValidationRulesToExpand}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "showIntent": {
+            "type": "BOOLEAN",
+            "dbValue": false
+        },
+        "subPanelContextInfo": {
+            "contextKey": "fscContext",
+            "effectivityFeature": "{{ctx.preferences.PCA_effectivity_shown_columns[0]}}",
+            "isRevRuleActionDefaultBehavior": {
+                "dbValue": false,
+                "type": "BOOLEAN"
+            },
+            "isConfigurationReadOnly": {
+                "dbValue": true,
+                "type": "BOOLEAN"
+            }
+        }
+    },
+    "functions": {
+        "getFilterCriteriaToApply": {
+            "functionName": "getFilterCriteriaToApply",
+            "parameters": [ "{{subPanelContext.svrSettings}}" ]
+        },
+        "getProfileSettingsForVariant": {
+            "functionName": "getProfileSettingsForVariant",
+            "parameters": [ "{{subPanelContext.svrSettings}}" ]
+        },
+        "initSettingsLOVs": {
+            "functionName": "initSettingsLOVs",
+            "parameters": [
+                "{{subPanelContext.svrSettings}}"
+            ]
+        },
+        "getPropertyPolicy": {
+            "functionName": "getPropertyPolicy"
+        },
+        "getActiveVariantRule": {
+            "functionName": "getActiveVariantRule",
+            "parameters": [ "{{subPanelContext}}" ]
+        }
+    },
+    "ctx": {
+        "state": {
+            "type": "object"
+        }
+    },
+    "messages": {
+        "errorInGettingPreferredConfigInfo": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.errorInGettingPreferredConfigInfo}}"
+        },
+        "switchConfigurationModeConfirmation": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.switchConfigurationModeConfirmation}}",
+            "navigationOptions": [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}",
+                    "action": ""
+                },
+                {
+                    "option": "Apply",
+                    "text": "{{i18n.applySaveCmd}}",
+                    "action": "applySettings"
+                }
+            ]
+        },
+        "displayErrorCode": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n": {
+        "settings": [
+            "FullScreenConfigurationMessages"
+        ],
+        "validationMode": [
+            "FullScreenConfigurationMessages"
+        ],
+        "validationSeverity": [
+            "FullScreenConfigurationMessages"
+        ],
+        "profile": [
+            "FullScreenConfigurationMessages"
+        ],
+        "expansionSeverity": [
+            "FullScreenConfigurationMessages"
+        ],
+        "filterCriteria": [
+            "FullScreenConfigurationMessages"
+        ],
+        "allowMultipleSelections": [
+            "FullScreenConfigurationMessages"
+        ],
+        "applyConstraints": [
+            "FullScreenConfigurationMessages"
+        ],
+        "explicitContentConfiguration": [
+            "FullScreenConfigurationMessages"
+        ],
+        "allowValidationRulesToExpand": [
+            "FullScreenConfigurationMessages"
+        ],
+        "selectionBehavior": [
+            "FullScreenConfigurationMessages"
+        ],
+        "contentConfiguration": [
+            "FullScreenConfigurationMessages"
+        ],
+        "expansionBehavior": [
+            "FullScreenConfigurationMessages"
+        ],
+        "applySaveCmd": [
+            "FullScreenConfigurationMessages"
+        ],
+        "errorInGettingPreferredConfigInfo": [
+            "FullScreenConfigurationMessages"
+        ],
+        "switchConfigurationModeConfirmation": [
+            "FullScreenConfigurationMessages"
+        ],
+        "cancel": [
+            "FullScreenConfigurationMessages"
+        ],
+        "layoutSettings": [
+            "FullScreenConfigurationMessages"
+        ]
+    },
+    "lifecycleHooks": {
+        "onMount": "settingsTabReveal"
+    },
+    "onEvent": [
+        {
+            "eventId": "Pca0SvrSettings.loadSettingsData",
+            "action": "loadSettingsData"
+        },
+        {
+            "eventId": "Pca0SvrSettings.initializeValidationUI",
+            "action": "initializeValidationUI"
+        },
+        {
+            "eventId": "Pca0SvrSettings.handleUpdateSettings",
+            "action": "handleUpdateSettings"
+        },
+        {
+            "eventId": "Pca0SvrSettings.applySettingsToServer",
+            "action": "applySettings"
+        },
+        {
+            "eventId": "Pca0SvrSettings.closeDialog",
+            "action": "closeDialog"
+        },
+        {
+            "eventId": "Pca0SvrSettings.updateSettingsContent",
+            "action": "settingsTabUpdateBatch"
+        },
+        {
+            "eventId": "Pca0SvrSettings.updateVariantRule",
+            "action": "updateVariantRule"
+        }
+    ],
+    "conditions": {
+        "isSettingsInit": {
+            "expression": "data.profileProp.dbValue !== ''"
+        },
+        "canApply": {
+            "expression": "props.subPanelContext.svrSettings.value.settingsCache.filterCriteriaModified === true && !conditions.isProfileSettingsDirty"
+        },
+        "isProfileSettingsDirty": {
+            "expression": "props.subPanelContext.svrSettings.value.settingsCache.profileSettingsDirty === true"
+        },
+        "isConfigurationReadOnly": {
+            "expression": "props.subPanelContext.isConfigurationReadOnly === 'true'"
+        },
+        "isApplyandSaveEnable": {
+            "expression": "conditions.canApply || conditions.isProfileSettingsDirty"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

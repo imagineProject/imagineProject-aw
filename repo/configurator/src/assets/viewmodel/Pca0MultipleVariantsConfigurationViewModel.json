@@ -1,0 +1,2996 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "beforeCompareVmos":[],
+        "currentSVRUid": "",
+        "copiedFromColUid": "",
+        "multipleVariantsGridTreeLoadResult": {},
+        "fetchedActiveSettings": {},
+        "multipleVariantsGrid": {
+            "initialValues": {
+                "gridNodes": [
+                    ""
+                ],
+                "expandAll": false,
+                "expandOptions": {
+                    "collapseAllLevel": -1,
+                    "summaryLevel": -1
+                },
+                "businessObjectToSelectionMap": {},
+                "backupOfBusinessObjectToSelectionMap": {},
+                "viewModelObjectMap": {},
+                "variabilityNodes": []
+            },
+            "meta": {
+                "businessObjectToSelectionMap": {
+                    "type": "OBJECT",
+                    "field": "true"
+                },
+                "backupOfBusinessObjectToSelectionMap": {
+                    "type": "OBJECT",
+                    "field": "true"
+                },
+                "expandOptions": {
+                    "type": "OBJECT",
+                    "field": "true"
+                },
+                "expansionMap": {
+                    "type": "OBJECT",
+                    "field": "true"
+                },
+                "expandAll": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                },
+                "gridNodes": {
+                    "type": "OBJECT",
+                    "field": "true"
+                }
+            }
+        },
+        "variabilityProps": {
+            "initialValues": {
+                "columnProperties": [],
+                "multiGrid": true,
+                "expandAll": false,
+                "newVariants": [],
+                "formerNewVariantUid": [],
+                "dirtyElements": [],
+                "tableInformation": {
+                    "tableExpanded": true
+                }
+            },
+            "meta": {
+                "columnProperties": {
+                    "type": "OBJECT",
+                    "field": "true"
+                },
+                "multiGrid": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                },
+                "soaResponse": {
+                    "type": "OBJECT"
+                },
+                "newVariants": {
+                    "comment": "this is to contain properties of added variants not yet available in soaResponse.viewModelObjectMap",
+                    "type": "ARRAY"
+                },
+                "activeFilter": {
+                    "type": "OBJECT"
+                }
+            }
+        },
+        "parentNode": {
+            "$$treeLevel": -1,
+            "childNdx": 0,
+            "displayName": "",
+            "iconURL": null,
+            "id": "variabilityTreeData",
+            "levelNdx": -1,
+            "svgString": "",
+            "type": "unknown",
+            "uid": "variabilityTreeData",
+            "visible": true
+        },
+        "displayMode": {
+            "activeDisplayMode": "current",
+            "lastServerLoadAction" : ""
+        },
+        "validationProps": {},
+        "gridSelectionState": {
+            "initialValues": {
+                "selectionInfo": {},
+                "isFreeFormOptionValueSelected": false
+            },
+            "meta": {
+                "selectionInfo": {
+                    "type": "OBJECT",
+                    "field": "true"
+                },
+                "isFreeFormOptionValueSelected": {
+                    "type": "BOOLEAN",
+                    "field": "true"
+                }
+            }
+        },
+        "pca0GridOptions": {
+            "clientScopeURI": "Pca0MultiSvr",
+            "columnConfigId": "Pca0MultiSvrColConfig"
+        }
+    },
+    "actions": {
+        "exportMultiVariantGridToExcelBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "verifyExpandCollapseStateBeforeExport"
+                },
+                {
+                    "action": "showExportToExcelDialog",
+                    "condition": "data.isNodeExpanded"
+                },
+                {
+                    "action": "exportMultiVariantGridToExcelAction",
+                    "condition": "!data.isNodeExpanded"
+                }
+            ]
+        },
+        "verifyExpandCollapseStateBeforeExport": {
+            "actionType": "JSFunction",
+            "method": "verifyExpandCollapseStateBeforeExport",
+            "inputData": {
+                "treeDataProvider":"{{data.dataProviders.multipleVariantsGridTreeDataProvider}}"
+            },
+            "outputData": {
+                "isNodeExpanded":""
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "showExportToExcelDialog": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view": "Pca0GridEditorExportToExcel",
+                    "placement": "right",
+                    "width": "SMALL",
+                    "height": "FULL",
+                    "parent": ".aw-layout-workarea",
+                    "isCloseVisible": false,
+                    "subPanelContext":"{{parameters.eventData}}"
+                }
+            }
+        },
+        "exportMultiVariantGridToExcelAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2025-06-ConfiguratorManagement",
+            "method": "exportConfiguratorData",
+            "inputData": {
+                "exportData": "{{function:getJsonStringExportDataForVariant}}",
+                "exportOptions": [{
+                    "option": "pageId",
+                    "optionValue": "Pca0MultiVariantGrid"
+                }],
+                "applicationFormat": "MSExcel",
+                "requestInfo": {}
+            },
+            "outputData": {
+                "fileTicket": "transientFileReadTickets[0]",
+                "fileName": "transientFileReadTickets[3]"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "exportToExcelMultiVariantsGridData.doExportDocumentEvent"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "infoMessageForExportMultiVariantsGridData"
+                    }
+                ]
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "doExportDocument": {
+            "actionType": "JSFunction",
+            "method": "openFile",
+            "inputData": {
+                "fileTicket": "{{data.fileTicket}}",
+                "fileName": "{{data.fileName}}"
+            },
+            "deps": "js/fmsUtils"
+        },
+        "checkIfSingleVariantRuleAndNotDirtyBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "checkIfSingleVariantRuleAndNotDirty"
+                },
+                {
+                    "action": "createCustomRuleServerCall",
+                    "condition": "data.shouldCreateCustomRule"
+                },
+                {
+                    "action": "configureContent",
+                    "condition": "!data.shouldCreateCustomRule"
+                }
+            ]
+        },
+        "configureContent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "Pca0FullScreenConfiguration.configureContent",
+                        "excludeLocalDataCtx": true,
+                        "eventData": {
+                            "variantRules": [
+                                "{{data.variantRuleForApplyConfiguration}}"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "checkIfSingleVariantRuleAndNotDirty": {
+            "actionType": "JSFunction",
+            "method": "checkIfSingleVariantRuleAndNotDirty",
+            "inputData": {
+                "treeDataProvider": "{{dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}"
+            },
+            "outputData": {
+                "shouldCreateCustomRule": "result.shouldCreateCustomRule",
+                "variantRuleForApplyConfiguration": "result.variantRuleForApplyConfiguration"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "createCustomRuleServerCall": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{function:getFscConfigPerspective}}",
+                    "selectedExpressions": "{{function:getJsonStringActiveSelectedExpressionsForBomFsc}}",
+                    "requestInfo": {
+                        "requestType": [
+                            "createRule"
+                        ],
+                        "configurationControlMode": [
+                            "manual"
+                        ],
+                        "profileSettings": [
+                            "{{function:getFscProfileSettings}}"
+                        ],
+                        "viewType": [
+                            "Tree"
+                        ]
+                    }
+                }
+            },
+            "outputData": {
+                "ctx.fscContext.customVariantRule": "{{function:getCreatedVariantRule}}",
+                "ServiceData": "ServiceData"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService",
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0FullScreenConfiguration.configureContent",
+                        "excludeLocalDataCtx": true,
+                        "eventData": {
+                            "variantRules": [
+                                "{{ctx.fscContext.customVariantRule.uid}}"
+                            ]
+                        }
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "Pca0FullScreenConfiguration.processPartialError",
+                        "eventData": {
+                            "ServiceData": "{{data.ServiceData}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "updateColWidth": {
+            "actionType": "JSFunction",
+            "method": "updateColumnWidth",
+            "inputData": {
+                "eventData": "{{parameters.eventData.newColumnWidth}}",
+                "treeDataProviders": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "vmData": "{{data.atomicDataRef.variabilityProps}}"
+            },
+            "outputData": {
+                "dataProviders.multipleVariantsGridTreeDataProvider.columnConfig": ""
+            },
+            "deps": "js/pca0GridSettingsService"
+        },
+        "updateGridHeaderOrientationAndSize": {
+            "actionType": "JSFunction",
+            "method": "updateGridHeaderOrientationAndSize",
+            "inputData": {
+                "columnConfig": "{{data.dataProviders.multipleVariantsGridTreeDataProvider.columnConfig}}",
+                "useVerticalColumnHeader": "{{props.subPanelContext.gridSettings.value.useVerticalColumnHeader}}",
+                "gridId": "multipleVariantsConfigGrid",
+                "gridEditorMode": "{{props.subPanelContext.gridEditorMode}}"
+            },
+            "outputData": {
+                "dataProviders.multipleVariantsGridTreeDataProvider.columnConfig": ""
+            },
+            "deps": "js/pca0GridSettingsService"
+        },
+        "showFscListView": {
+            "actionType": "JSFunction",
+            "method": "showFscListView",
+            "inputData": {
+                "eventData": "{{parameters.eventData.commandContext.fscState}}",
+                "multipleVariantsGridSelectionMap": "{{atomicData.multipleVariantsGrid.businessObjectToSelectionMap}}",
+                "variantRuleData": "{{props.subPanelContext.variantRuleData}}",
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "showConfirmationMessageForUnload": {
+            "actionType": "JSFunction",
+            "method": "showConfirmationMessageForUnload",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "validateOrExpandSVR": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{function:getConfigPerspectiveforVariant}}",
+                    "selectedExpressions": "{{function:getJsonStringActiveSelectedExpressionsforVariant}}",
+                    "requestInfo": {
+                        "requestType": [
+                            "{{data.validateExpandOption}}"
+                        ],
+                        "configurationControlMode": [
+                            "manual"
+                        ],
+                        "profileSettings": [
+                            "{{function:getProfileSettingsForVariant}}"
+                        ],
+                        "viewType": [
+                            "Tree"
+                        ],
+                        "statsCollectorScopeName": [
+                            "{{ctx.state.urlAttributes.configuratorDebugMode !== undefined ? 'validateOrExpandSVR' : '' }}"
+                        ]
+                    }
+                }
+            },
+            "outputData": {
+                "currentUpdatedSVRSoaResponse": ""
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService",
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0MultiplevariantsConfiguration.PerformSOAUpdatedSVRPostProcessing",
+                        "eventData": {
+                            "validOrExpandAction": "{{data.validateExpandOption}}"
+                        }
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "Pca0FullScreenConfiguration.processPartialError",
+                        "eventData": {
+                            "ServiceData": "{{currentUpdatedSVRSoaResponse.ServiceData}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "fetchDefaultActiveSettings": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "inputData": {
+                "input": {
+                    "configPerspective": {},
+                    "selectedContext": {
+                        "uid": "{{subPanelContext.context.baseSelection.uid}}",
+                        "type": "{{subPanelContext.context.baseSelection.type}}"
+                    },
+                    "activeVariantRules": [],
+                    "requestInfo": {
+                        "requestType": [
+                            "getConfigSettings"
+                        ],
+                        "mode": [
+                            "fetchActiveSettings"
+                        ]
+                    }
+                }
+            },
+            "outputData": {
+                "fetchedActiveSettings": "{{function:updateDefaultFetchedActiveSettings}}",
+                "ServiceData": "ServiceData"
+            },
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "fetchActiveSettingsForVariant": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "inputData": {
+                "input": {
+                    "selectedContext": {
+                        "uid": "{{subPanelContext.context.baseSelection.uid}}",
+                        "type": "{{subPanelContext.context.baseSelection.type}}"
+                    },
+                    "activeVariantRules": [
+                        {
+                            "type": "VariantRule",
+                            "uid": "{{data.currentSVRUid}}"
+                        }
+                    ],
+                    "requestInfo": {
+                        "requestType": [
+                            "getConfigSettings"
+                        ],
+                        "mode": [
+                            "fetchActiveSettings"
+                        ]
+                    }
+                }
+            },
+            "outputData": {
+                "fetchedActiveSettings": "{{function:updateFetchedActiveSettings}}",
+                "ServiceData": "ServiceData"
+            },
+            "deps": "js/fullScreenConfigurationService"
+        },
+        "validateOrExpandBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setCurrentSVRToExpandOn"
+                },
+                {
+                    "action": "checkTypeOfSettingsNeeded"
+                },
+                {
+                    "action": "checkActiveSettingsFromMap"
+                },
+                {
+                    "action": "fetchActiveSettingsForVariant",
+                    "condition": "!conditions.useDefaultSettings && !data.isFetchedActiveSettingForCurrentSVR"
+                },
+                {
+                    "action": "fetchDefaultActiveSettings",
+                    "condition": "conditions.useDefaultSettings && !data.fetchedActiveSettings.default"
+                },
+                {
+                    "action": "determineIfContinueExpand",
+                    "condition": "conditions.isExpandNotImmediatelyPossible"
+                },
+                {
+                    "action": "removeViolationsForSoaInput"
+                },
+                {
+                    "action": "expandAllAction",
+                    "condition": "!data.multipleVariantsGrid.expandAll && !conditions.isExpandNotImmediatelyPossible"
+                },
+                {
+                    "action": "validateOrExpandSVR",
+                    "condition": "!conditions.isExpandNotImmediatelyPossible"
+                }
+            ]
+        },
+        "determineIfContinueExpand": {
+            "actionType": "JSFunction",
+            "method": "determineIfContinueExpand",
+            "inputData": {
+                "currentSVRUid": "{{data.currentSVRUid}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "continueExpandActionBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "programaticDisplayModeChangeToMultiSvrFeatures"
+                },
+                {
+                    "action": "setExpandSVRInProgress"
+                }
+            ]
+        },
+        "continueExpandActionAfterMoveToAllBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "expandAllAction",
+                    "condition": "conditions.isExpandSVRInProgress && !data.multipleVariantsGrid.expandAll"
+                },
+                {
+                    "action": "validateOrExpandSVR",
+                    "condition": "conditions.isExpandSVRInProgress"
+                },
+                {
+                    "action": "resetExpandSVRInProgress"
+                }
+            ]
+        },
+        "programaticDisplayModeChangeToMultiSvrFeatures": {
+            "actionType": "JSFunction",
+            "method": "handleDisplayModeChange",
+            "inputData": {
+                "displayMode": "{{data.displayMode}}",
+                "selectedDisplayMode": "features"
+            },
+            "outputData": {
+                "displayMode.lastServerLoadAction": "features"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0MultiVariantsGrid.loadMultiVariantsGridData"
+                    }
+                ]
+            },
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "setExpandSVRInProgress": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "eventData": true
+            },
+            "outputData": {
+                "expandSVRInProgress": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "resetExpandSVRInProgress": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "eventData": false
+            },
+            "outputData": {
+                "expandSVRInProgress": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "setCurrentSVRToExpandOn": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "eventData": "{{parameters.eventData.column.field}}"
+            },
+            "outputData": {
+                "currentSVRUid": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "checkActiveSettingsFromMap": {
+            "actionType": "JSFunction",
+            "method": "checkActiveSettingsFromMap",
+            "inputData": {
+                "fetchedActiveSettings": "{{fetchedActiveSettings}}",
+                "currentSVRUid": "{{data.currentSVRUid}}"
+            },
+            "outputData": {
+                "isFetchedActiveSettingForCurrentSVR": "result.isFetchedActiveSettingForCurrentSVR",
+                "activeSettingForCurrentSVR": "result.activeSettingForCurrentSVR"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "copyColumnSelections": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "eventData": "{{parameters.eventData.column.field}}"
+            },
+            "outputData": {
+                "copiedFromColUid": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "pasteSelectionsOnColumnBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearColumnSelectionsForSVRBatch"
+                },
+                {
+                    "action": "clearViolationsForSVR"
+                },
+                {
+                    "action": "pasteSelectionsOnColumn"
+                }
+            ]
+        },
+        "pasteSelectionsOnColumn": {
+            "actionType": "JSFunction",
+            "method": "pasteSelectionsOnColumn",
+            "inputData": {
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "treeDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "gridData": "{{atomicDataRef.multipleVariantsGrid}}",
+                "eventData": "{{parameters.eventData}}",
+                "copiedFromColUid": "{{data.copiedFromColUid}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "clearColumnSelectionsForSVRBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "deHighlightDifferences",
+                    "condition": "conditions.isHighlightMode"
+                },
+                {
+                    "action": "clearColumnSelectionsForSVR"
+                },
+                {
+                    "action": "clearViolationsForSVR"
+                }
+            ]
+        },
+        "clearViolationsForSVR": {
+            "actionType": "JSFunction",
+            "method": "clearViolations",
+            "inputData": {
+                "columnUid": "{{parameters.eventData.column.field}}",
+                "vmGridData": "{{data.atomicDataRef.multipleVariantsGrid}}",
+                "treeDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "clearColumnSelectionsForSVR": {
+            "actionType": "JSFunction",
+            "method": "clearColumnSelectionsForSVR",
+            "inputData": {
+                "vmGridData": "{{data.atomicDataRef}}",
+                "treeDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "uid": "{{parameters.eventData}}",
+                "clear": "{{parameters.eventData.command}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "checkTypeOfSettingsNeeded": {
+            "actionType": "JSFunction",
+            "method": "checkTypeOfSettingsNeeded",
+            "inputData": {
+                "currentSVRUid": "{{data.currentSVRUid}}"
+            },
+            "outputData": {
+                "useDefaultSettings": ""
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "loadConfigPerspectiveForMultiVariants": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": [
+                    {
+                        "uid": "{{ctx.state.processed.uid}}"
+                    }
+                ],
+                "attributes": [
+                    "cfg0ConfigPerspective"
+                ]
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "Cfg0ConfiguratorPerspective",
+                        "properties": [
+                            {
+                                "name": "cfg0ProductHierarchyDepth"
+                            },
+                            {
+                                "name": "cfg0RuleSetEffectivity"
+                            },
+                            {
+                                "name": "cfg0RevisionRule",
+                                "modifiers": [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "multiVariantsConfigPerspective": "{{function:getConfigPerspectiveFromGetProperties}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "loadMultiVariantsGridColumns": {
+            "actionType": "JSFunction",
+            "method": "loadGridColumns",
+            "inputData": {
+                "variabilityData": "{{data.atomicDataRef.variabilityProps}}",
+                "gridDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "vmGridSelectionState": "{{data.atomicDataRef.gridSelectionState}}",
+                "serverColumns": "{{parameters.eventData.serverColumns}}",
+                "gridEditorMode": "{{props.subPanelContext.gridEditorMode}}",
+                "gridData": "",
+                "gridSettings": "{{props.subPanelContext.gridSettings.value}}",
+                "pca0GridOptions": "{{data.pca0GridOptions}}",
+                "isVCVOpenedFromConfigurator": "{{props.subPanelContext.isVCVOpenedFromConfigurator}}"
+            },
+            "outputData": {
+                "dataProviders.multipleVariantsGridTreeDataProvider.columnConfig": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0MultiVariantsGrid.reloadData"
+                    },
+                    {
+                        "name": "Pca0MultiVariantsGrid.updateAndColorifyDirtyElements"
+                    }
+                ]
+            },
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "updateAndColorifyDirtyElements": {
+            "actionType": "JSFunction",
+            "method": "updateAndColorifyDirtyElements",
+            "inputData": {
+                "variabilityProps": "{{data.variabilityProps}}",
+                "gridData": "{{data.multipleVariantsGrid}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "updateNodeSummaryBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "deHighlightDifferences",
+                    "condition": "conditions.isHighlightMode"
+                },
+                {
+                    "action": "updateNodeSummary"
+                }
+            ]
+        },
+        "updateNodeSummary": {
+            "actionType": "JSFunction",
+            "method": "updateNodeSummary",
+            "inputData": {
+                "viewModelTreeNode": "{{parameters.eventData}}",
+                "treeDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "multipleVariantsGridData": "{{atomicDataRef.multipleVariantsGrid}}",
+                "gridEditorMode": "{{props.subPanelContext.gridEditorMode}}"
+            },
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "handleColumnArrange": {
+            "actionType": "JSFunction",
+            "method": "handleColumnArrange",
+            "inputData": {
+                "gridDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "eventData": "{{parameters.eventData}}"
+            },
+            "outputData": {
+                "dataProviders.multipleVariantsGridTreeDataProvider.columnConfig": ""
+            },
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "refreshMultipleVariantsTreeData": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "Pca0MultiSVREditor.DeHighlightDifferences",
+                        "condition": "conditions.isHighlightMode"
+                    },
+                    {
+                        "name": "multipleVariantsConfigGrid.plTable.reload"
+                    },
+                    {
+                        "name": "Pca0SvrSettings.closeDialog"
+                    }
+                ]
+            }
+        },
+        "initActions": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "initGridData"
+                },
+                {
+                    "action": "getLocalizedOperatorStrings"
+                },
+                {
+                    "action": "loadMultiSvrGridColumns",
+                    "condition": "conditions.isVCVOpenedFromConfigurator"
+                },
+                {
+                    "action": "initMultiSVRGridEditor"
+                },
+                {
+                    "action": "loadConfigPerspectiveForMultiVariants",
+                    "condition": "conditions.isMultiVariantsPerspectiveUpdateRequired"
+                }
+            ]
+        },
+        "getLocalizedOperatorStrings": {
+            "actionType": "JSFunctionAsync",
+            "method": "getLocalizedOperatorStrings",
+            "outputData": {
+                "isInitState": true
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "setInitState": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "outputData": {
+                "isInitState": true
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "resetInitState": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "outputData": {
+                "isInitState": false
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "initGridData": {
+            "actionType": "JSFunction",
+            "method": "initGridData",
+            "inputData": {
+                "multipleVariantsGridData": "{{data.atomicDataRef.multipleVariantsGrid}}",
+                "singleSVRViewMode": "{{props.subPanelContext.singleSVRViewMode}}",
+                "isVCVOpenedFromConfigurator": "{{props.subPanelContext.isVCVOpenedFromConfigurator}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "handlePrimarySelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "delayHandlingOfPrimarySelectionChange",
+                    "condition": "conditions.isAppendedSelection"
+                },
+                {
+                    "action": "handlePrimarySelectionChangeAfterTimer",
+                    "condition": "!conditions.isAppendedSelection"
+                }
+            ]
+        },
+        "handleVariantLoadFromBom": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "checkNoOfSVRsAndLoadVariabilityData",
+                    "condition": "ctx.TABLE_CONTEXT._editing !== true && !conditions.isColumnConfigEmpty"
+                },
+                {
+                    "action": "loadMultiSvrGridColumns",
+                    "condition": "ctx.TABLE_CONTEXT._editing !== true && conditions.isColumnConfigEmpty"
+                },
+                {
+                    "action": "initGridData",
+                    "condition": "conditions.isNotInitState && ctx.TABLE_CONTEXT._editing === true"
+                },
+                {
+                    "action": "checkNoOfSVRsAndLoadVariabilityData",
+                    "condition": "conditions.isNotInitState && ctx.TABLE_CONTEXT._editing === true"
+                }
+            ]
+        },
+        "handleLoadVariantsFromBom": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "handleVariantLoadFromBom",
+                    "condition": "!conditions.isVCVOpenedFromConfigurator"
+                }
+            ]
+        },
+        "delayHandlingOfPrimarySelectionChange": {
+            "actionType": "JSFunction",
+            "method": "delayHandlingOfPrimarySelectionChange",
+            "inputData": {},
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "handlePrimarySelectionChangeAfterTimer": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "leaveConfirmationAndLoadAndInitMultiVariantsGrid",
+                    "condition": "ctx.TABLE_CONTEXT._editing !== true"
+                },
+                {
+                    "action": "initGridData",
+                    "condition": "conditions.isNotInitState && ctx.TABLE_CONTEXT._editing === true"
+                },
+                {
+                    "action": "checkNoOfSVRsAndLoadVariabilityData",
+                    "condition": "conditions.isNotInitState && ctx.TABLE_CONTEXT._editing === true"
+                }
+            ]
+        },
+        "handlePrimarySelectionChangeAfterConfirm": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "initGridData",
+                    "condition": "conditions.isNotInitState"
+                },
+                {
+                    "action": "checkNoOfSVRsAndLoadVariabilityData",
+                    "condition": "conditions.isNotInitState"
+                }
+            ]
+        },
+        "getActiveSettingsForSVRBatch": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "Pca0FullScreenConfiguration.fetchDefaultActiveSettings",
+                        "condition": "conditions.areMultipleSVRs"
+                    },
+                    {
+                        "name": "Pca0FullScreenConfiguration.fetchActiveSettings",
+                        "condition": "conditions.isSingleSVR"
+                    }
+                ]
+            }
+        },
+        "leaveConfirmationAndLoadAndInitMultiVariantsGrid": {
+            "actionType": "JSFunction",
+            "method": "leaveConfirmation",
+            "inputData": {},
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0MultiVariantsGrid.loadMultiVariantsGridData"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "Pca0MultiVariantsGrid.loadMultiVariantsGridData"
+                    }
+                ]
+            },
+            "deps": "js/editHandlerService"
+        },
+        "displayErrorMessage": {
+            "actionType": "JSFunction",
+            "method": "showMessageIfLargeNumberOfSVRsSelected",
+            "inputData": {
+                "fetchedSvrMaxCountPreference": "{{props.subPanelContext.gridSettings.value.loadVariantsMaxCountInGrid}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "loadVariabilityDataBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "isGridDataLoadNeeded"
+                },
+                {
+                    "action": "updateViewModeBasedOnSelection"
+                },
+                {
+                    "action": "loadMultiVariantsGridDataBatch",
+                    "condition": "conditions.needLoadVariabilityData"
+                }
+            ]
+        },
+        "checkNoOfSVRsAndLoadVariabilityData": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "displayErrorMessage",
+                    "condition": "!conditions.isMultiVariantsPerspectiveUpdateRequired && props.subPanelContext.selection.length > props.subPanelContext.gridSettings.value.loadVariantsMaxCountInGrid"
+                },
+                {
+                    "action": "loadVariabilityDataBatch",
+                    "condition": "props.subPanelContext.selection.length <= props.subPanelContext.gridSettings.value.loadVariantsMaxCountInGrid"
+                }
+            ]
+        },
+        "isGridDataLoadNeeded": {
+            "actionType": "JSFunction",
+            "method": "isGridDataLoadNeeded",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "outputData": {
+                "isDataLoadRequired": ""
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "updateViewModeBasedOnSelection": {
+            "actionType": "JSFunction",
+            "method": "updateViewModeBasedOnSelection",
+            "inputData": {
+                "selection": "{{props.subPanelContext.selection}}",
+                "singleSVRViewMode": "{{props.subPanelContext.singleSVRViewMode}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "loadNewVariantDataBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "deHighlightDifferences",
+                    "condition": "conditions.isHighlightMode"
+                },
+                {
+                    "action": "fetchDefaultActiveSettings",
+                    "condition": "!data.fetchedActiveSettings.default"
+                },
+                {
+                    "action": "loadNewVariantDataAsNewClientColumn"
+                }
+            ]
+        },
+        "loadNewVariantDataAsNewClientColumn": {
+            "actionType": "JSFunction",
+            "method": "addNewVariantToGrid",
+            "inputData": {
+                "soaResponse": "{{data.loadVariantsDataSoaResponse}}",
+                "vmData": "{{data.atomicDataRef}}",
+                "treeDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "gridSettings": "{{props.subPanelContext.gridSettings.value}}",
+                "eventData": "{{parameters.eventData}}"
+            },
+            "outputData": {
+                "dataProviders.multipleVariantsGridTreeDataProvider.columnConfig": "",
+                "dataProviders.multipleVariantsGridTreeDataProvider.cols": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0MultiVariantsGrid.updateAndColorifyDirtyElements",
+                        "eventData": {
+                            "variabilityProps": "{{data.atomicDataRef.variabilityProps}}"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "loadNewVariantDataFromServer": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2024-12-ConfiguratorManagement",
+            "method": "getVariantExpressionData4",
+            "inputData": {
+                "variantExpressionDataInput": "{{function:prepareSOAInputForNewVariant}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0MultiVariantsGrid.reloadColumns"
+                    },
+                    {
+                        "name": "Pca0MultiVariantsGrid.reloadData"
+                    },
+                    {
+                        "name": "Pca0MultiSVREditor.clearCompareResult"
+                    }
+                ]
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "loadMultiSvrGridColumns": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetTableViewModelProperties",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "input": {
+                        "objectUids": [],
+                        "columnConfigInput": {
+                            "clientName": "AWClient",
+                            "hostingClientName": "",
+                            "clientScopeURI": "{{data.pca0GridOptions.clientScopeURI}}",
+                            "operationType": "union",
+                            "columnsToExclude": []
+                        },
+                        "requestPreference": {
+                            "typesToInclude": []
+                        }
+                    }
+                }
+            },
+            "outputData": {
+                "serverColumns": "{{function:loadTreeColumns}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0MultiVariantsGrid.reAddVariantToGrid",
+                        "condition": "!conditions.isVCVOpenedFromConfigurator"
+                    }
+                ]
+            }
+        },
+        "removeNewVariantFromGrid": {
+            "actionType": "JSFunction",
+            "method": "removeVariantFromGrid",
+            "inputData": {
+                "vmData": "{{data.atomicDataRef}}",
+                "treeDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "formerUid": "{{parameters.eventData.formerNewVariantUid}}"
+            },
+            "outputData": {
+                "dataProviders.multipleVariantsGridTreeDataProvider.columnConfig": ""
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "loadMultiVariantsGridDataBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "prepareSOAInputToGetMultipleVariants"
+                },
+                {
+                    "action": "loadMultiVariantsGridData"
+                }
+            ]
+        },
+        "reloadMultiSvrGridDataWithColumns": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadMultiSvrGridColumns"
+                },
+                {
+                    "action": "loadMultiVariantsGridDataBatch"
+                }
+            ]
+        },
+        "prepareSOAInputToGetMultipleVariants": {
+            "actionType": "JSFunction",
+            "method": "prepareSOAInputToGetMultipleVariants",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}",
+                "displayMode": "{{data.displayMode}}",
+                "currentColumns": "{{data.dataProviders.multipleVariantsGridTreeDataProvider.columnConfig.columns}}",
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "loadVariantsMaxCountInGrid": "{{props.subPanelContext.gridSettings.value.loadVariantsMaxCountInGrid}}",
+                "failedToLoadSVRs": "{{data.postProcessSuccessful.failedToLoadSVRs}}"
+            },
+            "outputData": {
+                "multipleVariantsSoaInput": "result.multipleVariantsSoaInput",
+                "postProcessSuccessful.failedToLoadSVRs": "result.failedToLoadSVRs"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "setNewDisplayMode": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "serverLoadAction": "{{parameters.eventData.serverLoadAction}}"
+            },
+            "outputData": {
+                "displayMode.activeDisplayMode": "",
+                "displayMode.lastServerLoadAction": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "loadMultiVariantsGridData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2024-12-ConfiguratorManagement",
+            "method": "getVariantExpressionData4",
+            "inputData": {
+                "variantExpressionDataInput": "{{data.multipleVariantsSoaInput}}"
+            },
+            "outputData": {
+                "loadVariantsDataSoaResponse": "",
+                "postProcessSuccessful": "{{function:processVariantsData}}",
+                "displayMode.lastServerLoadAction": "{{data.postProcessSuccessful.lastServerLoadAction}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0MultiVariantsGrid.setNewDisplayMode",
+                        "eventData": {
+                            "serverLoadAction": "{{data.postProcessSuccessful.lastServerLoadAction}}"
+                        }
+                    },
+                    {
+                        "name": "Pca0MultiVariantsGrid.reloadColumns",
+                        "condition": "conditions.isNotMoveFromCurentToAllOrViceversa",
+                        "eventData": {
+                            "serverColumns": "{{data.serverColumns}}"
+                        }
+                    },
+                    {
+                        "name": "Pca0MultiVariantsGrid.reloadData",
+                        "condition": "!conditions.isNotMoveFromCurentToAllOrViceversa"
+                    },
+                    {
+                        "name": "Pca0MultiVariantsGrid.continueExpandActionAfterMoveToAll"
+                    },
+                    {
+                        "name": "Pca0MultiVariantsGrid.expandCollapseAllAction",
+                        "condition": "conditions.isInShowAllMode",
+                        "eventData": {
+                            "grid": "condition",
+                            "actionType": "expand"
+                        }
+                    },
+                    {
+                        "name": "Pca0MultiVariantsGrid.handleExpandForShowAllFamiliesAction",
+                        "condition": "conditions.isInShowAllFamiliesMode"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "Pca0MultiVariantsGridEditor.processPartialErrors",
+                        "eventData": {
+                            "ServiceData": "{{data.loadVariantsDataSoaResponse.ServiceData}}"
+                        }
+                    },
+                    {
+                        "name": "Pca0MultiVariantsGrid.reloadColumns",
+                        "eventData": {
+                            "serverColumns": "{{data.serverColumns}}"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "validateProductConfigurations": {
+            "actionType": "JSFunction",
+            "method": "validateProductConfigurationsForMultiSVR",
+            "inputData": {
+                "validationProps": "{{data.validationProps}}",
+                "eventData": "{{parameters.eventData}}"
+            },
+            "outputData": {
+                "validationProps": "result.validationProps",
+                "currentSVRUid": "result.validationProps.columnValidation.uid",
+                "validateExpandOption": "option"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0ConfiguratorGrid.validateProductConfigurations",
+                        "eventData": {
+                            "action": "verboseValidate"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/pca0GridAuthoringService"
+        },
+        "validateVariantsExpressions": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "validateProductConfigurations3",
+            "inputData": {
+                "validateProductConfigsInput": {
+                    "configPerspective": "{{function:getConfigPerspective}}",
+                    "requestInfo": "{{function:getRequestInfoForValidation}}"
+                }
+            },
+            "outputData": {
+                "validateProductConfigurationsResponse": "",
+                "validateSoaResponse": "validateProductConfigurationOutputs"
+            },
+            "events": {
+                "failure": [
+                    {
+                        "name": "Pca0MultiVariantsGridEditor.processPartialErrors",
+                        "eventData": {
+                            "ServiceData": "{{data.validateProductConfigurationsResponse.ServiceData}}"
+                        }
+                    }
+                ],
+                "success": [
+                    {
+                        "name": "Pca0MultiVariantsGrid.postProcessValidateProductConfigurations"
+                    }
+                ]
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "postProcessValidateProductConfigurations": {
+            "actionType": "JSFunction",
+            "method": "postProcessValidateProductConfigurations",
+            "inputData": {
+                "validateSoaResponse": "{{data.validateSoaResponse}}",
+                "variabilityData": "{{data.atomicDataRef.variabilityProps}}",
+                "validationProps": "{{data.validationProps}}",
+                "currentView": "MultipleVariants"
+            },
+            "outputData": {
+                "validationProps": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0MultiVariantsGrid.validationComplete",
+                        "eventData": {
+                            "column": "{{data.validationProps.columnValidation}}",
+                            "columnToValidationMap": "{{data.validationProps.columnToValidationMap}}"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "loadDataProviderForMultipleVariantsGrid": {
+            "actionType": "JSFunction",
+            "method": "loadGridDataProvider",
+            "inputData": {
+                "treeLoadInput": "{{data.treeLoadInput.parentNode}}",
+                "gridDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "columnProvider": "{{data.columnProviders.treeColumnProvider}}",
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "gridProps": "{{data.atomicDataRef.multipleVariantsGrid}}",
+                "gridEditorMode": "{{props.subPanelContext.gridEditorMode}}",
+                "pca0GridOptions": "{{data.pca0GridOptions}}",
+                "gridSettings": "{{props.subPanelContext.gridSettings.value}}",
+                "beforeCompareVmos": "{{data.data.beforeCompareVmos}}",
+                "displayMode": "{{data.displayMode}}",
+                "formerFilteredResult": "{{data.filteredGridTreeLoadResult}}",
+                "isVCVOpenedFromConfigurator": "{{props.subPanelContext.isVCVOpenedFromConfigurator}}"
+            },
+            "outputData": {
+                "multipleVariantsGridTreeLoadResult": "result.gridTreeResult",
+                "beforeCompareVmos": "result.beforeCompareVmos",
+                "displayMode.highlightMode": "result.highlightMode",
+                "comparisonVmos": "result.gridTreeResult.childNodes",
+                "filteredGridTreeLoadResult": "result.filteredGridTreeLoadResult",
+                "dataProviders.multipleVariantsGridTreeDataProvider.objectSetUri": "result.objectSetUri"
+            },
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "handleExpandCollapseAllAction": {
+            "actionType": "JSFunction",
+            "method": "handleExpandCollapseAllActionForSVR",
+            "inputData": {
+                "eventData": "{{parameters.eventData.actionType}}",
+                "multipleVariantsGridData": "{{data.atomicDataRef.multipleVariantsGrid}}"
+            },
+            "outputData": {
+                "beforeCompareVmos": "result.beforeCompareVmos"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "multipleVariantsConfigGrid.plTable.reload"
+
+                    }
+                ]
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "handleExpandForShowAllFamiliesAction": {
+            "actionType": "JSFunction",
+            "method": "handleExpandForShowAllFamiliesAction",
+            "inputData": {
+                "multipleVariantsGridData": "{{data.atomicDataRef.multipleVariantsGrid}}",
+                "variabilityProps":"{{data.atomicDataRef.variabilityProps}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "expandAllAction": {
+            "actionType": "JSFunction",
+            "method": "handleExpandCollapseAllActionForSVR",
+            "inputData": {
+                "eventData": "expand",
+                "multipleVariantsGridData": "{{data.atomicDataRef.multipleVariantsGrid}}",
+                "criteriaStatus": "{{data.currentUpdatedSVRSoaResponse.responseInfo.criteriaStatus[0]}}"
+            },
+            "outputData": {
+                "beforeCompareVmos": "result.beforeCompareVmos"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "populateUserEdits": {
+            "actionType": "JSFunction",
+            "method": "populateUserEdits",
+            "inputData": {
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "eventData": "{{parameters.eventData}}",
+                "gridData": "{{atomicDataRef.multipleVariantsGrid}}"
+            },
+            "outputData": {
+                "variabilityProps": ""
+            },
+            "deps": "js/pca0GridAuthoringService",
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0GridAuthoring.selectionMapChanged",
+                        "eventData": {
+                            "gridId": "multipleVariantsConfigGrid"
+                        }
+                    }
+                ]
+            }
+        },
+        "processPartialErrorsAfterSave": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "processPartialErrors"
+                },
+                {
+                    "action": "postProcessSaveEditsActions"
+                }
+            ]
+        },
+        "postProcessSaveEditsActions": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "processListOfUnsavedColumns"
+                },
+                {
+                    "action": "postProcessSaveEdits"
+                }
+            ]
+        },
+        "processPartialErrors": {
+            "actionType": "JSFunction",
+            "method": "processPartialErrors",
+            "inputData": {
+                "eventData": "{{parameters.eventData.ServiceData}}"
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "processListOfUnsavedColumns": {
+            "actionType": "JSFunction",
+            "method": "getListOfUnsavedColumns",
+            "inputData": {
+                "ServiceData": "{{data.ServiceData}}"
+            },
+            "outputData": {
+                "unsavedColumns": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "postProcessSaveEdits": {
+            "actionType": "JSFunction",
+            "method": "postProcessSaveEdits",
+            "inputData": {
+                "vmGridData": "{{data.atomicDataRef}}",
+                "unsavedColumns": "{{data.unsavedColumns}}",
+                "columnDef": "{{parameters.eventData.scope.commandContext.columnDef}}"
+            },
+            "outputData": {
+                "leftOverDirtyColumns": "",
+                "currentSVRUid": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0MultiVariantsGrid.updateDirtyVMOs",
+                        "eventData": {
+                            "unsavedColumns": "{{data.leftOverDirtyColumns}}"
+                        }
+                    },
+                    {
+                        "name": "Pca0MultiVariantsGrid.markEmptyColumns",
+                        "eventData": {
+                            "multipleVariantsGridSelectionMap": "{{atomicData.multipleVariantsGrid.businessObjectToSelectionMap}}"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/pca0MultiSVRSaveCancelEditsService"
+        },
+
+        "handleCancelBatch":   {
+         "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "deHighlightDifferences",
+                    "condition": "conditions.isHighlightMode"
+                },
+                {
+                    "action": "handleCancel"
+                }
+            ]
+        },
+        "handleCancel": {
+            "actionType": "JSFunction",
+            "method": "handleCancel",
+            "inputData": {
+                "vmGridData": "{{data.atomicDataRef}}",
+                "columnDef": "{{parameters.eventData.columnToCancel.columnDef}}",
+                "treeDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}"
+            },
+            "outputData": {
+                "mustRevertMultipleVariantsGridToBackupContent": "result.mustRevertMultipleVariantsGridToBackupContent",
+                "leftOverDirtyColumns": "result.leftOverDirtyColumns",
+                "removedNewVariants": "result.removedNewVariants",
+                "dataProviders.multipleVariantsGridTreeDataProvider.columnConfig": "result.columnConfig"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0MultiVariantsGrid.RevertMultipleVariantsGridToBackupContent",
+                        "condition": "data.mustRevertMultipleVariantsGridToBackupContent"
+                    },
+                    {
+                        "name": "Pca0MultiVariantsGrid.updateDirtyVMOs",
+                        "eventData": {
+                            "unsavedColumns": "{{data.leftOverDirtyColumns}}"
+                        }
+                    },
+                    {
+                        "name": "Pca0MultiVariantsGrid.reAddVariantToGrid",
+                        "condition": "parameters.eventData.isCancellAllEdits && data.removedNewVariants"
+                    }
+                ]
+            },
+            "deps": "js/pca0MultiSVRSaveCancelEditsService"
+        },
+        "handleStartEdits": {
+            "actionType": "JSFunction",
+            "method": "handleStartEdits",
+            "inputData": {
+                "editHandler": "{{data.multiVariantsEditHandler}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "enforceStartEdits": {
+            "actionType": "JSFunctionAsync",
+            "method": "enforceStartEdits",
+            "inputData": {
+                "editHandler": "{{data.multiVariantsEditHandler}}"
+            },
+            "outputData": {
+                "isActionCompleteInAllGrids": "result.isActionCompleteInAllGrids"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "updateDirtyVMOs": {
+            "actionType": "JSFunction",
+            "method": "updateDirtyVMOs",
+            "inputData": {
+                "treeDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "selectionMap": "{{atomicData.multipleVariantsGrid.businessObjectToSelectionMap}}",
+                "eventData": "{{data.leftOverDirtyColumns}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0MultiVariantsGridEditor.callSaveEditsPostActionsOnEditHandler",
+                        "condition": "{{parameters.eventData.unsavedColumns }}.length !== 0"
+                    }
+                ]
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "revertDataProviderToBackupContent": {
+            "actionType": "JSFunction",
+            "method": "setPropertiesToValue",
+            "inputData": {
+                "treeDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "reset": true,
+                "needToUpdateSummary": false,
+                "businessObjectToSelectionMap": "{{atomicData.multipleVariantsGrid.businessObjectToSelectionMap}}",
+                "viewModelObjectMap": "{{atomicData.multipleVariantsGrid.viewModelObjectMap}}",
+                "gridEditorMode": "{{props.subPanelContext.gridEditorMode}}",
+                "skipDataProviderUpdate": true
+            },
+            "deps": "js/pca0GridAuthoringService"
+        },
+        "callSaveEditsPostActionsOnEditHandler": {
+            "actionType": "JSFunction",
+            "method": "callSaveEditsPostActionsOnEditHandler",
+            "inputData": {
+                "editHandler": "{{data.multiVariantsEditHandler}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "postProcessUpdatedSVRBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateVmosAndVariability"
+                },
+                {
+                    "action": "loadDataProviderForMultipleVariantsGrid"
+                },
+                {
+                    "action": "postProcessUpdatedSVR"
+
+                },
+                {
+                   "action": "refreshMultipleVariantsTreeData",
+                   "condition": "!atomicData.multipleVariantsGrid.expandAll"
+                }
+            ]
+        },
+        "updateVmosAndVariability": {
+            "actionType": "JSFunction",
+            "method": "updateVmosAndVariability",
+            "inputData": {
+                "soaResponse": "{{data.currentUpdatedSVRSoaResponse}}",
+                "vmAtomicData": "{{data.atomicDataRef}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "postProcessUpdatedSVR": {
+            "actionType": "JSFunction",
+            "method": "updateSVR",
+            "inputData": {
+                "soaResponse": "{{data.currentUpdatedSVRSoaResponse}}",
+                "currentSVRUid": "{{data.currentSVRUid}}",
+                "vmAtomicData": "{{data.atomicDataRef}}",
+                "treeDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "ValidOrExpandAction": "{{parameters.eventData.validOrExpandAction}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "cleanAndColorifyHeaderCells": {
+            "actionType": "JSFunction",
+            "method": "cleanAndColorifyHeaderCells",
+            "inputData": {
+                "columnConfig": "{{data.dataProviders.multipleVariantsGridTreeDataProvider.columnConfig.columns}}",
+                "columnUid": "{{parameters.eventData.columnUid}}",
+                "vmo": "{{parameters.eventData.vmo}}",
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "saveVariantsExpressionsBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setCurrentSVRToSave",
+                    "condition": "parameters.eventData.columnUid !== undefined"
+                },
+                {
+                    "action": "checkIfDirtyExistingSVRs"
+                },
+                {
+                    "action": "saveNewVariants",
+                    "condition": "conditions.newVariantsToSave"
+                },
+                {
+                    "action": "saveVariantsExpressions",
+                    "condition": "data.dirtyExistingSVRs"
+                },
+                {
+                    "action": "resetCurrentSVRToSave"
+                }
+            ]
+        },
+        "saveAsVariantsExpressionsBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setCurrentSVR"
+                },
+                {
+                    "action": "fetchActiveSettingsForVariant",
+                    "condition": "!data.isFetchedActiveSettingForCurrentSVR"
+                },
+                {
+                    "action": "openSaveAsPanel"
+                }
+            ]
+        },
+        "checkIfDirtyExistingSVRs": {
+            "actionType": "JSFunction",
+            "method": "checkIfDirtyExistingSVRs",
+            "inputData": {
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}"
+            },
+            "outputData": {
+                "dirtyExistingSVRs": ""
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "setCurrentSVRToSave": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "eventData": "{{parameters.eventData.columnUid}}"
+            },
+            "outputData": {
+                "currentSVRUid": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "resetCurrentSVRToSave": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "eventData": ""
+            },
+            "outputData": {
+                "currentSVRUid": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "saveNewVariants": {
+            "actionType": "JSFunctionAsync",
+            "method": "saveNewVariants",
+            "inputData": {
+                "vmData": "{{data.atomicDataRef}}",
+                "baseSelection": "{{subPanelContext.context.baseSelection}}",
+                "treeDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "profileSettings": "{{data.fetchedActiveSettings.default}}",
+                "eventData": "{{parameters.eventData}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "openSaveAsPanel": {
+            "actionType": "JSFunction",
+            "method": "openSaveAsPanel",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}",
+                "variabilityData": "{{data.atomicDataRef}}",
+                "fetchedActiveSettings": "{{data.fetchedActiveSettings}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "openAddNewVariantPanel": {
+            "actionType": "JSFunction",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}"
+            },
+            "method": "openAddNewColumnPanel",
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "saveVariantsExpressions": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "setVariantExpressionData3",
+            "inputData": {
+                "input": {
+                    "configPerspective": "",
+                    "selectedExpressions": "{{function:getSelectedExpressionsToSave}}",
+                    "requestInfo": {
+                        "requestType": []
+                    }
+                }
+            },
+            "outputData": {
+                "ServiceData": "ServiceData"
+            },
+            "events": {
+                "failure": [
+                    {
+                        "name": "Pca0MultiVariantsGridEditor.postProcessSaveEditsWithPartialErrors",
+                        "eventData": {
+                            "ServiceData": "{{data.ServiceData}}"
+                        }
+                    }
+                ],
+                "success": [
+                    {
+                        "name": "Pca0MultiVariantsGridEditor.postProcessSaveEdits"
+                    }
+                ]
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "determineIfCanHandleCellSelection": {
+            "actionType": "JSFunction",
+            "method": "isCellSelectionRelevant",
+            "inputData": {
+                "vmo": "{{parameters.eventData.vmo}}"
+            },
+            "outputData": {
+                "canHandleCellSelection": ""
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "handleCellSelectionsBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "determineIfCanHandleCellSelection"
+                },
+                {
+                    "action": "clearViolations",
+                    "condition": "conditions.canHandleCellSelection"
+                },
+                {
+                    "action": "cleanAndColorifyHeaderCells",
+                     "condition": "conditions.canHandleCellSelection"
+                },
+                {
+                    "action": "markCompletenessStatusToStale",
+                     "condition": "conditions.canHandleCellSelection"
+                },
+                {
+                    "action": "clearCompareResult",
+                    "condition": "conditions.isNotInCurrentOrAllFeaturesMode && conditions.canHandleCellSelection"
+                },
+                {
+                    "action": "deHighlightDifferences",
+                    "condition": "conditions.isHighlightMode"
+                }
+            ]
+        },
+        "clearViolations": {
+            "actionType": "JSFunction",
+            "method": "clearViolations",
+            "inputData": {
+                "columnUid": "{{parameters.eventData.columnUid}}",
+                "vmGridData": "{{data.atomicDataRef.multipleVariantsGrid}}",
+                "treeDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "markCompletenessStatusToStale": {
+            "actionType": "JSFunction",
+            "method": "markCompletenessStatusToStale",
+            "inputData": {
+                "columnConfig": "{{data.dataProviders.multipleVariantsGridTreeDataProvider.columnConfig.columns}}",
+                "columnUid": "{{parameters.eventData.columnUid}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "clearCompareResult": {
+            "actionType": "JSFunction",
+            "method": "clearCompareResult",
+            "inputData": {
+                "treeDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "beforeCompareVmos": "{{data.beforeCompareVmos}}",
+                "lastServerLoadAction": "{{data.displayMode.lastServerLoadAction}}"
+            },
+            "outputData": {
+                "beforeCompareVmos": "result.beforeCompareVmos",
+                "displayMode.activeDisplayMode": "result.activeCompareMode"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "compareSVRsBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "deHighlightDifferences"
+                },
+                {
+                    "action": "compareSVRs",
+                    "condition": "!conditions.isActiveFilterOnVariabilityProps || parameters.eventData.highlightDifferences"
+                },
+                {
+                    "action": "filterAndCompareSVRs",
+                    "condition": "conditions.isActiveFilterOnVariabilityProps && !parameters.eventData.highlightDifferences"
+                },
+                {
+                    "action": "showNoSimilaritiesOrDifferencesMessage"
+                }
+            ]
+        },
+        "showNoSimilaritiesOrDifferencesMessage": {
+            "actionType": "JSFunction",
+            "method": "showNoSimilaritiesOrDifferencesMessage",
+            "inputData": {
+                "updatedVmos": "{{data.comparisonVmos}}",
+                "iSimilarCode": "{{parameters.eventData.compareSimilar}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "filterAndCompareSVRs": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setNewCompareMode"
+                },
+                {
+                    "action": "loadDataProviderForMultipleVariantsGrid"
+                }
+            ]
+        },
+        "setNewCompareMode": {
+            "actionType": "JSFunction",
+            "method": "setNewCompareMode",
+            "inputData": {
+                "iSimilar": "{{parameters.eventData.compareSimilar}}"
+            },
+            "outputData": {
+                "displayMode.activeDisplayMode": "result.activeCompareMode"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "compareSVRs": {
+            "actionType": "JSFunction",
+            "method": "compareSVRs",
+            "inputData": {
+                "vmGridData": "{{data.atomicDataRef.multipleVariantsGrid}}",
+                "treeDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "iSimilar": "{{parameters.eventData.compareSimilar}}",
+                "beforeCompareVmos": "{{data.beforeCompareVmos}}",
+                "highlightDifferences": "{{parameters.eventData.highlightDifferences}}",
+                "activeDisplayMode": "{{data.displayMode.activeDisplayMode}}",
+                "gridSettings": "{{props.subPanelContext.gridSettings.value}}"
+            },
+            "outputData": {
+                "displayMode.activeDisplayMode": "result.activeCompareMode",
+                "beforeCompareVmos": "result.beforeCompareVmos",
+                "comparisonVmos": "result.comparisonVmos",
+                "displayMode.highlightMode": "result.highlightMode"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "deHighlightDifferences": {
+            "actionType": "JSFunction",
+            "method": "deHighlightDifferences",
+            "inputData": {
+                "vmGridData": "{{data.atomicDataRef.multipleVariantsGrid}}",
+                "treeDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "displayMode": "{{data.displayMode}}"
+            },
+            "outputData": {
+                "displayMode.highlightMode": ""
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "setCurrentSVR": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "commandContext": "{{parameters.eventData.commandContext.columnDef.uid}}"
+            },
+            "outputData": {
+                "currentSVRUid": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "closeOpenDialogsBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "closeProfileSettingsDialog"
+                }
+            ]
+        },
+        "closeProfileSettingsDialog": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "Pca0SvrSettings.closeDialog"
+                    }
+                ]
+            }
+        },
+        "showSvrSettingsDialogBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setCurrentSVR"
+                },
+                {
+                    "action": "checkActiveSettingsFromMap"
+                },
+                {
+                    "action": "getSelectedExpressionsAsJsonString"
+                },
+                {
+                    "action": "fetchActiveSettingsForVariant",
+                    "condition": "!data.isFetchedActiveSettingForCurrentSVR"
+                },
+                {
+                    "action": "checkActiveSettingsFromMap",
+                    "condition": "!data.isFetchedActiveSettingForCurrentSVR"
+                },
+                {
+                    "action": "updateSvrSettingsDialog",
+                    "condition": "data.isFetchedActiveSettingForCurrentSVR && conditions.openStatusSvrSettingsDialog"
+                },
+                {
+                    "action": "showSvrSettingsDialog",
+                    "condition": "data.isFetchedActiveSettingForCurrentSVR && !conditions.openStatusSvrSettingsDialog"
+                }
+            ]
+        },
+        "showSvrSettingsDialog": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view": "Pca0SvrSettings",
+                    "placement": "right",
+                    "width": "SMALL",
+                    "height": "FULL",
+                    "parent": ".aw-layout-workarea",
+                    "subPanelContext": {
+                        "columnDef": "{{parameters.eventData.commandContext.columnDef}}",
+                        "fetchedSettings": "{{data.activeSettingForCurrentSVR}}",
+                        "selectedExpressions": "{{data.currentSvrSelectedExpressionsAsJsonString}}",
+                        "isConfigurationReadOnly": "{{data.displayMode.activeDisplayMode !== 'current' && data.displayMode.activeDisplayMode !== 'features' || parameters.eventData.commandContext.columnDef.isSplitColumn || ctx.isVariantTableEditing === true}}"
+                    },
+                    "isCloseVisible": false
+                }
+            }
+        },
+        "getSelectedExpressionsAsJsonString": {
+            "actionType": "JSFunction",
+            "method": "getJsonStringActiveSelectedExpressionsforVariant",
+            "inputData": {
+                "businessObjectToSelectionMap": "{{atomicData.multipleVariantsGrid.businessObjectToSelectionMap}}",
+                "currentSVRUid": "{{data.currentSVRUid}}",
+                "action": null,
+                "validationProps": "{{atomicData.variabilityProps}}"
+            },
+            "outputData": {
+                "currentSvrSelectedExpressionsAsJsonString": ""
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "initMultiSVRGridEditor": {
+            "actionType": "JSFunction",
+            "method": "initMultiSVRGridEditor",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "gridId": "multipleVariantsConfigGrid",
+                "gridOptions": "{{data.grids.multipleVariantsConfigGrid.gridOptions}}",
+                "useVerticalColumnHeader": "{{props.subPanelContext.gridSettings.value.useVerticalColumnHeader}}"
+            },
+            "outputData": {
+                "isInitState": false
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "updateSvrSettingsDialog": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "Pca0MultiVariantsGrid.updateSvrSettingsDialog",
+                        "eventData": {
+                            "columnDef": "{{parameters.eventData.commandContext.columnDef}}",
+                            "fetchedSettings": "{{data.activeSettingForCurrentSVR}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "doGridUnmount": {
+            "actionType": "JSFunction",
+            "method": "gridUnmount",
+            "inputData": {
+                "editHandler": "{{data.svrEditHandler}}"
+            },
+            "deps": "js/pca0MultiSVRSaveCancelEditsService"
+        },
+        "addRangeExpressionToMultiVariantTree": {
+            "actionType": "JSFunction",
+            "method": "addRangeExpressionToVariabilityTree",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}",
+                "targetDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "gridData": "{{data.atomicDataRef.multipleVariantsGrid}}",
+                "variabilityProps": "{{data.atomicDataRef.variabilityProps}}",
+                "viewModelData": "{{data}}"
+            },
+            "deps": "js/pca0AddVariabilityService"
+        },
+        "updateVariantRuleAfterProfileSettingsApply": {
+            "actionType": "JSFunction",
+            "method": "removeVariantFromGrid",
+            "inputData": {
+                "vmData": "{{data.atomicDataRef}}",
+                "treeDataProvider": "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "svrUid": "{{parameters.eventData.svrUid}}",
+                "fetchedActiveSettings": "{{data.fetchedActiveSettings}}"
+            },
+            "outputData": {
+                "dataProviders.multipleVariantsGridTreeDataProvider.columnConfig": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0MultiVariantsGrid.reAddVariantToGrid"
+                    }
+                ]
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        },
+        "columnArrangeBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "handleColumnArrange"
+                },
+                {
+                    "action": "doArrangeEvent"
+                }
+            ]
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{parameters.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI": "{{data.pca0GridOptions.clientScopeURI}}",
+                        "columnConfigId": "{{data.pca0GridOptions.columnConfigId}}",
+                        "columns": "{{function:getColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "outputData": {
+                "dataProviders.multipleVariantsGridTreeDataProvider.columnConfig": "{{function:postArrangeFunction}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0MultiVariantsGrid.doServerReload"
+                    }
+                ]
+            }
+        },
+        "saveColumnConfigData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [
+                        {
+                            "clientScopeURI": "{{data.pca0GridOptions.clientScopeURI}}",
+                            "columnConfigId": "{{data.pca0GridOptions.columnConfigId}}",
+                            "columns": "{{function:getColumns}}",
+                            "scope": "LoginUser",
+                            "scopeName": ""
+                        }
+                    ]
+                }
+            },
+            "outputData": {}
+        },
+        "resetColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [ {
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos": [ {
+                            "clientScopeURI": "{{data.pca0GridOptions.clientScopeURI}}",
+                            "operationType": "union",
+                            "typeNames": [],
+                            "columnsToExclude": []
+                        } ],
+                        "businessObjects": [ {} ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "dataProviders.multipleVariantsGridTreeDataProvider.columnConfig": "{{function:postResetFunction}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Pca0MultiVariantsGrid.doServerReload"
+                    }
+                ]
+            }
+        },
+        "removeViolationsForSoaInput": {
+            "actionType": "JSFunction",
+            "method": "removeViolationsForSoaInput",
+            "inputData": {
+                "vmGridData": "{{data.atomicDataRef.multipleVariantsGrid}}",
+                "columns": "{{data.dataProviders.multipleVariantsGridTreeDataProvider.columnConfig.columns}}",
+                "currentSVRUid":"{{data.currentSVRUid}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        }
+    },
+    "messages": {
+        "currentUpdatedSVRSoaResponseInvalidMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.invalid}}"
+        },
+        "currentUpdatedSVRSoaResponseValidMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.validAndComplete}}"
+        },
+        "currentUpdatedSVRSoaResponseValidAndInCompleteMessage": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.validAndInComplete}}"
+        },
+        "defaultGridEditModeMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.defaultGridEditModeMessage}}"
+        },
+        "infoMessageForExportMultiVariantsGridData": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.infoMessageForExportMultiVariantsGridData}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initActions",
+        "onUnmount": "doGridUnmount",
+        "onUpdate": [
+            {
+                "action": "handlePrimarySelectionChange",
+                "observers": [
+                   "viewModel.ctx.ConfiguratorCtx.modulePerspectiveForMultiVariants"
+                ]
+            },
+            {
+                "action": "handleLoadVariantsFromBom",
+                "observers": [
+                   "props.subPanelContext.selection.uid",
+                   "props.subPanelContext.selection[0].uid",
+                   "props.subPanelContext.selection.length"
+                ]
+            }
+        ]
+    },
+    "functions": {
+        "getJsonStringActiveSelectedExpressionsforVariant": {
+            "functionName": "getJsonStringActiveSelectedExpressionsforVariant",
+            "parameters": [
+                "{{atomicData.multipleVariantsGrid.businessObjectToSelectionMap}}",
+                "{{data.currentSVRUid}}",
+                "{{parameters.eventData.action}}",
+                "{{atomicData.variabilityProps}}"
+            ]
+        },
+        "getJsonStringExportDataForVariant": {
+            "functionName": "getJsonStringExportDataForVariant",
+            "parameters": [
+                "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "{{atomicDataRef.multipleVariantsGrid}}"
+            ]
+        },
+        "getJsonStringActiveSelectedExpressionsForBomFsc": {
+            "functionName": "getJsonStringActiveSelectedExpressionsForBomFsc",
+            "parameters": [
+                "{{atomicData.multipleVariantsGrid.businessObjectToSelectionMap}}"
+            ]
+        },
+        "getProfileSettingsForVariant": {
+            "functionName": "getProfileSettingsForVariant",
+            "parameters": [
+                "{{fetchedActiveSettings}}",
+                "{{data.currentSVRUid}}"
+            ]
+        },
+        "getConfigPerspectiveforVariant": {
+            "functionName": "getConfigPerspectiveforVariant",
+            "parameters": [
+                "{{data.fetchedActiveSettings}}",
+                "{{data.currentSVRUid}}",
+                "{{ctx.ConfiguratorCtx.modulePerspectiveForMultiVariants}}"
+            ]
+        },
+        "updateFetchedActiveSettings": {
+            "functionName": "updateFetchedActiveSettingsForMultipleSVRs",
+            "parameters": [
+                "{{data.fetchedActiveSettings}}",
+                "{{data.currentSVRUid}}"
+            ]
+        },
+        "getSelectedExpressionsToSave": {
+            "functionName": "getSelectedExpressionsToSave",
+            "parameters": [
+                "{{data.atomicDataRef}}",
+                "{{parameters.eventData.columnUid}}"
+            ]
+        },
+        "updateDefaultFetchedActiveSettings": {
+            "functionName": "updateFetchedActiveSettingsForMultipleSVRs",
+            "parameters": [
+                "{{data.fetchedActiveSettings}}"
+            ]
+        },
+        "prepareSOAInputForNewVariant": {
+            "functionName": "prepareSOAInputForNewVariant",
+            "parameters": [
+                "{{data.displayMode}}"
+            ]
+        },
+        "processVariantsData": {
+            "functionName": "postProcessLoadMultiSVRData",
+            "parameters": [
+                "{{props.subPanelContext.gridSettings.value}}",
+                "{{data.atomicDataRef.variabilityProps}}",
+                "{{data.atomicDataRef.multipleVariantsGrid}}",
+                "{{subPanelContext.selection}}",
+                "{{data.displayMode}}",
+                "{{data.postProcessSuccessful.failedToLoadSVRs}}",
+                "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "{{data.atomicDataRef.gridSelectionState}}",
+                "{{data.postProcessSuccessful.lastServerLoadAction}}",
+                "{{props.subPanelContext.isVCVOpenedFromConfigurator}}",
+                "{{props.subPanelContext.variantRuleData.variantRuleData}}"
+            ]
+        },
+        "processAdditionalVariantsData": {
+            "functionName": "processAdditionalVariantsData",
+            "parameters": []
+        },
+        "processAdditionalVariantsDataSoaResponse": {
+            "functionName": "processAdditionalVariantsDataSoaResponse",
+            "parameters": []
+        },
+        "getConfigPerspective": {
+            "functionName": "getConfigPerspectiveForVariant",
+            "parameters": [
+                "{{data.fetchedActiveSettings}}",
+                "{{data.currentSVRUid}}"
+            ]
+        },
+        "getRequestInfoForValidation": {
+            "functionName": "getRequestInfoForValidation",
+            "parameters": [
+                "{{data.validationProps}}",
+                "{{parameters.eventData.action}}",
+                "{{atomicData.multipleVariantsGrid.businessObjectToSelectionMap}}"
+            ]
+        },
+        "getConfigPerspectiveFromGetProperties": {
+            "functionName": "getConfigPerspectiveFromServerResponse",
+            "parameters": [
+                "getProperties"
+            ]
+        },
+        "loadTreeColumns": {
+            "functionName": "loadTreeColumns",
+            "parameters": [ "{{props.subPanelContext.gridEditorMode}}" ],
+            "deps": "js/pca0VariabilityExplorerService"
+        },
+        "postResetFunction": {
+            "functionName": "postResetUpdateColumnConfig",
+            "parameters": [
+                "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "{{data.atomicDataRef.gridSelectionState}}",
+                "ConfiguratorCtx",
+                "{{props.subPanelContext.gridEditorMode}}"
+            ],
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "postArrangeFunction": {
+            "functionName": "postArrangeUpdateColumnConfig",
+            "parameters": [
+                "{{data.dataProviders.multipleVariantsGridTreeDataProvider}}",
+                "{{data.atomicDataRef.gridSelectionState}}",
+                "ConfiguratorCtx",
+                "{{props.subPanelContext.gridEditorMode}}"
+            ],
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "getColumns": {
+            "functionName": "getGridServerColumns",
+            "parameters": [ "{{data.dataProviders.multipleVariantsGridTreeDataProvider.newColumns}}" ],
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "getFscConfigPerspective": {
+            "functionName": "getConfigPerspective",
+            "parameters": [ "{{props.subPanelContext.variantRuleData}}" ]
+        },
+        "getFscProfileSettings": {
+            "functionName": "getFscProfileSettings"
+        },
+        "getCreatedVariantRule": {
+            "functionName": "getCreatedVariantRule"
+        }
+    },
+    "dataProviders": {
+        "multipleVariantsGridTreeDataProvider": {
+            "action": "loadDataProviderForMultipleVariantsGrid",
+            "initializeAction": "loadDataProviderForMultipleVariantsGrid",
+            "columnMenuCommandsAnchor": "aw_multiSvrEditor_splmTable_columnMenu",
+            "commandsAnchor": "aw_multipleVariantsGridEditor_splmTable_commandsMenu",
+            "gridId": "multipleVariantsConfigGrid",
+            "editContext": "VARIANTS_EDITOR_TREE_CONTEXT",
+            "inputData": {
+                "accessMode": "tree",
+                "topNodeUid": "variabilityTreeData"
+            },
+            "treeLoadResult": "{{data.multipleVariantsGridTreeLoadResult}}"
+        }
+    },
+    "columnProviders": {
+        "treeColumnProvider": {
+            "columns": "{{data.columns}}",
+            "saveColumnAction": "saveColumnConfigData",
+            "saveColumnAndLoadAction": "saveColumnConfigLoadData",
+            "resetColumnAction": "resetColumnConfig"
+        }
+    },
+    "grids": {
+        "multipleVariantsConfigGrid": {
+            "dataProvider": "multipleVariantsGridTreeDataProvider",
+            "columnProvider": "treeColumnProvider",
+            "addIconColumn": false,
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "useStaticFirstCol": true,
+                "headerHeight": "{{props.subPanelContext.gridSettings.value.useVerticalColumnHeader ? 100 : 40 }}",
+                "isFilteringEnabled": true,
+                "enableExpansionStateCaching": false,
+                "enableExpandAndPaginationInEdit": true,
+                "enablePinning": false,
+                "enableSorting": false,
+                "forceAutoSave": false,
+                "enableGridMenu": true
+            }
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "ctx": {
+        "ConfiguratorCtx.modulePerspectiveForMultiVariants": {
+            "type": "Object"
+        }
+    },
+    "conditions": {
+        "isVCVOpenedFromConfigurator": {
+            "expression": "ctx.sublocation.clientScopeURI === 'Pca0VariantRule'"
+        },
+        "ValidAndInComplete": {
+            "expression": "data.currentUpdatedSVRSoaResponse.responseInfo.criteriaStatus[0] === 'ValidAndInComplete'"
+        },
+        "ValidAndComplete": {
+            "expression": "data.currentUpdatedSVRSoaResponse.responseInfo.criteriaStatus[0] === 'ValidAndComplete'"
+        },
+        "InValid": {
+            "expression": "data.currentUpdatedSVRSoaResponse.responseInfo.criteriaStatus[0] === 'InValid'"
+        },
+        "hasSplitColumns": {
+            "expression": "data.postProcessSuccessful.hasSplitColumns"
+        },
+        "isVariabilityDataLoaded": {
+            "expression": "data.variabilityProps.soaResponse !== undefined"
+        },
+        "isVariantTableNotEditing": {
+            "expression": "ctx.isVariantTableEditing === undefined || ctx.isVariantTableEditing === false"
+        },
+        "isMultiVariantsPerspectiveUpdateRequired": {
+            "expression": "!ctx.ConfiguratorCtx.modulePerspectiveForMultiVariants"
+        },
+        "isNotInitState": {
+            "expression": "!data.isInitState"
+        },
+        "useDefaultSettings": {
+            "expression": "data.useDefaultSettings"
+        },
+        "isHighlightMode": {
+            "expression": "data.displayMode.highlightMode"
+        },
+        "openStatusSvrSettingsDialog": {
+            "expression": "ctx.sidenavCommandId_dialog === 'Pca0SvrSettings'"
+        },
+        "isActiveFilterOnVariabilityProps": {
+            "expression": "data.variabilityProps.activeFilter !== undefined"
+        },
+        "isAppendedSelection": {
+            "expression": "data.dataProviders.multipleVariantsGridTreeDataProvider.columnConfig.columns.length > 0"
+        },
+        "isColumnConfigEmpty": {
+            "expression": "data.dataProviders.multipleVariantsGridTreeDataProvider.columnConfig.columns === undefined || data.dataProviders.multipleVariantsGridTreeDataProvider.columnConfig.columns.length === 0"
+        },
+        "isLastServerActionInCurrentMode": {
+            "expression": "(!data.displayMode.lastServerLoadAction && data.displayMode.activeDisplayMode === 'current' ) || data.displayMode.lastServerLoadAction === 'current'"
+        },
+        "isLastServerActionInAllFeaturesMode": {
+            "expression": "data.displayMode.lastServerLoadAction === 'features'"
+        },
+        "isNotInCurrentOrAllFeaturesMode": {
+            "expression": "data.displayMode.activeDisplayMode !== 'current' && data.displayMode.activeDisplayMode !== 'features'"
+        },
+        "isSaveEditsOnSingleExistingSVR": {
+            "expression": "data.currentSVRUid && !data.variabilityProps.newVariants.includes(data.currentSVRUid)"
+        },
+        "isSaveEditsOnSingleNewVariant": {
+            "expression": "data.currentSVRUid && data.variabilityProps.newVariants.includes(data.currentSVRUid)"
+        },
+        "isSaveAll": {
+            "expression": "data.currentSVRUid === undefined || data.currentSVRUid === ''"
+        },
+        "newVariantsToSave": {
+            "expression": "conditions.isSaveEditsOnSingleNewVariant || (conditions.isSaveAll && data.variabilityProps.newVariants.length > 0)"
+        },
+        "isNotMoveFromCurentToAll": {
+            "expression": "data.loadVariantsDataSoaResponse.selectedExpressions && !data.loadVariantsDataSoaResponse.isMoveFromCurrentToAll"
+        },
+        "isNotMoveFromAllToCurrent": {
+            "expression": "!data.loadVariantsDataSoaResponse.isMoveFromAllToCurrent"
+        },
+        "isNotMoveFromCurentToAllOrViceversa": {
+            "expression": "conditions.isNotMoveFromCurentToAll && conditions.isNotMoveFromAllToCurrent"
+        },
+        "isExpandNotImmediatelyPossible": {
+            "expression": "conditions.isLastServerActionInCurrentMode && data.validateExpandOption === 'expand'"
+        },
+        "isExpandSVRInProgress": {
+            "expression": "data.expandSVRInProgress"
+        },
+        "dirtyExistingSVRs": {
+            "expression": "data.dirtyExistingSVRs"
+        },
+        "isInShowAllMode": {
+            "expression": "data.displayMode.activeDisplayMode === 'features'"
+        },
+        "isInShowAllFamiliesMode": {
+            "expression": "data.displayMode.activeDisplayMode === 'families'"
+        },
+        "areMultipleSVRs": {
+            "expression": "props.subPanelContext.variantRuleData.variantRulesToLoad &&  props.subPanelContext.variantRuleData.variantRulesToLoad.length > 1"
+        },
+        "isSingleSVR": {
+            "expression": "props.subPanelContext.variantRuleData.variantRulesToLoad && props.subPanelContext.variantRuleData.variantRulesToLoad.length === 1"
+        },
+        "isVariantRulesLoaded": {
+            "expression": "props.subPanelContext.variantRuleData.variantRulesToLoad && props.subPanelContext.variantRuleData.variantRulesToLoad.length  > 0"
+        },
+        "needLoadVariabilityData": {
+            "expression":  "data.isDataLoadRequired && (!conditions.isMultiVariantsPerspectiveUpdateRequired || props.subPanelContext.isVCVOpenedFromConfigurator !== undefined && !props.subPanelContext.isVCVOpenedFromConfigurator)"
+
+        },
+        "canHandleCellSelection": {
+            "expression": "data.canHandleCellSelection"
+        }
+
+    },
+    "onEvent": [
+        {
+            "eventId": "Pca0MultiVariantGridEditor.exportToExcel",
+            "action": "exportMultiVariantGridToExcelBatchAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantGridEditor.exportToExcelSelections",
+            "action": "exportMultiVariantGridToExcelAction"
+        },
+        {
+            "eventId": "exportToExcelMultiVariantsGridData.doExportDocumentEvent",
+            "action": "doExportDocument"
+
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.reloadColumns",
+            "action": "loadMultiVariantsGridColumns",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityTreeCustomMenuService.performColumnClearSelections",
+            "action": "clearColumnSelectionsForSVRBatch",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.expandCollapseAllAction",
+            "action": "handleExpandCollapseAllAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.handleExpandForShowAllFamiliesAction",
+            "action": "handleExpandForShowAllFamiliesAction"
+        },
+        {
+            "eventId": "Pca0FilterCriteriaSettings.filterCriteriaUpdated",
+            "action": "leaveConfirmationAndLoadAndInitMultiVariantsGrid"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.reloadData",
+            "action": "refreshMultipleVariantsTreeData"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.doServerReload",
+            "action": "reloadMultiSvrGridDataWithColumns"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGridEditor.handleSaveEdits",
+            "action": "saveVariantsExpressionsBatch",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.applyConfiguration",
+            "criteria": {
+                "conditionFlag": "false"
+            },
+            "action": "checkIfSingleVariantRuleAndNotDirtyBatchJob"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGridEditor.handleSaveAs",
+            "action": "saveAsVariantsExpressionsBatch",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.loadMultiVariantsGridData",
+            "action": "checkNoOfSVRsAndLoadVariabilityData"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.continueLoadVariabilityDataAction",
+            "action": "loadVariabilityDataBatch"
+        },
+        {
+            "eventId": "columnArrange",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "columnArrangeBatch",
+            "criteria": {
+                "name": "multipleVariantsConfigGrid"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.sectionsConfigurationChanged",
+            "action": "handleSectionsConfigurationChanged"
+        },
+        {
+            "eventId": "multipleVariantsConfigGrid.plTable.toggleTreeNode",
+            "action": "updateNodeSummaryBatch",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGridEditor.handleStartEdits",
+            "action": "handleStartEdits"
+        },
+        {
+            "eventId": "Pca0GridAuthoring.populateUserEdits",
+            "action": "populateUserEdits",
+            "criteria": {
+                "gridId": "multipleVariantsConfigGrid"
+            },
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGridEditor.postProcessSaveEditsWithPartialErrors",
+            "action": "processPartialErrorsAfterSave",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGridEditor.processPartialErrors",
+            "action": "processPartialErrors",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGridEditor.postProcessSaveEdits",
+            "action": "postProcessSaveEditsActions",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGridEditor.handleCancelEdits",
+            "action": "handleCancelBatch",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.updateDirtyVMOs",
+            "action": "updateDirtyVMOs",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.initGridData",
+            "action": "initGridData"
+        },
+        {
+            "eventId": "Pca0ConfiguratorGrid.validateProductConfigurations",
+            "action": "validateOrExpandBatch",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityTreeCustomMenuService.performColumnValidate",
+            "action": "validateProductConfigurations",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "criteria": {
+                "gridID": "multipleVariantsConfigGrid"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.postProcessValidateProductConfigurations",
+            "action": "postProcessValidateProductConfigurations"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.RevertMultipleVariantsGridToBackupContent",
+            "action": "revertDataProviderToBackupContent"
+        },
+        {
+            "eventId": "editHandlerStateChange",
+            "action": "leaveConfirmationAndLoadAndInitMultiVariantsGrid",
+            "criteria": {
+                "state": "saved",
+                "dataSource.editContext": "TABLE_CONTEXT"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.liveUpdateTopTableHeight",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "updateTopTableHeight"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGridEditor.startEditOnNewVariant",
+            "action": "enforceStartEdits"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGridEditor.updateMultipleVariantsTableSummary",
+            "action": "updateMultipleVariantsTableSummary"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGridEditor.callSaveEditsPostActionsOnEditHandler",
+            "action": "callSaveEditsPostActionsOnEditHandler"
+        },
+        {
+            "eventId": "Pca0MultiplevariantsConfiguration.PerformSOAUpdatedSVRPostProcessing",
+            "action": "postProcessUpdatedSVRBatch",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Configurator.setCellColumnSelection",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "handleCellSelectionsBatch"
+        },
+        {
+            "eventId": "Pca0MultiSVREditor.compareSVRs",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "compareSVRsBatch"
+        },
+        {
+            "eventId": "Pca0MultiSVREditor.clearCompareResult",
+            "action": "clearCompareResult"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.showSvrSettingsDialog",
+            "action": "showSvrSettingsDialogBatch",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0MultiSVREditor.highlightDifferences",
+            "action": "highlightDifferences"
+        },
+        {
+            "eventId": "Pca0MultiSVREditor.DeHighlightDifferences",
+            "action": "deHighlightDifferences"
+        },
+        {
+            "eventId": "Pca0Grid.updateColumnWidth",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "updateColWidth"
+        },
+        {
+            "eventId": "Pca0Grid.updateHeaderOrientation",
+            "action": "updateGridHeaderOrientationAndSize"
+        },
+        {
+            "eventId": "Pca0VariabilityTreeCustomMenuService.performColumnCopySelections",
+            "action": "copyColumnSelections",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "criteria": {
+                "gridID": "multipleVariantsConfigGrid"
+            }
+        },
+        {
+            "eventId": "Pca0VariabilityTreeCustomMenuService.performPasteSelectionsOnColumn",
+            "action": "pasteSelectionsOnColumnBatch",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "criteria": {
+                "gridID": "multipleVariantsConfigGrid"
+            }
+        },
+        {
+            "eventId": "Pca0AddRangeFeaturePanel.addRangeExpression",
+            "action": "addRangeExpressionToMultiVariantTree",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.compareSVRs",
+            "action": "compareSVRs"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.handlePrimarySelectionChangeAfterTimer",
+            "action": "handlePrimarySelectionChangeAfterTimer"
+        },
+        {
+            "eventId": "Pca0FullScreenConfiguration.processPartialError",
+            "action": "processPartialErrors",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.updateIncludeSeverityInComparison",
+            "action": "loadDataProviderForMultipleVariantsGrid"
+        },
+        {
+            "eventId": "Pca0MultiSVREditor.AddNewVariant",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "openAddNewVariantPanel"
+        },
+        {
+            "eventId": "Pca0SaveVariantRule.newVariantSaved",
+            "action": "removeNewVariantFromGrid",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.updateAndColorifyDirtyElements",
+            "action": "updateAndColorifyDirtyElements"
+        },
+        {
+            "eventId": "Pca0GridEditorAddNewColumnViewModel.newColumnNamed",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "loadNewVariantDataBatch"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.continueExpandAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "continueExpandActionBatch"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.continueExpandActionAfterMoveToAll",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "continueExpandActionAfterMoveToAllBatch"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.setNewDisplayMode",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "setNewDisplayMode"
+        },
+        {
+            "eventId": "Pca0SvrSettings.savedVariantRule",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "updateVariantRuleAfterProfileSettingsApply"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.reAddVariantToGrid",
+            "action": "loadMultiVariantsGridDataBatch"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGridEditor.saveExistingSVRs",
+            "action": "saveVariantsExpressions"
+        },
+        {
+            "eventId": "Pca0MultipleVariantsConfigurationWrapper.selectionChanged",
+            "action": "handlePrimarySelectionChange"
+        },
+        {
+            "eventId": "Pca0MultipleVariantsConfigurationWrapper.confirmedSelectionChanged",
+            "action": "handlePrimarySelectionChangeAfterConfirm"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGridEditor.saveVariantsExpressions",
+            "action": "saveVariantsExpressions"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.showFscListView",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "showFscListView"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.loadOrAppendSVRs",
+            "action": "getActiveSettingsForSVRBatch"
+        },
+        {
+            "eventId": "Pca0MultiVariantsGrid.showConfirmationMessageForUnload",
+            "action": "showConfirmationMessageForUnload",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+    ],
+    "i18n": {
+        "invalid": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "validAndInComplete": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "validAndComplete": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "infoMessageForExportMultiVariantsGridData": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "defaultGridEditModeMessage": [
+            "FullScreenConfigurationMessages"
+        ],
+        "reset": [
+            "FullScreenConfigurationMessages"
+        ]
+    }
+}

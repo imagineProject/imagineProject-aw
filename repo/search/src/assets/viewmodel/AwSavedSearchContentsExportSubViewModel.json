@@ -1,0 +1,289 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "downloadFileAndClose": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "downloadFile"
+                },
+                {
+                    "action": "closeDialog"
+                }
+            ]
+        },
+        "closeDialog": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "inputData": {
+                "popupId": "{{props.popupOptions.popupId}}"
+            },
+            "deps": "js/popupService"
+        },
+        "exportSavedSearchResults": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "confirmationToExportObjectsEvent",
+                    "condition": "conditions.limitedResults"
+                },
+                {
+                    "action": "exportSearchResultsAndDownloadBatchJob",
+                    "condition": "!conditions.limitedResults"
+                }
+            ]
+        },
+        "exportSearchResultsAndDownloadBatchJob": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "exportFullTextSearch",
+                    "condition": "subPanelContext.selected.type === 'Awp0FullTextSavedSearch'"
+                },
+                {
+                    "action": "exportAdvancedSearch",
+                    "condition": "subPanelContext.selected.type === 'SavedSearch'"
+                },
+                {
+                    "action": "downloadFileAndClose",
+                    "condition": "data.fileTicket && data.fileTicket.length > 0"
+                },
+                {
+                    "action": "unRegisterExportContext",
+                    "condition": "data.fileTicket && data.fileTicket.length > 0"
+                }
+            ]
+        },
+        "downloadFile": {
+            "actionType": "JSFunction",
+            "method": "openFile",
+            "inputData": {
+                "fileTicket": "{{data.fileTicket}}",
+                "openFileName": ""
+            },
+            "deps": "js/fmsUtils"
+        },
+        "exportFullTextSearch": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Search-2024-06-Export",
+            "method": "exportSearchResults",
+            "inputData": {
+                "searchInput": {
+                    "providerName": "Awp0FullTextSearchProvider",
+                    "searchCriteria": "{{subPanelContext.searchState.criteria}}",
+                    "searchFilterFieldSortType": "{{subPanelContext.searchState.sortType}}",
+                    "searchFilterMap": "{{subPanelContext.searchState.activeFilterMap}}",
+                    "columnFilters": "{{subPanelContext.searchState.searchColumnFilters}}",
+                    "searchSortCriteria": "{{function:getSearchSortCriteria}}",
+                    "cursor": {
+                        "startIndex": 0
+                    }
+                },
+                "columnConfig": {
+                    "columnConfigId": "{{subPanelContext.searchState.columnConfig.columnConfigId}}",
+                    "operationType": "{{subPanelContext.searchState.columnConfig.operationType}}",
+                    "columns": "{{function:getColumnsForExport}}"
+                },
+                "exportAll": true,
+                "selectedObjectUIDs": [],
+                "applicationFormat": "MSExcelX"
+            },
+            "outputData": {
+                "fileTicket": "transientFileReadTickets[0]"
+            },
+            "deps": "js/awSearchService"
+        },
+        "exportAdvancedSearch": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2018-12-Finder",
+            "method": "exportSearchResults",
+            "inputData": {
+                "searchInput": {
+                    "providerName": "Awp0SavedQuerySearchProvider",
+                    "searchCriteria": "{{subPanelContext.searchState.advancedSearchCriteria}}",
+                    "searchFilterFieldSortType": "Priority",
+                    "searchFilterMap6": {},
+                    "searchSortCriteria": "{{ctx.sublocation.sortCriteria}}",
+                    "cursor": {
+                        "startIndex": 0
+                    }
+                },
+                "columnConfig": {
+                    "columnConfigId": "{{subPanelContext.searchState.columnConfig.columnConfigId}}",
+                    "operationType": "{{subPanelContext.searchState.columnConfig.operationType}}",
+                    "columns": "{{function:getColumnsForExport}}"
+                },
+                "exportAll": true,
+                "selectedObjectUIDs": [],
+                "applicationFormat": "MSExcelX"
+            },
+
+            "outputData": {
+                "fileTicket": "transientFileReadTickets[0]"
+            },
+            "deps": "js/awSearchService"
+        },
+        "refreshProvider": {
+            "actionType": "dataProvider",
+            "method": "exportColumnList"
+        },
+        "removeColumn": {
+            "actionType": "JSFunction",
+            "method": "removeColumn",
+            "inputData": {
+                "exportColumns": "{{data.exportColumns}}",
+                "column": "{{data.eventData}}"
+            },
+            "outputData": {
+                "exportColumns": "result.exportColumns"
+            },
+            "events": {
+                "success": [ {
+                    "name": "exportExcel.refreshColumnList"
+                } ]
+            },
+            "deps": "js/exportToFile"
+        },
+        "doExportDocument": {
+            "actionType": "openFile",
+            "inputData": {
+                "fileTicket": "{{data.fileTicket}}",
+                "openFileName": "{{data.exportToExcelFileName}}"
+            }
+        },
+        "moveUp": {
+            "actionType": "JSFunction",
+            "method": "moveUpDown",
+            "inputData": {
+                "data": "{{data.dataProviders}}",
+                "moveTo": "Up"
+            },
+            "deps": "js/exportToFile"
+        },
+        "moveDown": {
+            "actionType": "JSFunction",
+            "method": "moveUpDown",
+            "inputData": {
+                "data": "{{data.dataProviders}}",
+                "moveTo": "Down"
+            },
+            "deps": "js/exportToFile"
+        },
+        "columnSelectionChanged": {
+            "actionType": "JSFunction",
+            "method": "columnSelectionChanged",
+            "inputData": {
+                "data": "{{data.dataProviders}}"
+            },
+            "deps": "js/exportToFile"
+        },
+        "prepareColumnList": {
+            "actionType": "JSFunction",
+            "method": "prepareColumnList",
+            "inputData": {
+                "data": "{{data}}",
+                "ctx": "{{ctx}}",
+                "props": "{{props}}"
+            },
+            "outputData": {
+                "exportColumns": "result.exportColumns",
+                "exportToExcelFileName": "result.exportToExcelFileName"
+            },
+            "events": {
+                "success": [ {
+                    "name": "exportExcel.refreshColumnList"
+                } ]
+            },
+            "deps": "js/exportToFile"
+        },
+        "unRegisterExportContext": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "exportContext"
+            }
+        }
+    },
+    "onEvent": [ {
+            "eventId": "exportExcel.refreshColumnList",
+            "action": "refreshProvider"
+        },
+        {
+            "eventId": "exportToOfficeUtil.doExportDocumentEvent",
+            "action": "doExportDocumentAndClose"
+        },
+        {
+            "eventId": "Awp0ExportMoveDown",
+            "action": "moveDown"
+        },
+        {
+            "eventId": "Awp0ExportMoveUp",
+            "action": "moveUp"
+        },
+        {
+            "eventId": "exportColumnList.selectionChangeEvent",
+            "action": "columnSelectionChanged"
+        },
+        {
+            "eventId": "awPanel.reveal",
+            "action": "prepareColumnList"
+        },
+        {
+            "eventId": "exportExcel.removeColumn",
+            "action": "removeColumn",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "exportExcel.exportToFile",
+            "action": "exportToFile"
+        },
+        {
+            "eventId": "exportExcel.unRegisterExportContext",
+            "action": "unRegisterExportContext"
+        }
+    ],
+    "dataProviders": {
+        "exportColumnList": {
+            "commandsAnchor": "awp0_exportToExcelDelete",
+            "response": "{{data.exportColumns.dbValue}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "data": {
+        "selectedColumnsSubCommands": "exportSelectedColumnsCommands",
+        "exportColumns": {
+            "isArray": "true",
+            "dbValue": []
+        }
+    },
+    "functions": {
+        "getColumnsForExport": {
+            "functionName": "getColumnsForExport",
+            "parameters": [
+                "{{subPanelContext.searchState.columnConfig.columns}}",
+                "{{data.exportColumns.dbValue}}"
+            ]
+        },
+        "getSearchSortCriteria": {
+            "functionName": "getSearchSortCriteria",
+            "parameters": [
+                "{{data.columnProviders.clientScopeUI.sortCriteria}}",
+                "{{subPanelContext.searchState}}"
+            ]
+        }
+    },
+    "conditions": {},
+    "messages": {},
+    "i18n": {
+        "exportPanelTitle": [
+            "Awp0ExportToExcelMessages"
+        ],
+        "export": [
+            "Awp0ExportToExcelMessages"
+        ],
+        "selectedcolumns": [
+            "Awp0ExportToExcelMessages"
+        ],
+        "exportProperties": [
+            "Awp0ExportToExcelMessages"
+        ]
+    }
+}

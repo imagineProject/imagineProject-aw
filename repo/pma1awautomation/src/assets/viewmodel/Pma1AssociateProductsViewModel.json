@@ -1,0 +1,125 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "addPanelState": {
+            "initialValues": {
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {}
+        }
+    },
+    "actions": {
+        "linkObjects": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Bom-2024-06-StructureManagement",
+            "method": "manageAlignments",
+            "inputData": {
+                "input": "{{addPanelState.createInputList}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relations": "",
+                            "relatedModified": [
+                                "{{addPanelState.primarySelection}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name":"closeDialog"
+
+                    }
+                ],
+                "failure": [ {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relations": "",
+                            "relatedModified": [
+                                "{{addPanelState.primarySelection}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name":"closeDialog"
+
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                    "message": "manageAlignmentsFailure"
+                    }
+                ]
+            }
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "addSelectedObjects": {
+            "actionType": "JSFunction",
+            "method": "associateProducts",
+            "inputData": {
+                "addPanelState": "{{addPanelState}}",
+                "sourceObjects": "{{addPanelState.sourceObjects}}",
+                "props":"{{props}}"
+            },
+            "outputData":{
+                "addPanelState":""
+            },
+            "events": {
+                "success": [ {
+                        "name": "associateProducts.manageAlignments"
+                    }
+                ]
+            },
+            "deps": "js/Pma1AssociateProductsService"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "associateProducts.manageAlignments",
+            "action": "linkObjects",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        },
+        {
+            "eventId": "primaryWorkArea.selectionChangeEvent",
+            "action": "closePanelDialog",
+            "cacheEventData": true
+        }
+
+
+    ],
+    "conditions": {
+        "isAddButtonVisibleInPaletteTab": {
+            "expression": "addPanelState.selectedTab.view==='PaletteTabPageSub' && addPanelState.sourceObjects.length > 0"
+        },
+        "isAddButtonVisibleInSearchTab": {
+            "expression": "addPanelState.selectedTab.tabKey==='search' && addPanelState.sourceObjects.length > 0"
+        }
+    },
+    "i18n": {
+        "addElementBtn": [
+            "OccmgmtRevOccConstants"
+        ]
+    },
+    "messages": {
+        "manageAlignmentsFailure": {
+        "messageType": "ERROR",
+           "messageText": "{{errorCode}}"
+         }
+    }
+}

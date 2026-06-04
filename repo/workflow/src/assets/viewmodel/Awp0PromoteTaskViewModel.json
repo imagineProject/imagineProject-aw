@@ -1,0 +1,477 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports":
+    [
+        "js/aw-command-panel.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-listbox.directive",
+        "js/aw-button.directive",
+        "js/aw-widget.directive",
+        "js/aw-i18n.directive",
+        "js/visible-when.directive"
+    ],
+
+    "actions":
+    {
+
+        "loadProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData":
+            {
+                "objects":
+                [
+                    "{{props.subPanelContext.selectionData.value.selected[0]}}"
+                ],
+                "attributes": [
+                    "object_string",
+                    "object_desc",
+                    "comments",
+                    "has_failure_paths"
+                ]
+            },
+            "policy":
+            {
+                "types":
+                [
+                    {
+                        "name": "EPMTask",
+                        "properties":
+                        [
+                            {
+                                "name": "has_failure_paths"
+                            },
+                            {
+                                "name": "parent_task",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "fnd0ParentTask",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "fnd0Instructions"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "EPMPerformSignoffTask",
+                        "properties":
+                        [
+                            {
+                                "name": "parent_task",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "fnd0Instructions"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "EPMReviewTask",
+                        "properties":
+                        [
+                            {
+                                "name": "parent_task",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "fnd0Instructions"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Signoff",
+                        "properties":
+                        [
+                            {
+                                "name": "parent_task",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "fnd0ParentTask",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "promoteEPMTask.taskPropertiesLoaded"
+                    }
+                ]
+            },
+
+            "deps": "js/Awp0PromoteTask"
+
+        },
+        "populatePanelData": {
+            "actionType": "JSFunction",
+            "method": "populatePanelData",
+            "inputData": {
+                "data": "{{data}}",
+                "selection": "{{props.subPanelContext.selectionData.value.selected[0]}}"
+            },
+            "outputData" :
+            {
+                "taskName": "taskName",
+                "description": "description",
+                "promoteTask": "promoteTask",
+                "hasFailurePath": "hasFailurePath"
+            },
+            "deps": "js/Awp0PromoteTask"
+        },
+        "promote": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2014-06-Workflow",
+            "method": "performAction3",
+            "inputData": {
+                "input":
+                [
+                    {
+                        "actionableObject": "{{data.promoteTask}}",
+                        "action": "SOA_EPM_promote_action",
+                        "password": "",
+                        "supportingValue": "{{data.promotePath.dbValue}}",
+                        "supportingObject": "",
+                        "propertyNameValues": "{{function:getComments}}"
+                    }
+                ]
+            },
+            "deps": "js/Awp0PromoteTask",
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "primaryWorkarea.reset",
+                        "condition": "subPanelContext.openedObject === undefined"
+                    },
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    },
+                    {
+                        "condition": "subPanelContext.openedObject != undefined",
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": [
+                                "{{props.subPanelContext.openedObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "condition": "!subPanelContext.selectionData.value.pselected && subPanelContext.selectionData.value.selected[0]  && ( subPanelContext.pageContext.secondaryActiveTabId === 'tc_xrt_Overview' || subPanelContext.pageContext.secondaryActiveTabId === 'tc_xrt_Workflow')",
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": [
+                                "{{props.subPanelContext.selectionData.value.selected[0]}}"
+                            ]
+                        }
+                    },
+                    {
+                        "condition": "subPanelContext.selectionData.value.pselected && subPanelContext.selectionData.value.selected[0]  && ( subPanelContext.pageContext.secondaryActiveTabId === 'tc_xrt_Overview' || subPanelContext.pageContext.secondaryActiveTabId === 'tc_xrt_Workflow')",
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": [
+                                "{{subPanelContext.selectionData.value.pselected}}"
+                            ]
+                        }
+                    }
+                ],
+                "failure":
+                [
+                    {
+                        "name": "primaryWorkarea.reset",
+                        "condition": "subPanelContext.openedObject === undefined && errorCode.code === 33321"
+                    },
+                    {
+                        "condition": "subPanelContext.openedObject != undefined && errorCode.code === 33321",
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": [
+                                "{{props.subPanelContext.openedObject}}"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "condition": "errorCode.code !== 33321",
+                        "message": "serverError"
+                    }
+                ]
+            }
+        },
+
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [
+                    {
+                        "name": "complete",
+                        "condition": "!data.isDestroyed()",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog",
+                        "condition": "!data.isDestroyed()"
+                    }
+                ]
+            }
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cacheInitialSelection",
+                    "condition": "!data.initialSelection"
+                },
+                {
+                    "action": "closePanel",
+                    "condition": "data.initialSelection !== props.subPanelContext.selectionData.selected[0].uid"
+                }
+            ]
+        },
+        "cacheInitialSelection":{
+            "actionType": "JSFunction",
+            "method": "cacheSelection",
+            "inputData": {
+                "selectedUid": "{{props.subPanelContext.selectionData.selected[0].uid}}"
+            },
+            "outputData": {
+                "initialSelection": ""
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+
+    },
+
+    "data":
+    {
+        "taskName":
+        {
+            "displayName": "{{i18n.taskName}}",
+            "type": "STRING",
+            "isEditable" : "false",
+            "dbValue":"",
+            "uiValue":""
+        },
+
+        "description":
+        {
+            "displayName": "{{i18n.object_desc}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "isRequired": "false",
+            "uiValue":"",
+            "dbValue":""
+        },
+
+        "comments":
+        {
+            "displayName": "{{i18n.comments}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "numberOfLines": 3,
+            "maxLength": 4000,
+            "dbValue": "",
+            "uiValue":""
+        },
+
+        "promotePath":
+        {
+            "displayName": "{{i18n.path}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": true,
+            "dbValue": "SOA_EPM_approve",
+            "dispValue": "{{i18n.approve}}"
+        },
+
+        "promotePaths":
+        [
+            {
+                "propDisplayValue": "{{i18n.approve}}",
+                "dispValue": "{{i18n.approve}}",
+                "propInternalValue": "SOA_EPM_approve"
+            },
+            {
+                "propDisplayValue": "{{i18n.reject}}",
+                "dispValue": "{{i18n.reject}}",
+                "propInternalValue": "SOA_EPM_reject"
+            }
+        ]
+
+    },
+    "lifecycleHooks": {
+        "onMount": "loadProperties",
+        "onUpdate": {
+            "action": "closePanelOnSelectionChange",
+            "observers": [ "props.subPanelContext.selectionData.selected" ]
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "promoteEPMTask.taskPropertiesLoaded",
+            "action": "populatePanelData"
+        },
+        {
+            "eventId": "Workflow.closeOpenedPanel",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+
+    "functions":
+    {
+        "getComments":
+        {
+            "functionName": "getComments",
+            "parameters":
+            [
+                "{{data}}"
+            ]
+        }
+    },
+    "messages": {
+        "serverError": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "ctx" : {
+        "locationContext": ""
+    },
+
+    "conditions":   {
+
+        "showPromotePaths": {
+            "expression": "data.hasFailurePath"
+        },
+
+        "showInstructions": {
+            "expression": "data.description.dbValue && data.description.dbValue.length>0"
+        },
+
+        "isValidToComplete": {
+            "expression": "( data.comments && data.comments.dbValue.length>0) && data.promotePath.dbValue && data.promotePath.dbValue.length > 0"
+        }
+    },
+
+    "i18n":
+    {
+        "taskName":
+        [
+            "InboxMessages"
+        ],
+
+        "promoteTask":
+        [
+            "InboxMessages"
+        ],
+
+        "comments":
+        [
+            "InboxMessages"
+        ],
+
+        "promote":
+        [
+            "InboxMessages"
+        ],
+
+        "path":
+        [
+            "InboxMessages"
+        ],
+
+        "object_desc":
+        [
+            "InboxMessages"
+        ],
+        "approve":
+        [
+            "InboxMessages"
+        ],
+        "reject":
+        [
+            "InboxMessages"
+        ]
+
+    }
+}

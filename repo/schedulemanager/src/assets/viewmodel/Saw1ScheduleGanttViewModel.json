@@ -1,0 +1,711 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "ganttChartState": {
+            "initialValues": {
+                "zoomLevels": [ "year", "month", "week", "day" ]
+            },
+            "meta": {}
+        }
+    },
+    "actions": {
+        "initializeScheduleGantt": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "checkForPsi0BOTypes"
+                },
+                {
+                    "action": "checkPsi0ModuleLoaded"
+                },
+                {
+                    "action": "initializeGanttChartState"
+                },
+                {
+                    "action": "loadScheduleSummaryProps"
+                },
+                {
+                    "action": "subscribeEvents"
+                }
+            ]
+        },
+        "scrollToDateInGantt": {
+            "actionType": "JSFunction",
+            "method": "scrollToDateInGantt",
+            "inputData": {
+                "dateString": "{{data.eventData.dateString}}",
+                "isToday": "{{data.eventData.isToday}}",
+                "i18n": "{{data.i18n}}",
+                "atomicDataRef": "{{data.atomicDataRef}}"
+            },
+            "deps": "js/Saw1ScheduleGanttService"
+        },
+        "checkForPsi0BOTypes": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2015-10-Session",
+            "method": "getTypeDescriptions2",
+            "inputData": {
+                "typeNames": [
+                    "Psi0DelInstances"
+                ]
+            },
+            "outputData": {
+                "response": "{{function:checkForPsi0BOTypes}}"
+            },
+            "deps": "js/Saw1ScheduleGanttService"
+        },
+        "checkPsi0ModuleLoaded":{
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "prgSchedule.checkPsi0ModuleLoaded"
+                },
+                {
+                    "name": "prgSchedule.registerListenersOnGanttForProgramEvents"
+                }]
+            }
+        },
+        "renderAddedEventsonGantt":{
+            "actionType": "JSFunction",
+            "method": "renderProgramEventsOnGantt",
+            "inputData": {
+                "schedule": "{{props.schedule}}",
+                "atomicDataRef": "{{data.atomicDataRef}}",
+                "eventData": "{{data.eventData}}",
+                "ganttDataService" : "{{data.ganttDataService}}"
+            },
+            "outputData": {
+                "addedEvents": "addedEvents"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "fetchMilestoneEventDependencies",
+                        "condition": "data.addedEvents.length > 0 && subPanelContext.provider.scheduleNavigationContext.value.isStructureEditSupported === true",
+                        "eventData": {
+                            "primaryObjects": "{{data.addedEvents}}",
+                            "callSecondarySoa": true
+                        }
+                    }
+                ]
+            },
+            "deps": "js/Saw1ScheduleGanttService"
+        },
+        "addMilestoneEventLinksOnGanttAction":{
+            "actionType": "JSFunction",
+            "method": "addMilestoneEventLinksOnGantt",
+            "inputData": {
+                "dependenciesInfo": "{{data.eventData}}",
+                "ganttDataService" : "{{data.ganttDataService}}",
+                "atomicDataRef": "{{data.atomicDataRef}}"
+            },
+            "deps": "js/Saw1ScheduleGanttService"
+        },
+        "removeAddedEventsonGantt":{
+            "actionType": "JSFunction",
+            "method": "removeAddedEventsonGantt",
+            "inputData": {
+                "schedule": "{{props.schedule}}",
+                "atomicDataRef": "{{data.atomicDataRef}}",
+                "eventData": "{{data.addedEvents}}"
+            },
+            "deps": "js/Saw1ScheduleGanttService"
+        },
+        "initializeGanttChartState": {
+            "actionType": "JSFunction",
+            "method": "initializeGanttChartState",
+            "inputData": {
+                "schedule": "{{props.schedule}}",
+                "atomicDataRef": "{{data.atomicDataRef}}"
+            },
+            "outputData": {
+                "isGanttChartStateInited": "isGanttChartStateInited",
+                "ganttDataService": "ganttDataService"
+            },
+            "deps": "js/Saw1ScheduleGanttService"
+        },
+        "loadScheduleSummaryProps": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-09-DataManagement",
+            "method": "loadObjects",
+            "inputData": {
+                "uids": [ "{{props.schedule.props.fnd0SummaryTask.dbValues[0]}}" ]
+            },
+            "events": {
+                "success": [ {
+                    "name": "Saw1ScheduleGantt.summaryPropLoaded"
+                } ]
+            }
+        },
+        "setScheduleSummaryPropLoaded": {
+            "actionType": "JSFunction",
+            "method": "setScheduleSummaryPropLoaded",
+            "outputData": {
+                "isScheduleSummaryPropLoaded": "isScheduleSummaryPropLoaded"
+            },
+            "deps": "js/Saw1ScheduleGanttService"
+        },
+        "subscribeEvents": {
+            "actionType": "JSFunction",
+            "method": "subscribeEvents",
+            "inputData": {
+                "ganttDataService": "{{data.ganttDataService}}",
+                "atomicDataRef": "{{data.atomicDataRef}}"
+            },
+            "outputData": {
+                "eventSubscriptions": "eventSubscriptions"
+            },
+            "deps": "js/Saw1ScheduleGanttService"
+        },
+        "unsubscribeEvents": {
+            "actionType": "JSFunction",
+            "method": "unsubscribeEvents",
+            "inputData": {
+                "eventSubscriptions": "{{data.eventSubscriptions}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "prgSchedule.unsubscribePsi0Events"
+                },
+                {
+                    "name": "prgSchedule.unsubscribeProgramEventListener"
+                } ],
+                "failure": [ {
+                    "name": "prgSchedule.unsubscribePsi0Events"
+                },
+                {
+                    "name": "prgSchedule.unsubscribeProgramEventListener"
+                } ]
+            },
+            "deps": "js/Saw1ScheduleGanttService"
+        },
+        "updateParentSelection": {
+            "actionType": "JSFunction",
+            "method": "updateParentSelection",
+            "inputData": {
+                "localSelectionData": "{{data.selectionData}}",
+                "parentSelectionData": "{{props.selectionData}}"
+            },
+            "deps": "js/Saw1ScheduleGanttSelectionService"
+        },
+        "updateLocalSelection": {
+            "actionType": "JSFunction",
+            "method": "updateLocalSelection",
+            "inputData": {
+                "parentSelectionData": "{{props.selectionData}}",
+                "atomicDataRef": "{{data.atomicDataRef}}"
+            },
+            "deps": "js/Saw1ScheduleGanttSelectionService"
+        },
+        "loadInitialDataToGantt": {
+            "actionType": "JSFunction",
+            "method": "loadInitialDataToGantt",
+            "inputData": {
+                "treeTableData": "{{props.subPanelContext.treeTableData}}",
+                "ganttDataService": "{{data.ganttDataService}}",
+                "atomicDataRef": "{{data.atomicDataRef}}",
+                "schedule": "{{props.schedule}}",
+                "baselineUids": "{{props.subPanelContext.provider.scheduleNavigationContext.baselineUids}}"
+            },
+            "outputData": {
+                "isGanttDataInited": "isGanttDataInited"
+            },
+            "events": {
+                "success": [ {
+                        "name": "Saw1ScheduleGantt.updateLocalSelection"
+                    },
+                    {
+                        "condition": "ctx.preferences.SM_View_CriticalPath[ 0 ] === 'true'",
+                        "name": "Saw1ScheduleGantt.showCriticalPath"
+                    },
+                    {
+                        "condition": "ctx.isSchedulePlanEventsShown",
+                        "name": "ScheduleGantt.checkForEventsAfterGanttInitialized"
+                    }
+                ]
+            },
+            "deps": "js/Saw1ScheduleGanttCallbacks"
+        },
+        "deleteSelectedDependencies": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2012-02-ScheduleManagement",
+            "method": "deleteDependencies",
+            "inputData": {
+                "schedule": "{{props.schedule}}",
+                "dependencyDeletes": "{{props.selectionData.value.selected}}"
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "SOAErrorMessage"
+                } ]
+            }
+        },
+        "updateTasks": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2012-02-ScheduleManagement",
+            "method": "updateTasks",
+            "inputData": {
+                "schedule": "{{data.eventMap['scheduleGantt.tasksDragged'].schedule}}",
+                "updates": "{{data.eventMap['scheduleGantt.tasksDragged'].updates}}"
+            },
+            "policy": {
+                "types": [ {
+                    "name": "ScheduleTask",
+                    "properties": [ {
+                            "name": "finish_date"
+                        },
+                        {
+                            "name": "duration"
+                        },
+                        {
+                            "name": "saw1Duration"
+                        },
+                        {
+                            "name": "saw1WorkComplete"
+                        },
+                        {
+                            "name": "fnd0PercentCompleteString"
+                        }
+                    ]
+                } ]
+            },
+            "events": {
+                "failure": [ {
+                    "name": "cdm.updated",
+                    "eventData": {
+                        "updatedObjects": "{{data.eventMap['scheduleGantt.tasksDragged'].taskObjects}}"
+                    }
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "SOAErrorMessage"
+                } ]
+            }
+        },
+        "showHideCriticalPath": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "showCriticalPath",
+                    "condition": "ctx.preferences.SM_View_CriticalPath[ 0 ] === 'true'"
+                },
+                {
+                    "action": "hideCriticalPath",
+                    "condition": "ctx.preferences.SM_View_CriticalPath[ 0 ] === 'false'"
+                }
+            ]
+        },
+        "showCriticalPath": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2012-02-ScheduleManagement",
+            "method": "findCriticalPathTasks",
+            "inputData": {
+                "schedule": "{{props.schedule}}"
+            },
+            "outputData": {
+                "criticalPathUids": "{{function:processCriticalPathOutput}}"
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "SOAErrorMessage"
+                } ]
+            },
+            "deps": "js/Saw1ScheduleGanttService"
+        },
+        "hideCriticalPath": {
+            "actionType": "JSFunction",
+            "method": "clearCriticalPath",
+            "inputData": {
+                "atomicDataRef": "{{data.atomicDataRef}}"
+            },
+            "deps": "js/Saw1ScheduleGanttService"
+        },
+        "setZoomLevel": {
+            "actionType": "JSFunction",
+            "method": "setZoomLevel",
+            "inputData": {
+                "zoomLevel": "{{ctx.preferences.AWC_SM_Gantt_Zoom_Level[0]}}",
+                "atomicDataRef": "{{data.atomicDataRef}}",
+                "schedule": "{{props.schedule}}"
+            },
+            "deps": "js/Saw1ScheduleGanttService"
+        },
+        "updateZoomLevelPref": {
+            "actionType": "JSFunction",
+            "method": "updateZoomLevelPref",
+            "inputData": {
+                "prefValue": "{{ctx.preferences.AWC_SM_Gantt_Zoom_Level[0]}}",
+                "schedule": "{{props.schedule}}",
+                "newZoomLevel": "{{data.ganttChartState.zoomLevel}}"
+            },
+            "deps": "js/Saw1ScheduleGanttService"
+        },
+        "toggleTaskInfo": {
+            "actionType": "JSFunction",
+            "method": "showHideTaskInfo",
+            "inputData": {
+                "atomicDataRef": "{{data.atomicDataRef}}",
+                "showOrHideInfo": "{{ctx.showGanttTaskInfo}}"
+            },
+            "deps": "js/Saw1ScheduleGanttService"
+        },
+        "showBaselines": {
+            "actionType": "JSFunction",
+            "method": "showBaselines",
+            "inputData": {
+                "baselineUids": "{{props.subPanelContext.provider.scheduleNavigationContext.baselineUids}}",
+                "treeTableData": "{{props.subPanelContext.treeTableData}}",
+                "atomicDataRef": "{{data.atomicDataRef}}",
+                "schedule": "{{props.schedule}}"
+            },
+            "deps": "js/Saw1ScheduleGanttBaselineService"
+        },
+        "loadBaselines": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "loadBaselinesTCSOA"
+                }
+            ]
+        },
+        "loadBaselineAWSOA": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagementAw-2018-12-ScheduleManagementAw",
+            "method": "loadBaseline",
+            "inputData": {
+                "loadBaselineInfo": "{{data.eventMap['scheduleGantt.loadBaselines'].loadBaselineInput}}"
+            },
+            "outputData": {
+                "response": "{{function:processLoadBaselineResponse}}"
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "SOAErrorMessage"
+                } ]
+            },
+            "deps": "js/Saw1ScheduleGanttBaselineService"
+        },
+        "loadBaselinesTCSOA": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2022-06-ScheduleManagement",
+            "method": "loadBaselines",
+            "inputData": {
+                "loadBaselinesInfo": "{{data.eventMap['scheduleGantt.loadBaselines'].loadBaselineInput}}"
+            },
+            "outputData": {
+                "response": "{{function:processLoadBaselineResponse}}"
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "SOAErrorMessage"
+                } ]
+            },
+            "deps": "js/Saw1ScheduleGanttBaselineService"
+        },
+        "updateGanttRowHeight": {
+            "actionType": "JSFunction",
+            "method": "updateGanttRowHeight",
+            "inputData": {
+                "atomicDataRef": "{{data.atomicDataRef}}"
+            },
+            "deps": "js/Saw1ScheduleGanttLayoutService"
+        },
+        "updateWorkTimes": {
+            "actionType": "JSFunction",
+            "method": "updateWorkTimes",
+            "inputData": {
+                "atomicDataRef": "{{data.atomicDataRef}}",
+                "calendarInfo": "{{props.subPanelContext.provider.scheduleNavigationContext.calendarInfo}}"
+            },
+            "deps": "js/Saw1ScheduleGanttService"
+        },
+        "confirmAndDeleteMilestoneEventDependencyAction": {
+            "actionType": "JSFunction",
+            "method": "confirmAndDeleteMilestoneEventDependency",
+            "inputData": {
+                "dependency": "{{data.eventData}}",
+                "atomicDataRef": "{{data.atomicDataRef}}"
+            },
+            "deps": "js/Saw1ScheduleGanttService"
+        },
+        "deleteMilestoneEventDependency": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "prgSchedule.deleteMilestoneEventDependency",
+                        "eventData": {
+                            "dependencyDeletes": "{{props.selectionData.selected}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "removeMilestoneEventLinkOnGantt": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "scheduleNavigationTree.dependenciesDeleted",
+                        "eventData": {
+                            "dependenciesInfo": [{
+                                "uid":"{{data.eventData}}"
+                            }],
+                            "dataProvider": "{{data.dataProviders.scheduleNavigationTreeDataProvider}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "resetScheduleGanttChartAction":{
+            "actionType": "JSFunction",
+            "method": "resetGanttChart",
+            "inputData": {
+                "atomicDataRef": "{{data.atomicDataRef}}"
+            },
+            "deps": "js/Saw1ScheduleGanttService"
+        }
+    },
+    "functions": {
+        "processCriticalPathOutput": {
+            "functionName": "processCriticalPathOutput",
+            "parameters": [ "{{data.atomicDataRef}}" ]
+        },
+        "processLoadBaselineResponse": {
+            "functionName": "processLoadBaselineResponse",
+            "parameters": [ "{{data.atomicDataRef}}" ]
+        },
+        "checkForPsi0BOTypes": {
+            "functionName": "checkForPsi0BOTypes",
+            "parameters": [
+                "{{response}}"
+            ]
+        }
+    },
+    "conditions": {
+        "isGanttChartStateInited": {
+            "expression": "data.isGanttChartStateInited === true && data.isScheduleSummaryPropLoaded === true"
+        },
+        "isGanttInitialized": {
+            "expression": "data.ganttChartState.ganttInitialized == true"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeScheduleGantt",
+        "onUnmount": "unsubscribeEvents",
+        "onUpdate": [ {
+                "action": "updateParentSelection",
+                "observers": [ "viewModel.atomicData.selectionData" ]
+            },
+            {
+                "action": "updateLocalSelection",
+                "observers": [ "props.selectionData" ]
+            },
+            {
+                "action": "loadInitialDataToGantt",
+                "observers": [ "viewModel.atomicData.ganttChartState.ganttInitialized" ]
+            },
+            {
+                "action": "updateZoomLevelPref",
+                "observers": [ "viewModel.atomicData.ganttChartState.zoomLevel" ]
+            },
+            {
+                "action": "showBaselines",
+                "observers": [ "props.subPanelContext.provider.scheduleNavigationContext.baselineUids" ]
+            },
+            {
+                "action": "updateWorkTimes",
+                "observers": [ "props.subPanelContext.provider.scheduleNavigationContext.calendarInfo" ]
+            }
+        ]
+    },
+    "ctx": {
+        "preferences": null,
+        "showGanttTaskInfo": null,
+        "tcSessionData": {
+            "type": "Object"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "schedule": {
+            "type": "object"
+        },
+        "tree-action-state": {
+            "type": "object"
+        },
+        "selection-data": {
+            "type": "object"
+        }
+    },
+    "messages": {
+        "confirmDependencyDelete": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.removeSchDependencyMessageConfirmation}}",
+            "messageTextParams": [
+                "{{props.selectionData.value.selected[0].props.saw1Name.uiValues[0]}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.CancelText}}",
+                    "action": ""
+                },
+                {
+                    "option": "Delete",
+                    "text": "{{i18n.delete}}",
+                    "action": "deleteSelectedDependencies"
+                }
+            ]
+        },
+        "deleteMilestoneEventDepConfirmationMessage": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.removeMilestoneEventDepMessageConfirmation}}",
+            "messageTextParams": [
+                "{{data.eventMap.deleteMilestoneEventDepConfirmationMessage.secondaryEventName}}",
+                "{{data.eventMap.deleteMilestoneEventDepConfirmationMessage.primaryEventName}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.CancelText}}",
+                    "action": ""
+                },
+                {
+                    "option": "Delete",
+                    "text": "{{i18n.delete}}",
+                    "action": "deleteMilestoneEventDependency"
+                }
+            ]
+        },
+        "SOAErrorMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "Saw1ScheduleGantt.summaryPropLoaded",
+            "action": "setScheduleSummaryPropLoaded"
+        },
+        {
+            "eventId": "scrollToDateInGantt",
+            "action": "scrollToDateInGantt",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Saw1ScheduleGantt.updateLocalSelection",
+            "action": "updateLocalSelection"
+        },
+        {
+            "eventId": "scheduleGantt.confirmAndDeleteDependency",
+            "message": "confirmDependencyDelete"
+        },
+        {
+            "eventId": "scheduleGantt.confirmAndDeleteMilestoneEventDependency",
+            "cacheEventData": true,
+            "action": "confirmAndDeleteMilestoneEventDependencyAction"
+        },
+        {
+            "eventId": "deleteMilestoneEventDepConfirmationMessage",
+            "cacheEventData": true,
+            "message": "deleteMilestoneEventDepConfirmationMessage"
+        },
+        {
+            "eventId": "prgSchedule.deleteMilestoneEventLink",
+            "action": "removeMilestoneEventLinkOnGantt",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "scheduleGantt.tasksDragged",
+            "cacheEventData": true,
+            "action": "updateTasks"
+        },
+        {
+            "eventId": "Saw1ScheduleGantt.showCriticalPath",
+            "action": "showCriticalPath"
+        },
+        {
+            "eventId": "appCtx.update",
+            "criteria": {
+                "name": "preferences",
+                "target": "SM_View_CriticalPath"
+            },
+            "action": "showHideCriticalPath"
+        },
+        {
+            "eventId": "appCtx.update",
+            "criteria": {
+                "name": "preferences",
+                "target": "AWC_SM_Gantt_Zoom_Level"
+            },
+            "action": "setZoomLevel"
+        },
+        {
+            "eventId": "appCtx.update",
+            "criteria": {
+                "name": "showGanttTaskInfo"
+            },
+            "action": "toggleTaskInfo"
+        },
+        {
+            "eventId": "scheduleGantt.loadBaselines",
+            "cacheEventData": true,
+            "action": "loadBaselines"
+        },
+        {
+            "eventId": "LayoutChangeEvent",
+            "action": "updateGanttRowHeight",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "prgSchedule.renderAddedEventsOnGantt",
+            "action": "renderAddedEventsonGantt",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "prgSchedule.renderRemovedGanttEvents",
+            "action": "removeAddedEventsonGantt",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "prgSchedule.createMilestoneEventLink",
+            "action": "addMilestoneEventLinksOnGanttAction",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "prgSchedule.renderMilestoneEventLinks",
+            "action": "addMilestoneEventLinksOnGanttAction",
+            "cacheEventData": true
+        },
+        {
+            "eventId":"resetScheduleGanttChart",
+            "action":"resetScheduleGanttChartAction"
+        }
+    ],
+    "i18n": {
+        "removeSchDependencyMessageConfirmation": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1GoToOutOfBoundAfter": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1GoToOutOfBoundBefore": [
+            "ScheduleManagerMessages"
+        ],
+        "CancelText": [
+            "ScheduleManagerMessages"
+        ],
+        "delete": [
+            "ScheduleManagerMessages"
+        ],
+        "removeMilestoneEventDepMessageConfirmation": [
+            "ScheduleManagerMessages"
+        ]
+    }
+}

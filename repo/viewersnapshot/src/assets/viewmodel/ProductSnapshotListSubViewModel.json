@@ -1,0 +1,308 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "revealProductSnapshot": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "initializeProductSnapshot"
+                },
+                {
+                    "action": "callPSCardDataProvider",
+                    "condition": "conditions.snapshotsViewImage"
+                },
+                {
+                    "action": "callPSListDataProvider",
+                    "condition": "conditions.snapshotsViewList"
+                }
+            ]
+        },
+        "initializeProductSnapshot": {
+            "actionType": "JSFunction",
+            "method": "productSnapshotPanelRevealed",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext.subPanelContext}}",
+                "snapshotPanelData":"{{subPanelContext.snapshotPanelData}}"
+            },
+            "outputData": {
+                "vmoForProductSnapshotGallery": "vmoForProductSnapshotGallery"
+            },
+            "deps": "js/viewerProductSnapshotService"
+        },
+        "viewerProductSnapshotListDataUpdatedAction": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "callPSCardDataProvider",
+                    "condition": "conditions.snapshotsViewImage"
+                },
+                {
+                    "action": "callPSListDataProvider",
+                    "condition": "conditions.snapshotsViewList"
+                }
+            ]
+        },
+        "callPSListDataProvider": {
+            "actionType": "dataProvider",
+            "method": "productSnapshotDataProvider"
+        },
+        "callPSCardDataProvider": {
+            "actionType": "dataProvider",
+            "method": "productSnapshotCardViewDataProvider"
+        },
+        "clearPreviousProductSnapshotSelection": {
+            "actionType": "JSFunction",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.productSnapshotDataProvider}}",
+                "viewerContextData": "{{props.subPanelContext.viewerContextData}}"
+            },
+            "method": "clearPreviousProductSnapshotSelection",
+            "deps": "js/viewerProductSnapshotService"
+        },
+        "loadProductSnapshotDataForList": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}"
+                    },
+                    "searchInput": {
+                        "maxToLoad": "{{function:getDefaultPageSize}}",
+                        "maxToReturn": "{{function:getDefaultPageSize}}",
+                        "providerName": "Awv0SnapshotGalleryProvider",
+                        "searchCriteria": {
+                            "owner": "{{data.listBox.dbValue}}",
+                            "product": "{{function:getProductRevisionInfo}}",
+                            "searchString": "{{function:getSearchStringWithWildCard}}"
+                        },
+                        "searchSortCriteria": [ {
+                            "fieldName": "POM_application_object.creation_date",
+                            "sortDirection": "DESC"
+                        } ],
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.productSnapshotDataProvider.startIndex}}",
+                            "endIndex": "{{data.dataProviders.productSnapshotDataProvider.endIndex}}",
+                            "startReached": "{{data.dataProviders.productSnapshotDataProvider.startReached}}",
+                            "endReached": "{{data.dataProviders.productSnapshotDataProvider.endReached}}"
+                        }
+                    },
+                    "inflateProperties": false
+                },
+                "1": {
+                    "types": [ {
+                            "name": "BusinessObject",
+                            "properties": [ {
+                                    "name": "awp0CellProperties"
+                                },
+                                {
+                                    "name": "owning_user"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Fnd0Snapshot",
+                            "properties": [ {
+                                    "name": "POM_application_object.creation_date"
+                                },
+                                {
+                                    "name": "fnd0OwningIdentifier"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "dataProviders.productSnapshotDataProvider.cursorObject": "cursor"
+            }
+        },
+        "loadProductSnapshotDataForCard": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}"
+                    },
+                    "searchInput": {
+                        "maxToLoad": "{{function:getDefaultPageSize}}",
+                        "maxToReturn": "{{function:getDefaultPageSize}}",
+                        "providerName": "Awv0SnapshotGalleryProvider",
+                        "searchCriteria": {
+                            "owner": "{{data.listBox.dbValue}}",
+                            "product": "{{function:getProductRevisionInfo}}",
+                            "searchString": "{{function:getSearchStringWithWildCard}}"
+                        },
+                        "searchSortCriteria": [ {
+                            "fieldName": "POM_application_object.creation_date",
+                            "sortDirection": "DESC"
+                        } ],
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.productSnapshotCardViewDataProvider.startIndex}}",
+                            "endIndex": "{{data.dataProviders.productSnapshotCardViewDataProvider.endIndex}}",
+                            "startReached": "{{data.dataProviders.productSnapshotCardViewDataProvider.startReached}}",
+                            "endReached": "{{data.dataProviders.productSnapshotCardViewDataProvider.endReached}}"
+                        }
+                    },
+                    "inflateProperties": false
+                },
+                "1": {
+                    "types": [ {
+                            "name": "BusinessObject",
+                            "properties": [ {
+                                    "name": "awp0CellProperties"
+                                },
+                                {
+                                    "name": "owning_user"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Fnd0Snapshot",
+                            "properties": [ {
+                                    "name": "POM_application_object.creation_date"
+                                },
+                                {
+                                    "name": "fnd0OwningIdentifier"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "ImageViewTotalFound": "totalFound",
+                "ImageViewSearchResults": "{{json:searchResultsJSON}}",
+                "dataProviders.productSnapshotCardViewDataProvider.cursorObject": "cursor"
+            }
+        }
+    },
+    "data": {
+        "commandAnchor":"aw_3dSnapshotThumbnailViewCommands",
+        "vmoForProductSnapshotGallery": "",
+        "filterBox": {
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "false",
+            "requiredText": "{{i18n.filter}}",
+            "dbValue": ""
+        },
+        "listBox": {
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": "true",
+            "dbValue": "OwnedSnapshots",
+            "dispValue": "{{i18n.mySnapshotsDisplayName}}"
+        },
+        "listBoxValues": {
+            "type": "STRING",
+            "dbValue": [ {
+                    "propDisplayValue": "{{i18n.mySnapshotsDisplayName}}",
+                    "dispValue": "{{i18n.mySnapshotsDisplayName}}",
+                    "propInternalValue": "OwnedSnapshots"
+                },
+                {
+                    "propDisplayValue": "{{i18n.sharedByMeSnapshots}}",
+                    "dispValue": "{{i18n.sharedByMeSnapshots}}",
+                    "propInternalValue": "SnapshotsSharedByMe"
+                },
+                {
+                    "propDisplayValue": "{{i18n.sharedwithMeSnapshots}}",
+                    "dispValue": "{{i18n.sharedwithMeSnapshots}}",
+                    "propInternalValue": "SnapshotsSharedWithMe"
+                }
+            ]
+        },
+        "snapshotSourceLabel": {
+            "displayName": "{{i18n.snapshotSource}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "",
+            "dispValue": ""
+        }
+    },
+
+    "dataProviders": {
+        "productSnapshotDataProvider": {
+            "action": "loadProductSnapshotDataForList",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple",
+            "selectionModel": {
+                "multiSelectEnabled": true
+            },
+            "commandsAnchor": "product_snapshot_list_cell_commands"
+        },
+        "productSnapshotCardViewDataProvider": {
+            "action": "loadProductSnapshotDataForCard",
+            "response": "{{data.ImageViewSearchResults}}",
+            "totalFound": "{{data.ImageViewTotalFound}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+    "functions": {
+        "getDefaultPageSize": {
+            "functionName": "getDefaultPageSize",
+            "parameters": [
+                "{{ctx.preferences.AWC_DefaultPageSize}}"
+            ],
+            "deps": "js/viewerProductSnapshotService"
+        },
+        "getProductRevisionInfo":{
+            "functionName": "getProductRevisionInfo",
+            "parameters": [
+                "{{subPanelContext.context.occContext.productContextInfo}}"
+            ],
+            "deps": "js/viewerProductSnapshotService"
+        },
+        "getSearchStringWithWildCard":{
+            "functionName": "getSearchStringWithWildCard",
+            "parameters": [
+                "{{data.filterBox.dbValue}}"
+            ],
+            "deps": "js/viewerProductSnapshotService"
+        }
+    },
+    "conditions": {
+        "snapshotFilterValueChanged": {
+            "expression": "data.filterBox.dbValue",
+            "trackValues": true
+        },
+        "snapshotsViewImage": {
+            "expression": "subPanelContext.snapshotPanelData.snapshotView  === 'Image'"
+        },
+        "snapshotsViewList": {
+            "expression": "!subPanelContext.snapshotPanelData.snapshotView || subPanelContext.snapshotPanelData.snapshotView  === 'List'"
+        }
+    },
+    "lifecycleHooks": {
+        "onInit": "revealProductSnapshot",
+        "onUpdate": [ {
+            "action": "viewerProductSnapshotListDataUpdatedAction",
+            "observers": [ "props.subPanelContext.snapshotPanelData.updateSnapshotList" ]
+        } ],
+        "onUnmount":"clearPreviousProductSnapshotSelection"
+    },
+    "i18n": {
+        "productSnapshotPanelTitle": [ "ViewerSnapshotMessages" ],
+        "createProductSnapshotTitle": [ "ViewerSnapshotMessages" ],
+        "editProductSnapshot": [ "ViewerSnapshotMessages" ],
+        "filter": [ "ViewerSnapshotMessages" ],
+        "currentCaptureLabel": [ "ViewerSnapshotMessages" ],
+        "mySnapshotsDisplayName": [ "ViewerSnapshotMessages" ],
+        "sharedByMeSnapshots": [ "ViewerSnapshotMessages" ],
+        "showingProductSnapshot": [ "ViewerSnapshotMessages" ],
+        "sharedwithMeSnapshots": [ "ViewerSnapshotMessages" ],
+        "updatedProductSnapshotSuccessfully": [ "ViewerSnapshotMessages" ],
+        "failedToUpdate":["ViewerSnapshotMessages"],
+        "snapshotSource":["ViewerSnapshotMessages"]
+    }
+
+}

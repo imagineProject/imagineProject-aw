@@ -1,0 +1,218 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "addCriteriaInfoTooltip": {
+            "extendedTooltipContent": "{{i18n.addCriteriaInfoDesc}}"
+        },
+        "dataProviderName": {
+            "displayName": "{{i18n.dataProvider}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "isEditable": "true",
+            "maxLength": "128",
+            "dbValue": "",
+            "uiValue": ""
+        },
+        "criteria": {
+            "displayName": "{{i18n.criteria}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "dbValue": "",
+            "uiValue": ""
+        },
+        "searchCriteriaKey":{
+            "displayName": "{{i18n.searchKey}}",
+            "type": "STRING",
+            "isEditable": "true",
+            "maxLength": "128",
+            "dbValue": "",
+            "uiValue": ""
+        },
+        "searchCriteriaValue":{
+            "displayName": "{{i18n.searchValue}}",
+            "type": "STRING",
+            "isEditable": "true",
+            "dbValue": "",
+            "uiValue": ""
+        },
+        "CriteriaChips": [],
+        "CriteriaObject": {}
+    },
+    "dataProviders": {
+        "criteriaChipDataProvider": {
+            "type": "Static",
+            "response": "{{data.CriteriaChips}}",
+            "selectionModelMode": "none"
+        }
+    },
+    "actions":{
+        "addCriteriaChip": {
+            "actionType": "JSFunction",
+            "method": "addCustomCriteriaChip",
+            "inputData": {
+                "CriteriaChips": "{{data.CriteriaChips}}",
+                "CriteriaObject": "{{data.CriteriaObject}}",
+                "searchCriteriaKey": "{{data.searchCriteriaKey}}",
+                "searchCriteriaValue": "{{data.searchCriteriaValue}}"
+            },
+            "outputData": {
+                "searchCriteriaKey": "searchCriteriaKey",
+                "searchCriteriaValue": "searchCriteriaValue",
+                "CriteriaChips": "CriteriaChips",
+                "CriteriaObject": "CriteriaObject"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "criteriaChipDataProvider.reset"
+                    }
+                ]
+            },
+            "deps": "js/AwConfigureReportViewerService"
+        },
+        "removeChipAction": {
+            "actionType": "JSFunction",
+            "method": "removeCustomCriteriaChip",
+            "inputData": {
+                "chipArray": "{{data.CriteriaChips}}",
+                "CriteriaObject": "{{data.CriteriaObject}}",
+                "chipToRemove": "{{parameters.chip}}"
+            },
+            "outputData": {
+                "CriteriaChips": "CriteriaChips",
+                "CriteriaObject":"CriteriaObject"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "criteriaChipDataProvider.reset"
+                    }
+                ]
+            },
+            "deps": "js/AwConfigureReportViewerService"
+        },
+        "chipUIAction":{
+            "actionType": "JSFunction",
+            "method": "previewChipForCutomSearch",
+            "inputData": {
+                "chip": "{{parameters.chip}}",
+                "searchCriteriaKey": "{{data.searchCriteriaKey}}",
+                "searchCriteriaValue": "{{data.searchCriteriaValue}}"
+            },
+            "outputData": {
+                "searchCriteriaKey": "searchCriteriaKey",
+                "searchCriteriaValue": "searchCriteriaValue"
+            },
+            "deps": "js/AwConfigureReportViewerService"
+        },
+        "revealAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "callRepGetProviderName"
+                },
+                {
+                    "action": "getSearchCriteriaChips",
+                    "condition": "props.subPanelContext.reportsState.reportParameters.ReportDefProps.ReportSearchInfo.additionalSearchCriteria && !props.subPanelContext.reportsState.selectedAdvanedQuery"
+                }
+            ]
+        },
+        "callRepGetProviderName": {
+            "actionType": "JSFunction",
+            "method": "callRepGetProviderName",
+            "inputData": {
+                "reportsState": "{{subPanelContext.reportsState}}"
+            },
+            "outputData":{
+                "dataProviderName.dbValue": "",
+                "dataProviderName.uiValue": "",
+                "dataProviderName.value": ""
+            },
+            "deps": "js/AwReportTableService"
+        },
+        "getSearchCriteriaChips": {
+            "actionType": "JSFunction",
+            "method": "getSearchCriteriaChips",
+            "inputData": {
+                "additionalSearchCriteria": "{{subPanelContext.reportsState.reportParameters.ReportDefProps.ReportSearchInfo.additionalSearchCriteria}}"
+            },
+            "outputData": {
+                "CriteriaChips": "CriteriaChips",
+                "CriteriaObject": "CriteriaObject"
+            },
+            "deps": "js/AwConfigureReportViewerService"
+        },
+        "closePopup": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "saveCriteriaAndClose": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "saveCustomSearchCriteria"
+                },
+                {
+                    "action": "closePopup"
+                }
+            ]
+        },
+        "saveCustomSearchCriteria": {
+            "actionType": "JSFunction",
+            "method": "saveCustomSearchCriteria",
+            "inputData": {
+                "reportsState": "{{subPanelContext.reportsState}}",
+                "dataProviderName": "{{data.dataProviderName.dbValue}}",
+                "CriteriaObject": "{{data.CriteriaObject}}"
+            },
+            "deps": "js/AwConfigureReportViewerService"
+        }
+    },
+    "i18n": {
+        "addCriteriaInfoDesc":["ReportChartMessages"],
+        "saveReport": [
+            "ReportChartMessages"
+        ],
+        "addReport": [
+            "ReportMessages"
+        ],
+        "dataSource": [
+            "ReportChartMessages"
+        ],
+        "dataProvider": [
+            "ReportChartMessages"
+        ],
+        "criteria": [
+            "ReportChartMessages"
+        ],
+        "addCriteria": [
+            "ReportChartMessages"
+        ],
+        "searchKey": [
+            "ReportChartMessages"
+        ],
+        "searchValue": [
+            "ReportChartMessages"
+        ],
+        "preview": ["ReportChartMessages"]
+    },
+    "lifecycleHooks": {
+        "onMount" : "revealAction"
+    },
+    "conditions":{
+        "addSearchCriteriaInput": {
+            "expression": "data.dataProviderName.dbValue.length > 0 && data.searchCriteriaKey.dbValue.length > 0"
+        },
+        "enableSaveButton": {
+            "expression": "data.dataProviderName.dbValue.length > 0 && data.CriteriaChips.length > 0"
+        },
+        "totalFoundAvailable":{
+            "expression": "props.subPanelContext.reportsState.reportParameters.totalFound && props.subPanelContext.reportsState.searchTypeChip[0].labelInternalName === 'custom'"
+        }
+    }
+}

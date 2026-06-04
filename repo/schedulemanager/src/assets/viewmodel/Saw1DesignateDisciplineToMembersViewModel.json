@@ -1,0 +1,102 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {  
+        "initPanel": {
+            "actionType": "JSFunction",
+            "method": "populateDesignatedUserPanel",
+            "inputData": {
+                "selectedObject": "{{subPanelContext.disciplineObj}}",
+                "addUserPanelState": "{{data.addUserPanelState}}",
+                "criteria": {
+                    "providerContentType": "DisciplineMember",
+                    "searchString": "*",
+                    "searchSubGroup": "true"
+                }
+            },
+            "outputData": {
+                "addUserPanelState": "userPanelState",
+                "isDataInit": "isDataInit"
+            },
+            "deps": "js/Saw1DesignateDisciplineService"
+        },
+        "designate": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagementAw-2018-12-ScheduleManagementAw",
+            "method": "designateDiscipline",
+            "inputData": {
+                "schedule": "{{subPanelContext.scheduleObj}}",
+                "discipline": "{{subPanelContext.disciplineObj}}",
+                "user":  "{{addUserPanelState.selectedUsers[0]}}",
+                "revert": false,
+                "runInBackground": true
+            },
+            "events": {
+                "success": [ {
+                    "name": "complete",
+                    "eventData": {
+                        "source": "toolAndInfoPanel"
+                    }
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "soaErrorMessage"
+                } ]
+            }
+        }
+    },
+    "data": {
+        "addUserPanelState": {
+            "initialValues": {
+                "provider": "Awp0PeoplePickerProvider",
+                "selectionModelMode": "single",
+                "criteria": {
+                    "providerContentType": "DisciplineMember",
+                    "searchString": "*",
+                    "selectedObject": "",
+                    "searchSubGroup": "true"
+                },
+                "preferenceCriteria": [
+                    "WRKFLW_user_panel_content_display",
+                    "WRKFLW_allow_resourcepool_assignments",
+                    "WRKFLW_show_user_assignment_options"
+                ],
+                "selectedUsers": "",
+                "isAddButtonNeeded": false
+            },
+            "meta": {
+                "selectedUsers": {
+                    "field": "true",
+                    "type": "OBJECTARRAY"
+                }
+            }
+        }
+    },
+    "messages": {
+        "soaErrorMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "displayError": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },    
+    "lifecycleHooks": {
+        "onMount": "initPanel"
+    },
+    "conditions": {
+        "isValidToShowDesignateButton": {
+            "expression": "addUserPanelState.selectedUsers && addUserPanelState.selectedUsers.length > 0"
+        }
+    },
+    "i18n": {
+        "DesignateDiscipline": [
+            "ScheduleManagerMessages"
+        ],
+        "designate": [
+            "ScheduleManagerMessages"
+        ]
+    }
+
+}

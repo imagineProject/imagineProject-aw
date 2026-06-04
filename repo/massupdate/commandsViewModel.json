@@ -1,0 +1,142 @@
+{
+  "commandHandlers": {
+    "MUCutCmdHandler": {
+      "id": "Awp0Cut",
+      "activeWhen": {
+        "condition": "conditions.impactedParentSelected"
+      },
+      "enableWhen": false
+    },
+    "MUCutCtxMenuCmdHandler": {
+      "id": "Awp0CutContextMenu",
+      "activeWhen": {
+        "condition": "conditions.impactedParentSelected"
+      },
+      "visibleWhen": false
+    },
+    "MUCopyCmdHandler": {
+      "id": "Awp0Copy",
+      "activeWhen": {
+        "condition": "conditions.impactedParentSelectedCopy"
+      },
+      "enableWhen": false
+    },
+    "MUCopyContextMenuCmdHandler": {
+      "id": "Awp0CopyContextMenu",
+      "activeWhen": {
+        "condition": "conditions.impactedParentSelected"
+      },
+      "visibleWhen": false
+    },
+    "MUOpenGroupCmdHandler": {
+      "id": "Awp0OpenGroup",
+      "activeWhen": {
+        "condition": "conditions.impactedParentSelected"
+      },
+      "visibleWhen": false
+    },
+    "MUShowObjectCellCommandHandler": {
+      "id": "Awp0ShowObjectCell",
+      "action": "MUShowDelegatedObject",
+      "activeWhen": {
+        "condition": "conditions.openImpactedCellCommand"
+      },
+      "visibleWhen": {
+        "condition": "conditions.openImpactedCellCommand"
+      }
+    },
+    "MUShareURLCmdHandler": {
+      "id": "Awp0ShareURL",
+      "activeWhen": {
+        "condition": "conditions.impactedParentSelected"
+      },
+      "visibleWhen": false
+    },
+    "impactedAssembliesTObjectSetViewModeGroupCmdHandler": {
+      "id": "objectSetTableViewMode",
+      "activeWhen": {
+        "condition": "conditions.onMassUpdateTab"
+      },
+      "visibleWhen": false
+    },
+    "impactedAssembliesObjectSetViewModeGroupCmdHandler": {
+      "id": "objectSetCompareViewMode",
+      "activeWhen": {
+        "condition": "conditions.onMassUpdateTab"
+      },
+      "visibleWhen": false
+    },
+    "impactedAssembliesExportToExcelCmdHandler": {
+      "id": "Awp0ExportToExcel",
+      "action": "activateExportToExcelPanel",
+      "activeWhen": {
+        "condition": "conditions.onMassUpdateTab"
+      },
+      "visibleWhen": true
+    }
+  },
+  "actions": {
+    "MUShowDelegatedObject": {
+      "actionType": "Navigate",
+      "navigateTo": "com_siemens_splm_clientfx_tcui_xrt_showObject",
+      "navigationParams": {
+        "uid": "{{commandContext.vmo.props[\"REF(fnd0ImpactedItemRev,ItemRevision).item_id\"].intermediateObjectUids[0]}}"
+      }
+    }
+  },
+  "onEvent": [],
+  "conditions": {
+    "impactedParentSelected": {
+      "expression": "ctx.selected.type === 'Fnd0MUImpactedParents'"
+    },
+    "impactedParentSelectedCopy": {
+      "expression": "(conditions.isLocalSelectionNotApplicable && conditions.impactedParentSelected) || (conditions.isSelectionDataPopulated && commandContext.selectionData.selected[0].type === 'Fnd0MUImpactedParents')"
+    },
+    "openImpactedCellCommand": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "conditions.cmdAwp0ShowObjectCellBaseVisibleCondition",
+            "$query": {
+              "$eq": true
+            }
+          },
+          {
+            "$source": "commandContext.vmo.props.fnd0OccurrenceCount.dbValues.length",
+            "$query": {
+              "$gt": 0
+            }
+          },
+          {
+            "$source": "commandContext.vmo.props.fnd0ProblemItemRev",
+            "$query": {
+              "$neq": "undefined"
+            }
+          }
+        ]
+      }
+    },
+    "onMassUpdateTab": {
+      "expression": {
+        "$or": [
+          {
+            "$source": "commandContext.pageContext.primaryActiveTabId",
+            "$query": {
+              "$eq": "tc_xrt_Massupdate"
+            }
+          },
+          {
+            "$source": "commandContext.pageContext.secondaryActiveTabId",
+            "$query": {
+              "$eq": "tc_xrt_Massupdate"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "i18n": {},
+  "data": {},
+  "commands": {},
+  "commandPlacements": {}
+}

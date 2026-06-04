@@ -1,0 +1,53 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "actions": {
+        "retrieveEffectivityIntents": {
+            "actionType": "TcSoaService",
+            "serviceName": "ConfigFilterCriteria-2011-06-EffectivityManagement",
+            "method": "getAvailableProductEffectivity",
+            "inputData": {
+                "productName": "{{data.effIntentCtx.effIntentCtxId}}",
+                "productNameSpace": "{{data.effIntentCtx.effIntentCtxNamespace}}"
+            },
+            "outputData": {
+                "effIntents": "{{function:loadIntentFamilies}}"
+            },
+            "deps": "js/apsEffectivityIntentService"
+        },
+        "getInitialIntent": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+
+                    "action": "loadInitialContent"
+                },
+                {
+
+                    "action": "retrieveEffectivityIntents"
+                }
+            ]
+        },
+        "loadInitialContent": {
+            "actionType": "JSFunction",
+            "method": "initIntentContext",
+            "inputData": {
+                "occContext": "{{props.subPanelContext.occContext}}"
+            },
+            "outputData": {
+                "effIntentCtx": ""
+            },
+            "deps": "js/apsEffectivityIntentService"
+        }
+    },
+    "onEvent": [],
+    "lifecycleHooks": {
+        "onMount": "getInitialIntent"
+    },
+    "data": {},
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

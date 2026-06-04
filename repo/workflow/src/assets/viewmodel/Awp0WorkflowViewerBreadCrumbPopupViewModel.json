@@ -1,0 +1,60 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "actions": {
+        "loadChevronPopup": {
+            "actionType": "dataProvider",
+            "method": "workflowViewerBreadcrumbDataProvider"
+        },
+        "loadPopupData": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadChevronPopup",
+            "inputData":
+            {
+                "selectedCrumbUid" : "{{props.selectedCrumb.scopedUid}}"
+            },
+            "outputData":
+            {
+                "totalFound": "totalFound",
+                "searchResults": "searchResults"
+            },
+            "deps": "js/Awp0WorkflowViewerBreadcrumbPanel"
+        },
+        "updateWorkflowViewerBreadcrumb":{
+            "actionType": "JSFunction",
+            "method": "updateWorkflowViewerBreadcrumb",
+            "inputData": {
+                "selection": "{{data.dataProviders.workflowViewerBreadcrumbDataProvider.selectedObjects}}",
+                "chevronPopup": "{{props.chevronPopup}}"
+            },
+            "deps": "js/Awp0WorkflowViewerBreadcrumbPanel"
+        }
+    },
+    "dataProviders": {
+        "workflowViewerBreadcrumbDataProvider": {
+            "action": "loadPopupData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "single",
+            "inputData": {
+                "selectionData": "{{fields.selectionData}}"
+            }
+        }
+    },
+    "data": {
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "loadChevronPopup",
+        "onUpdate": [
+            {
+                "action": "updateWorkflowViewerBreadcrumb",
+                "observers": [ "viewModel.atomicData.selectionData.selected" ]
+            }
+        ]
+    },
+    "onEvent": []
+}

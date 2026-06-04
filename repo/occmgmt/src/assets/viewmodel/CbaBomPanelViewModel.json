@@ -1,0 +1,157 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-include.directive",
+        "js/aw-flex-row.directive",
+        "js/exist-when.directive",
+        "js/aw-flex-column.directive",
+        "js/aw-navigate-breadcrumb.directive"
+    ],
+    "actions": {
+        "initializeCbaBomPanel": {
+            "actionType": "JSFunction",
+            "method": "initializeCbaBomPanel",
+            "deps": "js/CbaBomPanelService",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}",
+                "data": "{{data}}"
+            },
+            "outputData" : {
+                "provider":"provider",
+                "contextKey":"contextKey",
+                "updateUrlFromCurrentStateEventSubscription": "updateUrlFromCurrentStateEventSubscription"
+            }
+        },
+        "cleanupCbaBomPanel": {
+            "actionType": "JSFunction",
+            "method": "cleanupCbaBomPanel",
+            "deps": "js/CbaBomPanelService",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}"
+            }
+        },
+        "activateCurrentView": {
+            "actionType": "JSFunction",
+            "method": "updateActiveContext",
+            "inputData": {
+                "data": "{{data.viewKey}}"
+            },
+            "deps": "js/aceContextStateMgmtService"
+        },
+        "initializeCbaBomPanelView":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "initializeCbaBomPanel"
+                },
+                {
+                    "action": "activateCurrentView",
+                    "condition": "conditions.isActiveViewDifferent"
+                }
+            ]
+        },
+        "executeCommandOpenPanel":{
+            "actionType": "JSFunction",
+            "method": "activateCommandPanel",
+            "deps": "js/commandPanel.service",
+            "inputData":
+            {
+                "commandId": "CbaOpenInViewPanel",
+                "location": "aw_toolsAndInfo",
+                "context": "{{data.eventData}}"
+            }
+        },
+        "occDataLoadedEvent": {
+            "actionType": "JSFunction",
+            "method": "_registerOccDataLoadedEvent",
+            "deps": "js/CbaBomPanelService",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "data": "{{subPanelContext}}"
+            },
+            "outputData":{
+                "contextInfo":"contextInfo",
+                "baseSelection":"baseSelection"
+            }
+        }
+    },
+
+    "dataProviders": {
+
+    },
+
+    "lifecycleHooks": {
+        "onInit": "initializeCbaBomPanel",
+        "onUnmount": "cleanupCbaBomPanel"
+    },
+
+    "onEvent": [
+        {
+            "eventId": "occDataLoadedEvent",
+            "action": "occDataLoadedEvent"
+        }
+    ],
+
+    "messages": {},
+
+    "conditions": {
+        "isActiveViewDifferent": {
+            "expression": "data.viewKey !== ctx.aceActiveContext.key"
+        }
+    },
+
+    "data": {
+        "contextInfo":{},
+        "occContext": {
+            "initialValues": {
+                "configContext":{},
+                "displayToggleOptions":{},
+                "supportedFeatures": {},
+                "productContextInfo":{},
+                "readOnlyFeatures":{},
+                "currentState": {},
+                "previousState": {},
+                "transientRequestPref":{},
+                "disabledFeatures":[]
+            },
+            "meta": {
+            }
+        }
+    },
+    "ctx": {
+        "cbaContext": null,
+        "cbaContext.ImpactAnalysis":null,
+        "aceActiveContext":null,
+        "requestPref":null,
+        "CBASrcContext":null,
+        "CBATrgContext":null,
+        "splitView":{
+            "mode":"null"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "provider": {
+            "type": "object"
+        },
+        "baseSelection": {
+            "type": "object"
+        },
+        "occContext": {
+            "type": "string"
+        },
+        "model-object": {
+            "type": "object"
+        },
+        "sublocation-state":{
+            "type": "object"
+        }
+    },
+
+    "i18n":
+    {
+
+    }
+}

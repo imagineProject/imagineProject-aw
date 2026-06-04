@@ -1,0 +1,162 @@
+{
+    "schemaVersion": "1.0.0",
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "actions": {
+
+        "getAllArrangementsAction": {
+            "actionType": "dataProvider",
+            "method": "getArrangements"
+        },
+        "getAllArrangements": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData": {
+                "searchInput": {
+                    "maxToLoad": 20,
+                    "maxToReturn": 20,
+                    "providerName": "{{function:getProviderName}}",
+                    "searchFilterFieldSortType": "Alphabetical",
+                    "searchCriteria": {
+                        "topItemRev": "{{data.subPanelContext.occContext.productContextInfo.props.awb0Product.dbValues[0]}}",
+                        "arrangementName": "{{data.arrangementFilterbox.dbValue}}"
+                    },
+                    "searchFilterMap": {},
+                    "searchSortCriteria": [],
+                    "attributesToInflate": [],
+                    "internalPropertyName": ""
+                }
+            },
+            "outputData": {
+                "arrangements": "searchResults",
+                "totalFound": "totalFound"
+            },
+            "deps": "js/aceStructureConfigurationService"
+        },
+        "applyArrangementBatchJob": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "updateJitterFreePropLoadOnCurrentContext"
+                },{
+                    "action": "applyArrangement"
+                }
+            ]
+        },
+        "updateJitterFreePropLoadOnCurrentContext": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "aceActiveContext.context.transientRequestPref.jitterFreePropLoad",
+                "value": true
+            },
+            "deps": "js/appCtxService"
+        },
+        "applyArrangement": {
+            "actionType": "JSFunction",
+            "method": "applyArrangement",
+            "inputData": {
+                "data": "{{data}}",
+                "subPanelContext":"{{props.subPanelContext}}"
+            },
+            "deps": "js/aceArrangementsService"
+        },
+        "selectArrangement": {
+            "actionType": "JSFunction",
+            "method": "selectArrangement",
+            "inputData": {
+                "data": "{{data}}",
+                "subPanelContext":"{{subPanelContext}}"
+            },
+            "deps": "js/aceArrangementsService"
+        },
+        "updateArrangement": {
+            "actionType": "JSFunction",
+            "method": "updateArrangement",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "deps": "js/aceArrangementsService"
+        },
+        "activateCurrentView": {
+            "actionType": "JSFunction",
+            "method": "updateActiveContext",
+            "inputData": {
+                "data": "{{data.subPanelContext.contextKey}}"
+            },
+            "deps": "js/aceContextStateMgmtService"
+        },
+        "initializeArrangementView": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getAllArrangementsAction"
+                },
+                {
+                    "action": "activateCurrentView",
+                    "condition": "conditions.isActiveViewDifferent"
+                }
+            ]
+        }
+
+    },
+    "dataProviders": {
+        "getArrangements": {
+            "action": "getAllArrangements",
+            "response": "{{data.arrangements}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "single",
+            "isRuleDateVisible": false
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeArrangementView"
+    },
+    "functions": {
+        "getProviderName": {
+            "functionName": "getProviderName",
+            "parameters": [
+                "ArrangementProvider"
+            ]
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "getArrangements.selectionChangeEvent",
+            "cacheEventData": true,
+            "action": "updateArrangement"
+        },
+        {
+            "eventId": "getArrangements.modelObjectsUpdated",
+            "action": "selectArrangement"
+
+        },
+        {
+            "eventId": "awArrangementPanel.arrangementChanged",
+            "cacheEventData": true,
+            "action": "applyArrangementBatchJob"
+        }
+    ],
+
+    "messages": {},
+    "conditions": {
+        "isActiveViewDifferent": {
+            "expression": "data.subPanelContext.contextKey !== ctx.aceActiveContext.key"
+        }
+    },
+    "data": {
+        "arrangementFilterbox": {
+            "displayName": "{{i18n.filter}}",
+            "type": "STRING",
+            "dbValue": ""
+        }
+    },
+
+    "i18n": {
+        "arrangement": [ "OccurrenceManagementConstants" ]
+    }
+}

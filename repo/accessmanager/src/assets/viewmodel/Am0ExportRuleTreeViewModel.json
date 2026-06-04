@@ -1,0 +1,106 @@
+{
+    "schemaVersion" : "1.0.0",
+    "actions":
+    {
+        "initialize": {
+            "actionType": "JSFunction",
+            "method": "populateExportTreePanel",
+            "inputData":
+            {
+                "data":"{{data}}"
+            },
+            "outputData":{
+                "am0FileName": ""
+            },
+            "deps": "js/Am0ImportExportService"
+        },
+        "exportRuleTree": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2023-06-AwAccessManager",
+            "method": "exportAMTree",
+            "inputData": {},
+            "outputData":{
+                "response": "{{function:exportTreeUsingFileTicket}}",
+                "errors": "{{function:processPartialErrors}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "Am0ExportAMTree.closeExportPopup"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "ExportTreeFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/Am0ImportExportService"
+        },
+        "closeExportPopupWindow": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "inputData": {
+                "popupId": "{{data.popupId}}"
+            },
+            "deps": "js/popupService"
+        }
+    },
+    "data":
+    {
+        "am0FileName": {
+            "displayName": "{{i18n.am0FileName}}",
+            "type": "STRING",
+            "isEditable": "true",
+            "isRequired": "true",
+            "labelPosition:": "PROPERTY_LABEL_AT_TOP"
+        }
+    },
+    "conditions":
+    {
+        "showExportBtn":
+        {
+            "expression": "data.am0FileName.dbValue != ''"
+        }
+    },
+    "functions": {
+        "exportTreeUsingFileTicket": {
+            "functionName": "exportTreeUsingFileTicket",
+            "parameters": [
+                "{{data}}"
+            ]
+        }
+    },
+    "onEvent": [         
+        {
+            "eventId": "Am0ExportAMTree.closeExportPopup",
+            "action": "closeExportPopupWindow"
+        }
+    ],
+    "messages": {
+        "ExportTreeFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.exportTreeFailure}}",
+            "messageTextParams": [
+                "{{data.am0FileName.uiValue}}",
+                "{{data.errors}}"
+            ]
+        }
+    },
+    "i18n":
+    {
+        "Am0ExportTreeTitle": [ "AccessmgmtConstants" ],
+        "exportRuleTreeButton": [ "AccessmgmtConstants" ],
+        "am0FileName": [ "AccessmgmtConstants" ],
+        "exportTreeFailure": [ "AccessmgmtConstants" ],
+        "Am0ClosePopup": [ "AccessmgmtConstants" ],
+        "exportFailOnFMS": [ "AccessmgmtConstants" ]
+    },
+    "lifecycleHooks": {
+        "onMount": "initialize"
+    }
+}

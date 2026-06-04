@@ -1,0 +1,490 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "timesheetDescription": {
+            "displayName": "{{i18n.description}}",
+            "type": "STRING",
+            "dbValue": "",
+            "isRequired": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP"
+        },
+        "timesheetTimeSpent": {
+            "displayName": "{{i18n.timesheetTimeSpent}}",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP"
+        },
+        "timesheetHours": {
+            "displayName": "{{i18n.timesheetHours}}",
+            "type": "INTEGER",
+            "dbValue": "0",
+            "isRequired": "true",
+            "isEditable": "true",
+            "dispValue": "00",
+            "emptyLOVEntry": false,
+            "dataProvider": "timesheetHoursProvider"
+        },
+         "timesheetMinutes": {
+            "displayName": "{{i18n.timesheetMinutes}}",
+            "type": "INTEGER",
+            "dbValue": "0",
+            "isRequired": "true",
+            "isEditable": "true",
+            "dispValue": "00",
+            "emptyLOVEntry": false,
+            "dataProvider": "timesheetMinutesProvider"
+        },
+        "timesheetWorkDate": {
+            "displayName": "{{i18n.timesheetWorkDate}}",
+            "type": "DATE",
+            "dbValue": "",
+            "isRequired": "true"
+        },
+        "minuteBoxValues": [
+            {
+                "propDisplayValue": "00",
+                "propInternalValue": "0"
+            },
+            {
+                "propDisplayValue": "15",
+                "propInternalValue": "15"
+            },
+            {
+                "propDisplayValue": "30",
+                "propInternalValue": "30"
+            },
+            {
+                "propDisplayValue": "45",
+                "propInternalValue": "45"
+            }
+        ],
+        "hoursBoxValues": [
+            {
+                "propDisplayValue": "00",
+                "propInternalValue": "0"
+            },
+            {
+                "propDisplayValue": "01",
+                "propInternalValue": "1"
+            },
+            {
+                "propDisplayValue": "02",
+                "propInternalValue": "2"
+            },
+            {
+                "propDisplayValue": "03",
+                "propInternalValue": "3"
+            },
+            {
+                "propDisplayValue": "04",
+                "propInternalValue": "4"
+            },
+            {
+                "propDisplayValue": "05",
+                "propInternalValue": "5"
+            },
+            {
+                "propDisplayValue": "06",
+                "propInternalValue": "6"
+            },
+            {
+                "propDisplayValue": "07",
+                "propInternalValue": "7"
+            },
+            {
+                "propDisplayValue": "08",
+                "propInternalValue": "8"
+            },
+            {
+                "propDisplayValue": "09",
+                "propInternalValue": "9"
+            },
+            {
+                "propDisplayValue": "10",
+                "propInternalValue": "10"
+            },
+            {
+                "propDisplayValue": "11",
+                "propInternalValue": "11"
+            },
+            {
+                "propDisplayValue": "12",
+                "propInternalValue": "12"
+            },
+            {
+                "propDisplayValue": "13",
+                "propInternalValue": "13"
+            },
+            {
+                "propDisplayValue": "14",
+                "propInternalValue": "14"
+            },
+            {
+                "propDisplayValue": "15",
+                "propInternalValue": "15"
+            },
+            {
+                "propDisplayValue": "16",
+                "propInternalValue": "16"
+            },
+            {
+                "propDisplayValue": "17",
+                "propInternalValue": "17"
+            },
+            {
+                "propDisplayValue": "18",
+                "propInternalValue": "18"
+            },
+            {
+                "propDisplayValue": "19",
+                "propInternalValue": "19"
+            },
+            {
+                "propDisplayValue": "20",
+                "propInternalValue": "20"
+            },
+            {
+                "propDisplayValue": "21",
+                "propInternalValue": "21"
+            },
+            {
+                "propDisplayValue": "22",
+                "propInternalValue": "22"
+            },
+            {
+                "propDisplayValue": "23",
+                "propInternalValue": "23"
+            },
+            {
+                "propDisplayValue": "24",
+                "propInternalValue": "24"
+            }
+        ]
+    },
+    "actions": {
+        "submitTimesheetEntry": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "createTimesheetEntryEvent",
+                        "eventData": {
+                            "userAction": "SubmitTimesheetEntry",
+                            "isSubmitFlag": true
+                        }
+                    }
+                ]
+            }
+        },
+        "addTimesheetEntry": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "createTimesheetEntryEvent",
+                        "eventData": {
+                            "userAction": "SaveTimesheetEntry",
+                            "isSubmitFlag": false
+                        }
+                    }
+                ]
+            }
+        },
+        "submitTimesheetEntryAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "submitTimesheetEntrySOA"
+                },
+                {
+                    "action": "navigateToMainPanel"
+                }
+            ]
+        },
+        "submitTimesheetEntrySOA": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2018-11-ScheduleManagement",
+            "method": "submitTimesheetEntries",
+            "inputData": {
+                "timesheetEntries": [
+                    "{{data.createdMainObject}}"
+                ],
+                "runInBackground": false
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaErrorMessage"
+                    }
+                ]
+            },
+            "outputData": {
+                "createdMainObject": "created[0]"
+            }
+        },
+        "navigateToMainPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateSharedData"
+                },
+                {
+                    "action": "navigateToSaw1EnterSub"
+                }
+            ]
+        },
+        "navigateToSaw1EnterSub": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "awPanel.navigate",
+                    "eventData": {
+                        "destPanelId": "Saw1EnterTimeSub",
+                        "eventData": "{{data.eventData}}"
+                    }
+                } ]
+            }
+        },
+        "updateSharedData": {
+            "actionType": "JSFunction",
+            "method": "updateSharedData",
+            "inputData":
+            {
+                "createdObject": "{{data.createdMainObject.uid}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}"
+            },
+
+            "deps": "js/Saw1TimesheetEntryUtils"
+        },
+        "saveTimesheetEntryCallSOA": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Core-2012-10-DataManagement",
+            "method": "createRelateAndSubmitObjects",
+            "inputData": {
+                "inputs": [
+                    {
+                        "clientId": "CreateObject",
+                        "createData": {
+                            "boName": "TimeSheetEntry",
+                            "propertyNameValues": {
+                                "object_desc": [
+                                    "{{data.timesheetDescription.dbValue}}"
+                                ],
+                                "minutes": [
+                                    "{{function:getTimesheetTimeSpent}}"
+                                ],
+                                "date": [
+                                    "{{function:getTimesheetDate}}"
+                                ],
+                                "scheduletask_tag": [
+                                    "{{ctx.selected.uid}}"
+                                ],
+                                "object_name": [
+                                    "{{function:getTimesheetEntryObjectName}}"
+                                ],
+                                "user_tag": [
+                                    "{{ctx.userSession.props.user.dbValues[0]}}"
+                                ]
+                            },
+                            "compoundCreateInput": {}
+                        },
+                        "workflowData": {}
+                    }
+                ]
+            },
+            "outputData": {
+                "createdMainObject": "output[0].objects[0]"
+            },
+            "events": {
+                "success": [
+                    {
+                        "condition": "data.eventMap['createTimesheetEntryEvent'] && data.eventMap['createTimesheetEntryEvent'].userAction==='SubmitTimesheetEntry'",
+                        "name": "submitTimesheetEntryEvent"
+                    },
+                    {
+                        "condition": "data.eventMap['createTimesheetEntryEvent'] && data.eventMap['createTimesheetEntryEvent'].userAction === 'SaveTimesheetEntry'",
+                        "name":"navigateToMainPanelEvent"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "condition": "errorCode=='timesheetHoursSubmitErrorMsg'",
+                        "message": "timesheetHoursSubmitErrorMsg"
+                    },
+                    {
+                        "condition": "errorCode=='timesheetHoursSaveErrorMsg'",
+                        "message": "timesheetHoursSaveErrorMsg"
+                    },
+                    {
+                        "condition": "errorCode=='timesheetMinutesSubmitErrorMsg'",
+                        "message": "timesheetMinutesSubmitErrorMsg"
+                    },
+                    {
+                        "condition": "errorCode=='timesheetMinutesSaveErrorMsg'",
+                        "message": "timesheetMinutesSaveErrorMsg"
+                    },
+                    {
+                        "condition": "errorCode=='timesheetSubmitErrorMsg'",
+                        "message": "timesheetSubmitErrorMsg"
+                    },
+                    {
+                        "condition": "errorCode=='timesheetSaveErrorMsg'",
+                        "message": "timesheetSaveErrorMsg"
+                    },
+                    {
+                        "condition": "errorCode.code===515354",
+                        "message": "timesheetWriteAccessCheckMsg"
+                    }
+
+                ]
+            },
+            "deps": "js/Saw1TimesheetEntryUtils"
+        }
+    },
+    "dataProviders":{
+        "timesheetHoursProvider": {
+            "response": "{{data.hoursBoxValues}}"
+        },
+        "timesheetMinutesProvider": {
+            "response": "{{data.minuteBoxValues}}"
+        }
+    },
+
+    "conditions": {
+        "isValidToShowButton": {
+            "expression": "data.timesheetDescription.dbValue && (data.timesheetHours.dbValue>0 || data.timesheetMinutes.dbValue>0) && data.timesheetWorkDate.dateApi.dateValue"
+        }
+    },
+    "i18n": {
+        "timesheetWorkDate": [
+            "ScheduleManagerMessages"
+        ],
+        "timesheetTimeSpent": [
+            "ScheduleManagerMessages"
+        ],
+        "timesheetHours": [
+            "ScheduleManagerMessages"
+        ],
+        "timesheetMinutes": [
+            "ScheduleManagerMessages"
+        ],
+        "description": [
+            "ScheduleManagerMessages"
+        ],
+        "addBtnTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "submitBtnTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "timesheetHoursSubmitErrorMsg": [
+            "ScheduleManagerMessages"
+        ],
+        "timesheetHoursAddErrorMsg": [
+            "ScheduleManagerMessages"
+        ],
+        "timesheetMinutesSubmitErrorMsg": [
+            "ScheduleManagerMessages"
+        ],
+        "timesheetMinutesAddErrorMsg": [
+            "ScheduleManagerMessages"
+        ],
+        "timesheetSubmitErrorMsg": [
+            "ScheduleManagerMessages"
+        ],
+        "timesheetAddErrorMsg": [
+            "ScheduleManagerMessages"
+        ]
+    },
+    "functions": {
+        "getTimesheetTimeSpent": {
+            "functionName": "getTimesheetTimeSpent",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getTimesheetDate": {
+            "functionName": "getDateString",
+            "parameters": [
+                "{{data.timesheetWorkDate.dateApi.dateObject}}"
+            ]
+        },
+        "getTimesheetEntryObjectName": {
+            "functionName": "getTimesheetEntryObjectName",
+            "parameters": [
+                "{{ctx.selected.props.object_name.dbValues[0]}}",
+                "{{ctx.selected.props.object_name.propertyDescriptor.maxLength}}"
+            ]
+        }
+    },
+    "messages": {
+        "timesheetHoursSubmitErrorMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.timesheetHoursSubmitErrorMsg}}",
+            "messageTextParams": [
+                "{{data.timesheetDescription.dbValue}}"
+            ]
+        },
+        "timesheetHoursSaveErrorMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.timesheetHoursAddErrorMsg}}",
+            "messageTextParams": [
+                "{{data.timesheetDescription.dbValue}}"
+            ]
+        },
+        "timesheetMinutesSubmitErrorMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.timesheetMinutesSubmitErrorMsg}}",
+            "messageTextParams": [
+                "{{data.timesheetDescription.dbValue}}"
+            ]
+        },
+        "timesheetMinutesSaveErrorMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.timesheetMinutesAddErrorMsg}}",
+            "messageTextParams": [
+                "{{data.timesheetDescription.dbValue}}"
+            ]
+        },
+        "timesheetSubmitErrorMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.timesheetSubmitErrorMsg}}",
+            "messageTextParams": [
+                "{{data.timesheetDescription.dbValue}}"
+            ]
+        },
+        "timesheetSaveErrorMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.timesheetAddErrorMsg}}",
+            "messageTextParams": [
+                "{{data.timesheetDescription.dbValue}}"
+            ]
+        },
+        "soaErrorMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "timesheetWriteAccessCheckMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "createTimesheetEntryEvent",
+            "cacheEventData": true,
+            "action": "saveTimesheetEntryCallSOA"
+        },
+        {
+            "eventId": "submitTimesheetEntryEvent",
+            "action": "submitTimesheetEntryAction"
+        },
+        {
+            "eventId": "navigateToMainPanelEvent",
+            "action": "navigateToMainPanel"
+        }
+    ]
+}

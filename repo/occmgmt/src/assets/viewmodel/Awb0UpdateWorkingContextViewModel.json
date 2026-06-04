@@ -1,0 +1,366 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {
+        "onMount": "initializeView"
+    },
+    "actions": {
+       "initializeView": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "initializeUpdateSWCPanel"
+                },
+                {
+                    "action": "updateSWCOnPanelReveal"
+                },
+                {
+                    "action": "loadCreateXRT"
+                },
+                {
+                    "action": "findPropsToLoad"
+                },
+                {
+                    "action": "startEditNative"
+                },
+                {
+                    "action": "populateCreateInputPanel"
+                }
+
+            ]
+        },
+        "initializeUpdateSWCPanel": {
+            "actionType": "JSFunctionAsync",
+            "method": "initializeUpdateSWCPanel",
+            "inputData": {
+                "workingContextObj": "{{props.subPanelContext.occContext.workingContextObj}}"
+            },
+            "outputData": {
+                "openedObject": "openedObject",
+                "operationType": "operationType",
+                "targetTypeIsSavedBookmark": "targetTypeIsSavedBookmark",
+                "swcContainerNames": "swcContainerNames",
+                "swcType": "swcType"
+            },
+
+            "deps": "js/saveWorkingContextService"
+        },
+        "loadCreateXRT": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadCreateXrt",
+            "inputData": {
+                "type": "CREATE",
+                "activePageTitle": "",
+                "selectedObject": "",
+                "objectType": "{{data.swcType.dbValue}}"
+            },
+            "outputData": {
+                "xrtData": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "findPropsToLoad": {
+            "actionType": "JSFunction",
+            "method": "findPropsToLoad",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "propsToLoad": ""
+            },
+            "deps": "js/saveWorkingContextService"
+        },
+        "startEditNative": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2017-12-DataManagement",
+            "method": "loadViewModelForEditing2",
+            "inputData": {
+                "inputs": [ {
+                    "objs": ["{{data.openedObject}}"],
+                    "propertyNames": "{{data.propsToLoad}}",
+                    "isPessimisticLock": false
+                } ]
+            },
+
+            "outputData": {
+                "viewModelObjectsJsonStrings": "viewModelObjectsJsonStrings"
+            }
+        },
+        "populateCreateInputPanel": {
+            "actionType": "JSFunction",
+            "method": "populateCreateInputPanel",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "xrtData": "xrtDataIn",
+                "sourcevmo": "sourcevmo"
+            },
+            "deps": "js/saveWorkingContextService"
+        },
+        "initiateUpdateSWCAction": {
+            "actionType": "JSFunction",
+            "method": "saveUserWorkingContextState",
+            "inputData": {
+                "shouldFireEventOnSuccess": true
+            },
+            "deps": "js/aceBackgroundWorkingContextService"
+        },
+        "updateSWCOnPanelReveal": {
+            "actionType": "JSFunction",
+            "method": "saveUserWorkingContextState",
+            "inputData": {
+                "shouldFireEventOnSuccess": false
+            },
+            "deps": "js/aceBackgroundWorkingContextService"
+        },
+        "initiateSaveEdit": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                        "name": "updateSWC.saveEditRequired",
+                        "condition": "conditions.requiredToSaveEdit"
+                    },
+                    {
+                        "name": "updateSWC.saveEditComplete",
+                        "condition": "!conditions.requiredToSaveEdit"
+                    }
+                ]
+            }
+        },
+        "saveEditNative": {
+            "actionType": "saveEdits",
+            "inputData": {
+                "inputs": [ {
+                    "obj": "{{data.openedObject}}",
+                    "viewModelProperties": "{{function:getViewModelProperties}}",
+                    "isPessimisticLock": false,
+                    "workflowData": {
+
+                    }
+                } ]
+            },
+            "events": {
+                "success": [ {
+                    "name": "updateSWC.saveEditComplete"
+                } ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "setUpdateSWCOperationSuccess",
+                    "condition": "(props.subPanelContext.occContext.workingContextObj.props.awb0PendingChanges.dbValues[0] !== '1')"
+                } ]
+            },
+
+            "deps": "js/saveWorkingContextService"
+        },
+        "initiateUpdateBookMark": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                        "name": "saveWorkingContext.updateRequired",
+                        "condition": "conditions.requiredToUpdate"
+                    },
+                    {
+                        "name": "updateWorkingContext.closePanel",
+                        "condition": "!conditions.requiredToUpdate"
+                    }
+                ]
+            }
+        },
+        "saveWorkingContext": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2020-05-OccurrenceManagement",
+            "method": "saveWorkingContext",
+            "inputData": {
+                "workingContexts": [ {
+                    "uid": "{{data.openedObject.uid}}",
+                    "type": "{{data.openedObject.type}}"
+                } ]
+            },
+            "events": {
+                "success": [ {
+                        "name": "updateWorkingContext.closePanel"
+                    }
+
+                ],
+                "failure": [ {
+                        "name": "updateWorkingContext.closePanel"
+                    }
+
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "setUpdateSWCOperationSuccess"
+                } ]
+            }
+        },
+        "updateReadWriteShare": {
+            "actionType": "JSFunction",
+            "method": "updateReadWriteShare",
+            "inputData": {
+                "sourceVmo": "{{data.sourcevmo}}",
+                "eventData": "{{parameters.eventData}}"
+            },
+            "outputData": {
+                "awb0AllowReadShare": "awb0AllowReadShare",
+                "awb0AllowWriteShare": "awb0AllowWriteShare",
+                "updateSWC": "updateSWC"
+            },
+            "deps": "js/saveWorkingContextService"
+        },
+        "syncAndInitiateSaveEdit": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "syncModifiedVMOProps"
+                },
+                {
+                    "action": "initiateSaveEdit"
+                }
+            ]
+        },
+        "syncModifiedVMOProps": {
+            "actionType": "JSFunction",
+            "method": "syncModifiedVMOProps",
+            "inputData": {
+                "data": "{{data}}",
+                "editHandler": "{{editHandlers.addPanelEditHandler}}"
+            },
+            "outputData": {
+                "sourcevmo": "sourcevmo"
+            },
+            "deps": "js/saveWorkingContextService"
+        },
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "CREATE_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+
+            "deps": "js/dialogService"
+        }
+    },
+
+    "functions": {
+        "getAllModifiedValues": {
+            "functionName": "getAllModifiedValues",
+            "parameters": [
+                "{{data.sourcevmo}}"
+            ]
+        },
+        "getViewModelProperties": {
+            "functionName": "getViewModelProperties",
+            "parameters": [
+                "{{data}}"
+            ]
+        }
+    },
+
+    "data": {
+        "operationType": {
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "swcType": {
+            "type": "STRING",
+            "hasLov": true,
+            "dbValue": "",
+            "displayName": "{{i18n.type}}"
+        },
+        "swcTypeList": {
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "onEvent": [ {
+            "eventId": "saveBWC.failure",
+            "message": "updateSWCValidationFailure"
+        },
+        {
+            "eventId": "saveBWC.success",
+            "action": "syncAndInitiateSaveEdit"
+        },
+        {
+            "eventId": "updateSWC.saveEditRequired",
+            "action": "saveEditNative"
+        },
+        {
+            "eventId": "updateSWC.saveEditComplete",
+            "action": "initiateUpdateBookMark"
+        },
+        {
+            "eventId": "saveWorkingContext.updateRequired",
+            "action": "saveWorkingContext"
+        },
+        {
+            "eventId": "swcShareAttribute.changed",
+            "action": "updateReadWriteShare",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "updateWorkingContext.closePanel",
+            "action": "closePanel"
+        }
+    ],
+
+    "conditions": {
+        "requiredToSaveEdit": {
+            "expression": "data.sourcevmo.getDirtyProps().length > 0"
+        },
+        "requiredToUpdate": {
+            "expression": "props.subPanelContext.occContext.workingContextObj.props.awb0PendingChanges.dbValues[0] === '1'"
+        },
+        "okToShowSaveButton": {
+            "expression": "conditions.requiredToSaveEdit || conditions.requiredToUpdate || data.updateSWC"
+        }
+    },
+
+    "messages": {
+        "updateSWCValidationFailure": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.autoSaveOfBookmarkNotYetComplete}}"
+        },
+        "setUpdateSWCOperationSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.saveOfWorkingContextSuccessful}}",
+            "messageTextParams": [
+                "{{props.subPanelContext.occContext.workingContextObj.props.object_string.dbValues[0]}}"
+            ]
+        }
+    },
+    "i18n": {
+        "saveWorkingContextTitle": [ "OccmgmtSavedWorkingContextConstants" ],
+        "saveButtonText": [ "OccurrenceManagementConstants" ],
+        "type": [ "OccurrenceManagementConstants" ],
+        "autoSaveOfBookmarkNotYetComplete": [ "OccurrenceManagementMessages" ],
+        "saveOfWorkingContextSuccessful": [ "OccurrenceManagementMessages" ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+
+}

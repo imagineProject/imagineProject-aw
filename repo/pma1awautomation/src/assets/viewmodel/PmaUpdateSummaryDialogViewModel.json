@@ -1,0 +1,125 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "openGuidedUpdatePanel": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view": "PmaUpdateSummary",
+                    "parent": ".aw-layout-workarea",
+                    "width": "SMALL",
+                    "height": "FULL",
+                    "isCloseVisible": false,
+                    "placement": "right",
+                    "push": true,
+                    "isPinUnpinEnabled": false,
+                    "subPanelContext": {
+                        "subPanelContext": "{{subPanelContext.subPanelContext}}",
+                        "occContext": "{{subPanelContext.occContext}}",
+                        "occContext2": "{{subPanelContext.occContext2}}",
+                        "cbaContext": "{{subPanelContext.cbaContext}}"
+                    }
+                }
+            }
+        },
+        "openGuidedUpdateDialog": {
+            "actionType": "JSFunction",
+            "method": "openGuidedUpdateDialog",
+            "deps": "js/Pma1ImpactAnalysisService",
+            "inputData": {
+                "action": "{{actions.openGuidedUpdatePanel}}",
+                "subPanelContext": {
+                    "subPanelContext": "{{subPanelContext.subPanelContext}}",
+                    "occContext": "{{subPanelContext.occContext}}",
+                    "occContext2": "{{subPanelContext.occContext2}}",
+                    "cbaContext": "{{subPanelContext.cbaContext}}"
+                }
+            }
+        },
+        "openDialog": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "openGuidedUpdateDialog",
+                    "condition": "subPanelContext.occContext.topElement && subPanelContext.occContext2.topElement"
+                },
+                {
+                    "action": "executeCommandOpenPanelInCba",
+                    "condition":"(subPanelContext.occContext.topElement === undefined || subPanelContext.occContext2.topElement === undefined) && subPanelContext.cbaContext.isGuidedUpdateLaunchFromCba"
+                },
+                {
+                    "action": "setCBAPageTitleInIAMode"
+                }
+            ]
+        },
+        "executeCommandOpenPanelInCba": {
+            "actionType": "JSFunction",
+            "method": "executeCommandOpenPanelInCba",
+            "inputData": {
+                "cbaContext": "{{subPanelContext.cbaContext}}"
+            },
+            "deps": "js/Pma1ImpactAnalysisService"
+        },
+        "setCBAPageTitleInIAMode": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getQualifier"
+                },
+                {
+                    "action": "setCBAPageTitle"
+                }
+            ]
+        },
+        "getQualifier":{
+            "actionType": "JSFunction",
+            "method": "getObjectQualifierType",
+            "deps": "js/cbaObjectTypeService",
+            "inputData": {
+              "sourceTopItem":"{{subPanelContext.cbaContext.ImpactAnalysis.sourceTopItem}}"
+            },
+            "outputData": {
+                "objectQualifierType":""
+            }
+        },
+        "setCBAPageTitle": {
+            "actionType": "JSFunction",
+            "method": "setCBAPageTitle",
+            "deps": "js/Pma1ImpactAnalysisService",
+            "inputData": {
+                "objectQualifierType": "{{data.objectQualifierType}}",
+                "i18n": "{{data.i18n}}"
+            }
+        }
+    },
+    "data": {},
+    "onEvent": [],
+    "functions": {},
+    "lifecycleHooks": {
+        "onMount": "openDialog",
+        "onUpdate": [
+            {
+                "action": "setCBAPageTitle",
+                "observers": [ "props.subPanelContext.cbaContext.isImpactAnalysisMode" ]
+            }
+        ],
+        "onUnmount": "setCBAPageTitle"
+    },
+    "messages": {},
+    "i18n": {
+        "Pma1CBATitleForDBOMUpdate": [
+            "PMA1AutomationMessages"
+        ],
+        "Pma1CBATitleForEBOMUpdate": [
+            "PMA1AutomationMessages"
+        ],
+        "Awb0EntCBAModuleTitle": [
+            "CadBomAlignmentConstants"
+        ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

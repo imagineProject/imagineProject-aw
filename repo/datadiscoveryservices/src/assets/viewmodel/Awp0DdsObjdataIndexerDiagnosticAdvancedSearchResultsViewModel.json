@@ -1,0 +1,448 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "resultStatusSummaryRadio": {
+            "displayName": "{{i18n.statusSummaryTitle}}",
+            "type": "STRING",
+            "isEditable": true,
+            "vertical": true
+        },
+        "tooltipStatusSummaryPlacement": {
+            "placement" : "left-end",
+            "flipBehavior": "clockwise"
+        },
+        "searchResponsePending": true,
+        "zeroValueStatusSelected": false,
+        "isStatusSelectedInStatusSummary": false
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [
+        {
+            "action": "resetAdvanceSearchResultsData",
+            "observers": [
+                "props.subPanelContext.context.searchState.advancedSearchJSONString"
+            ]
+        },
+        {
+            "action": "initResultSearch",
+            "observers": [
+                "props.subPanelContext.context.searchState.isFilterCategoryValueChanged"
+            ]
+        }
+    ]
+    },
+    "actions": {
+        "initResultDataProvider": {
+            "actionType": "dataProvider",
+            "method": "resultGridDataProvider"
+        },
+        "initResultSearch": {
+            "actionType": "JSFunction",
+            "method": "initSearch",
+            "inputData": {
+                "data": "{{data.actions}}",
+                "actionName": "initResultDataProvider",
+                "tableLoaded": "{{data.tableLoaded}}"
+            },
+            "deps": "js/awSearchService"
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "resetAdvanceSearchResultsData": {
+            "actionType": "JSFunction",
+            "method": "resetAdvanceSearchResultsData",
+            "inputData": {
+                "resultStatusSummaryRadio": "{{data.resultStatusSummaryRadio}}",
+                "searchState": "{{props.subPanelContext.context.searchState}}",
+                "datai18n": "{{data.i18n}}"
+            },
+            "outputData": {
+                "resultStatusSummaryRadio": "resultStatusSummaryRadio",
+                "searchResponsePending": "searchResponsePending",
+                "zeroValueStatusSelected": "zeroValueStatusSelected",
+                "isStatusSelectedInStatusSummary": "isStatusSelectedInStatusSummary"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "showIndexerDiagnosticResult.initAdvanceSearchResults"
+                    }
+                ]
+            },
+            "deps": "js/indexerDiagnosticService"
+        },
+        "setAdvanceSearchResultsData": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "createVMOforResultsStatusSummary"
+                }
+            ]
+        },
+        "createVMOforResultsStatusSummary": {
+            "actionType": "JSFunction",
+            "method": "createVMOforResultsStatusSummary",
+            "inputData": {
+                "resultsStatusSummary": "{{data.resultsStatusSummary}}",
+                "searchState": "{{props.subPanelContext.context.searchState}}",
+                "resultStatusSummaryRadio": "{{data.resultStatusSummaryRadio}}",
+                "datai18n": "{{data.i18n}}"
+            },
+            "outputData": {
+                "resultStatusSummaryRadioValues": "resultStatusSummaryRadioValues",
+                "resultStatusSummaryRadio": "resultStatusSummaryRadio",
+                "diagnosticResultStatusTitle": "diagnosticResultStatusTitle",
+                "diagnosticResultTitle": "diagnosticResultTitle",
+                "searchResponsePending": false
+            },
+            "deps": "js/indexerDiagnosticService"
+        },
+        "loadDdsAdvancedSearchData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}",
+                        "operationType": "{{data.dataProviders.resultGridDataProvider.columnConfig.operationType}}"
+                    },
+                    "saveColumnConfigData": {
+                        "columnConfigId": "",
+                        "clientScopeURI": "",
+                        "columns": [],
+                        "scope": "",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "maxToLoad": "{{function:getDefaultPageSize}}",
+                        "maxToReturn": "{{function:getDefaultPageSize}}",
+                        "providerName": "Dds0ObjdataSearchProvider",
+                        "searchCriteria": "{{function:getDiagnosticsSearchCriteria}}",
+                        "searchFilterFieldSortType": "Priority",
+                        "startIndex": "{{data.dataProviders.resultGridDataProvider.startIndex}}",
+                        "searchFilterMap6": {
+                            "Application": [
+                                {
+                                    "stringValue": "Object-data"
+                                }
+                            ],
+                            "State": [
+                                {
+                                    "stringValue": "{{data.resultStatusSummaryRadio.dbValue}}"
+                                }
+                            ]
+                        },
+                        "searchSortCriteria": []
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "dataProviders.resultGridDataProvider.columnConfig": "columnConfig",
+                "resultsStatusSummary": "{{function:getResultsStatusSummary}}",
+                "tableLoaded": true,
+                "searchCriteria": "{{function:getInputSearchCriteria}}",
+                "searchFilterMap": "{{function:getInputSearchFilterMap}}",
+                "exportOptions": "{{function:getExportOptions}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "showIndexerDiagnosticResult.setAdvanceSearchResultsData"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "loadAdvancedSearchDataFailure"
+                    }
+                ]
+            }
+        },
+        "selectedStatusActionInStatusResult": {
+            "actionType": "JSFunction",
+            "method": "selectedStatusActionInStatusResult",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.context.searchState}}",
+                "resultStatusSummaryRadio": "{{data.resultStatusSummaryRadio}}",
+                "resultStatusSummaryRadioValues": "{{data.resultStatusSummaryRadioValues}}"
+            },
+            "outputData": {
+                "zeroValueStatusSelected": "zeroValueStatusSelected",
+                "isStatusSelectedInStatusSummary": "isStatusSelectedInStatusSummary",
+                "searchResponsePending": "searchResponsePending"
+            },
+            "deps": "js/indexerDiagnosticService"
+        },
+        "resetDiagnosticResultsColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [
+                        {
+                            "scope": "LoginUser",
+                            "scopeName": "",
+                            "clientName": "AWClient",
+                            "resetColumnConfig": true,
+                            "columnConfigQueryInfos": [
+                                {
+                                    "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}",
+                                    "operationType": "",
+                                    "typeNames": [],
+                                    "columnsToExclude": []
+                                }
+                            ],
+                            "businessObjects": [
+                                {}
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "dataProviders.resultGridDataProvider.columnConfig": "columnConfigurations[0].columnConfigurations[0]",
+                "dataProviders.resultGridDataProvider.columnConfig.typesForArrange": []
+            }
+        },
+        "saveDiagnosticResultsColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "operationType": "",
+                        "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}"
+                    },
+                    "saveColumnConfigData": {
+                        "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}",
+                        "columnConfigId": "{{data.dataProviders.resultGridDataProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.resultGridDataProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Dds0ObjdataSearchProvider",
+                        "searchCriteria": "{{function:getDiagnosticsSearchCriteria}}",
+                        "searchFilterMap6": {
+                            "Application": [
+                                {
+                                    "stringValue": "Object-data"
+                                }
+                            ],
+                            "State": [
+                                {
+                                    "stringValue": "{{data.resultStatusSummaryRadio.dbValue}}"
+                                }
+                            ]
+                        },
+                        "searchSortCriteria": [],
+                        "startIndex": "{{data.dataProviders.resultGridDataProvider.startIndex}}"
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "dataProviders.resultGridDataProvider.columnConfig": "columnConfig",
+                "tableLoaded": true,
+                "searchResponsePending": false
+            }
+        },
+        "saveDiagnosticResultsColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [
+                        {
+                            "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}",
+                            "columnConfigId": "{{data.dataProviders.resultGridDataProvider.columnConfig.columnConfigId}}",
+                            "columns": "{{data.dataProviders.resultGridDataProvider.newColumns}}",
+                            "scope": "LoginUser",
+                            "scopeName": ""
+                        }
+                    ]
+                }
+            },
+            "outputData": {}
+        }
+    },
+    "grids": {
+        "resultGridView": {
+            "dataProvider": "resultGridDataProvider",
+            "columnProvider": "clientScopeUI",
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "enableGridMenu": true,
+                "enableExpandAndPaginationInEdit": false,
+                "enableSorting": false,
+                "isFilteringEnabled": false
+            }
+        }
+    },
+
+    "dataProviders": {
+        "resultGridDataProvider": {
+            "action": "loadDdsAdvancedSearchData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "selectionData": "{{subPanelContext.selectionData}}"
+            },
+            "contextMenuCommandsAnchor": "aw_dataDiscoveryTableContextMenu",
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+    "columnProviders": {
+        "clientScopeUI": {
+            "saveColumnAndLoadAction": "saveDiagnosticResultsColumnConfigLoadData",
+            "saveColumnAction": "saveDiagnosticResultsColumnConfig",
+            "resetColumnAction": "resetDiagnosticResultsColumnConfig",
+            "sortCriteria": []
+        }
+    },
+    "conditions": {
+        "isSearchPerformed":
+        {
+            "expression": "props.subPanelContext.context.searchState.advancedSearchCriteria !== undefined && props.subPanelContext.context.searchState.advancedSearchCriteria !== ''"
+        },
+        "isNoResultsFound":
+        {
+            "expression": "conditions.isSearchPerformed && data.totalFound === 0 && data.searchResponsePending === false"
+        },
+        "isResultsFound":
+        {
+            "expression": "conditions.isSearchPerformed && data.totalFound !== 0 && data.resultStatusSummaryRadioValues !== undefined && data.resultStatusSummaryRadioValues.length !== 0 && data.searchResponsePending === false"
+        },
+        "zeroResultValue":
+        {
+            "expression": "data.zeroValueStatusSelected === true"
+        },
+        "isStatusSelectedInStatusSummary":
+        {
+            "expression": "data.isStatusSelectedInStatusSummary === true"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "showIndexerDiagnosticResult.setAdvanceSearchResultsData",
+            "action": "setAdvanceSearchResultsData"
+        },
+        {
+            "eventId": "showIndexerDiagnosticResult.initAdvanceSearchResults",
+            "action": "initResultSearch"
+        },
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent"
+        }
+    ],
+    "functions": {
+        "getDefaultPageSize": {
+            "functionName": "getDefaultPageSize",
+            "parameters": [
+                "{{ctx.preferences.AWC_DefaultPageSize}}"
+            ],
+            "deps": "js/indexerDiagnosticService"
+        },
+        "getTypeNames": {
+            "functionName": "getTypeNames",
+            "parameters": [
+                "{{subPanelContext.context.searchState.searchFilterMap}}"
+            ]
+        },
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": [
+                "{{props.subPanelContext.context.searchState}}"
+            ]
+        },
+        "getDiagnosticsSearchCriteria": {
+            "functionName": "getDiagnosticsSearchCriteria",
+            "parameters": [
+                "{{data.dataProviders.resultGridDataProvider.startIndex}}",
+                "{{subPanelContext.context.searchState}}"
+            ],
+            "deps": "js/indexerDiagnosticService"
+        },
+        "getInputSearchCriteria": {
+            "functionName": "getInputSearchCriteria",
+            "parameters": [
+                "{{subPanelContext.context.searchState.advancedSearchCriteria}}"
+            ],
+            "deps": "js/indexerDiagnosticService"
+        },
+        "getInputSearchFilterMap":{
+            "functionName": "getInputSearchFilterMap",
+            "parameters": [
+                "{{data.resultStatusSummaryRadio.dbValue}}"
+            ],
+            "deps": "js/indexerDiagnosticService"
+        },
+        "getResultsStatusSummary": {
+            "functionName": "getResultsStatusSummary",
+            "parameters": [
+                "{{data}}",
+                "{{props.subPanelContext.context.searchState}}"
+            ],
+            "deps": "js/indexerDiagnosticService"
+        },
+        "getExportOptions": {
+            "functionName": "getExportOptions",
+            "parameters": [
+                "{{data.resultStatusSummaryRadio.dbValue}}"
+            ],
+            "deps": "js/indexerDiagnosticService"
+        }
+    },
+    "messages": {
+        "loadAdvancedSearchDataFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n": {
+        "defaultMessage": [ "DataDiscoveryServicesMessages" ],
+        "objectDataIndexingStatusSummary": [ "DataDiscoveryServicesMessages" ],
+        "diagnosticResultStatusTitle": [ "DataDiscoveryServicesMessages" ],
+        "noresultsfoundMessage": [ "DataDiscoveryServicesMessages" ],
+        "statusSummaryTitle": [ "DataDiscoveryServicesMessages" ],
+        "totalResultsFoundLabel": [ "DataDiscoveryServicesMessages" ],
+        "resultTitle": [ "DataDiscoveryServicesMessages" ],
+        "firstStatus": ["DataDiscoveryServicesMessages"],
+        "secondStatus": ["DataDiscoveryServicesMessages"],
+        "thirdStatus": ["DataDiscoveryServicesMessages"],
+        "fourthStatus": ["DataDiscoveryServicesMessages"],
+        "inStatus": ["DataDiscoveryServicesMessages"],
+        "allStatusDisplayName": ["DataDiscoveryServicesMessages"],
+        "allStatusResultTitle": ["DataDiscoveryServicesMessages"]
+    }
+}

@@ -1,0 +1,138 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-include.directive",
+        "js/aw-link-with-popup.directive",
+        "js/aw-property-non-edit-val.directive"
+    ],
+    "actions": {
+        "initViewDataSettings": {
+            "actionType": "JSFunction",
+            "method": "initViewDataSettings",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}",
+                "currentRevisionRule": "{{data.currentRevisionRule}}"
+            },
+            "outputData": {
+                "contextKey": "contextKey",
+                "isRevRuleFeatureReadOnly": "isRevRuleFeatureReadOnly",
+                "isRevRuleActionDefaultBehavior": "isRevRuleActionDefaultBehavior",
+                "currentRevisionRule": "currentRevisionRule"
+            },
+            "deps": "js/pca0RevisionRuleConfigurationService"
+        },
+        "handlePostUpdateRevisionRule": {
+            "actionType": "JSFunction",
+            "method": "handlePostUpdateRevisionRule",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "contextKey": "{{data.contextKey}}",
+                "currentRevisionRule": "{{data.currentRevisionRule}}"
+            },
+            "outputData": {
+                "currentRevisionRule": "currentRevisionRule"
+            },
+            "deps": "js/pca0RevisionRuleConfigurationService"
+        },
+        "handlePostUpdateRevisionRuleOnFscSettingsPanel": {
+            "actionType": "JSFunction",
+            "method": "handlePostUpdateRevisionRule",
+            "inputData": {
+                "revisionRule": "{{data.currentRevisionRule}}",
+                "contextKey": "{{data.contextKey}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "outputData": {
+                "currentRevisionRule": "currentRevisionRule"
+            },
+            "deps": "js/pca0FscRevisionRuleConfigurationService"
+        },
+        "handlePostUpdateRevisionRuleOnMultiSvrSettingsPanel": {
+            "actionType": "JSFunction",
+            "method": "handlePostUpdateRevisionRuleForMultiSvr",
+            "inputData": {
+                "revisionRule": "{{data.currentRevisionRule}}",
+                "eventData": "{{parameters.eventData}}"
+            },
+            "outputData": {
+                "currentRevisionRule": ""
+            },
+            "deps": "js/pca0RevisionRuleConfigurationService"
+        },
+        "toggleRevisionRuleLinkState": {
+            "actionType": "JSFunction",
+            "method": "toggleRevisionRuleLinkState",
+            "inputData": {
+                "isDisableRevisionRuleLink": "{{data.eventMap['Pca0RevisionRule.toggleRevisionRuleLinkState'].isDisableRevisionRuleLink}}"
+            },
+            "outputData": {
+                "isRevRuleFeatureReadOnly": "isRevRuleFeatureReadOnly"
+            },
+            "deps": "js/pca0RevisionRuleConfigurationService"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initViewDataSettings"
+    },
+    "onEvent": [ {
+        "eventId": "Pca0FilterCriteriaSettings.refreshRevisionRuleContent",
+        "action": "handlePostUpdateRevisionRule",
+        "cacheEventData": true
+    }, {
+        "eventId": "Pca0FilterCriteriaSettings.refreshRevisionRuleContentOnFsc",
+        "action": "handlePostUpdateRevisionRuleOnFscSettingsPanel",
+        "cacheEventData": true
+    }, {
+        "eventId": "Pca0SvrFilterCriteriaSettings.refreshRevisionRuleContent",
+        "action": "handlePostUpdateRevisionRuleOnMultiSvrSettingsPanel",
+        "inputArgs": {
+            "eventData": "{{eventData}}"
+        }
+    }, {
+        "eventId": "Pca0RevisionRule.toggleRevisionRuleLinkState",
+        "action": "toggleRevisionRuleLinkState",
+        "cacheEventData": true
+    } ],
+    "conditions": {
+        "isDefaultBehavior": {
+            "expression": "data.isRevRuleActionDefaultBehavior.dbValue === true"
+        }
+    },
+    "data": {
+        "contextKey": "",
+        "currentRevisionRule": {
+            "uiValue": "",
+            "type": "STRING"
+        },
+        "isRevRuleFeatureReadOnly": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        },
+        "isRevRuleActionDefaultBehavior": {
+            "dbValue": true,
+            "type": "BOOLEAN"
+        }
+    },
+    "functions": {
+        "processRevisionRules": {
+            "functionName": "processRevisionRules",
+            "parameters": []
+        }
+    },
+    "messages": {
+        "errorInGettingPreferredConfigInfo": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.errorInGettingPreferredConfigInfo}}"
+        }
+    },
+    "i18n": {
+        "currentRevisionRule": [ "FullScreenConfigurationMessages" ],
+        "loadingMsg": [ "FullScreenConfigurationMessages" ],
+        "errorInGettingPreferredConfigInfo": [ "FullScreenConfigurationMessages" ]
+    }
+}

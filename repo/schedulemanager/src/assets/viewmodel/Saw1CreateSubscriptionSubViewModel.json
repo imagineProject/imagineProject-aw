@@ -1,0 +1,1147 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "actions": {
+        "prepareDataForCreatePanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "initializePanelData"
+                },
+                {
+                    "action": "getEventTypes"
+                },
+                {
+                    "action": "getDisplayStringsFromServer"
+                }
+            ]
+        },
+        "getEventTypes": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Subscription-2018-12-SubscriptionManagement",
+            "method": "getApplicableCommonEventTypes",
+            "inputData": {
+                "objectsOrTypes": [
+                    {
+                        "type": "{{ctx.selected.modelType.name}}",
+                        "uid": "{{ctx.selected.modelType.uid}}"
+                    }
+                ]
+            },
+            "outputData": {
+                "eventIdAndItsuidMap": "{{function:processEventTypes}}"
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "ImanEventType",
+                        "properties": [
+                            {
+                                "name": "eventtype_id"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "deps": "js/Saw1NotificationService"
+        },
+        "getDisplayStringsFromServer": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2008-06-Session",
+            "method": "getDisplayStrings",
+            "inputData": {
+                "info": [
+                    "Default_Text_Do_Not_Reply",
+                    "Sub_Task__Overdue",
+                    "Txt_Task__Overdue",
+                    "Sub_Task__Near_Due",
+                    "Txt_Task__Near_Due",
+                    "Sub_Task__Start_Date_Change",
+                    "Txt_Task__Start_Date_Change",
+                    "Sub_Task__Finish_Date_Change",
+                    "Txt_Task__Finish_Date_Change",
+                    "Sub_Task__Status_Change",
+                    "Txt_Task__Status_Change",
+                    "Sub_Task__Status_ChangeTo",
+                    "Txt_Task__Status_ChangeTo",
+                    "Sub_Task__Priority_Change",
+                    "Txt_Task__Priority_Change",
+                    "Sub_Task__Priority_ChangeTo",
+                    "Txt_Task__Priority_ChangeTo",
+                    "Sub_Task__Work_Estimate_Change",
+                    "Txt_Task__Work_Estimate_Change",
+                    "Sub_Task__Work_Complete_Change",
+                    "Txt_Task__Work_Complete_Change",
+                    "Sub_Task__Work_Ready",
+                    "Txt_Task__Work_Ready",
+                    "Sub_Task__Delete_Task",
+                    "Txt_Task__Delete_Task",
+                    "Sub_Task__User_Assigned",
+                    "Txt_Task__User_Assigned",
+                    "Sub_Schedule__Add_Task",
+                    "Txt_Schedule__Add_Task",
+                    "Sub_Schedule__Delete_Task",
+                    "Txt_Schedule__Delete_Task",
+                    "Sub_Schedule__Near_Due",
+                    "Txt_Schedule__Near_Due",
+                    "Sub_Schedule__Overdue",
+                    "Txt_Schedule__Overdue",
+                    "Sub_Schedule__Start_Date_Change",
+                    "Txt_Schedule__Start_Date_Change",
+                    "Sub_Schedule__Finish_Date_Change",
+                    "Txt_Schedule__Finish_Date_Change",
+                    "Sub_Schedule__Status_Change",
+                    "Txt_Schedule__Status_Change",
+                    "Sub_Schedule__Status_ChangeTo",
+                    "Txt_Schedule__Status_ChangeTo",
+                    "Sub_Schedule__Priority_Change",
+                    "Txt_Schedule__Priority_Change",
+                    "Sub_Schedule__Priority_ChangeTo",
+                    "Txt_Schedule__Priority_ChangeTo"
+                ]
+            },
+            "outputData": {
+                "displayStrings": "output"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "updateDataOnPanelEvent"
+                    }
+                ]
+            }
+        },
+        "initializePanelData": {
+            "actionType": "JSFunction",
+            "method": "initializePanelData",
+            "inputData": {
+                "data": "{{data}}",
+                "panelContext": "{{props.panelContext}}"
+            },
+            "outputData": {
+                "eventTypeNames": "eventTypeNames",
+                "isCreateUseCase": "isCreateUseCase",
+                "isPanelInitialized": "isPanelInitialized",
+                "subscriptionVMOToUpdate": "subscriptionVMOToUpdate"
+            },
+            "deps": "js/Saw1NotificationService"
+        },
+        "updateDataOnPanel": {
+            "actionType": "JSFunction",
+            "method": "updateDataOnPanel",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "ruleName": "ruleName",
+                "eventType": "eventType",
+                "emailIds": "emailIds",
+                "emailSubject": "emailSubject",
+                "emailText": "emailText",
+                "priority": "priority",
+                "status": "status",
+                "daysBeforeFinishDate": "daysBeforeFinishDate",
+                "workReady": "workReady",
+                "daysBeforeStartDate": "daysBeforeStartDate",
+                "userConfiguredEventList": "userConfiguredEventList",
+                "isSelectedVMOForSubscription": "isSelectedVMOForSubscription"
+            },
+            "deps": "js/Saw1NotificationService"
+        },
+        "updatePanelForUncheckMultiEventCheckBox": {
+            "actionType": "JSFunction",
+            "method": "updatePanelForUncheckMultiEventCheckBox",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "ruleName": "ruleName",
+                "eventType": "eventType",
+                "emailIds": "emailIds",
+                "emailSubject": "emailSubject",
+                "emailText": "emailText",
+                "priority": "priority",
+                "status": "status",
+                "daysBeforeFinishDate": "daysBeforeFinishDate",
+                "workReady": "workReady",
+                "daysBeforeStartDate": "daysBeforeStartDate",
+                "userConfiguredEventList": "userConfiguredEventList"
+            },
+            "deps": "js/Saw1NotificationService"
+        },
+        "Saw1GoToListSubscriptions": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "awPanel.navigate",
+                        "eventData": {
+                            "destPanelId": "Saw1SubscribeSub",
+                            "recreatePanel": false,
+                            "isolateMode": false
+                        }
+                    }
+                ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "initListSubscriptionDataProvider"
+                    }
+                ]
+            }
+        },
+        "createSubscriptionAction": {
+            "actionType": "JSFunction",
+            "method": "getCreateOrUpdateSubscriptionSOAInputs",
+            "inputData": {
+                "data": "{{data}}",
+                "isUpdateSubscription": false
+            },
+            "outputData": {
+                "createSubscriptionsInput": "inputs",
+                "multiEventRulesName": "multiEventRulesName"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Saw1CreateSubscriptionEvent",
+                        "condition": "data.createSubscriptionsInput || data.createSubscriptionsInput.length >=0"
+                    }
+                ]
+            },
+            "deps": "js/Saw1NotificationService"
+        },
+        "createNewSubscriptionSOA": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2022-06-ScheduleManagement",
+            "method": "createOrUpdateNotificationRules",
+            "deps": "js/Saw1NotificationService",
+            "inputData": {
+                "notificationRuleInfos": "{{data.createSubscriptionsInput}}"
+            },
+            "outputData": {
+                "partialErorrs": "partialErrors"
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "ImanSubscription",
+                        "properties": [
+                            {
+                                "name": "event_type"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "condition": "!subPanelContext.panelPinned",
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "notificationRuleCreatedMessage",
+                        "condition": "data.myEventsCheckbox.dbValue === false"
+                    },
+                    {
+                        "message": "multiEventNotificationRuleCreatedMessage",
+                        "condition": "data.myEventsCheckbox.dbValue === true"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "dupSubscriptionErrorMessage",
+                        "condition": "data.partialErorrs[0].errorValues[0].code==78002"
+                    },
+                    {
+                        "message": "subScriptionErrorMessage",
+                        "condition": "data.partialErorrs[0].errorValues[0].code!=78002"
+                    }
+                ]
+            }
+        },
+        "updateSubscriptionAction": {
+            "actionType": "JSFunction",
+            "method": "getCreateOrUpdateSubscriptionSOAInputs",
+            "inputData": {
+                "data": "{{data}}",
+                "isUpdateSubscription": true
+            },
+            "outputData": {
+                "updateSubscriptionsInput": "inputs"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "Saw1UpdateSubscriptionEvent",
+                        "condition": "data.updateSubscriptionsInput || data.updateSubscriptionsInput.length >=0"
+                    }
+                ]
+            },
+            "deps": "js/Saw1NotificationService"
+        },
+        "updateSubscriptionSOA": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2022-06-ScheduleManagement",
+            "method": "createOrUpdateNotificationRules",
+            "deps": "js/Saw1NotificationService",
+            "inputData": {
+                "notificationRuleInfos": "{{data.updateSubscriptionsInput}}"
+            },
+            "outputData": {
+                "partialErorrs": "partialErrors"
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "ImanSubscription",
+                        "properties": [
+                            {
+                                "name": "event_type"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "awPanel.navigate",
+                        "eventData": {
+                          "destPanelId": "Saw1SubscribeSub",
+                           "supportGoBack": false,
+                           "isolateMode": false,
+                           "recreatePanel": false
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "subScriptionErrorMessage",
+                        "condition": "data.partialErorrs"
+                    }
+                ]
+            }
+        },
+        "Saw1RemoveFollowers": {
+            "actionType": "JSFunction",
+            "method": "removeSelectedUsers",
+            "inputData": {
+                "selectedObjects": "{{data.dataProviders.followers_provider.selectedObjects}}",
+                "dataProvider": "{{data.dataProviders.followers_provider}}"
+            },
+            "deps": "js/Saw1PeoplePickerUtils"
+        },
+        "openMyConfiguredEventsPanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "awPanel.navigate",
+                        "eventData": {
+                            "destPanelId": "Saw1UserEventsConfig",
+                            "title": "{{i18n.userEventsConfigTitle}}",
+                            "isolateMode": false,
+                            "recreatePanel": true,
+                            "supportGoBack": true,
+                            "eventTypeNames": "{{data.eventTypeNames}}",
+                            "statusList": "{{data.statusList}}",
+                            "priorityList": "{{data.priorityList}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "multiEventDisplay": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "checkMultiEventBoxEvent",
+                        "condition": "data.myEventsCheckbox.dbValue == true"
+                    },
+                    {
+                        "name": "uncheckMultiEventBoxEvent",
+                        "condition": "data.myEventsCheckbox.dbValue == false"
+                    }
+                ]
+            }
+        },
+        "getMyConfiguredEvents": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-04-Session",
+            "method": "getPreferences2",
+            "inputData": {
+                "preferenceNames": [
+                    {
+                        "scope": "User",
+                        "names": [
+                            "SAW1_followMultiEventConfiguredEventTypes"
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "userConfiguredEventList": "{{function:getMyConfiguredEventTypesFunction}}"
+            },
+            "deps": "js/Saw1NotificationService",
+            "events": {
+                "success": [
+                    {
+                        "name": "initPanelForMultipleEvents",
+                        "condition": "data.userConfiguredEventList.length > 0"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "noApplicableEventExistForSelectedObjectMessage",
+                        "condition": "data.userConfiguredEventList.length <= 0"
+                    }
+                ]
+            }
+        },
+        "initPanelForMultipleEvents": {
+            "actionType": "JSFunction",
+            "method": "initPanelForMultipleEvents",
+            "inputData": {
+                "data": "{{data}}",
+                "userConfiguredEventList": "{{data.userConfiguredEventList}}"
+            },
+            "deps": "js/Saw1NotificationService",
+            "outputData": {
+                "eventType": "eventType"
+            }
+        },
+        "resetMultiEventCheckBox": {
+            "actionType": "JSFunction",
+            "method": "resetMultiEventCheckBox",
+            "inputData": {
+                "multiEventCheckbox": "{{data}}"
+            },
+            "deps": "js/Saw1NotificationService"
+        },
+        "openPeoplePickerPanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "AwPeoplePicker"
+            }
+        },
+        "performAddBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "addSelectedUsersInternal",
+                    "condition": "conditions.isAddUsersValid"
+                },
+                {
+                    "action": "navigateToMainPanel",
+                    "condition": "conditions.isAddUsersValid"
+                },
+                {
+                    "action": "resentUserPanelContextData",
+                    "condition": "conditions.isAddUsersValid"
+                }
+            ]
+        },
+        "addSelectedUsersInternal": {
+            "actionType": "JSFunction",
+            "method": "addSelectedUsers",
+            "inputData": {
+                "selectedUsers": "{{props.subPanelContext.addUserPanelState.selectedUsers}}",
+                "dataProvider": "{{data.dataProviders.followers_provider}}"
+            },
+            "deps": "js/Saw1PeoplePickerUtils"
+        },
+        "navigateToMainPanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "Saw1CreateSubscriptionSub"
+            }
+        },
+        "resentUserPanelContextData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.addUserPanelState}}",
+                "value": {
+                    "propName": "",
+                    "selectedUsers": []
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "data": {
+        "displayStrings": [],
+        "addFollowersCommand": "saw1_addFollowerCommands",
+        "subscribedObject": {
+            "displayName": "{{ctx.mselected[0].props.object_name.uiValues[0]}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "dbValue": "{{ctx.mselected[0].props.object_name.dbValues[0]}}"
+        },
+        "isCreateUseCase": true,
+        "subscriptionVMOToUpdate": null,
+        "isPanelInitialized": false,
+        "isSelectedVMOForSubscription": false,
+        "eventIdAndItsuidMap": {},
+        "ruleName": {
+            "displayName": "{{i18n.name}}",
+            "type": "STRING"
+        },
+        "eventType": {
+            "displayName": "{{i18n.eventtype}}",
+            "name": "eventType",
+            "type": "STRING",
+            "hasLov": "true"
+        },
+        "emailSubject": {
+            "displayName": "{{i18n.emailSubject}}",
+            "type": "STRING",
+            "isEditable": "false"
+        },
+        "emailText": {
+            "displayName": "{{i18n.emailText}}",
+            "type": "STRING",
+            "dbValue": "Message Text"
+        },
+        "emailIds": {
+            "displayName": "{{i18n.emailIds}}",
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "daysBeforeFinishDate": {
+            "displayName": "{{i18n.daysBeforeFinishDate}}",
+            "type": "INTEGER"
+        },
+        "status": {
+            "name": "fnd0state",
+            "displayName": "{{i18n.statusChangeLabel}}",
+            "type": "STRING",
+            "hasLov": "true"
+        },
+        "priority": {
+            "name": "priority",
+            "displayName": "{{i18n.priorityChangeLabel}}",
+            "type": "STRING",
+            "hasLov": "true"
+        },
+        "eventTypeNames": {
+            "type": "STRING"
+        },
+        "eventTypeNamesTask": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.Task__User_Assigned}}",
+                    "dispValue": "{{i18n.Task__User_Assigned}}",
+                    "propInternalValue": "__User_Assigned"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Task__Near_Due}}",
+                    "dispValue": "{{i18n.Task__Near_Due}}",
+                    "propInternalValue": "__Near_Due"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Task__Overdue}}",
+                    "dispValue": "{{i18n.Task__Overdue}}",
+                    "propInternalValue": "__Overdue"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Task__Start_Date_Change}}",
+                    "dispValue": "{{i18n.Task__Start_Date_Change}}",
+                    "propInternalValue": "__Start_Date_Change"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Task__Finish_Date_Change}}",
+                    "dispValue": "{{i18n.Task__Finish_Date_Change}}",
+                    "propInternalValue": "__Finish_Date_Change"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Task__Status_Change}}",
+                    "dispValue": "{{i18n.Task__Status_Change}}",
+                    "propInternalValue": "__Status_Change"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Task__Status_ChangeTo}}",
+                    "dispValue": "{{i18n.Task__Status_ChangeTo}}",
+                    "propInternalValue": "__Status_ChangeTo"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Task__Priority_Change}}",
+                    "dispValue": "{{i18n.Task__Priority_Change}}",
+                    "propInternalValue": "__Priority_Change"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Task__Priority_ChangeTo}}",
+                    "dispValue": "{{i18n.Task__Priority_ChangeTo}}",
+                    "propInternalValue": "__Priority_ChangeTo"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Task__Work_Estimate_Change}}",
+                    "dispValue": "{{i18n.Task__Work_Estimate_Change}}",
+                    "propInternalValue": "__Work_Estimate_Change"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Task__Work_Complete_Change}}",
+                    "dispValue": "{{i18n.Task__Work_Complete_Change}}",
+                    "propInternalValue": "__Work_Complete_Change"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Task__Work_Ready}}",
+                    "dispValue": "{{i18n.Task__Work_Ready}}",
+                    "propInternalValue": "__Work_Ready"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Task__Delete_Task}}",
+                    "dispValue": "{{i18n.Task__Delete_Task}}",
+                    "propInternalValue": "__Delete_Task"
+                }
+            ]
+        },
+        "eventTypeNamesSchedule": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.Schedule__Add_Task}}",
+                    "dispValue": "{{i18n.Schedule__Add_Task}}",
+                    "propInternalValue": "__Add_Task"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Schedule__Delete_Task}}",
+                    "dispValue": "{{i18n.Schedule__Delete_Task}}",
+                    "propInternalValue": "__Delete_Task"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Schedule__Near_Due}}",
+                    "dispValue": "{{i18n.Schedule__Near_Due}}",
+                    "propInternalValue": "__Near_Due"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Schedule__Overdue}}",
+                    "dispValue": "{{i18n.Schedule__Overdue}}",
+                    "propInternalValue": "__Overdue"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Schedule__Start_Date_Change}}",
+                    "dispValue": "{{i18n.Schedule__Start_Date_Change}}",
+                    "propInternalValue": "__Start_Date_Change"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Schedule__Finish_Date_Change}}",
+                    "dispValue": "{{i18n.Schedule__Finish_Date_Change}}",
+                    "propInternalValue": "__Finish_Date_Change"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Schedule__Status_Change}}",
+                    "dispValue": "{{i18n.Schedule__Status_Change}}",
+                    "propInternalValue": "__Status_Change"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Schedule__Status_ChangeTo}}",
+                    "dispValue": "{{i18n.Schedule__Status_ChangeTo}}",
+                    "propInternalValue": "__Status_ChangeTo"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Schedule__Priority_Change}}",
+                    "dispValue": "{{i18n.Schedule__Priority_Change}}",
+                    "propInternalValue": "__Priority_Change"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Schedule__Priority_ChangeTo}}",
+                    "dispValue": "{{i18n.Schedule__Priority_ChangeTo}}",
+                    "propInternalValue": "__Priority_ChangeTo"
+                }
+            ]
+        },
+        "statusList": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.Complete}}",
+                    "dispValue": "{{i18n.Complete}}",
+                    "propInternalValue": "Complete"
+                },
+                {
+                    "propDisplayValue": "{{i18n.InProgress}}",
+                    "dispValue": "{{i18n.InProgress}}",
+                    "propInternalValue": "InProgress"
+                },
+                {
+                    "propDisplayValue": "{{i18n.NotStarted}}",
+                    "dispValue": "{{i18n.NotStarted}}",
+                    "propInternalValue": "NotStarted"
+                },
+                {
+                    "propDisplayValue": "{{i18n.NeedsAttention}}",
+                    "dispValue": "{{i18n.NeedsAttention}}",
+                    "propInternalValue": "NeedsAttentn"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Abandoned}}",
+                    "dispValue": "{{i18n.Abandoned}}",
+                    "propInternalValue": "Abandoned"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Late}}",
+                    "dispValue": "{{i18n.Late}}",
+                    "propInternalValue": "Late"
+                }
+            ]
+        },
+        "priorityList": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.Highest}}",
+                    "dispValue": "{{i18n.Highest}}",
+                    "propInternalValue": "Highest"
+                },
+                {
+                    "propDisplayValue": "{{i18n.VeryHigh}}",
+                    "dispValue": "{{i18n.VeryHigh}}",
+                    "propInternalValue": "VeryHigh"
+                },
+                {
+                    "propDisplayValue": "{{i18n.High}}",
+                    "dispValue": "{{i18n.High}}",
+                    "propInternalValue": "High"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Medium}}",
+                    "dispValue": "{{i18n.Medium}}",
+                    "propInternalValue": "Medium"
+                },
+                {
+                    "propDisplayValue": "{{i18n.MediumLow}}",
+                    "dispValue": "{{i18n.MediumLow}}",
+                    "propInternalValue": "MediumLow"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Low}}",
+                    "dispValue": "{{i18n.Low}}",
+                    "propInternalValue": "Low"
+                },
+                {
+                    "propDisplayValue": "{{i18n.Lowest}}",
+                    "dispValue": "{{i18n.Lowest}}",
+                    "propInternalValue": "Lowest"
+                }
+            ]
+        },
+        "daysBeforeStartDate": {
+            "displayName": "{{i18n.daysBeforeStartDate}}",
+            "type": "INTEGER"
+        },
+        "workReady": {
+            "name": "workReady",
+            "displayName": "{{i18n.workReadyLabels}}",
+            "type": "STRING",
+            "hasLov": "true"
+        },
+        "workReadyList": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.StartDate}}",
+                    "dispValue": "{{i18n.StartDate}}",
+                    "propInternalValue": "StartDate"
+                },
+                {
+                    "propDisplayValue": "{{i18n.PredComplete}}",
+                    "dispValue": "{{i18n.PredComplete}}",
+                    "propInternalValue": "PredComplete"
+                },
+                {
+                    "propDisplayValue": "{{i18n.StartDateAndPredComplete}}",
+                    "dispValue": "{{i18n.StartDateAndPredComplete}}",
+                    "propInternalValue": "StartDateAndPredComplete"
+                },
+                {
+                    "propDisplayValue": "{{i18n.StartDateOrPredComplete}}",
+                    "dispValue": "{{i18n.StartDateOrPredComplete}}",
+                    "propInternalValue": "StartDateOrPredComplete"
+                }
+            ]
+        },
+        "myEventsCheckbox": {
+            "displayName": "{{i18n.myEventsLabel}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": false,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "configureMySelectedEvents": {
+            "action": "openMyConfiguredEventsPanel",
+            "iconName": "Edit",
+            "tooltip": "{{i18n.edit}}"
+        },
+        "userConfiguredEventList": []
+    },
+    "onEvent": [
+        {
+            "eventId": "updateDataOnPanelEvent",
+            "action": "updateDataOnPanel"
+        },
+        {
+            "eventId": "Saw1CreateSubscriptionEvent",
+            "action": "createNewSubscriptionSOA"
+        },
+        {
+            "eventId": "Saw1UpdateSubscriptionEvent",
+            "action": "updateSubscriptionSOA"
+        },
+        {
+            "eventId": "Saw1RemoveFollowerCmdActionEvent",
+            "action": "Saw1RemoveFollowers"
+        },
+        {
+            "eventId": "checkMultiEventBoxEvent",
+            "action": "getMyConfiguredEvents"
+        },
+        {
+            "eventId": "uncheckMultiEventBoxEvent",
+            "action": "updatePanelForUncheckMultiEventCheckBox"
+        },
+        {
+            "eventId": "initPanelForMultipleEvents",
+            "action": "initPanelForMultipleEvents"
+        },
+        {
+            "eventId": "addFollowers.openUserPickerPanel",
+            "action": "openPeoplePickerPanel"
+        },
+        {
+            "eventId": "appCtx.register",
+            "condition": "conditions.checkSelectionChange",
+            "action": "closePanel"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "prepareDataForCreatePanel",
+        "onUpdate": [
+            {
+                "action": "performAddBatchAction",
+                "observers": [
+                    "props.subPanelContext.addUserPanelState.value.selectedUsers"
+                ]
+            }
+        ]
+    },
+    "functions": {
+        "getMyConfiguredEventTypesFunction": {
+            "functionName": "getConfiguredEventTypesForCreatePanel",
+            "parameters": [
+                "{{data}}",
+                "{{data.eventTypeNames}}",
+                "{{data.statusList}}",
+                "{{data.priorityList}}"
+            ]
+        }
+    },
+    "conditions": {
+        "showAddButtonOnResourcePanel": {
+            "expression": "data.dataProviders.getResourcePool.selectedObjects.length > 0 || data.dataProviders.userPerformSearch.selectedObjects.length > 0 || data.dataProviders.getDisciplines.selectedObjects.length > 0"
+        },
+        "isAddUsersValid": {
+            "expression": "props.subPanelContext.addUserPanelState.selectedUsers && props.subPanelContext.addUserPanelState.selectedUsers.length > 0"
+        },
+        "checkSelectionChange": {
+            "expression": "name == 'selected' || name == 'mselected'"
+        }
+    },
+    "dataProviders": {
+        "followers_provider": {
+            "response": "{{data.addedObject.dbValues[0]}}",
+            "totalFound": "{{data.addedObject.dbValues[0].length}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+    "messages": {
+        "dupSubscriptionErrorMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.subScriptionFailureDup}}",
+            "messageTextParams": [
+                "{{data.ruleName.uiValue}}"
+            ]
+        },
+        "subScriptionErrorMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.subScriptionFailure}}",
+            "messageTextParams": [
+                "{{data.partialErorrs[0].errorValues[0].message}}"
+            ]
+        },
+        "notificationRuleCreatedMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.notificationRuleCreated}}",
+            "messageTextParams": [
+                "{{data.ruleName.uiValue}}"
+            ]
+        },
+        "multiEventNotificationRuleCreatedMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.multiEventNotificationRuleCreated}}",
+            "messageTextParams": [
+                "{{data.multiEventRulesName}}"
+            ]
+        },
+        "noApplicableEventExistForSelectedObjectMessage": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.noApplicableEvent}}",
+            "messageTextParams": [],
+            "navigationOptions": [
+                {
+                    "option": "Ok",
+                    "text": "{{i18n.ok}}",
+                    "action": "resetMultiEventCheckBox"
+                }
+            ]
+        },
+        "noMoreEventsToFollowMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.noMoreEvents}}"
+        }
+    },
+    "i18n": {
+        "followPanelOrCommandTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "eventtype": [
+            "ScheduleManagerMessages"
+        ],
+        "Task__User_Assigned": [
+            "ScheduleManagerMessages"
+        ],
+        "Task__Near_Due": [
+            "ScheduleManagerMessages"
+        ],
+        "Task__Overdue": [
+            "ScheduleManagerMessages"
+        ],
+        "Task__Start_Date_Change": [
+            "ScheduleManagerMessages"
+        ],
+        "Task__Finish_Date_Change": [
+            "ScheduleManagerMessages"
+        ],
+        "Task__Status_Change": [
+            "ScheduleManagerMessages"
+        ],
+        "Task__Status_ChangeTo": [
+            "ScheduleManagerMessages"
+        ],
+        "Task__Priority_Change": [
+            "ScheduleManagerMessages"
+        ],
+        "Task__Priority_ChangeTo": [
+            "ScheduleManagerMessages"
+        ],
+        "Task__Work_Estimate_Change": [
+            "ScheduleManagerMessages"
+        ],
+        "Task__Work_Complete_Change": [
+            "ScheduleManagerMessages"
+        ],
+        "Task__Work_Ready": [
+            "ScheduleManagerMessages"
+        ],
+        "Schedule__Add_Task": [
+            "ScheduleManagerMessages"
+        ],
+        "Schedule__Delete_Task": [
+            "ScheduleManagerMessages"
+        ],
+        "Schedule__Near_Due": [
+            "ScheduleManagerMessages"
+        ],
+        "Schedule__Overdue": [
+            "ScheduleManagerMessages"
+        ],
+        "Schedule__Start_Date_Change": [
+            "ScheduleManagerMessages"
+        ],
+        "Schedule__Finish_Date_Change": [
+            "ScheduleManagerMessages"
+        ],
+        "Schedule__Status_Change": [
+            "ScheduleManagerMessages"
+        ],
+        "Schedule__Status_ChangeTo": [
+            "ScheduleManagerMessages"
+        ],
+        "Schedule__Priority_Change": [
+            "ScheduleManagerMessages"
+        ],
+        "Schedule__Priority_ChangeTo": [
+            "ScheduleManagerMessages"
+        ],
+        "Task__Delete_Task": [
+            "ScheduleManagerMessages"
+        ],
+        "addFollower": [
+            "ScheduleManagerMessages"
+        ],
+        "emailSubject": [
+            "ScheduleManagerMessages"
+        ],
+        "emailText": [
+            "ScheduleManagerMessages"
+        ],
+        "emailIds": [
+            "ScheduleManagerMessages"
+        ],
+        "daysBeforeFinishDate": [
+            "ScheduleManagerMessages"
+        ],
+        "statusChangeLabel": [
+            "ScheduleManagerMessages"
+        ],
+        "priorityChangeLabel": [
+            "ScheduleManagerMessages"
+        ],
+        "Complete": [
+            "ScheduleManagerMessages"
+        ],
+        "InProgress": [
+            "ScheduleManagerMessages"
+        ],
+        "NotStarted": [
+            "ScheduleManagerMessages"
+        ],
+        "NeedsAttention": [
+            "ScheduleManagerMessages"
+        ],
+        "Abandoned": [
+            "ScheduleManagerMessages"
+        ],
+        "Late": [
+            "ScheduleManagerMessages"
+        ],
+        "Highest": [
+            "ScheduleManagerMessages"
+        ],
+        "VeryHigh": [
+            "ScheduleManagerMessages"
+        ],
+        "High": [
+            "ScheduleManagerMessages"
+        ],
+        "Medium": [
+            "ScheduleManagerMessages"
+        ],
+        "MediumLow": [
+            "ScheduleManagerMessages"
+        ],
+        "Low": [
+            "ScheduleManagerMessages"
+        ],
+        "Lowest": [
+            "ScheduleManagerMessages"
+        ],
+        "StartDate": [
+            "ScheduleManagerMessages"
+        ],
+        "PredComplete": [
+            "ScheduleManagerMessages"
+        ],
+        "StartDateAndPredComplete": [
+            "ScheduleManagerMessages"
+        ],
+        "StartDateOrPredComplete": [
+            "ScheduleManagerMessages"
+        ],
+        "notificationSectionTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "editSubscriptionCmd": [
+            "ScheduleManagerMessages"
+        ],
+        "saveSubscription": [
+            "ScheduleManagerMessages"
+        ],
+        "followersPanelTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "workReadyLabels": [
+            "ScheduleManagerMessages"
+        ],
+        "daysBeforeStartDate": [
+            "ScheduleManagerMessages"
+        ],
+        "subScriptionFailure": [
+            "ScheduleManagerMessages"
+        ],
+        "subScriptionFailureDup": [
+            "ScheduleManagerMessages"
+        ],
+        "notificationRuleCreated": [
+            "ScheduleManagerMessages"
+        ],
+        "multiObjectSelectedText": [
+            "ScheduleManagerMessages"
+        ],
+        "myEventsLabel": [
+            "ScheduleManagerMessages"
+        ],
+        "edit": [
+            "ScheduleManagerMessages"
+        ],
+        "userEventsConfigTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "noApplicableEvent": [
+            "ScheduleManagerMessages"
+        ],
+        "ok": [
+            "ScheduleManagerMessages"
+        ],
+        "name": [
+            "ScheduleManagerMessages"
+        ],
+        "eventTypeDisplayDeleteTask": [
+            "ScheduleManagerMessages"
+        ],
+        "multiEventNotificationRuleCreated": [
+            "ScheduleManagerMessages"
+        ]
+    }
+}

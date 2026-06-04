@@ -1,0 +1,568 @@
+{
+    "schemaVersion" : "1.0.0",
+    "ctx": {
+        "pselected": {
+            "type": "object"
+        }
+    },
+    "data": {
+        "activeView": "AddObjectPrimarySub",
+        "addPanelState": {
+            "initialValues": {
+                "creationType": "",
+                "sourceObjects": "",
+                "selectedTab": "",
+                "isDatasetCreate": "",
+                "formData": "",
+                "selectedRelation": ""
+            },
+            "meta": {
+                "datasetVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "triggerCreate": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub",
+                "context": {}
+            },
+            "meta": {}
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {
+                "selectedProjects": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "triggerAssign": {
+                    "field": "true",
+                    "type": "BOOLEAN"
+                }
+            }
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        }
+    },
+    "actions":
+    {
+        "revealAction": {
+            "actionType": "JSFunction",
+            "method": "populateValidIncludeTypes",
+            "inputData": {
+                "data": "{{data}}",
+                "ctx":"{{ctx}}"
+            },
+            "outputData":{
+                "includeTypes": "includeTypes",
+                "isDatasetPresent" : "isDatasetPresent"
+            },
+            "deps": "js/Saw1AssignTaskDeliverableService"
+        },
+        "checkSchDeliverableName": {
+            "actionType": "JSFunction",
+            "method": "checkSchDeliverableName",
+            "inputData": {
+                "data": "{{data}}",
+                "createType": "{{addPanelState.creationType}}",
+                "sourceObj": "{{addPanelState.sourceObjects}}",
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "checkObjectEvent"
+                } ]
+            },
+            "deps": "js/Saw1AssignTaskDeliverableService"
+        },
+        "checkObject": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getDatasetFileInfos",
+                    "condition": "data.addPanelState.datasetVMO"
+                },
+                {
+                    "action": "addDeliverable",
+                    "condition": "!data.addPanelState.datasetVMO && conditions.isNewTabAddButtonVisible"
+                },
+                {
+                    "action": "createDeliverable",
+                    "condition": "!data.addPanelState.datasetVMO && conditions.isPaletteSearchTabAddButtonVisible"
+                } ]
+        },
+        "getDatasetFileInfos": {
+            "actionType": "JSFunction",
+            "method": "getDatasetFileInfos",
+            "inputData": {
+                "addPanelState": "{{data.addPanelState}}"
+            },
+            "outputData": {
+                "isTextFile": "isTextFile",
+                "namedReferenceName": "namedReferenceName",
+                "fileName": "fileName"
+            },
+            "events": {
+                "success": [ {
+                    "name": "createDatasetEvent"
+                } ]
+            },
+            "deps": "js/Saw1AssignTaskDeliverableService"
+        },
+        "createDataset": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-04-DataManagement",
+            "method": "createDatasets",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "input": [ {
+                    "clientId": "{{data.addPanelState.datasetVMO.props.datasetName.dbValue}}",
+                    "container": {
+                        "uid": "AAAAAAAAAAAAAA",
+                        "type": "unknownType"
+                    },
+
+                    "datasetFileInfos": [ {
+                        "allowReplace": false,
+                        "clientId": "",
+                        "fileName": "{{data.fileName}}",
+                        "namedReferenceName": "{{data.namedReferenceName}}",
+                        "isText": "{{data.isTextFile}}"
+                    } ],
+                    "relationType": "",
+                    "description": "{{data.addPanelState.datasetVMO.props.datasetDesc.dbValue}}",
+                    "name": "{{data.addPanelState.datasetVMO.props.datasetName.dbValue}}",
+                    "type": "{{data.addPanelState.datasetVMO.props.datasetType.dbValue.props.object_string.dbValues[0]}}"
+                } ]
+            },
+            "outputData": {
+                "fmsTicket": "datasetOutput[0].commitInfo[0].datasetFileTicketInfos[0].ticket",
+                "commitInfos": "datasetOutput[0].commitInfo[0]",
+                "relatedModified": "datasetOutput[0].dataset",
+                "createdObject": "datasetOutput[0].dataset"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "determineChunkedUploadEvent"
+                    }
+                ]
+            }
+        },
+        "determineChunkedUpload": {
+            "actionType": "JSFunction",
+            "method": "determineChunkedUpload",
+            "deps": "js/fileUploadUtils",
+            "inputData": {
+                "formData": "{{data.addPanelState.formData}}"
+            },
+            "outputData": {
+                "isChunked": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "getTicketsForChunkedUploadEvent",
+                        "condition": "data.isChunked"
+                    },
+                    {
+                        "name": "updateFormDataEvent",
+                        "condition": "!data.isChunked"
+                    }
+                ]
+            }
+        },
+        "getTicketsForChunkedUpload": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Core-2021-06-FileManagement",
+            "method": "getDatasetTicketsForChunkedUpload",
+            "inputData": {
+                "inputs": [
+                    {
+                        "createNewVersion": true,
+                        "dataset": "{{data.createdObject}}",
+                        "datasetFileInfos": [
+                            {
+                                "clientId": "",
+                                "fileName": "{{data.fileName}}",
+                                "namedReferencedName": "{{data.namedReferenceName}}",
+                                "isText": "{{data.isTextFile}}",
+                                "allowReplace": false
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+               "fmsTicket": "commitInfo[0].datasetFileTicketInfos[0].ticket",
+               "commitInfos": "commitInfo[0]"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "updateFormDataEvent"
+                    }
+                ]
+            }
+        },
+        "updateFormData": {
+            "actionType": "JSFunction",
+            "method": "updateFormData",
+            "inputData": {
+                "formData": "{{data.addPanelState.formData}}",
+                "key": "fmsTicket",
+                "value": "{{data.fmsTicket}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "uploadFileInChunkEvent",
+                        "condition": "data.isChunked"
+                    },
+                    {
+                        "name": "uploadFileEvent",
+                        "condition": "!data.isChunked"
+                    }
+                ]
+            },
+            "deps": "js/fileUploadUtils"
+        },
+        "uploadFileInChunk": {
+             "actionType": "JSFunction",
+             "method": "uploadFileInChunk",
+             "inputData": {
+                 "formData": "{{data.addPanelState.formData}}"
+             },
+             "events": {
+                 "success": [
+                     {
+                         "name": "fileUploadedEvent"
+                     }
+                 ],
+                 "failure": [
+                     {
+                         "name": "closeDialog"
+                     }
+                 ]
+             },
+             "deps": "js/Saw1AssignTaskDeliverableService"
+         },
+        "uploadFile": {
+            "actionType": "RESTService",
+            "serviceName": "",
+            "method": "POST",
+            "inputData": {
+                "request": {
+                    "method": "POST",
+                    "url": "{{Constants.fmsUrl}}",
+                    "headers": {
+                        "Content-type": "undefined"
+                    },
+                    "data": "{{data.addPanelState.formData}}"
+                }
+            },
+            "events": {
+                "success": [ {
+                    "name": "fileUploadedEvent"
+                } ]
+            }
+        },
+        "commitDatasetFiles": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-FileManagement",
+            "method": "commitDatasetFiles",
+            "inputData": {
+                "commitInput": [ {
+                    "dataset": "{{data.commitInfos.dataset}}",
+                    "createNewVersion": true,
+                    "datasetFileTicketInfos": [ {
+                        "datasetFileInfo": {
+                            "clientId": "{{data.commitInfos.datasetFileTicketInfos[0].datasetFileInfo.clientId}}",
+                            "fileName": "{{data.commitInfos.datasetFileTicketInfos[0].datasetFileInfo.fileName}}",
+                            "namedReferencedName": "{{data.commitInfos.datasetFileTicketInfos[0].datasetFileInfo.namedReferenceName || data.commitInfos.datasetFileTicketInfos[0].datasetFileInfo.namedReferencedName}}",
+                            "isText": "{{data.commitInfos.datasetFileTicketInfos[0].datasetFileInfo.isText}}",
+                            "allowReplace": "{{data.commitInfos.datasetFileTicketInfos[0].datasetFileInfo.allowReplace}}"
+                        },
+
+                        "ticket": "{{data.fmsTicket}}"
+                    } ]
+                } ]
+            },
+            "events": {
+                "success": [ {
+                    "name": "createDeliverable"
+                } ]
+            }
+        },
+        "createDeliverable":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagementAw-2018-12-ScheduleManagementAw",
+            "method": "createMultipleTaskDeliverables",
+            "inputData":
+            {
+                 "taskDeliverableInputs": "{{function:getCreateTaskDeliverablesInput}}"
+            },
+            "outputData": {
+                "updatedObjects": "ServiceData.updated"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData":
+                        {
+                            "refreshLocationFlag": true,
+                            "relatedModified": "{{function:getUpdatedObjects}}"
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "condition": "ctx.mselected.length == 1 && ctx.sublocation.clientScopeURI === 'SMTasksKanbanBoard'",
+                        "message": "deliverableAddedToSingleTaskMsg"
+                    },
+                    {
+                        "condition": "ctx.mselected.length > 1 && ctx.sublocation.clientScopeURI === 'SMTasksKanbanBoard'",
+                        "message": "deliverableAddedToMultipleTasksMsg"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "createMultipleTaskDeliverablesFailureMsg"
+                    }
+                ]
+            },
+            "deps": "js/Saw1AssignTaskDeliverableService"
+        },
+        "addDeliverable":
+        {
+            "actionType": "JSFunction",
+            "method": "updateCreateTrigger",
+            "inputData": {
+                "triggerCreate": "{{data.triggerCreate}}",
+                "value": true
+            },
+            "outputData": {
+                "triggerCreate": "triggerCreate"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "setActiveView":{
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "cleanUpOnTypeSelected": {
+            "actionType": "JSFunction",
+            "method": "cleanUpOnTypeSelected",
+            "inputData": {
+                "fields": "{{fields}}"
+            },
+            "deps": "js/Saw1AssignTaskDeliverableService"
+        }
+    },
+    "dataProviders": {
+        "getDatasetTypeListProvider": {
+            "response": "{{data.addPanelState.datasetTypeList}}",
+            "totalFound": "{{data.addPanelState.datasetTypeList.length}}"
+        },
+        "getDatasetReferenceListProvider": {
+            "response": "{{data.addPanelState.references}}",
+            "totalFound": "{{data.addPanelState.references.length}}"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "checkObjectEvent",
+            "action": "checkObject"
+        },
+        {
+            "eventId": "checkSchDeliverableName",
+            "action": "checkSchDeliverableName"
+        },
+        {
+            "eventId": "addDeliverable",
+            "action": "addDeliverable"
+        },
+        {
+            "eventId": "createDeliverable",
+            "action": "createDeliverable"
+        },
+        {
+            "eventId": "createDatasetEvent",
+            "action": "createDataset"
+        },
+        {
+            "eventId": "updateFormDataEvent",
+            "action": "updateFormData"
+        },
+        {
+            "eventId": "uploadFileEvent",
+            "action": "uploadFile"
+        },
+        {
+            "eventId": "fileUploadedEvent",
+            "action": "commitDatasetFiles"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        },
+        {
+            "eventId": "determineChunkedUploadEvent",
+            "action": "determineChunkedUpload"
+        },
+        {
+            "eventId": "getTicketsForChunkedUploadEvent",
+            "action": "getTicketsForChunkedUpload"
+        },
+        {
+            "eventId": "uploadFileInChunkEvent",
+            "action": "uploadFileInChunk"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "revealAction",
+        "onUpdate": [ {
+            "action": "createDeliverable",
+            "observers": [ "viewModel.atomicData.addPanelState.createdObject" ]
+        },
+        {
+            "action": "cleanUpOnTypeSelected",
+            "observers": [ "viewModel.atomicData.addPanelState.creationType" ]
+        } ]
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "functions":
+    {
+        "getCreateInput": {
+            "functionName": "getCreateInput",
+            "parameters": [
+                "{{data}}",
+                "",
+                "{{addPanelState.creationType}}",
+                "{{editHandlers.addPanelEditHandler}}"
+            ]
+        },
+        "getCreateTaskDeliverablesInput":
+        {
+            "functionName": "getCreateTaskDeliverablesInput",
+            "parameters":
+            [
+                "{{subPanelContext}}",
+                "{{addPanelState.selectedTab}}",
+                "{{addPanelState.sourceObjects}}",
+                "{{addPanelState.createdObject}}",
+                "{{data.createdObject}}"
+            ]
+        },
+        "getUpdatedObjects":
+        {
+            "functionName": "getUpdatedObjects",
+            "parameters":
+            [
+                "{{data.updatedObjects}}"
+            ]
+        }
+    },
+    "messages": {
+        "deliverableAddedToSingleTaskMsg": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.saw1DeliverableAddedToSingleTaskMsg}}",
+            "messageTextParams": [
+                "{{ctx.selected.props.object_name.dbValues[0]}}"
+            ]
+        },
+        "deliverableAddedToMultipleTasksMsg": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.saw1DeliverablesAddedToMultipleTasksMsg}}",
+            "messageTextParams": [
+                "{{ctx.mselected.length}}"
+            ]
+        },
+        "createMultipleTaskDeliverablesFailureMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "soaErrorMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "conditions":
+    {
+        "isNewTabAddButtonVisible":
+        {
+          "expression":"addPanelState.selectedTab.view==='NewTabPageSub' && addPanelState.creationType"
+        },
+        "isPaletteSearchTabAddButtonVisible":
+        {
+            "expression": "addPanelState.sourceObjects && addPanelState.sourceObjects.length > 0"
+        },
+        "isValidForm":
+        {
+            "expression":"data.addPanelState.isDatasetCreate === false || (addPanelState.isDatasetCreate !== false && addPanelState.datasetVMO)"
+        }
+    },
+    "i18n":
+     {
+         "assignTaskdeliverableTitle" : ["ScheduleManagerMessages"],
+         "assignButtonText" : ["ScheduleManagerMessages"],
+         "sameInstanceNameErrorMsg" : ["ScheduleManagerMessages"],
+         "saw1DeliverableAddedToSingleTaskMsg" : ["ScheduleManagerMessages"],
+         "saw1DeliverablesAddedToMultipleTasksMsg" : ["ScheduleManagerMessages"],
+         "BACK_BUTTON_TITLE":["BaseMessages"]
+     },
+     "props": {
+         "sub-panel-context": {
+             "type": "object"
+         }
+     }
+
+}

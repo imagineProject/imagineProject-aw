@@ -1,0 +1,656 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "doArrangeEvent": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "addNameToArrangeEventData"
+            },
+            {
+                "action": "arrangeColumns",
+                "condition": "data.eventData.name === 'occTreeTable' || data.eventData.name === 'occTreeTable2'"
+            } ]
+        },
+        "addNameToArrangeEventData": {
+            "actionType": "JSFunction",
+            "method": "addNameToArrangeEventData",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "name": "occTreeTable2"
+            },
+            "outputData": {
+                "arrangeEventData": ""
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "arrangeColumns": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.arrangeEventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "groupObjectsByProperties": {
+            "actionType": "JSFunction",
+            "method": "groupObjectsByProperties",
+            "deps": "js/aceColorDecoratorService",
+            "inputData": {
+                "vmos": "{{data.dataProviders.occDataProvider2.viewModelCollection.loadedVMObjects}}"
+            }
+        },
+        "toggleTreeNodeHierarchy": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "toggleTreeNodeHierarchy",
+                    "eventData": {
+                        "data": "{{data}}",
+                        "row": "{{data.eventData}}"
+                    }
+                } ]
+            }
+        },
+        "loadDataForSavedColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadDataForSavedColumnConfig",
+            "deps": "js/aceTreeTableDataService",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext.provider}}",
+                "columnConfig": "{{data.dataProviders.occDataProvider2.columnConfig}}",
+                "vmNodes": "{{data.dataProviders.occDataProvider2.viewModelCollection.loadedVMObjects}}",
+                "context": {
+                    "clientScopeURI": "{{data.dataProviders.occDataProvider2.objectSetUri}}",
+                    "clientName": "AWClient",
+                    "columnsToExclude": "{{ctx.occmgmtContext2.columnsToExclude}}",
+                    "operationType": "{{eventData.operationType}}",
+                    "addedColumnNames": "{{data.dataProviders.occDataProvider2.addedColumnNames}}"
+                }
+            },
+            "outputData": {
+                "newColumnConfig": "result.output.columnConfig",
+                "dataProviders.occDataProvider2.columnConfig": "result.output.columnConfig",
+                "dataProviders.occDataProvider2.addedColumnNames": []
+            }
+        },
+        "loadInitialOccurrences": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeTableData",
+            "inputData": {
+                "methodArgument": {
+                    "treeLoadInput": "request.treeLoadInput",
+                    "dataProviderActionType": "initializeAction",
+                    "loadIDs": "request.loadIDs",
+                    "grid": "{{data.grids.occTreeTable2}}",
+                    "uwDataProvider": "{{data.dataProviders.occDataProvider2}}",
+                    "declViewModel": "{{data}}",
+                    "sortCriteria": "{{data.columnProviders.occColumnProvider2.sortCriteria}}",
+                    "subPanelContext": "{{props.subPanelContext}}",
+                    "occContext": "{{props.subPanelContext.occContext}}"
+                }
+            },
+            "outputData": {
+                "ctx.locationContext.modelObject": "result.treeLoadResult.baseModelObject",
+                "ctx.objectQuotaContext.useObjectQuota": "result.treeLoadResult.useObjectQuotatoUnload",
+                "ctx.occmgmtContext2.serializedRevRule": "result.treeLoadResult.serializedRevRule",
+                "ctx.occmgmtContext2.modelObject": "result.treeLoadResult.baseModelObject",
+                "ctx.occmgmtContext2.productContextInfo": "result.treeLoadResult.productContextInfo",
+                "ctx.occmgmtContext2.openedElement": "result.treeLoadResult.openedModelObject",
+                "ctx.occmgmtContext2.topElement": "result.treeLoadResult.topModelObject",
+                "ctx.occmgmtContext2.sublocationAttributes": "result.treeLoadResult.sublocationAttributes",
+                "ctx.occmgmtContext2.recipe": "result.treeLoadResult.filter.recipe",
+                "ctx.occmgmtContext2.searchFilterCategories": "result.treeLoadResult.filter.searchFilterCategories",
+                "ctx.occmgmtContext2.searchFilterMap": "result.treeLoadResult.filter.searchFilterMap",
+                "ctx.occmgmtContext2.elementToPCIMap": "result.treeLoadResult.elementToPCIMap",
+                "ctx.occmgmtContext2.isChangeEnabled": "result.treeLoadResult.isChangeEnabled",
+                "ctx.occmgmtContext2.sublocation.clientScopeURI":"result.treeLoadResult.productContextInfo.props.awb0ClientScopeUri.dbValues[0]",
+                "dataProviders.occDataProvider2.ttState": "result.treeLoadResult.ttstate",
+                "dataProviders.occDataProvider2.topTreeNode": "result.treeLoadResult.newTopNode",
+                "dataProviders.occDataProvider2.topNodeUid": "result.treeLoadResult.newTopNode.uid",
+                "dataProviders.occDataProvider2.objectSetUri":"result.treeLoadResult.productContextInfo.props.awb0ClientScopeUri.dbValues[0]",
+                "dataProviders.occDataProvider2.columnConfig": "result.treeLoadResult.columnConfig",
+                "newOccContext":"result.treeLoadResult.newOccContext"
+            },
+            "events": {
+                "success": [ {
+                    "name": "occDataLoadedEvent",
+                    "eventData": {
+                        "contextKey": "{{props.subPanelContext.occContext.viewKey}}",
+                        "dataProviderActionType": "initializeAction",
+                        "occContext": "{{props.subPanelContext.occContext.viewKey}}"
+                    }
+                }, {
+                    "name": "occMgmt.visibilityStateChanged",
+                    "eventData": {
+                        "viewToReact": "{{props.subPanelContext.occContext.viewKey}}",
+                        "sourceGridId": "occTreeTable2"
+                    }
+                } ]
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "loadOccurrencesWithFocus": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadOccurrencesWithFocusInTreeTable",
+            "inputData": {
+                "methodArgument": {
+                    "treeLoadInput": "request.treeLoadInput",
+                    "dataProviderActionType": "focusAction",
+                    "loadIDs": "request.loadIDs",
+                    "gridOptions": "{{data.grids.occTreeTable2.gridOptions}}",
+                    "uwDataProvider": "{{data.dataProviders.occDataProvider2}}",
+                    "declViewModel": "{{data}}",
+                    "sortCriteria": "{{data.columnProviders.occColumnProvider2.sortCriteria}}",
+                    "subPanelContext": "{{props.subPanelContext}}",
+                    "occContext": "{{props.subPanelContext.occContext}}"
+                }
+            },
+            "outputData": {
+                "dataProviders.occDataProvider2.columnConfig": "result.treeLoadResult.columnConfig"
+            },
+            "events": {
+                "success": [ {
+                    "name": "occDataLoadedEvent",
+                    "eventData": {
+                        "contextKey": "{{props.subPanelContext.occContext.viewKey}}",
+                        "dataProviderActionType": "focusAction"
+                    }
+                } ]
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "loadNextOccurrences": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadNextOccurrencesInTreeTable",
+            "inputData": {
+                "methodArgument": {
+                    "treeLoadInput": "request.treeLoadInput",
+                    "dataProviderActionType": "nextAction",
+                    "loadIDs": "request.loadIDs",
+                    "gridOptions": "{{data.grids.occTreeTable2.gridOptions}}",
+                    "uwDataProvider": "{{data.dataProviders.occDataProvider2}}",
+                    "declViewModel": "{{data}}",
+                    "sortCriteria": "{{data.columnProviders.occColumnProvider2.sortCriteria}}",
+                    "subPanelContext": "{{props.subPanelContext}}",
+                    "occContext": "{{props.subPanelContext.occContext}}"
+                }
+            },
+            "outputData": {
+                "dataProviders.occDataProvider2.columnConfig": "result.treeLoadResult.columnConfig"
+            },
+            "events": {
+                "success": [ {
+                    "name": "occDataLoadedEvent",
+                    "eventData": {
+                        "contextKey": "{{props.subPanelContext.occContext.viewKey}}",
+                        "dataProviderActionType": "nextAction"
+                    }
+                } ]
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "loadPreviousOccurrences": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadPreviousOccurrencesInTreeTable",
+            "inputData": {
+                "methodArgument": {
+                    "treeLoadInput": "request.treeLoadInput",
+                    "dataProviderActionType": "previousAction",
+                    "loadIDs": "request.loadIDs",
+                    "gridOptions": "{{data.grids.occTreeTable2.gridOptions}}",
+                    "uwDataProvider": "{{data.dataProviders.occDataProvider2}}",
+                    "declViewModel": "{{data}}",
+                    "sortCriteria": "{{data.columnProviders.occColumnProvider2.sortCriteria}}",
+                    "subPanelContext": "{{props.subPanelContext}}",
+                    "occContext": "{{props.subPanelContext.occContext}}"
+                }
+            },
+            "outputData": {
+                "dataProviders.occDataProvider2.columnConfig": "result.treeLoadResult.columnConfig"
+            },
+            "events": {
+                "success": [ {
+                    "name": "occDataLoadedEvent",
+                    "eventData": {
+                        "contextKey": "{{props.subPanelContext.contextKey}}",
+                        "dataProviderActionType": "previousAction"
+                    }
+                } ]
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "loadOccProperties": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeTableProperties",
+            "inputData": {
+                "methodArgument": {
+                    "propertyLoadInput": "request.propertyLoadInput",
+                    "propertyLoadContext": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "{{data.dataProviders.occDataProvider2.objectSetUri}}",
+                        "typesForArrange": "{{data.dataProviders.occDataProvider2.columnConfig.typesForArrange}}",
+                        "operationType": "{{data.dataProviders.occDataProvider2.columnConfig.operationType}}",
+                        "addedColumnNames": "{{data.dataProviders.occDataProvider2.addedColumnNames}}"
+                    },
+                    "contextKey": "{{props.subPanelContext.occContext.viewKey}}",
+                    "declViewModel": "{{data}}",
+                    "uwDataProvider": "{{data.dataProviders.occDataProvider2}}",
+                    "subPanelContext": "{{props.subPanelContext.provider}}"
+                }
+            },
+            "outputData": {
+                "dataProviders.occDataProvider2.columnConfig": "result.propertyLoadResult.columnConfig",
+                "ctx.searchResponseInfo.columnConfig": "result.propertyLoadResult.columnConfig",
+                "dataProviders.occDataProvider2.addedColumnNames": []
+            },
+            "deps": "js/aceTreeTableDataService",
+            "events": {
+                "success": [ {
+                    "name": "occMgmt.visibilityStateChanged",
+                    "eventData": {
+                        "viewToReact": "{{props.subPanelContext.occContext.viewKey}}",
+                        "sourceGridId": "occTreeTable2"
+                    }
+                } ]
+            }
+        },
+        "loadOccColumns": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeTableColumns",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.occDataProvider2}}",
+                "columnProvider": "{{data.columnProviders.occColumnProvider2}}"
+            },
+            "outputData": {
+                "dataProviders.occDataProvider2.columnConfig": "columnConfig"
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "addNodeToExpansionState": {
+            "actionType": "JSFunction",
+            "method": "addNodeToExpansionState",
+            "inputData": {
+                "node": "{{data.eventData.nodeToExpand}}",
+                "data": "{{data}}"
+            },
+            "deps": "js/aceTreeTableStateService"
+        },
+        "updateTreeNodeStates":{
+            "actionType": "JSFunction",
+            "method": "updateTreeNodeStates",
+            "inputData": {
+                "vmNodes": "{{data.dataProviders.occDataProvider2.viewModelCollection.loadedVMObjects}}",
+                "data": "{{data}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/aceTreeTableStateService"
+        },
+        "addNodeToCollapsedState": {
+            "actionType": "JSFunction",
+            "method": "addNodeToCollapsedState",
+            "inputData": {
+                "data": "{{data}}",
+                "row": "{{data.eventData}}"
+            },
+            "deps": "js/aceTreeTableStateService"
+        },
+        "resetColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [ {
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos": [ {
+                            "clientScopeURI": "{{data.dataProviders.occDataProvider2.objectSetUri}}",
+                            "operationType": "union",
+                            "typeNames": "{{data.dataProviders.occDataProvider2.columnConfig.typesForArrange}}",
+                            "columnsToExclude": "{{ctx.occmgmtContext2.columnsToExclude}}"
+                        } ],
+                        "businessObjects": [ {} ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "dataProviders.occDataProvider2.columnConfig": "{{function:postResetFunction}}",
+                "newColumnConfig": "columnConfigurations[0].columnConfigurations[0]"
+            },
+            "events": {
+                "success": [ {
+                    "name": "occTreeTable2.updateOccMgmtSplitTreeColumns"
+                } ]
+            }
+        },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI": "{{data.dataProviders.occDataProvider2.objectSetUri}}",
+                        "columnConfigId": "{{data.dataProviders.occDataProvider2.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.occDataProvider2.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "outputData": {},
+            "events": {
+                "success": [ {
+                    "name": "occmgmtColumnConfig.saved"
+                } ]
+            }
+        },
+        "saveColumnConfigData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI": "{{data.dataProviders.occDataProvider2.objectSetUri}}",
+                        "columnConfigId": "{{data.dataProviders.occDataProvider2.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.occDataProvider2.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "outputData": {}
+        },
+        "updateDisplayNames": {
+            "actionType": "JSFunction",
+            "method": "updateDisplayNames",
+            "inputData": {
+                "loadedVMObjects": "{{data.dataProviders.occDataProvider2.viewModelCollection.loadedVMObjects}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "setOccVisibility": {
+            "actionType": "JSFunction",
+            "method": "setOccVisibility",
+            "inputData": {
+                "loadedVMObjects": "{{data.dataProviders.occDataProvider2.viewModelCollection.loadedVMObjects}}",
+                "contextKey": "{{props.subPanelContext.occContext.viewKey}}",
+                "gridId": "occTreeTable2"
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "swaTabChange": {
+            "actionType": "JSFunction",
+            "method": "swaTabChange",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext.provider}}"
+            },
+            "deps": "js/aceSwaService"
+        },
+        "processVMC": {
+            "actionType": "JSFunction",
+            "method": "processViewModelCollectionEvent",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.occDataProvider2}}",
+                "eventInfo": "{{data}}"
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "applyCellRenderers": {
+            "actionType": "JSFunction",
+            "method": "resetpropHighLightForCompare",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.occDataProvider2}}"
+            },
+            "outputData": {
+                "dataProviders.occDataProvider2.columnConfig": "result.columnConfig"
+            },
+            "deps": "js/aceCellRenderingService"
+        },
+        "applyInContextOverrideStatesOnNewlyLoadedObjectsInTree": {
+            "actionType": "JSFunction",
+            "method": "applyInContextOverrideStatesOnNewlyLoadedObjectsInTree",
+            "inputData": {
+                "contextKey": "{{props.subPanelContext.occContext.viewKey}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/aceInContextOverrideService"
+        },
+        "publishClientRefreshEventForPlTable": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "occTreeTable2.plTable.clientRefresh"
+                } ]
+            }
+        },
+        "updateOccMgmtSplitTreeColumns": {
+            "actionType": "JSFunction",
+            "method": "updateOccMgmtTreeTableColumns",
+            "inputData": {
+                "data": "{{data}}",
+                "dataProvider": "{{data.dataProviders.occDataProvider2}}",
+                "subPanelContext": "{{props.subPanelContext.provider}}"
+            },
+            "outputData": {
+                "newColumnConfig": "result.newColumnConfig",
+                "dataProviders.occDataProvider2.columnConfig": "result.columnConfig"
+            },
+            "deps": "js/aceTreeTableDataService"
+        },
+        "multiSelectModeActionBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setShowCheckBoxValue"
+                },
+                {
+                    "action": "multiSelectActionForPWA"
+                },
+                {
+                    "action": "publishClientRefreshEventForPlTable"
+                }
+            ]
+        },
+        "setShowCheckBoxValue": {
+            "actionType": "JSFunction",
+            "method": "setShowCheckBoxValue",
+            "inputData": {
+                "eventData": "{{data.eventData}}"
+            },
+            "outputData": {
+                "showCheckBox": ""
+            },
+            "deps": "js/aceDataNavigatorService"
+        },
+        "multiSelectActionForPWA": {
+            "actionType": "JSFunction",
+            "method": "multiSelectActionForPWA",
+            "inputData": {
+                "pwaSelectionModel": "{{data.eventData.pwaSelectionModel}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/aceDataNavigatorService"
+        },
+        "handleAltPwaChange":{
+            "actionType": "JSFunction",
+            "method": "handleAltPwaChange",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext.provider}}"
+            },
+            "deps": "js/aceSwaService"
+        }
+    },
+    "data": {
+
+    },
+    "i18n": {
+
+    },
+    "functions": {
+        "postResetFunction": {
+            "functionName": "postResetFunction",
+            "parameters": [
+                "{{data.dataProviders.occDataProvider2.columnConfig}}"
+            ],
+            "deps": "js/tcarrange.service"
+        }
+    },
+    "dataProviders": {
+        "occDataProvider2": {
+            "initializeAction": "loadInitialOccurrences",
+            "nextAction": "loadNextOccurrences",
+            "previousAction": "loadPreviousOccurrences",
+            "focusAction": "loadOccurrencesWithFocus",
+            "editContext": "{{subPanelContext.provider.editContext}}",
+            "treeLoadResult": "action.result.treeLoadResult",
+            "selectionModelMode": "multiple",
+            "treePageSize": 250,
+            "cacheCollapse": true,
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "accessMode": "tree",
+                "topNodeUid": "{{props.subPanelContext.provider.occContext.currentState.uid}}"
+            },
+            "commandsAnchor": "occmgmt_tree_cell_commands"
+        },
+        "occPropertyProvider2": {
+            "action": "loadOccProperties",
+            "propertyLoadResult": "action.result.propertyLoadResult"
+        }
+    },
+
+    "columnProviders": {
+        "occColumnProvider2": {
+            "loadColumnAction": "loadOccColumns",
+            "columns": "{{data.columns}}",
+            "saveColumnAction": "saveColumnConfigData",
+            "saveColumnAndLoadAction": "saveColumnConfigLoadData",
+            "resetColumnAction": "resetColumnConfig",
+            "clientColumns": "{{props.subPanelContext.provider.clientColumns}}"
+        }
+    },
+    "grids": {
+        "occTreeTable2": {
+            "dataProvider": "occDataProvider2",
+            "propertyProvider": "occPropertyProvider2",
+            "columnProvider": "occColumnProvider2",
+            "enableArrangeMenu": true,
+            "addIconColumn": false,
+            "gridOptions": {
+                "useStaticFirstCol": true,
+                "enableSaveSortCriteria": false
+            }
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "handleAltPwaChange",
+                "observers": [ "props.subPanelContext.provider.pageContext.sublocationState.viewModeContext.displayedViewModes.altPwaViews" ]
+            },
+            {
+                "action": "swaTabChange",
+                "observers": [ "props.subPanelContext.provider.pageContext.sublocationState.secondaryActiveTabId" ]
+            },
+            {
+                "action": "updateTreeNodeStates",
+                "observers": [ "props.subPanelContext.provider.occContext.transientRequestPref.updateTreeNodeStates" ]
+            },
+            {
+                "action": "updateTreeNodeStates",
+                "observers": [ "viewModel.dataProviders.occDataProvider2.viewModelCollection.loadedVMObjects" ]
+            }
+        ]
+    },
+    "onEvent": [ {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent",
+            "condition": "name === 'occTreeTable2' || ( name === 'occTreeTable' && arrangeType !== 'saveAsNewColumnAndLoadAction' && ( ctx.occmgmtContext.sublocation.clientScopeURI === ctx.occmgmtContext2.sublocation.clientScopeURI ) )"
+        },
+        {
+            "eventId": "occmgmtColumnConfig.saved",
+            "cacheEventData": true,
+            "action": "loadDataForSavedColumnConfig",
+            "condition": "!ctx.editInProgress"
+        },
+        {
+            "eventId": "ace.groupObjectCategoryChanged",
+            "action": "groupObjectsByProperties",
+            "condition": "ctx.decoratorToggle"
+        },
+        {
+            "eventId": "occDataProvider2.modelObjectsUpdated",
+            "action": "groupObjectsByProperties",
+            "condition": "ctx.decoratorToggle"
+        },
+        {
+            "eventId": "occDataProvider2.modelObjectsUpdated",
+            "cacheEventData": true,
+            "action": "updateDisplayNames"
+        },
+        {
+            "eventId": "occDataProvider2.toggleTreeNodeHierarchy",
+            "cacheEventData": true,
+            "action": "toggleTreeNodeHierarchy"
+        },
+        {
+            "eventId": "occDataProvider2.addNodeToExpansionState",
+            "cacheEventData": true,
+            "action": "addNodeToExpansionState"
+        },
+        {
+            "eventId": "occDataProvider2.addNodeToCollapsedState",
+            "cacheEventData": true,
+            "action": "addNodeToCollapsedState"
+        },
+        {
+            "eventId": "occMgmt.visibilityStateChanged",
+            "condition": "viewToReact ? viewToReact === 'occmgmtContext2' : true",
+            "action": "setOccVisibility"
+        },
+        {
+            "eventId": "vmc.modified.occDataProvider2",
+            "cacheEventData": true,
+            "action": "updateDisplayNames"
+        },
+        {
+            "eventId": "vmc.modified.occDataProvider2",
+            "cacheEventData": true,
+            "action": "processVMC"
+        },
+        {
+            "eventId": "reRenderTableOnClient",
+            "condition": "ctx.aceActiveContext.key === 'occmgmtContext2' || refreshAllViews === true",
+            "action": "publishClientRefreshEventForPlTable"
+        },
+        {
+            "eventId": "occDataProvider2.treeNodesLoaded",
+            "cacheEventData": true,
+            "condition": "ctx.occmgmtContext2.currentState.incontext_uid !== undefined && ctx.occmgmtContext2.currentState.incontext_uid !== null",
+            "action": "applyInContextOverrideStatesOnNewlyLoadedObjectsInTree"
+        },
+        {
+            "eventId": "refreshCellRenderersForCompare",
+            "action": "applyCellRenderers"
+        },
+        {
+            "eventId": "occTreeTable2.updateOccMgmtSplitTreeColumns",
+            "action": "updateOccMgmtSplitTreeColumns"
+        },
+        {
+            "eventId": "primaryWorkarea.multiSelectModeAction",
+            "condition": "ctx.aceActiveContext.key === 'occmgmtContext2'",
+            "cacheEventData": true,
+            "action": "multiSelectModeActionBatchJob"
+        }
+    ]
+}

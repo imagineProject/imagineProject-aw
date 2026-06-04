@@ -1,0 +1,176 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {
+        "render": "render",
+        "onMount": "initialize",
+        "onUpdate": [{
+            "action": "initialize",
+            "observers": [ "props.reportTemplate.uid", "props.reportSourceObjectUid" ]
+        }]
+    },
+    "ctx": { },
+    "props": {
+        "report-id": {
+            "type": "string"
+        },
+        "report-template" : {
+            "type": "object"
+        },
+        "report-source-object-uid": {
+            "type": "string"
+        },
+        "report-props": {
+            "type": "object"
+        },
+        "sub-panel-context":{
+            "type": "object"
+        }
+    },
+    "dataProviders": {
+        "filtersDataProvider": {
+            "type": "Static",
+            "response": "{{data.filterChips}}",
+            "selectionModelMode": "none"
+        }
+    },
+    "actions": {
+        "render": {
+            "method": "awActiveReportViewerServiceRenderFunction",
+            "deps": "js/AwActiveReportViewerService"
+        },
+        "initialize": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "getReportDefinition",
+                "condition": "props.reportId"
+            }, {
+                "action": "updateReportsStateFromTemplate",
+                "condition": "props.reportTemplate"
+            },{
+                "action": "updateReportSourceObjectUidToReportsState",
+                "condition": "props.reportSourceObjectUid"
+            }, {
+                "action": "updateReportPropsToReportsState",
+                "condition": "props.reportProps.initRepDisp === false"
+            } ]
+        },
+        "getReportDefinition": {
+            "actionType": "TcSoaService",
+            "serviceName": "Reports-2008-06-CrfReports",
+            "method": "getReportDefinitions",
+            "inputData": {
+                "inputCriteria": [{
+                    "source": "Active Workspace",
+                    "reportDefinitionId": "{{props.reportId}}"
+                }]
+            },
+            "policy": {
+                "types": [ {
+                    "name": "ReportDefinition",
+                    "properties": [
+                        { "name": "rd_parameters" },
+                        { "name": "rd_param_values" },
+                        { "name": "owning_user" },
+                        { "name": "rd_name" },
+                        { "name": "rd_type" },
+                        { "name": "rd_class" },
+                        { "name": "rd_id" },
+                        { "name": "rd_source"},
+                        {
+                            "name": "rd_query_source",
+                            "modifiers": [ {
+                                "name": "withProperties",
+                                "Value": "true"
+                            } ]
+                        }
+                    ]
+                }, {
+                    "name": "CrfQuerySource",
+                    "properties": [ {
+                        "name": "qry_src_tc_qry"
+                    } ]
+                }, {
+                    "name": "ImanQuery",
+                    "properties": [ {
+                        "name": "object_string"
+                    } ]
+                } ]
+            },
+            "outputData": {
+                "output": "{{function:processResponseToPopulateReportState}}"
+            },
+            "deps": "js/AwActiveReportViewerService"
+        },
+        "updateReportsStateFromTemplate": {
+            "actionType": "JSFunction",
+            "method": "processTemplateToPopulateReportState",
+            "inputData": {
+                "reportTemplate": "{{props.reportTemplate}}",
+                "reportsState": "{{fields.reportsState}}"
+            },
+            "deps": "js/AwActiveReportViewerService"
+        },
+        "updateReportSourceObjectUidToReportsState": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{fields.reportsState}}",
+                "value": {
+                    "reportSourceObjectUid": "{{props.reportSourceObjectUid}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateReportPropsToReportsState": {
+            "actionType": "JSFunction",
+            "method": "updateReportPropsToReportsState",
+            "inputData": {
+                "reportsState": "{{fields.reportsState}}",
+                "reportsProps": "{{props.reportProps}}"
+            },
+            "deps": "js/AwActiveReportViewerService"
+        },
+        "removeFilterAction": {
+            "actionType": "JSFunction",
+            "method": "removeReportFilter",
+            "inputData": {
+                "filterChips": "{{data.filterChips}}",
+                "chipToRemove": "{{parameters.chip}}",
+                "reportsState": "{{fields.reportsState}}"
+            },
+            "parameters": {
+                "chip": "{{chip}}"
+            },
+            "outputData": {
+                "filterChips": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "filtersDataProvider.reset"
+                } ]
+            },
+            "deps": "js/AwActiveReportViewerService"
+        }
+    },
+    "data": {
+        "reportsState": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "filterChips": []
+    },
+    "functions": {
+        "processResponseToPopulateReportState":{
+            "functionName": "processResponseToPopulateReportState",
+            "parameters": [
+                "{{fields.reportsState}}",
+                "{{subPanelContext.searchState}}"
+            ]
+        }
+    },
+    "conditions": {
+        "shouldShowFilterChips":{
+            "expression": "data.filterChips.length > 0"
+        }
+    }
+}

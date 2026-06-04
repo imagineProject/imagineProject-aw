@@ -1,0 +1,204 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "resetDashboard":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "clearDashboardState"
+            }, {
+                "action": "startLoading"
+            }]
+        },
+        "startLoading": {
+            "actionType": "dataProvider",
+            "method": "tabDataProvider"
+        },
+        "clearDashboardState":{
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{fields.dashboardState}}",
+                "value": {
+                    "tabModels": []
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "initialize":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "checkForManageDashboardCommand"
+            }, {
+                "action": "loadDashboardTabs"
+            }]
+        },
+        "loadDashboardTabs":{
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "attributesToInflate": ["owning_user", "Fnd0Applicable_Assignment"],
+                        "maxToLoad": -1,
+                        "maxToReturn": -1,
+                        "providerName": "Rb0ReportsDataProvider",
+                        "searchCriteria": {
+                            "isFilterMapRequired": "False",
+                            "sourceObject": "",
+                            "relationsPath": "{{function:getRelationsPathForDashboardTabsLoading}}"
+                        },
+                        "searchFilterFieldSortType": "",
+                        "startIndex": "",
+                        "searchFilterMap6": "",
+                        "searchSortCriteria": ""
+                    },
+                    "inflateProperties": true,
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Awp0ReportBuilder"
+                    }
+                },
+                "1": {
+                    "types": [ {
+                        "name": "Rb0ReportsDashboard",
+                        "properties": [
+                            {
+                                "name": "rb0DashboardName"
+                            },
+                            {
+                                "name": "rb0SourceDashboard"
+                            },
+                            {
+                                "name": "rb0DashboardDescription"
+                            },
+                            {
+                                "name": "rb0DashboardLocation"
+                            },
+                            {
+                                "name": "rb0DashboardId"
+                            },
+                            {
+                                "name": "rb0DashboardTemplatesList"
+                            },
+                            {
+                                "name": "owning_user"
+                            },
+                            {
+                                "name": "Fnd0Applicable_Assignment"
+                            }
+                        ]
+                    } ]
+                }
+            },
+            "outputData":{
+                "dashboardState.tabModels": "{{function:getReportDashboardTabList}}",
+                "ctx.dashboardObjects": "{{json:searchResultsJSON}}"
+            }
+        },
+        "checkForManageDashboardCommand": {
+            "actionType": "JSFunction",
+            "method": "checkForManageDashboardCommand",
+            "inputData": {
+            },
+            "deps": "js/reportsCommonService"
+        },
+        "switchTabAndupdateSelectedTab": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "switchTab"
+            }, {
+                "action": "updateSelectedTab"
+            }]
+        },
+        "checkSelectionData":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "switchTab",
+                "condition": "props.subPanelContext.selectionData.value.selected.length === 0"
+            }]
+        },
+        "switchTab": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.selectionData}}",
+                "value": {
+                    "source": "primary",
+                    "selected": [
+                        "{{data.selectedTab.tabObject}}"
+                    ],
+                    "pselected": "{{data.selectedTab.tabObject}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateSelectedTab": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.searchState}}",
+                "value": {
+                    "dashboardTabObject": "{{data.selectedTab.tabObject}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "data": {
+        "dashboardState":{
+            "initialValues": {
+                "tabModels": []
+            },
+            "meta": {}
+        }
+    },
+    "dataProviders": {
+        "tabDataProvider": {
+            "action": "loadDashboardTabs",
+            "response": "{{ctx.dashboardObjects.objects}}",
+            "totalFound": "{{ctx.dashboardObjects.objects.length}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount" : "initialize",
+        "onUpdate": [ {
+            "action": "switchTabAndupdateSelectedTab",
+            "observers": [ "viewModel.data.selectedTab.tabObject" ]
+        }, {
+            "action": "checkSelectionData",
+            "observers": [ "props.subPanelContext.selectionData.selected" ]
+        } ]
+    },
+    "functions": {
+        "getReportDashboardTabList": {
+            "functionName": "getReportDashboardTabList",
+            "parameters": [
+                "{{props.subPanelContext.searchState}}",
+                "{{data.selectedTab.index}}"
+            ],
+            "deps": "js/showMyDashboardService"
+        },
+        "getNewReportId":{
+            "functionName": "getNewReportId",
+            "parameters": ["{{data.dashboardId}}"]
+        },
+        "getRelationsPathForDashboardTabsLoading":{
+            "functionName": "getRelationsPathForDashboardTabsLoading",
+            "parameters": ["{{props.subPanelContext.provider.breadcrumbConfig.dashboardLocation}}"],
+            "deps": "js/showMyDashboardService"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "reportDashboard.reset",
+            "action": "resetDashboard"
+        }
+    ],
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

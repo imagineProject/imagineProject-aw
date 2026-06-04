@@ -1,0 +1,270 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-command-panel-section.directive"
+    ],
+    "actions":
+    {
+        "registerLocationName":{
+            "actionType": "JSFunction",
+            "method": "updateCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "locationContext",
+                "value": {
+                    "ActiveWorkspace:Location": "mergeChangesPageRoot",
+                    "ActiveWorkspace:Sublocation": "mergeChanges"
+               }
+            }
+        },
+        "registerRedlineMode":{
+            "actionType": "JSFunction",
+            "method": "updateCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "isRedLineMode",
+                "value":"true"
+            }
+        },
+        "setTableSelection": {
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.mergeUsageChangesDataProvider.selectionModel}}",
+                "newSelection": "{{data.treeLoadResult.childNodes[0]}}"
+            },
+            "deps": "js/selectionModelFactory"
+        },
+        "getMergeProperties":{
+            "actionType": "JSFunction",
+            "method": "getMergeProperties",
+            "inputData": {
+                "selectionData": "{{fields.selectionData}}",
+                "subPanelContext":"{{fields.mergeProperties}}",
+                "dataProvider":"{{data.dataProviders.mergeUsageChangesDataProvider.defaultColumnConfig}}"
+            },
+            "events":{
+                "success":[
+                    {
+                        "name" : "callGetMergeCandidatesSoaForUsgBomMerge",
+                        "condition": "props.reference === 'Source' && (fields.selectionData.selected.length > 0 && fields.selectionData.selected[0].supportingPrimaryObject !== null || fields.selectionData.selected[0].supportingSecondaryObject !== null)"
+                    }
+                ]
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "getChangeSummaryData":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadECNObjects"
+                },
+                {
+                    "action": "getChangeSummaryDataSOA"
+                }
+            ]
+        },
+        "loadECNObjects":{
+            "actionType": "JSFunctionAsync",
+            "method": "loadObjects",
+            "inputData": {
+                "data": [
+                    "{{subPanelContext.ecn}}"
+                ]
+            },
+            "deps": "soa/dataManagementService"
+        },
+        "getChangeSummaryDataSOA": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-CmAws-2021-06-Changes",
+            "method": "getChangeSummaryData2",
+            "inputData": {
+                "changeSummaryInput":"{{function:getChangeSummaryInputData}}"
+            },
+            "outputData": {
+                "treeLoadResult":"{{function:processGetChangeSummaryDataResponse}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "cm1ChangeSummaryCallForExpand"
+                    }
+                ]
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "expandTreeNodeAction":{
+            "actionType": "JSFunction",
+            "method": "saveRowExpanded",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "gridId": "mergeUsageChanges",
+                "selectedObject": "{{data.treeLoadResult.childNodes[0]}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "cm1MergeUsageBomDefaultSelection"
+                    }
+                ]
+            },
+            "deps": "js/awTableStateService"
+        },
+        "reloadMergeUsageTable":{
+            "actionType":"dataProvider",
+            "method":"mergeUsageChangesDataProvider"
+        }
+    },
+    "data": {
+        "pageSize": 40,
+        "isGenealogy":{
+            "type": "BOOLEAN",
+            "dbValue": false
+        },
+        "rootObject":{
+            "initialValues": {},
+            "meta": {}
+        },
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "mergeProperties": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "reusable": true,
+        "ecnObjectString": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "mergeUsageTitleTooltip": {
+            "view": "Cm1MergeUsageTitleTooltip"
+        },
+        "mergeUsageTitleTooltipText": {
+            "displayValue": "{{conditions.isSourceLocation? i18n.sourceSubLocationTitle : i18n.targetSubLocationTitle}} {{fields.ecnObjectString.displayName}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "dbValue": "",
+            "isEnabled": "true"
+        }
+    },
+    "dataProviders": {
+        "mergeUsageChangesDataProvider": {
+            "initializeAction": "getChangeSummaryData",
+            "nextAction": "getChangeSummaryData",
+            "previousAction": "getChangeSummaryData",
+            "treeLoadResult": "{{data.treeLoadResult}}",
+            "selectionModelMode": "single",
+            "inputData": {
+                "selectionData": "{{fields.selectionData}}",
+                "accessMode": "tree"
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+    "columnProviders": {
+        "mergeUsageChangesColumnProvider": {}
+    },
+    "grids": {
+        "mergeUsageChanges": {
+            "dataProvider": "mergeUsageChangesDataProvider",
+            "columnProvider": "mergeUsageChangesColumnProvider",
+            "addIconColumn": false,
+            "enableArrangeMenu": false,
+            "gridOptions": {
+                "enablePinning": false,
+                "enableSorting": false
+            }
+        }
+    },
+    "conditions": {
+        "isTableRowSelected":{
+            "expression":"data.selectionData.selected.length > 0 && (selectionData.selected[0].supportingPrimaryObject !== null || selectionData.selected[0].supportingSecondaryObject !== null)"
+        },
+        "isSourceLocation": {
+            "expression": "props.reference === 'Source'"
+        }
+    },
+    "i18n": {
+        "propertiesOnMergeUi": [ "ChangeMessages" ],
+        "sourceSubLocationTitle": [ "ChangeMessages" ],
+        "targetSubLocationTitle": [ "ChangeMessages" ]
+    },
+    "props":{
+        "sub-panel-context":{
+            "type":"object"
+        },
+        "reference": {
+            "type": "string"
+        },
+        "reusable":{
+            "type": "boolean"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "getMergeProperties",
+                "observers": [ "viewModel.atomicData.selectionData.selected" ]
+            }
+        ]
+    },
+    "onEvent": [
+        {
+            "eventId": "cm1MergeUsageBomDefaultSelection",
+            "action": "setTableSelection"
+        },
+        {
+            "eventId": "cm1MergeUsageBomDefaultSelection",
+            "action": "registerLocationName"
+        },
+        {
+            "eventId": "cm1MergeUsageBomDefaultSelection",
+            "action": "registerRedlineMode"
+        },
+        {
+            "eventId":"cm1ChangeSummaryCallForExpand",
+            "action": "expandTreeNodeAction"
+        },
+        {
+            "eventId":"cm1MergeUsgReloadTable",
+            "action": "reloadMergeUsageTable"
+        }
+    ],
+    "functions": {
+        "getChangeSummaryInputData": {
+            "functionName": "getChangeSummaryInputData",
+            "parameters": [
+              "{{ctx}}",
+              "{{data.treeLoadInput}}",
+              "{{data.dataProviders.mergeUsageChangesDataProvider}}",
+              "{{data.isGenealogy.dbValue}}",
+              "{{props.subPanelContext}}"
+            ]
+        },
+        "processGetChangeSummaryDataResponse":{
+            "functionName": "processGetChangeSummaryDataResponse",
+            "parameters": [
+            "{{data.treeLoadInput}}",
+            "{{data.dataProviders.mergeUsageChangesDataProvider}}",
+            "{{props.subPanelContext}}",
+            "{{fields.rootObject}}",
+            "{{fields.ecnObjectString}}"
+            ]
+        }
+    }
+}

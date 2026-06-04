@@ -1,0 +1,245 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "saw1ChangeOwner": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "changeOwnership",
+            "inputData": {
+                "input": "{{function:getChangeOwnerInput}}"
+            },
+            "outputData": {
+                "changeOwnershipPartialErrors": "partialErrors"
+            },
+            "events": {
+                "success": [ {
+                    "name": "callchangeOwnerAddUpdateScheduleMember"
+                } ],
+                "failure": [
+                    {
+                        "name": "closePopup"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "condition": "(ctx.mselected && ctx.mselected.length === 1)",
+                    "message": "singleObjectChangeOwnershipSuccess"
+                }, {
+                    "condition": "(ctx.mselected && ctx.mselected.length > 1)",
+                    "message": "multipleObjectsChangeOwnershipSuccess"
+                } ],
+                "failure": [ {
+                        "condition": "(ctx.mselected && ctx.mselected.length === 1 && data.changeOwnershipPartialErrors )",
+                        "message": "changeOwnershipForObjectFailure"
+                    },
+                    {
+                        "condition": "(ctx.mselected && ctx.mselected.length > 1 && data.changeOwnershipPartialErrors )",
+                        "message": "partialObjectsChangeOwnershipFailure"
+                    }
+                ]
+            },
+            "deps": "js/Saw1AssignResourceService"
+        },
+        "callAddMembershipSOA": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2008-06-ScheduleManagement",
+            "method": "addMemberships",
+            "inputData": {
+                "membershipData": "{{data.eventData}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{ctx.selected}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "closePopup"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "AddMemberComplete"
+                } ],
+                "failure": [ {
+                    "message": "soaErrorMessage"
+                } ]
+
+            },
+            "deps": "js/Saw1AssignResourceService"
+        },
+        "callSetPropertiesSOA": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-09-DataManagement",
+            "method": "setProperties",
+            "inputData": {
+                "info": "{{data.eventData}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{ctx.selected}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "closePopup"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "soaErrorMessage"
+                } ]
+            },
+            "deps": "js/Saw1AssignResourceService"
+        },
+        "changeOwnerAddUpdateScheduleMember": {
+            "actionType": "JSFunction",
+            "method": "changeOwnerAddUpdateScheduleMember",
+            "inputData": {
+                "selectedResources": "{{addUserPanelState.selectedUsers}}",
+                "ctx": "{{ctx}}"
+            },
+            "deps": "js/Saw1AssignResourceService"
+        },
+        "closePopupWindow": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "data": {
+        "addUserPanelState": {
+            "initialValues": {
+                "provider": "Awp0PeoplePickerProvider",
+                "selectionModelMode": "single",
+                "criteria": {
+                    "providerContentType": "GroupMember",
+                    "searchString": "*",
+                    "selectedObject": "",
+                    "searchSubGroup": "true"
+                },
+                "preferenceCriteria": [
+                    "WRKFLW_user_panel_content_display",
+                    "WRKFLW_allow_resourcepool_assignments",
+                    "WRKFLW_show_user_assignment_options"
+                ],
+                "selectedUsers": "",
+                "isAddButtonNeeded": false
+            },
+            "meta": {
+                "selectedUsers": {
+                    "field": "true",
+                    "type": "OBJECTARRAY"
+                }
+            }
+        }
+    },
+
+    "messages": {
+        "singleObjectChangeOwnershipSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.singleObjectChangeOwnershipSuccess}}",
+            "messageTextParams": [ "{{ctx.mselected[0].props.object_string.uiValues[0]}}" ]
+        },
+        "multipleObjectsChangeOwnershipSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.multipleObjectsChangeOwnershipSuccess}}",
+            "messageTextParams": [
+                "{{ctx.mselected.length}}",
+                "{{ctx.mselected.length}}"
+            ]
+        },
+        "partialObjectsChangeOwnershipFailure": {
+            "expression": {
+                "successCount": "ctx.mselected.length - data.changeOwnershipPartialErrors.length"
+            },
+            "messageType": "ERROR",
+            "messageKey": "changeOwnerNotyError",
+            "messageTextParams": [
+                "{{expression.successCount}}",
+                "{{ctx.mselected.length}}"
+            ],
+            "messageData": {
+                "partialErrors": "{{data.changeOwnershipPartialErrors}}"
+            },
+            "message": {
+                "messageParam": {
+                    "name": "multipleObjectsChangeOwnershipSuccess"
+                },
+                "partialError": {
+                    "name": "changeOwnershipForObjectFailure"
+                }
+            }
+        },
+        "changeOwnershipForObjectFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.changeOwnershipForObjectFailure}}",
+            "messageTextParams": [ "{{ctx.mselected[0].props.object_string.uiValues[0]}}" ]
+        },
+        "AddMemberComplete": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.addMemberSuccessful}}",
+            "messageTextParams": [
+                "{{addUserPanelState.selectedUsers[0].props.user.uiValues[0]}}"
+            ]
+        },
+        "soaErrorMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "conditions": {
+        "isValidToAdd": {
+            "expression": "addUserPanelState.selectedUsers && addUserPanelState.selectedUsers.length > 0"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "callAddMembership",
+            "cacheEventData": true,
+            "action": "callAddMembershipSOA"
+        },
+        {
+            "eventId": "callchangeOwnerAddUpdateScheduleMember",
+            "action": "changeOwnerAddUpdateScheduleMember"
+        },
+        {
+            "eventId": "callSetProperties",
+            "cacheEventData": true,
+            "action": "callSetPropertiesSOA"
+        },
+        {
+            "eventId": "closePopup",
+            "action": "closePopupWindow"
+        }
+    ],
+    "functions": {
+        "getChangeOwnerInput": {
+            "functionName": "getChangeOwnerInput",
+            "parameters": [
+                "{{ctx.mselected}}",
+                "{{addUserPanelState.selectedUsers}}"
+            ]
+        }
+    },
+    "i18n": {
+        "change": [ "Awp0ChangeOwnerMessages" ],
+        "Saw1ChangeOwner": [ "ScheduleManagerMessages" ],
+        "addMemberSuccessful": [ "ScheduleManagerMessages" ],
+        "singleObjectChangeOwnershipSuccess": [ "Awp0ChangeOwnerMessages" ],
+        "multipleObjectsChangeOwnershipSuccess": [ "Awp0ChangeOwnerMessages" ],
+        "changeOwnershipForObjectFailure": [ "Awp0ChangeOwnerMessages" ]
+    }
+}

@@ -1,0 +1,97 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-guidance-message.directive"
+    ],
+    "data": {
+        "isTreeContentStale": false
+    },
+    "actions": {
+        "performPostProcessingOnLoad":{
+            "actionType": "JSFunction",
+            "method": "performPostProcessingForStaleTreeGuidanceBanner",
+            "inputData": {
+                "occContext": "{{props.subPanelContext.occContext}}"
+            },
+            "outputData": {
+                "isTreeContentStale": "isTreeContentStale"
+            },
+            "deps": "js/occmgmtSubsetUtils"
+        },
+        "performReplayOfWorksetFromHeader": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "headerPublishEventForWorksetAutoSave"
+                },
+                {
+                    "action": "headerUpdateReplayCSID"
+                }
+            ]
+        },
+        "headerPublishEventForWorksetAutoSave": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "workset.overridePartialErrorProcessing"
+                    }
+                ]
+            }
+        },
+        "headerUpdateReplayCSID": {
+            "actionType": "JSFunction",
+            "method": "updateReplayCSID",
+            "inputData": {
+                "occContext": "{{props.subPanelContext.occContext}}"
+            },
+            "deps": "js/occmgmtSubsetUtils"
+        }
+    },
+    "i18n": {
+        "defaultStaleTreeWarningMessage": [
+            "OccurrenceManagementSubsetConstants"
+        ],
+        "defaultStaleStructureWarningMessage": [
+            "OccurrenceManagementSubsetConstants"
+        ],
+        "replayTitle": [
+            "OccurrenceManagementSubsetConstants"
+        ]
+    },
+    "messages": {
+        "defaultStaleTreeWarningMessage": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.defaultStaleTreeWarningMessage}}"
+        },
+        "defaultStaleStructureWarningMessage":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.defaultStaleStructureWarningMessage}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [ {
+            "action": "performPostProcessingOnLoad",
+            "observers": [ "props.subPanelContext.occContext.onPwaLoadComplete" ]
+        } ]
+    },
+    "onEvent": [
+        {
+            "eventId": "ace.elementsMoved",
+            "action": "performPostProcessingOnLoad"
+        },
+        {
+            "eventId": "ace.elementsRemoved",
+            "action": "performPostProcessingOnLoad"
+        }
+    ],
+    "conditions":{
+        "isSelectedStructureStale" :{
+            "expression": "data.isTreeContentStale && props.subPanelContext.occContext.supportedFeatures && props.subPanelContext.occContext.supportedFeatures.Awb0StaleTreeContent && props.subPanelContext.occContext.pwaSelection && (props.subPanelContext.occContext.pwaSelection.length === 1 || ctx.filter.validSelectionsInSingleSubsetInWorkset)"
+        },
+        "isAnyStructureStale": {
+            "expression": "data.isTreeContentStale && props.subPanelContext.occContext.supportedFeatures && (!props.subPanelContext.occContext.supportedFeatures.Awb0StaleTreeContent || (props.subPanelContext.occContext.pwaSelection && props.subPanelContext.occContext.pwaSelection.length > 1 && !ctx.filter.validSelectionsInSingleSubsetInWorkset))"
+        }
+    }
+}

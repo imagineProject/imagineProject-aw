@@ -1,0 +1,261 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {
+        "render": "render",
+        "onUpdate": [ {
+            "action": "updateInitRepDispTrue",
+            "observers": ["props.subPanelContext.reportsState.searchTraslatedCriteria"]
+        }, {
+            "action": "reloadTableAction",
+            "observers": ["props.subPanelContext.reportsState.initRepDisp"]
+        }]
+    },
+    "props": {
+        "sub-panel-context":{
+            "type": "object"
+        }
+    },
+    "actions": {
+        "render": {
+            "method": "awReportTableServiceRenderFunction",
+            "deps": "js/AwReportTableService"
+        },
+        "loadColumns": {
+            "actionType": "JSFunction",
+            "method": "loadColumns",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.rb0ActiveReportDataProvider}}",
+                "reportTable": "{{subPanelContext.reportsState.reportParameters.ReportDefProps.ReportTable1}}"
+            },
+            "outputData": {
+                "dataProviders.rb0ActiveReportDataProvider.columnConfig.columns": ""
+            },
+            "deps": "js/AwReportTableService"
+        },
+        "loadData": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "getReportData",
+                "condition": "subPanelContext.reportsState.value.initRepDisp"
+            } ]
+        },
+        "getReportData": {
+            "actionType": "JSFunctionAsync",
+            "method": "getReportData",
+            "deps": "js/AwReportTableService",
+            "inputData": {
+                "reportsState": "{{subPanelContext.reportsState}}",
+                "data": {
+                    "columnProviders": "{{data.columnProviders}}",
+                    "dataProviders": "{{data.dataProviders}}",
+                    "displayColumns": "{{data.displayColumns}}",
+                    "grids": "{{data.grids}}",
+                    "i18n": "{{data.i18n}}"
+                }
+            },
+            "outputData":{
+                "totalFound": "totalFound",
+                "searchResults": "searchResults",
+                "dataProviders.rb0ActiveReportDataProvider.columnConfig": "columnConfig",
+                "partialErrors": "partialErrors"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "getReportDataFailure",
+                        "condition": "partialErrors[0].errorValues[0].code !== 515024"
+                    },
+                    {
+                        "message": "showMissingSourceObjectMessage",
+                        "condition": "partialErrors[0].errorValues[0].code === 515024"
+                    }
+                ]
+            }
+        },
+        "reloadTableAction":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "resetGridDataProvider",
+                "condition": "subPanelContext.reportsState.value.initRepDisp"
+            } ]
+        },
+        "resetGridDataProvider": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "rb0ActiveReportTable.plTable.reload"
+                } ]
+            }
+        },
+        "saveColumnAndDoArrange": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "saveDisplayColumns",
+                "condition": "conditions.isEditModeOn"
+            },{
+                "action": "doArrangeEvent",
+                "condition": "!conditions.isEditModeOn"
+            }, {
+                "action": "updateInitRepDispTrue"
+            } ]
+        },
+        "saveDisplayColumns": {
+            "actionType": "JSFunction",
+            "method": "saveDisplayColumns",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "reportsState": "{{subPanelContext.reportsState}}"
+            },
+            "outputData":{
+                "displayColumns": ""
+            },
+            "deps": "js/AwReportTableService"
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "updateInitRepDispTrue": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{subPanelContext.reportsState}}",
+                "value": {
+                    "initRepDisp": true
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "filterAppliedUpdateInitRepDisp": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "updateInitRepDispTrue",
+                "condition": "data.eventData.gridId==='rb0ActiveReportTable'"
+            }]
+        },
+        "saveColumnConfig": {
+            "actionType": "JSFunction",
+            "method": "saveColumnConfig",
+            "inputData": {
+                "eventData": "{{data.eventData}}"
+            },
+            "outputData":{
+                "dataProviders.rb0ActiveReportDataProvider.columnConfig.columns": ""
+            },
+            "deps": "js/AwReportTableService"
+        },
+        "startEditForNewVmos": {
+            "actionType": "JSFunction",
+            "method": "startEditForNewVmos",
+            "inputData": {
+                "editContext": "{{data.dataProviders.rb0ActiveReportDataProvider.json.editContext}}"
+            },
+            "deps": "js/editEventsService"
+        }
+    },
+    "selectionModels": {
+        "gridSelectionModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "dataProviders": {
+        "rb0ActiveReportDataProvider": {
+            "action": "loadData",
+            "initializeAction": "loadData",
+            "nextAction": "getReportData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands",
+            "selectionModelMode": "multiple",
+            "enablePropEdit": "FALSE",
+           "editContext": "REPORT_TABLE_CONTEXT",
+            "inputData": {
+                "selectionData": "{{subPanelContext.selectionData}}",
+                "selectionModel": "{{selectionModels.gridSelectionModel}}"
+            }
+        }
+    },
+    "columnProviders": {
+        "staticColumnProvider": {
+            "saveColumnAndLoadAction": "loadData",
+            "resetColumnAction": "resetColumnConfig",
+            "saveColumnAction": "saveColumnConfig",
+            "columns": "{{data.dataProviders.rb0ActiveReportDataProvider.columnConfig.columns}}",
+            "sortCriteria": []
+        }
+    },
+    "grids": {
+        "rb0ActiveReportTable": {
+            "dataProvider": "rb0ActiveReportDataProvider",
+            "columnProvider": "staticColumnProvider",
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "enableGridMenu": true,
+                "isFilteringEnabled": "{{props.subPanelContext.reportsState.isFilterEnabled}}",
+                "enableExpandAndPaginationInEdit": true
+            }
+        }
+    },
+    "data": {
+        "showCheckBox": {
+            "initialValues": {
+                "value": false
+            },
+            "meta": {}
+        }
+    },
+    "functions": {
+        "getTypeNames": {
+            "functionName": "getTypeNames",
+            "parameters": [
+                "{{subPanelContext.searchState.searchFilterMap}}"
+            ]
+        }
+    },
+    "onEvent": [ {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "saveColumnAndDoArrange"
+        }, {
+            "eventId": "pltable.columnFilterApplied",
+            "cacheEventData": true,
+            "action": "filterAppliedUpdateInitRepDisp"
+        },
+        {
+            "eventId": "rb0ActiveReportDataProvider.startEditForNewVmosRequested",
+            "action": "startEditForNewVmos"
+        }
+    ],
+    "i18n": {
+        "objectStrColumnName": [
+            "ReportChartMessages"
+        ],
+        "parentSource":["ReportChartMessages"],
+        "structure": ["ReportChartMessages"],
+        "showSampleObjectMissingMessageTxt": ["ReportChartMessages"]
+    },
+    "conditions": {
+        "isEditModeOn":{
+            "expression": "ctx.sublocation.historyNameToken==='createReportTemplate' && ctx.state.params.previewMode==='false'"
+        }
+    },
+    "messages": {
+        "getReportDataFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{data.partialErrors[0].errorValues[0].message}}"
+        },
+        "showMissingSourceObjectMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.showSampleObjectMissingMessageTxt}}",
+            "messageTextParams": [
+                "{{props.subPanelContext.reportsState.selectedReport.props.rd_name.uiValues[0]}}"
+            ]
+        }
+    }
+}

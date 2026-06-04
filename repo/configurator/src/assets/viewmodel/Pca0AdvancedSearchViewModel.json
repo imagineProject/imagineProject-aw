@@ -1,0 +1,236 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "awp0AdvancedVMObject": {},
+        "resultSectionID": 1,
+        "subPanelContextInfo": {
+            "contextKey": "fscContext",
+            "isRevRuleActionDefaultBehavior": {
+                "type": "BOOLEAN",
+                "dbValue": false
+            },
+            "isConfigurationReadOnly": {
+                "dbValue": false,
+                "type": "BOOLEAN"
+            }
+        },
+        "considerRevRuleForSearch": {
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": true,
+            "displayName": "{{i18n.applyRevisionRule}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+    "props": {
+        "advSearchVMO": {
+            "type": "object"
+        },
+        "advQueryAttributes": {
+            "type": "object"
+        },
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "show-result": {
+            "type": "object"
+        },
+        "active-search": {
+            "type": "object"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initialize",
+        "onUnmount": "saveSearchCriteriaAttributes",
+        "onUpdate": {
+            "action": "initialize",
+            "observers": [ "props.subPanelContext.advancedSearchState.value.savedQuery.dbValue" ]
+        }
+    },
+    "actions": {
+        "initialize": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "createAdvancedSearchViewModelObject"
+                },
+                {
+                    "action": "createInput"
+                }
+            ]
+        },
+        "createAdvancedSearchViewModelObject": {
+            "actionType": "JSFunction",
+            "method": "createAdvancedSearchViewModelObject",
+            "inputData": {
+                "advancedSearchState": "{{props.subPanelContext.advancedSearchState}}"
+            },
+            "outputData": {
+                "awp0AdvancedVMObject": ""
+            },
+            "deps": "js/pca0AdvancedSearchService"
+        },
+        "updateInput": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "resetInputView",
+                    "condition": "conditions.areResultsEnabled"
+                },
+                {
+                    "action": "getAttributeModelObject",
+                    "condition": "data.awp0AdvancedVMObject.props.awp0AdvancedQueryName.dbValue"
+                }
+            ]
+        },
+        "createInput": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2016-12-AdvancedSearch",
+            "method": "getSelectedQueryCriteria",
+            "inputData": {
+                "selectedQuery": {
+                    "uid": "{{subPanelContext.advancedSearchState.query.value}}",
+                    "type": "ImanQuery"
+                }
+            },
+            "outputData": {
+                "advancedQueryAttributeModelObject": "{{function:updateSearchAttributesWithSelectedQuery}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "pca0AdvancedSearch.updateAttributes"
+                } ]
+            },
+            "deps": "js/advancedSearchService"
+        },
+        "getAttributeModelObject": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2016-12-AdvancedSearch",
+            "method": "getSelectedQueryCriteria",
+            "inputData": {
+                "selectedQuery": {
+                    "uid": "{{data.awp0AdvancedVMObject.props.awp0AdvancedQueryName.dbValue}}",
+                    "type": "ImanQuery"
+                }
+            },
+            "outputData": {
+                "advancedQueryAttributeModelObject": "{{function:updateSearchAttributesWithSelectedQuery}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "pca0AdvancedSearch.updateAttributes"
+                } ]
+            },
+            "deps": "js/advancedSearchService"
+        },
+        "updateAttributes": {
+            "actionType": "JSFunction",
+            "method": "updateOrClearSearchAttributes",
+            "inputData": {
+                "searchUid": "{{data.awp0AdvancedVMObject.props.awp0AdvancedQueryName.dbValue}}",
+                "modelObject": "{{data.advancedQueryAttributeModelObject}}",
+                "searchState": "{{subPanelContext.advancedSearchState}}"
+            },
+            "outputData": {
+                "awp0AdvancedQueryAttributes": ""
+            },
+            "deps": "js/pca0AdvancedSearchService"
+        },
+        "saveSearchCriteriaAttributes": {
+            "actionType": "JSFunction",
+            "method": "saveSearchCriteriaAttributes",
+            "inputData": {
+                "awp0AdvancedVMObject": "{{data.awp0AdvancedVMObject.props.awp0AdvancedQueryName}}",
+                "awp0AdvancedQueryAttributes": "{{data.awp0AdvancedQueryAttributes}}",
+                "advancedSearchState": "{{data.subPanelContext.advancedSearchState}}",
+                "considerRevRuleForSearch": "{{data.considerRevRuleForSearch}}"
+            },
+            "deps": "js/pca0AdvancedSearchService"
+        },
+        "doAdvancedSearch": {
+            "actionType": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0LoadSVRSearchCriteriaPanel.launchResultsPanel"
+                }]
+            }
+        },
+        "clearAll": {
+            "actionType": "JSFunction",
+            "method": "clearAllAction",
+            "inputData": {
+                "attributes": "{{data.awp0AdvancedQueryAttributes}}"
+            },
+            "outputData": {
+                "awp0AdvancedQueryAttributes": ""
+            },
+            "deps": "js/advancedSearchUtils"
+        },
+        "resetInputView": {
+            "actionType": "JSFunction",
+            "method": "resetInputView",
+            "inputData": {
+                "advancedSearchState": "{{props.subPanelContext.advancedSearchState}}",
+                "resultSectionID": "{{data.resultSectionID}}",
+                "selectionModel": "{{props.subPanelContext.selectionModel}}",
+                "attributes": "{{data.awp0AdvancedQueryAttributes}}"
+            },
+            "outputData": {
+                "_isInputSectionCollapsed": "isInputSectionCollapsed",
+                "resultSectionID": "resultSectionID",
+                "resultsText": "resultsText",
+                "awp0AdvancedQueryAttributes" : "awp0AdvancedQueryAttributes"
+            },
+            "deps": "js/advancedSearchService"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "condition.expressionValueChanged",
+            "action": "updateInput",
+            "criteria": {
+                "condition": "conditions.awp0AdvancedQueryNameChanged"
+            }
+        },
+        {
+            "eventId": "pca0AdvancedSearch.updateAttributes",
+            "action": "updateAttributes"
+        }
+    ],
+    "conditions": {
+        "showAdvancedSearchButton": {
+            "expression": "data.awp0AdvancedVMObject.props.awp0AdvancedQueryName && data.awp0AdvancedVMObject.props.awp0AdvancedQueryName.dbValue"
+        },
+        "showAdvancedSearchAttributes": {
+            "expression": "data.awp0AdvancedVMObject.props.awp0AdvancedQueryName && data.awp0AdvancedVMObject.props.awp0AdvancedQueryName.dbValue && data.awp0AdvancedQueryAttributes"
+        },
+        "showClearAll": {
+            "expression": "data.awp0AdvancedQueryAttributes"
+        },
+        "awp0AdvancedQueryNameChanged": {
+            "expression": "data.awp0AdvancedVMObject.props.awp0AdvancedQueryName.dbValue",
+            "trackValues": true
+        },
+        "areResultsEnabled": {
+            "expression": "props.showResult"
+        }
+    },
+    "functions": {
+        "updateSearchAttributesWithSelectedQuery": {
+            "functionName": "updateSearchAttributesWithSelectedQuery",
+            "parameters": [
+                "{{response}}"
+            ]
+        }
+    },
+    "i18n": {
+        "advancedSearch": [ "SearchMessages" ],
+        "advancedText": [ "SearchMessages" ],
+        "searchBtn": [ "SearchMessages" ],
+        "searchString": [ "SearchMessages" ],
+        "advancedSearchClearAll": [ "SearchMessages" ],
+        "resultsText": [ "SearchMessages" ],
+        "inputText": [ "SearchMessages" ],
+        "keywordSearch": [ "SearchMessages" ],
+        "searchFolderResults": [ "SearchMessages" ],
+        "applyRevisionRule": [ "FullScreenConfigurationMessages" ]
+    }
+}

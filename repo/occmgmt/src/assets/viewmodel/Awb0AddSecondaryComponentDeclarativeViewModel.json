@@ -1,0 +1,150 @@
+{
+    "schemaVersion" : "1.0.0",
+    "lifecycleHooks": {
+        "onMount": "updateReqPrefAndSetState",
+        "onUnmount": "updateRequestPrefWhileUnMounting",
+        "onUpdate":{
+            "action": "closePanelOnSelectionChange",
+            "observers": [ "props.subPanelContext.occContext.pwaSelection" ]
+        }
+    },
+    "data":
+    {
+        "addElementState":{
+            "initialValues":{
+                "AddOccurrencePropertiesOnCreate" : false,
+                "parentElements" : [],
+                "parentToLoadAllowedTypes" : null,
+                "siblingElements" : [],
+                "elementCreateInput" : null,
+                "fetchPagedOccurrences" : null,
+                "isCopyButtonEnabled" : false,
+                "previousSelectionUid" : "",
+                "Awb0ElementCreateSubView" : false,
+                "numberOfElements" : 1,
+                "occurrenceTypeName": "PSOccurrence",
+                "additionalComponentName": "AceSecondaryComponentTypeLOV",
+                "isSecondaryComponentAddPanel": true,
+                "fetchOccurrenceTypesFor": "secondaryComponent"
+            },
+            "meta": {
+
+            }
+        }
+    },
+    "actions":
+    {
+        "updateReqPrefAndSetState": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "addPropPolicy"
+                },
+                {
+                    "action": "updateRequestPrefWhileMounting"
+                },
+                {
+                    "action": "setStateAddElementInputParentElementToSelectedElement"
+                }
+            ]
+        },
+        "updateRequestPrefWhileMounting": {
+            "actionType": "JSFunction",
+             "method": "updateValueOnCtxOrState",
+             "deps": "js/occmgmtUtils",
+             "inputData": {
+                 "path": "",
+                 "value": {
+                     "persistentRequestPref": {
+                         "structExpanded": "false"
+                     }
+                 },
+                 "target": "{{props.subPanelContext.occContext}}",
+                 "mergeValueWithExistingValue": true
+             }
+         },
+         "updateRequestPrefWhileUnMounting": {
+            "actionType": "JSFunction",
+             "method": "updateValueOnCtxOrState",
+             "deps": "js/occmgmtUtils",
+             "inputData": {
+                 "path": "",
+                 "value": {
+                     "persistentRequestPref": {
+                         "structExpanded": "undefined"
+                     }
+                 },
+                 "target": "{{props.subPanelContext.occContext}}",
+                 "mergeValueWithExistingValue": true
+             }
+         },
+        "setStateAddElementInputParentElementToSelectedElement": {
+            "actionType": "JSFunction",
+            "method": "setStateAddElementInputParentElementToSelectedElement",
+            "inputData":
+            {
+                "selectedObjects":"{{subPanelContext.occContext.pwaSelection}}",
+                "addElementState": "{{data.addElementState}}",
+                "parentToLoadAllowedTypes" :"{{subPanelContext.occContext.pwaSelection[0].uid}}"
+
+            },
+            "outputData": {
+                "addElementState" : ""
+            },
+
+            "deps": "js/aceAddElementService"
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "closeDialogPanel",
+                    "condition": "conditions.isPwaSelectionChanged"
+                }
+            ]
+        },
+        "closeDialogPanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "CREATE_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "addPropPolicy": {
+            "actionType": "JSFunction",
+            "method": "addPropertyPolicyForSCIcon",
+            "inputData": {
+                "occContext": "{{props.subPanelContext.occContext}}",
+                "isAddSC":true
+            },
+            "deps": "js/aceSecondaryComponentService"
+        }
+    },
+    "conditions" :{
+        "isParentValid" : {
+            "expression" : "addElementState.parentElements.length>0"
+        },
+        "isPwaSelectionChanged": {
+            "expression": "(subPanelContext.occContext.pwaSelection !== undefined && addElementState.previousSelectionUid !== '' && addElementState.previousSelectionUid !== subPanelContext.occContext.pwaSelection[0].uid) || subPanelContext.occContext.pwaSelection.length > 1"
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "ace.activateWindow",
+            "action": "closeDialogPanel",
+            "condition": "!subPanelContext.panelPinned"
+        },
+        {
+            "eventId": "addElement.closePanel",
+            "action": "closeDialogPanel",
+            "condition": "!subPanelContext.panelPinned"
+        }
+    ],
+    "i18n":
+    {
+       "addSecondaryComponentTitle": ["OccurrenceManagementConstants"]
+    }
+}

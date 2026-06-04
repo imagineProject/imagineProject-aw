@@ -1,0 +1,246 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-header-contribution.directive",
+        "js/aw-property-label.directive",
+        "js/aw-property-non-edit-val.directive",
+        "js/aw-include.directive"
+    ],
+    "data": {
+        "headerData": {
+            "revisionRule": {
+                "dbValues": [ "" ],
+                "uiValues": [ "" ]
+            },
+            "ruleEffectivity": {}
+        },
+        "revisionRuleLabel": {
+            "type": "STRING",
+            "hasLov": true,
+            "dbValue": "",
+            "displayName": "{{i18n.Pca0RevisionRule}}"
+        },
+        "subPanelContextInfo": {
+            "contextKey": "ConfiguratorCtx",
+            "effectivityFeature": "{{ctx.preferences.PCA_effectivity_shown_columns[0]}}",
+            "isRevRuleActionDefaultBehavior": {
+                "dbValue": true,
+                "type": "BOOLEAN"
+            },
+            "isConfigurationReadOnly": {
+                "dbValue": false,
+                "type": "BOOLEAN"
+            }
+        },
+        "effectivityLabel": {
+            "type": "STRING",
+            "hasLov": true,
+            "dbValue": "",
+            "displayName": "{{i18n.Pca0Effectivity}}"
+        }
+    },
+    "actions": {
+        "registerConfiguratorCtx": {
+            "actionType": "JSFunction",
+            "method": "registerConfiguratorCtx",
+            "deps": "js/pca0ContextManagementService"
+        },
+        "unregisterConfiguratorCtx": {
+            "actionType": "JSFunction",
+            "method": "unregisterConfiguratorCtx",
+            "deps": "js/pca0ContextManagementService"
+        },
+        "loadConfigurationHeaderData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": [
+                    { "uid": "{{ctx.state.processed.uid}}" }
+                ],
+                "attributes": [
+                    "cfg0ConfigPerspective"
+                ]
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "Cfg0ConfiguratorPerspective",
+                        "properties": [
+                            {
+                                "name": "cfg0ProductItems"
+                            },
+                            {
+                                "name": "cfg0RuleSetEffectivity"
+                            },
+                            {
+                                "name": "cfg0RevisionRule",
+                                "modifiers": [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Cfg0ProductItem",
+                        "properties": [
+                            {
+                                "name": "cfg0PosBiasedVariantAvail"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "headerData": "{{function:initializeHeaderFromSOA}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "pca0VariabilityExplorerHeaderService.setPropertiesOnPerspective"
+                } ]
+            },
+            "deps": "js/pca0VariabilityExplorerHeaderService"
+        },
+        "initializeHeaderInfoForContext": {
+            "actionType": "JSFunction",
+            "method": "initializeHeaderInfoForContext",
+            "deps": "js/pca0VariabilityExplorerHeaderService",
+            "events": {
+                "success": [ {
+                    "name": "Pca0FilterCriteriaSettings.refreshContent"
+                } ]
+            }
+        },
+        "updateEffectivityOnObject": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetTableViewModelProperties",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "input": {
+                        "objectUids": "{{function:getUpdatedObjects}}",
+                        "columnConfigInput": {
+                            "clientName": "AWClient",
+                            "hostingClientName": "",
+                            "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}",
+                            "operationType": "union",
+                            "columnsToExclude": []
+                        },
+                        "requestPreference": {
+                            "typesToInclude": [ "{{ctx.selected.type}}" ]
+                        }
+                    }
+                }
+            }
+        },
+        "setPropertiesOnNewlyCreatedPerspective": {
+            "actionType": "JSFunction",
+            "method": "setPropertiesOnNewlyCreatedPerspective",
+            "deps": "js/pca0ContextManagementService"
+        },
+        "setPropertiesOnMultiVariantsPerspective": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-09-DataManagement",
+            "method": "setProperties",
+            "inputData": {
+                "info": [
+                    {
+                        "object": "{{ctx.ConfiguratorCtx.modulePerspectiveForMultiVariants}}",
+                        "vecNameVal": [
+                            {
+                                "name": "cfg0RuleSetEffectivity",
+                                "values": [
+                                    "{{ctx.ConfiguratorCtx.configPerspective.props.cfg0RuleSetEffectivity.dbValues[0] ? ctx.ConfiguratorCtx.configPerspective.props.cfg0RuleSetEffectivity.dbValues[0] : ''}}"
+                                ]
+                            },
+                            {
+                                "name": "cfg0RevisionRule",
+                                "values": [
+                                    "{{ctx.ConfiguratorCtx.configPerspective.props.cfg0RevisionRule.dbValues[0] ? ctx.ConfiguratorCtx.configPerspective.props.cfg0RevisionRule.dbValues[0] : ''}}"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "multiVariantsConfigPerspective": "{{function:getConfigPerspectiveFromSetProperties}}"
+            },
+            "deps": "js/pca0MultipleSVRsDisplayService"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "pca0VariabilityExplorerHeaderService.getRequiredProperties",
+            "action": "loadConfigurationHeaderData"
+        },
+        {
+            "eventId": "pca0VariabilityExplorerHeaderService.initializeHeader",
+            "action": "initializeHeaderInfoForContext"
+        },
+        {
+            "eventId": "pca0VariabilityExplorerHeader.updateEffectivityOnCfgObject",
+            "action": "updateEffectivityOnObject"
+        },
+        {
+            "eventId": "pca0VariabilityExplorerHeaderService.setPropertiesOnPerspective",
+            "action": "setPropertiesOnNewlyCreatedPerspective"
+        },
+        {
+            "eventId": "Pca0FilterCriteriaSettings.filterCriteriaUpdated",
+            "action": "setPropertiesOnMultiVariantsPerspective"
+        }
+    ],
+    "functions": {
+        "initializeHeaderFromSOA": {
+            "functionName": "initializeHeaderFromSOA"
+        },
+        "getUpdatedObjects": {
+            "functionName": "getUpdatedObjects",
+            "deps": "js/pca0VariabilityExplorerHeaderService"
+        },
+        "getConfigPerspectiveFromSetProperties": {
+            "functionName": "getConfigPerspectiveFromServerResponse",
+            "parameters": [
+                "setProperties"
+            ]
+        }
+    },
+    "conditions": {
+        "isEffectivityInitialized": {
+            "expression": "ctx.ConfiguratorCtx.settingsCache && ctx.ConfiguratorCtx.settingsCache.effectivityInfo"
+        },
+        "isVariantExplorer": {
+            "expression": "ctx.state.params.pageId === 'tc_xrt_Models' || ctx.state.params.pageId === 'tc_xrt_Features'  || ctx.state.params.pageId === 'tc_xrt_Constraints'"
+        },
+        "isVariantRule": {
+            "expression": "ctx.state.params.pageId === 'tc_xrt_Variants'"
+        },
+        "isModulesTab": {
+            "expression": "ctx.state.params.pageId === 'tc_xrt_Modules'"
+        },
+        "disableEffectivity": {
+            "expression": "conditions.isVariantRule"
+        },
+        "isRevisionRuleRequired": {
+            "expression": "( conditions.isVariantExplorer || conditions.isVariantRule || conditions.isModulesTab ) && !conditions.isInCompareRevisionMode"
+        },
+        "isInCompareRevisionMode": {
+            "expression": "ctx.state.params.compareRevisions !== undefined"
+        }
+    },
+    "i18n": {
+        "Pca0RevisionRule": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "Pca0Effectivity": [
+            "ConfiguratorExplorerMessages"
+        ]
+    },
+    "lifecycleHooks": {
+        "onMount": "registerConfiguratorCtx",
+        "onUnmount": "unregisterConfiguratorCtx"
+    }
+}

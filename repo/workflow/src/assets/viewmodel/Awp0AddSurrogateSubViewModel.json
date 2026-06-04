@@ -1,0 +1,266 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-panel-body.directive",
+        "js/aw-widget.directive",
+        "js/aw-list.directive",
+        "js/aw-include.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-i18n.directive",
+        "js/visible-when.directive",
+        "js/aw-command-panel-section.directive"
+    ],
+    "actions": {
+        "getPropsForUser": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData":
+            {
+                "objects":
+                [
+                    "{{props.subPanelContext.userObject}}"
+                ],
+                "attributes": [
+                    "surrogate_list"
+                ]
+            }
+
+        },
+        "initDataProvider": {
+            "actionType": "dataProvider",
+            "method": "getUsers"
+        },
+        "validateAndAddSurrogate": {
+            "actionType": "JSFunction",
+            "method": "validateAndSetSurrogate",
+            "inputData": {
+                "data": "{{data}}",
+                "currentUser": "{{props.subPanelContext.userObject}}"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "i18n.invalidUser"
+                    }
+                ]
+            },
+            "deps": "js/Awp0AddSurrogate"
+        },
+        "setSurrogate": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2014-06-Workflow",
+            "method": "setSurrogate",
+            "inputData":
+            {
+                "requests":
+                [
+                    {
+                        "unset": false,
+                        "fromResource": "{{props.subPanelContext.userObject}}",
+                        "toResource": {
+                            "uid": "{{data.userUids[0]}}",
+                            "type": "User"
+                        },
+                        "startDate": "{{function:getDateString_startDate}}",
+                        "endDate": "{{function:getDateString_endDate}}"
+                    }
+               ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relations": "",
+                            "relatedModified":
+                            [
+                                "{{props.subPanelContext.userObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+            },
+            "deps": "js/Awp0AddSurrogate",
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "serverError"
+                    }
+                ]
+            }
+        },
+        "addUsers": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "addSelectedUsers",
+                    "condition": "conditions.isSelectedUsersPresent"
+                },
+                {
+                    "action": "navigateToSurrogatePanel",
+                    "condition": "conditions.isSelectedUsersPresent"
+                }
+            ]
+        },
+        "addSelectedUsers": {
+            "actionType": "JSFunctionAsync",
+            "method": "addSelectedUsers",
+            "inputData": {
+                "userObject": "{{props.subPanelContext.userObject}}",
+                "selectedUsers": "{{props.subPanelContext.addUserPanelState.selectedUsers}}",
+                "addUserPanelState": "{{props.subPanelContext.addUserPanelState}}"
+            },
+            "outputData": {
+                "users": "users",
+                "userUids": "userUids",
+                "isValidToShowAddButton": "isValidToShowAddButton"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "reloadSurrogateUsersDataProvider"
+                    }
+                ]
+            },
+            "deps": "js/Awp0AddSurrogate"
+        },
+        "navigateToSurrogatePanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.subPanelContext.activeState}}",
+                "destPanelId": "Awp0AddSurrogateSub"
+            }
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+
+    "functions": {
+        "getDateString_startDate": {
+            "functionName": "getDateString",
+            "parameters": [
+                "{{data.startDate.dateApi.dateObject}}"
+            ]
+        },
+        "getDateString_endDate": {
+            "functionName": "getDateString",
+            "parameters": [
+                "{{data.endDate.dateApi.dateObject}}"
+            ]
+        }
+    },
+    "data": {
+        "startDate": {
+            "dbValue": "",
+            "type": "DATETIME",
+            "displayName": "{{i18n.startDate}}",
+            "uiValue": ""
+        },
+        "endDate": {
+            "dbValue": "",
+            "type": "DATETIME",
+            "displayName": "{{i18n.endDate}}",
+            "uiValue": ""
+        },
+        "addSurrogateSectionCommands":"awp0_addSurrogateSectionCommands"
+    },
+    "dataProviders": {
+        "getUsers": {
+            "response": "{{data.users}}",
+            "totalFound": "{{data.users.length}}",
+            "selectionModelMode": "single",
+            "commands": {
+                "Awp0ShowObjectCell": {
+                    "id": "cmdOpen",
+                    "title": "Open",
+                    "areas": [
+                        "com.siemens.splm.clientfx.ui.modelObjectListActionCommands"
+                    ],
+                    "priorities": [
+                        300
+                    ],
+                    "dependencies": [
+                        "js/showObjectCommandHandler"
+                    ],
+                    "displayOption": "ON_HOVER_AND_SELECTION",
+                    "position": "TOP_RIGHT"
+                }
+            }
+        }
+    },
+    "conditions": {
+        "isSetSurrogateVisible": {
+            "expression": "data.userUids && data.userUids[0] !== '' && data.isValidToShowAddButton"
+        },
+        "isSelectedUsersPresent": {
+            "expression": "props.subPanelContext.addUserPanelState.selectedUsers && props.subPanelContext.addUserPanelState.selectedUsers.length > 0"
+        }
+    },
+    "messages": {
+        "invalidUser": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.invalidUser}}"
+        },
+        "endDateBeforeStartDateMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.endDateBeforeStartDateMessage}}"
+        },
+        "serverError": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "getPropsForUser",
+        "onUpdate": [
+            {
+                "action": "addUsers",
+                "observers": [ "props.addUserPanelState.selectedUsers" ]
+            }
+        ]
+    },
+    "onEvent": [
+        {
+            "eventId": "reloadSurrogateUsersDataProvider",
+            "action": "initDataProvider"
+        },
+        {
+            "eventId": "surrogate.set",
+            "action": "setSurrogate"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+    "i18n": {
+        "startDate": [ "InboxMessages" ],
+        "endDate": [ "InboxMessages" ],
+        "surrogate": [ "InboxMessages" ],
+        "addCommandTitle": ["InboxMessages" ],
+        "users": [ "InboxMessages" ],
+        "invalidUser": [ "InboxMessages" ],
+        "endDateBeforeStartDateMessage": [ "InboxMessages" ],
+        "surrogateAdd": [ "InboxMessages" ]
+    }
+}

@@ -1,0 +1,174 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "resizeColumnWidthLabel": {
+            "displayName": "{{i18n.resizeColumnWidthLabel}}"
+        },
+        "columnWidthUpdated": false,
+        "resizeTopSectionHeightLabel": {
+            "displayName": "{{i18n.resizeTopSectionHeightLabel}}"
+        },
+        "columnWidth": {
+            "isArray": "true",
+            "dbValue": [ {
+                "sliderOption": {
+                    "disabled": false,
+                    "min": 50,
+                    "max": 300,
+                    "step": 1,
+                    "orientation": "horizontal",
+                    "range": false
+                },
+                "showIncrementButtons": true,
+                "showSliderDisplayValueLabel": false,
+                "sliderChangeEventAction": "columnWidthChangeAction"
+            } ]
+        },
+        "useCompactColumnWidth": {
+            "displayName": "{{i18n.useCompactColumnWidth}}",
+            "type": "BOOLEAN",
+            "isRequired": false,
+            "isEditable": true,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "useVerticalColumnHeader": {
+            "displayName": "{{i18n.useVerticalColumnHeader}}",
+            "type": "BOOLEAN",
+            "isRequired": false,
+            "isEditable": true,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+    "actions": {
+        "initializeView": {
+            "actionType": "JSFunction",
+            "method": "initializeSettingsPanel",
+            "inputData": {
+                "gridSettings": "{{props.subPanelContext.gridSettings}}",
+                "fields": {
+                    "useCompactColumnWidth": "{{fields.useCompactColumnWidth}}",
+                    "useVerticalColumnHeader": "{{fields.useVerticalColumnHeader}}"
+                }
+            },
+            "outputData": {
+                "columnWidth.dbValue[0].sliderOption.value": "columnWidth"
+            },
+            "deps": "js/pca0GridSettingsService"
+        },
+        "compactColumnWidthUpdateAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "resetColumnWidthSlider",
+                    "condition": "data.columnWidth.dbValue[0].sliderOption.value > 50 && data.useCompactColumnWidth.dbValue === true"
+                }
+            ]
+        },
+        "columnWidthChangeAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateColumnWidthUpdatedFlag",
+                    "condition": "!data.columnWidthUpdated"
+                },
+                {
+                    "action": "resetCompactModeToggle",
+                    "condition": "data.useCompactColumnWidth.dbValue === true"
+                }
+            ]
+        },
+        "updateCompactModeState": {
+            "actionType": "JSFunction",
+            "method": "updateField",
+            "inputData": {
+                "verticalHeaderMode": "{{data.useVerticalColumnHeader.dbValue}}",
+                "field":"{{fields.useCompactColumnWidth}}"
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "updateColumnWidthUpdatedFlag": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "sliderValue": true
+            },
+            "outputData": {
+                "columnWidthUpdated": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "updateAtomicDataForColumnHeader": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataForColumnHeader",
+            "inputData": {
+                "fieldData": "{{data.data}}",
+                "gridSettingsDataForColumnHeader":"{{props.gridsettingsdataforcolumnheader}}"
+            },
+            "deps": "js/pca0GridSettingsService"
+        },
+        "resetCompactModeToggle": {
+            "actionType": "JSFunction",
+            "method": "updateField",
+            "inputData": {
+                "value": false,
+                "field":"{{fields.useCompactColumnWidth}}"
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "resetColumnWidthSlider": {
+            "actionType": "JSFunction",
+            "method": "echoInput",
+            "inputData": {
+                "verticalHeaderMode": 50
+            },
+            "outputData": {
+                "columnWidth.dbValue[0].sliderOption.value": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeView",
+        "onUpdate": [ {
+                "action": "updateAtomicDataForColumnHeader",
+                "observers": [
+                    "viewModel.data.columnWidthUpdated",
+                    "viewModel.data.useCompactColumnWidth.dbValue",
+                    "viewModel.data.useVerticalColumnHeader.dbValue"
+                ]
+            },
+            {
+                "action": "compactColumnWidthUpdateAction",
+                "observers": [
+                    "fields.useCompactColumnWidth.value"
+                ]
+            }
+        ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "gridSettingsDataForColumnHeader": {
+            "type": "object"
+        }
+    },
+    "onEvent": [],
+    "i18n": {
+        "settings": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "resizeColumnWidthLabel": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "useCompactColumnWidth": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "useVerticalColumnHeader": [
+            "ConfiguratorExplorerMessages"
+        ],
+        "tableColumnHeaderWidthTitle": [
+            "ConfiguratorExplorerMessages"
+        ]
+    }
+}

@@ -1,0 +1,94 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "render": {
+            "method": "awSavedQueryCriteriaTableLocalizationLovComponentRenderFn",
+            "deps": "js/AwSavedQueryCriteriaTableLocalizationLovService"
+        },
+        "loadExistingLocalizations": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2008-06-Session",
+            "method": "getDisplayStrings",
+            "inputData": {
+                "info": ["QRY_User_Entry_Key"]
+            },
+            "outputData": {
+                "localizationKeyList": "{{function:convertGetDisplayStringsResponseToLovEntries}}"
+            },
+            "deps": "js/AwSavedQueryLocalizationService"
+        },
+        "getLocalizationLOVData": {
+            "actionType": "JSFunction",
+            "method": "getPageOfLocalizationData",
+            "inputData": {
+                "localizationKeyList": "{{data.localizationKeyList}}",
+                "startIndex": "{{data.dataProviders.existingLocalizationsDataProvider.startIndex}}",
+                "pageSize": "{{data.pageSize}}",
+                "filterString": "{{props.vmo.props.UserEntryKey.filterString}}"
+            },
+            "outputData": {
+                "lovData": "lovData",
+                "totalFound": "totalFound"
+            },
+            "deps": "js/AwSavedQueryLocalizationService"
+        },
+        "updateKeyNamePair": {
+            "actionType": "JSFunction",
+            "method": "updateKeyNamePair",
+            "deps": "js/AwSavedQueryLocalizationService"
+        },
+        "setUserEntryKey": {
+            "actionType": "JSFunction",
+            "method": "setUserEntryKey",
+            "inputData": {
+                "selectedLocalization": "{{parameters.eventData.selectedObjects}}",
+                "vmo": "{{props.vmo}}"
+            },
+            "deps": "js/AwSavedQueryLocalizationService"
+        }
+    },
+    "data": {
+        "pageSize": 25
+    },
+    "conditions": {},
+    "onEvent": [
+        {
+            "eventId": "existingLocalizationsDataProvider.selectionChangeEvent",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "setUserEntryKey"
+        }
+    ],
+    "i18n": {
+        "keyText": [
+            "SearchMessages"
+        ]
+    },
+    "dataProviders": {
+        "existingLocalizationsDataProvider": {
+            "initializeAction": "getLocalizationLOVData",
+            "nextAction": "getLocalizationLOVData",
+            "response": "{{data.lovData}}",
+            "totalFound": "{{data.totalFound}}"
+        }
+    },
+    "functions": {
+        "convertGetDisplayStringsResponseToLovEntries": {
+            "functionName": "convertGetDisplayStringsResponseToLovEntries",
+            "parameters": [
+                "{{i18n.keyText}}"
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "render": "render",
+        "onMount": "loadExistingLocalizations",
+        "onUnmount": "updateKeyNamePair"
+    },
+    "props": {
+        "prop": {
+            "type": "field"
+        }
+    }
+}

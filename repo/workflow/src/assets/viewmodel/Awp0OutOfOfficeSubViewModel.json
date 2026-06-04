@@ -1,0 +1,335 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-panel-body.directive",
+        "js/aw-widget.directive",
+        "js/aw-list.directive",
+        "js/aw-include.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-i18n.directive",
+        "js/visible-when.directive",
+        "js/aw-command-panel-section.directive"
+    ],
+    "actions": {
+        "initPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "populateDateTimeWidget"
+                },
+                {
+                    "action": "loadExistingDelegates",
+                    "condition": "conditions.isOutOfOfficeSet"
+                },
+                {
+                    "action": "initDataProvider"
+                }
+            ]
+        },
+        "populateDateTimeWidget": {
+            "actionType": "JSFunction",
+            "method": "populateDateTimeWidget",
+            "deps": "js/Awp0OutOfOffice",
+            "inputData": {
+                "startDateWidget":"{{data.startDate}}",
+                "endDateWidget":"{{data.endDate}}",
+                "userObject": "{{props.subPanelContext.userObject}}"
+            },
+            "outputData":{
+               "startDate": "startDate",
+               "endDate":"endDate"
+            }
+        },
+        "loadExistingDelegates": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadExistingDelegates",
+            "inputData": {
+                "currentUser": "{{props.subPanelContext.userObject}}"
+            },
+            "outputData": {
+                "users": "users",
+                "inboxDelegateUID": "inboxDelegateUID"
+            },
+            "deps": "js/Awp0OutOfOffice"
+        },
+        "initDataProvider": {
+            "actionType": "dataProvider",
+            "method": "getUsers"
+        },
+        "validateAndSetOutOfOffice": {
+            "actionType": "JSFunction",
+            "method": "validateAndSetOutOfOffice",
+            "inputData": {
+                "data": "{{data}}",
+                "currentUser": "{{props.subPanelContext.userObject}}"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "i18n.invalidUser"
+                    }
+                ]
+            },
+            "deps": "js/Awp0OutOfOffice"
+        },
+        "setOutOfOffice": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2014-06-Workflow",
+            "method": "setOutOfOffice",
+            "inputData": {
+                "fromResource": "{{props.subPanelContext.userObject}}",
+                "toResource": {
+                    "uid": "{{data.users[0].uid}}",
+                    "type": "{{data.users[0].type}}"
+                },
+                "startDate": "{{function:getDateString_startDate}}",
+                "endDate": "{{function:getDateString_endDate}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+            },
+            "deps": "js/Awp0OutOfOffice",
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "serverError"
+                    }
+                ]
+            }
+        },
+        "clearOutOfOffice": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2014-06-Workflow",
+            "method": "setOutOfOffice",
+            "inputData": {
+                "fromResource": "{{props.subPanelContext.userObject}}",
+                "toResource":{
+                    "uid": "AAAAAAAAAAAAAA",
+                    "type": "unknownType"
+                },
+                "startDate": "",
+                "endDate": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "outOfOffice.clear"
+                    }
+                ]
+            },
+            "deps": "js/Awp0OutOfOffice",
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "serverError"
+                    }
+                ]
+            }
+        },
+
+        "clearOutOfOfficePanel": {
+           "actionType": "JSFunction",
+           "method": "clearOutOfOfficePanel",
+           "inputData": {
+                "data": "{{data}}"
+           },
+           "outputData": {
+            "users": "users",
+            "inboxDelegateUID": "inboxDelegateUID",
+            "startDate": "startDate",
+            "endDate": "endDate"
+           },
+           "events": {
+                "success": [
+                    {
+                        "name": "reloadGetUsersDataProvider"
+                    }
+                ]
+            },
+           "deps": "js/Awp0OutOfOffice"
+        },
+        "addUsers": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "addSelectedUsers",
+                    "condition": "conditions.isSelectedUsersPresent"
+                },
+                {
+                    "action": "navigateToMainPage",
+                    "condition": "conditions.isSelectedUsersPresent"
+                }
+            ]
+        },
+        "addSelectedUsers": {
+            "actionType": "JSFunctionAsync",
+            "method": "addSelectedUsers",
+            "inputData": {
+                "selectedUsers": "{{props.subPanelContext.addUserPanelState.selectedUsers}}",
+                "addUserPanelState": "{{props.subPanelContext.addUserPanelState}}"
+            },
+            "outputData": {
+                "users": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "reloadGetUsersDataProvider"
+                    }
+                ]
+            },
+            "deps": "js/Awp0OutOfOffice"
+        },
+        "navigateToMainPage": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.subPanelContext.activeState}}",
+                "destPanelId": "Awp0OutOfOfficeSub"
+            }
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+
+    "data": {
+        "startDate": {
+            "dbValue": "",
+            "type": "DATETIME",
+            "displayName": "{{i18n.startDate}}",
+            "uiValue": ""
+        },
+        "endDate": {
+            "dbValue": "",
+            "type": "DATETIME",
+            "displayName": "{{i18n.endDate}}",
+            "uiValue": ""
+        },
+        "sectionCommands":"awp0_sectionCommands"
+    },
+    "dataProviders": {
+        "getUsers": {
+            "response": "{{data.users}}",
+            "totalFound": "{{data.users.length}}",
+            "selectionModelMode": "single",
+            "commands": {
+                "Awp0ShowObjectCell": {
+                    "id": "cmdOpen",
+                    "title": "Open",
+                    "areas": [
+                        "com.siemens.splm.clientfx.ui.modelObjectListActionCommands"
+                    ],
+                    "priorities": [
+                        300
+                    ],
+                    "dependencies": [
+                        "js/showObjectCommandHandler"
+                    ],
+                    "displayOption": "ON_HOVER_AND_SELECTION",
+                    "position": "TOP_RIGHT"
+                }
+            }
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initPanel",
+        "onUpdate": [
+            {
+                "action": "addUsers",
+                "observers": [ "props.addUserPanelState.selectedUsers" ]
+            }
+        ]
+    },
+    "functions": {
+        "getDateString_startDate": {
+            "functionName": "getDateString",
+            "parameters": [
+                "{{data.startDate.dateApi.dateObject}}"
+            ]
+        },
+        "getDateString_endDate": {
+            "functionName": "getDateString",
+            "parameters": [
+                "{{data.endDate.dateApi.dateObject}}"
+            ]
+        }
+    },
+    "conditions": {
+        "isSetOutOfOfficeVisible": {
+            "expression": "data.users && data.users.length > 0 && data.users[0] && data.users[0].uid != subPanelContext.userObject.props.inbox_delegate.dbValues[0]"
+        },
+        "isClearOutOfOfficeVisible": {
+            "expression": "data.inboxDelegateUID && data.inboxDelegateUID !== ''"
+        },
+        "updateExistingUser": {
+            "expression": "data.inboxDelegateUID && data.inboxDelegateUID !== '' && data.inboxDelegateUID === subPanelContext.userObject.props.inbox_delegate.dbValues[0]"
+        },
+        "isOutOfOfficeSet": {
+            "expression": "subPanelContext.userObject.props.inbox_delegate.dbValues.length > 0 "
+        },
+        "isSelectedUsersPresent": {
+            "expression": "props.subPanelContext.addUserPanelState.selectedUsers && props.subPanelContext.addUserPanelState.selectedUsers.length > 0"
+        }
+    },
+    "messages": {
+        "invalidUser": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.invalidUser}}"
+        },
+        "endDateBeforeStartDateMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.endDateBeforeStartDateMessage}}"
+        },
+        "serverError": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "outOfOffice.set",
+            "action": "setOutOfOffice"
+        },
+        {
+            "eventId":"outOfOffice.clear",
+            "action": "clearOutOfOfficePanel"
+        },
+        {
+            "eventId": "reloadGetUsersDataProvider",
+            "action": "initDataProvider"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+    "i18n": {
+        "outOfOfficeCommandTitle": [ "InboxMessages" ],
+        "startDate": [ "InboxMessages" ],
+        "endDate": [ "InboxMessages" ],
+        "recipient": [ "InboxMessages" ],
+        "outOfOfficeSet": [ "InboxMessages" ],
+        "outOfOfficeClear": [ "InboxMessages" ],
+        "users": [ "InboxMessages" ],
+        "invalidUser": [ "InboxMessages" ],
+        "endDateBeforeStartDateMessage": [ "InboxMessages" ]
+    }
+}

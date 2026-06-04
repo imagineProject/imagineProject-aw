@@ -1,0 +1,300 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "activeView": "AddObjectPrimarySub",
+        "triggerCreate": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        },
+        "triggerAddACopy": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        },
+        "addPanelState": {
+            "initialValues": {
+                "creationType": "",
+                "createdObject": "",
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {}
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub",
+                "context": {}
+            },
+            "meta": {}
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {
+                "selectedProjects": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "triggerAssign": {
+                    "field": "true",
+                    "type": "BOOLEAN"
+                }
+            }
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions": {
+        "IsSelectedObjAssociatedWithDiffChange": {
+            "actionType": "TcSoaService",
+            "serviceName": "ChangeManagement-2025-06-ChangeManagement",
+            "method": "getConcurrentChanges",
+            "deps": "js/Cm1CreateChangeService",
+            "inputData": {
+                "inputObjs": "{{function:processSecondaryObjectsInput}}",
+                "typeFilters": [ "GnChangeNoticeRevision" ]
+            },
+            "outputData": {
+                "selectedItemsWithECNs": "{{function:getListOfItemAndassociatedECNs}}",
+                "processedWarningMessages": "{{function:processWarningMessages}}"
+            },
+            "events": {
+                "success": [
+                   {
+                        "condition": "!conditions.ShowWarnPrefEnableAndActiveECN",
+                        "name": "addItemsToImpactedEvent"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "condition": "data.selectedItemsWithECNs.length === 1 && ctx.preferences.CM_show_concurrent_change_warning[0].toLowerCase() === 'true'",
+                        "message": "warningMessagesForSingleSelection"
+                    },
+                    {
+                        "condition": "data.selectedItemsWithECNs.length > 1 && ctx.preferences.CM_show_concurrent_change_warning[0].toLowerCase() === 'true'",
+                        "message": "warningMessagesForMultiSelection"
+                    }
+                ]
+            }
+        },
+        "addItemsToImpacted": {
+            "actionType": "JSFunction",
+            "method": "updateCreateTrigger",
+            "inputData": {
+                "triggerCreate": "{{data.triggerCreate}}",
+                "value": true
+            },
+            "outputData": {
+                "triggerCreate": "triggerCreate"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "toggleAddACopy": {
+            "actionType": "JSFunction",
+            "method": "toggleAddACopyState",
+            "inputData": {
+                "addPanelState": "{{data.addPanelState}}"
+            },
+            "outputData": {
+                "addPanelState": "addPanelState"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "addACopyObject": {
+            "actionType": "JSFunction",
+            "method": "updateAddACopyTrigger",
+            "inputData": {
+                "triggerAddACopy": "{{data.triggerAddACopy}}",
+                "value": true
+            },
+            "outputData": {
+                "triggerAddACopy": "triggerAddACopy"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "isObjSelectedForAddACopyAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "ChangeManagement-2025-06-ChangeManagement",
+            "method": "getConcurrentChanges",
+            "deps": "js/Cm1CreateChangeService",
+            "inputData": {
+                "inputObjs": "{{function:processSecondaryObjectsInput}}",
+                "typeFilters": [ "GnChangeNoticeRevision" ]
+            },
+            "outputData": {
+                "selectedItemsWithECNs": "{{function:getListOfItemAndassociatedECNs}}",
+                "processedWarningMessages": "{{function:processWarningMessages}}"
+            },
+            "events": {
+                "success": [
+                   {
+                        "condition": "!conditions.ShowWarnPrefEnableAndActiveECN",
+                        "name": "triggerAddCopyToImpacted"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "condition": "data.selectedItemsWithECNs.length === 1 && ctx.preferences.CM_show_concurrent_change_warning[0].toLowerCase() === 'true'",
+                        "message": "singleSelectionAddCopyWarning"
+                    },
+                    {
+                        "condition": "data.selectedItemsWithECNs.length > 1 && ctx.preferences.CM_show_concurrent_change_warning[0].toLowerCase() === 'true'",
+                        "message": "multiSelectionAddCopyWarning"
+                    }
+                ]
+            }
+        }
+    },
+    "messages": {
+        "warningMessagesForSingleSelection": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.showMultiSelectionChangeWarnEmptyMsg}}",
+            "messageTextParams": [
+                "{{ctx.Cm1CreateChange.warningMessage}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancelText}}"
+                },
+                {
+                    "option": "Add",
+                    "text": "{{i18n.addButtonTitle}}",
+                    "action": "addItemsToImpacted"
+                }
+            ]
+        },
+        "warningMessagesForMultiSelection": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.showMultiSelectionChangeWarnEmptyMsg}}",
+            "messageTextParams": [
+                "{{ctx.Cm1CreateChange.warningMessage}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancelText}}"
+                },
+                {
+                    "option": "Add",
+                    "text": "{{i18n.addButtonTitle}}",
+                    "action": "addItemsToImpacted"
+                }
+            ]
+        },
+        "singleSelectionAddCopyWarning": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.showMultiSelectionChangeWarnEmptyMsg}}",
+            "messageTextParams": [
+                "{{ctx.Cm1CreateChange.warningMessage}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancelText}}"
+                },
+                {
+                    "option": "Add",
+                    "text": "{{i18n.addButtonTitle}}",
+                    "action": "toggleAddACopy"
+                }
+            ]
+        },
+        "multiSelectionAddCopyWarning": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.showMultiSelectionChangeWarnEmptyMsg}}",
+            "messageTextParams": [
+                "{{ctx.Cm1CreateChange.warningMessage}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancelText}}"
+                },
+                {
+                    "option": "Add",
+                    "text": "{{i18n.addButtonTitle}}",
+                    "action": "toggleAddACopy"
+                }
+            ]
+        }
+
+    },
+    "functions": {
+        "processSecondaryObjectsInput": {
+            "functionName": "processSecondaryObjectsInput",
+            "parameters": [ "{{data.addPanelState}}",
+                "{{false}}",
+                "{{ctx.xrtSummaryContextObject.uid}}"
+            ]
+        },
+        "getListOfItemAndassociatedECNs": {
+            "functionName": "getListOfItemAndassociatedECNs"
+        },
+        "processWarningMessages": {
+            "functionName": "processWarningMessages"
+        }
+    },
+    "onEvent": [ {
+        "eventId": "addItemsToImpactedEvent",
+        "action": "addItemsToImpacted"
+    },
+    {
+        "eventId": "triggerAddCopyToImpacted",
+        "action": "toggleAddACopy"
+    }
+    ],
+    "conditions": {
+         "isPaletteSearchTabAddACopyCancelButtonVisible": {
+             "expression": "addPanelState.sourceObjects && addPanelState.sourceObjects.length === 1 && addPanelState.isAddACopy"
+         },
+         "isAddInPaletteTabPage":{
+             "expression": "addPanelState.selectedTab.view==='PaletteTabPageSub'"
+         },
+         "isAddInSearchTabPage":{
+             "expression": "addPanelState.selectedTab.view==='SearchTabPageSub'"
+         },
+         "ShowWarnPrefEnableAndActiveECN":{
+             "expression":"ctx.preferences.CM_show_concurrent_change_warning[0].toLowerCase() === 'true' && ctx.Cm1CreateChange.selectedItemHasConflictingChange"
+         },
+         "isPaletteSearchTabAddButtonEnabled": {
+             "expression": "addPanelState.sourceObjects && addPanelState.sourceObjects.length > 0 && !addPanelState.isAddACopy"
+         },
+         "isPaletteSearchTabAddACopyButtonEnable": {
+             "expression": {
+                 "$source": "addPanelState.sourceObjects[0].modelType.typeHierarchyArray",
+                 "$query": {
+                     "$notin": "{{ctx.preferences.AWC_AddACopyExclusionTypeList}}"
+                 }
+             }
+         }
+    },
+    "i18n": {
+        "addPanelTitle": [ "TCUICommandPanelsMessages" ],
+        "addButtonTitle": [ "TCUICommandPanelsMessages" ],
+        "addACopy": ["addObjectMessages"],
+        "cancelText": [ "ChangeMessages" ],
+        "showMultiSelectionChangeWarnEmptyMsg": [ "ChangeMessages" ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

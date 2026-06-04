@@ -1,0 +1,316 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "variantRuleFilterBox": {
+            "displayName": "{{i18n.filter1}}",
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "defaultVariantRule": {
+            "displayName": "{{i18n.useNoVariantRuleLabel}}",
+            "uiValue": "{{i18n.useNoVariantRuleLabel}}",
+            "type": "STRING"
+        },
+        "customVariantRule": {
+            "displayName": "{{i18n.customVariantRule}}",
+            "type": "STRING"
+        },
+        "newVariantRule": {
+            "displayName": "{{i18n.new}}",
+            "type": "STRING"
+        }
+    },
+    "actions": {
+        "OpenDefineClassicVariantRulesPanelBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateVariantConfigContext"
+                },
+                {
+                    "action": "OpenDefineClassicVariantRulesPanel"
+                }
+            ]
+        },
+        "NavigateToDefineClassicVariantRulesPanelBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateVariantConfigContext"
+                },
+                {
+                    "action": "populateCustomVariantTitle"
+                },
+                {
+                    "action": "setMountFlag"
+                },
+                {
+                    "action": "navigateToDefineClassicVariantRulesPanel"
+                }
+            ]
+        },
+        "updateVariantConfigContext": {
+            "actionType": "JSFunction",
+            "method": "showCustomVariantPanel",
+            "inputData": {
+                "variantRuleToEdit": "{{data.eventData.ruleToEdit.dbValue}}"
+            },
+            "outputData":{
+                "sharedData":""
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "OpenDefineClassicVariantRulesPanel": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view": "Awb0CustomVariant",
+                    "placement": "left",
+                    "parent": ".aw-layout-workarea",
+                    "width": "STANDARD",
+                    "height": "FULL",
+                    "subPanelContext": "{{subPanelContext}}",
+                    "push": true,
+                    "isCloseVisible": false,
+                    "isPinUnpinEnabled": true
+                }
+            }
+        },
+        "populateCustomVariantTitle": {
+            "actionType": "JSFunction",
+            "method": "populateCustomVariantTitle",
+            "inputData": {
+                "data":"{{data}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "outputData":{
+                "customVariantRuleTitle":"customVariantTitle"
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "setMountFlag": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "path": "classicCfgContext.isOnMountTrue",
+                "value": true
+            }
+        },
+        "navigateToDefineClassicVariantRulesPanel": {
+            "actionType": "JSFunction",
+            "method": "navigateToView",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "view": {
+                    "panelId": "Awb0DefineClassicVariantRule",
+                    "title": "{{data.customVariantRuleTitle}}"
+                }
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "initializeView": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getAllVariantRulesAction"
+                },
+                {
+                    "action": "activateCurrentView",
+                    "condition": "conditions.isActiveViewDifferent"
+                }
+            ]
+        },
+        "getAllVariantRulesAction": {
+            "actionType": "dataProvider",
+            "method": "getAllVariantRules"
+        },
+        "getAllVariantRules": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2019-12-OccurrenceConfiguration",
+            "method": "getConfigurationRules2",
+            "inputData": {
+                "input": {
+                    "maxToLoad": 20,
+                    "startIndex": "{{function:evaluateStartIndex}}",
+                    "searchCriteria": "{{data.variantRuleFilterBox.dbValue}}",
+                    "productContext": {
+                        "type": "Awb0ProductContextInfo",
+                        "uid": "{{data.subPanelContext.occContext.productContextInfo.uid}}"
+                    },
+                    "typeToFetch": "VariantRule",
+                    "fetchOnlyPreferredConfiguration": false
+                }
+            },
+            "outputData": {
+                "variantRules": "{{function:processVariantRules}}",
+                "totalFound": "totalFound"
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "errorInGettingPreferredConfigInfo"
+                } ]
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "applyVariantInfoChange": {
+            "actionType": "JSFunction",
+            "method": "applyVariantConfigChange",
+            "inputData": {
+                "value": {
+                    "configContext": {
+                        "r_uid": "{{data.subPanelContext.occContext.productContextInfo.props.awb0CurrentRevRule.dbValues[0]}}",
+                        "var_uids": "{{data.eventData.variantRules}}",
+                        "iro_uid": "{{data.eventData.svrOwningItem.uid}}",
+                        "de": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EffDate.dbValues[0]}}",
+                        "ue": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EffUnitNo.dbValues[0]}}",
+                        "ei_uid": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EffEndItem.dbValues[0]}}",
+                        "eg_uids": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EffectivityGroups.dbValues}}",
+                        "startDate": "{{data.subPanelContext.occContext.productContextInfo.props.awb0StartEffDates.dbValues[0]}}",
+                        "endDate": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EndEffDates.dbValues[0]}}",
+                        "fromUnit": "{{data.subPanelContext.occContext.productContextInfo.props.awb0StartEffUnits.dbValues[0]}}",
+                        "toUnit": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EndEffUnits.dbValues[0]}}",
+                        "startFreshNavigation": true
+                    },
+                    "transientRequestPref": {
+                        "jitterFreePropLoad" : true,
+                        "userGesture": "VARIANT_RULE_CHANGE"
+                    }
+                },
+                "occContext": "{{data.subPanelContext.occContext}}"
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "updateVariantRule": {
+            "actionType": "JSFunction",
+            "method": "updateVariantRule",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "data": "{{data}}",
+                "configSvrEndItem": "{{props.subPanelContext.configSvrEndItem}}"
+            },
+            "outputData":{
+                "isCustomVariantRuleApplied":"isCustomVariantRuleApplied"
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "selectVariantRule": {
+            "actionType": "JSFunction",
+            "method": "selectVariantRule",
+            "inputData": {
+                "data": "{{data}}",
+                "dataprovider": "{{data.dataProviders.getAllVariantRules}}"
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "activateCurrentView": {
+            "actionType": "JSFunction",
+            "method": "updateActiveContext",
+            "inputData": {
+                "data": "{{data.subPanelContext.contextKey}}"
+            },
+            "deps": "js/aceContextStateMgmtService"
+        },
+        "processVariantInfoChange": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "setVariantRuleChangeFlag"
+                },
+                {
+                    "action": "applyVariantInfoChange"
+                }
+            ]
+        },
+        "setVariantRuleChangeFlag": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "variantRule.changeRule",
+                "value": true
+            },
+            "deps": "js/appCtxService"
+        }
+    },
+    "dataProviders": {
+        "getAllVariantRules": {
+            "action": "getAllVariantRules",
+            "response": "{{data.variantRules}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "messages": {
+        "errorInGettingPreferredConfigInfo": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.errorInGettingPreferredConfigInfo}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeView"
+    },
+    "onEvent": [
+        {
+            "eventId": "awConfigPanel.customVariantClicked",
+            "cacheEventData": true,
+            "condition": "!data.subPanelContext.nestedNavigationState",
+            "action": "OpenDefineClassicVariantRulesPanelBatchJob"
+        },
+        {
+            "eventId": "awConfigPanel.customVariantClicked",
+            "condition": "data.subPanelContext.nestedNavigationState.views.length>=0",
+            "action": "NavigateToDefineClassicVariantRulesPanelBatchJob"
+        },
+        {
+            "eventId": "getAllVariantRules.selectionChangeEvent",
+            "cacheEventData": true,
+            "action": "updateVariantRule"
+        },
+        {
+            "eventId": "getAllVariantRules.modelObjectsUpdated",
+            "action": "selectVariantRule"
+        },
+        {
+            "eventId": "awConfigPanel.variantInfoChanged",
+            "cacheEventData": true,
+            "action": "processVariantInfoChange"
+        },
+        {
+            "eventId": "awConfigPanel.setMountFlag",
+            "action": "setMountFlag"
+        }
+    ],
+    "conditions": {
+        "isActiveViewDifferent": {
+            "expression": "data.subPanelContext.contextKey !== ctx.aceActiveContext.key"
+        }
+    },
+    "functions": {
+        "evaluateStartIndex": {
+            "functionName": "evaluateStartIndexForVariantRuleDataProvider",
+            "parameters": [ "{{data.dataProviders.getAllVariantRules}}" ]
+        },
+        "processVariantRules":{
+            "functionName":"processVariantRules",
+            "parameters":["{{data.subPanelContext}}"]
+        }
+    },
+    "i18n": {
+        "customVariantRule": [ "OccurrenceManagementConstants" ],
+        "useNoVariantRuleLabel": [ "OccurrenceManagementConstants" ],
+        "errorInGettingPreferredConfigInfo": [ "OccurrenceManagementMessages" ],
+        "new": [ "OccurrenceManagementConstants" ],
+        "filter1":["OccurrenceManagementConstants"],
+        "customCVConfigurationTitle":["OccurrenceManagementConstants"]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "location":{
+            "type":"string"
+        },
+        "backpanel":{
+            "type":"string"
+        }
+    }
+}

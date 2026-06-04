@@ -1,0 +1,407 @@
+{
+    "schemaVersion":"1.0.0",
+    "actions":
+    {
+        "loadWorkflowTemplatesWithoutDPs":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2013-05-Workflow",
+            "method": "getWorkflowTemplates",
+            "inputData":
+            {
+                "input": [{
+                    "clientId": "allTemplates",
+                    "getFiltered": false
+                }]
+            },
+            "policy":
+            {
+                "types":
+                [
+                    {
+
+                        "name": "EPMTaskTemplate",
+                        "properties":
+                        [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "object_desc"
+                            },
+                            {
+                                "name": "fnd0Instructions"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData":
+            {
+                "allTemplates": "templatesOutput[0].workflowTemplates"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "createProessAssignment.templatesLoaded"
+                    }
+                ]
+            }
+        },
+        "populatePanelData": {
+            "actionType": "JSFunction",
+            "method": "populatePanelData",
+            "inputData": {
+               "allTemplates": "{{data.allTemplates}}",
+               "workflowTemplatesProp": "{{data.workflowTemplates}}"
+            },
+            "outputData": {
+                "templates": "templatesObjects",
+                "workflowTemplates" : "workflowTemplatesProp"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "createProessAssignment.getProcessAssignemntInfo"
+                    }
+                ]
+            },
+            "deps": "js/Awp0CreateProcessAssignment"
+        },
+        "populateAssignmentList": {
+            "actionType": "JSFunction",
+            "method": "populateAssignmentList",
+            "inputData": {
+               "data": "{{data}}",
+               "selectedTemplate": "{{data.workflowTemplates.dbValue}}"
+            },
+            "outputData": {
+                "assignments": "assignmentList",
+                "processAssignment": "processAssignment",
+                "isPrivilegeUser": "isPrivilegeUser"
+            },
+            "deps": "js/Awp0CreateProcessAssignment"
+        },
+        "getProcessAssignemntInfo":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": "{{function:getObjectsToLoad}}",
+                "attributes": [ "assignment_lists", "ga", "privilege"]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "createProessAssignment.assignmentLoaded"
+                    }
+                ]
+            },
+            "deps": "js/Awp0CreateProcessAssignment"
+        },
+
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [
+                    {
+                        "name": "complete",
+                        "condition": "!data.isDestroyed()",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+            }
+        },
+        "createPal":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2019-06-Workflow",
+            "method": "createOrUpdatePAL",
+            "inputData":
+            {
+                "input": "{{function:createPalInputStructure}}"
+            },
+            "outputData":
+            {
+                "createdObject": "createdorUpdatedObjects['0'].palObject"
+            },
+            "deps": "js/Awp0PalMgmtService",
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "createProcessAssignment.createdAssignmentListObject",
+                        "condition" : "data.createdObject"
+                    },
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+            },
+            "actionMessages":
+            {
+                "success":
+                [
+                    {
+                        "message": "createPalSuccess"
+                    }
+                ],
+                "failure":
+                [
+                    {
+                        "message": "serverError"
+                    }
+                ]
+            }
+        },
+        "registerCreateObjectContext": {
+            "actionType": "JSFunction",
+            "method": "registerCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "newlyCreatedAssignmentListObjUid",
+                "value": "{{data.createdObject.uid}}"
+            },
+            "events":
+            {
+                "success":[
+                    {
+                        "name": "primaryWorkarea.reset"
+                    }
+                ]
+            }
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cacheInitialSelection",
+                    "condition": "!data.initialSelection"
+                },
+                {
+                    "action": "closePanel",
+                    "condition": "data.initialSelection !== props.subPanelContext.selectionData.selected[0].uid"
+                }
+            ]
+        },
+        "cacheInitialSelection":{
+            "actionType": "JSFunction",
+            "method": "cacheSelection",
+            "inputData": {
+                "selectedUid": "{{props.subPanelContext.selectionData.selected[0].uid}}"
+            },
+            "outputData": {
+                "initialSelection": ""
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+
+
+    "data":
+    {
+
+        "workflowTemplates":
+        {
+            "type": "STRING",
+            "displayName": "{{i18n.Workflow_Template}}",
+            "hasLov": true
+        },
+
+        "processAssignment":
+        {
+            "type": "STRING",
+            "displayName": "{{i18n.basedOn}}",
+            "hasLov": true
+        },
+
+        "palName":
+        {
+            "displayName": "{{i18n.Workflow_Name}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "maxLength": 128
+        },
+
+        "palDescription":
+        {
+            "displayName": "{{i18n.Description}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "maxLength": 240,
+            "numberOfLines": 3,
+            "dbValue": ""
+        },
+        "isSharedOption":
+        {
+            "displayName": "{{i18n.isShared}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "false",
+            "dispValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+    "messages":
+    {
+        "createPalSuccess":
+        {
+            "messageType": "INFO",
+            "messageText": "{{i18n.createPalSuccess}}",
+            "messageTextParams":
+            [
+                "{{data.createdObject}}"
+            ]
+        },
+        "serverError": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "loadWorkflowTemplatesWithoutDPs",
+        "onUpdate": {
+            "action": "closePanelOnSelectionChange",
+            "observers": [ "props.subPanelContext.selectionData.selected" ]
+        }
+    },
+    "functions":
+    {
+        "createPalInputStructure": {
+            "functionName": "createPalInputStructure",
+            "parameters":
+            [
+                "{{data}}"
+            ]
+        },
+        "getObjectsToLoad": {
+            "functionName": "getObjectsToLoad",
+            "parameters":
+            [
+                "{{data.workflowTemplates.dbValue}}",
+                "{{ctx.userSession.props.fnd0groupmember.dbValue}}"
+            ]
+        }
+    },
+
+    "onEvent":
+    [
+        {
+            "eventId": "createProessAssignment.templatesLoaded",
+            "action": "populatePanelData"
+        },
+        {
+            "eventId": "createProessAssignment.assignmentLoaded",
+            "action": "populateAssignmentList"
+        },
+        {
+            "eventId": "createProcessAssignment.createdAssignmentListObject",
+            "action": "registerCreateObjectContext"
+        },
+        {
+            "eventId": "createProessAssignment.getProcessAssignemntInfo",
+            "action": "getProcessAssignemntInfo"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+
+    "conditions":
+    {
+        "isValidToCreate":
+        {
+            "expression": "data.palName.dbValue && data.workflowTemplates.dbValue!='No Template Available' && data.workflowTemplates.dbValue!=''"
+        },
+        "isPalDataPresent":
+        {
+            "expression": "data.assignments && data.assignments.length > 0"
+        },
+        "isPalDataSelected":
+        {
+            "expression": "conditions.isPalDataPresent && data.processAssignment.dbValue!='None'"
+        },
+        "isPrivilegeUser":
+        {
+            "expression": "data.isPrivilegeUser"
+        }
+    },
+    "ctx": {
+        "ctx.userSession.props.group_name": null,
+        "ctx.userSession.props.fnd0groupmember": null
+    },
+
+    "i18n":
+    {
+        "createProcessAssignmentList":
+        [
+            "WorkflowPalMgmtMessages"
+        ],
+        "isShared":
+        [
+            "WorkflowPalMgmtMessages"
+        ],
+        "basedOn":
+        [
+            "WorkflowPalMgmtMessages"
+        ],
+        "Add_Title":
+        [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "createPalSuccess":
+        [
+            "WorkflowPalMgmtMessages"
+        ],
+        "Workflow_Name":
+        [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "Workflow_Template":
+        [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "Description":
+        [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "none":
+        [
+            "WorkflowCommandPanelsMessages"
+        ]
+    }
+}

@@ -1,0 +1,246 @@
+{
+    "schemaVersion": "1.0.0",
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "form-object": {
+            "type": "object"
+        },
+        "dataset-state": {
+            "type": "object"
+        },
+        "dataset-change-state": {
+            "type": "object"
+        },
+        "dataset-info": {
+            "type": "object"
+        }
+    },
+    "data": {
+        "typeListProp": {
+            "type": "STRING",
+            "hasLov": true,
+            "isEditable": true,
+            "propertyLabelDisplay": "NO_PROPERTY_LABEL"
+        },
+        "typeListSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "uploadFileSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "actions": {
+        "updateCreationTypeBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateCreationType"
+                },
+                {
+                    "action": "getDatasetFileExtensions"
+                }
+            ]
+        },
+        "updateCreationType": {
+            "actionType": "JSFunctionAsync",
+            "method": "onTypeSelected",
+            "inputData": {
+                "data": "{{data.typeListSelectionData}}",
+                "addPanelState": "{{subPanelContext.addPanelState}}",
+                "datasetState": "{{props.datasetState}}",
+                "uploadFileSelectionData": "{{data.uploadFileSelectionData}}"
+            },
+            "outputData": {
+                "creationType": "creationType",
+                "isDatasetCreate": "isDatasetCreate",
+                "uploadFileSelectionData": "uploadFileSelectionData"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "getDatasetFileExtensions": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/addObjectUtils",
+            "method": "getDatasetFileExtensions",
+            "inputData": {
+                "0": {
+                    "datasetTypeNames": "{{data.creationType.props.type_name.dbValues}}"
+                }
+            },
+            "outputData": {
+                "fileExtension": ""
+            }
+        },
+        "handleUpdateDataset": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "updateDataset"
+            } ]
+        },
+        "datasetChangeAction": {
+            "actionType": "JSFunction",
+            "method": "datasetChangeAction",
+            "inputData": {
+                "datasetInfo": {
+                    "fileName": "{{parameters.fileName}}",
+                    "fileNameNoExt": "{{parameters.fileNameNoExt}}",
+                    "fileExt": "{{parameters.fileExt}}",
+                    "formData": "{{parameters.formData}}"
+                },
+                "addPanelState": "{{subPanelContext.addPanelState}}",
+                "datasetState": "{{props.datasetState}}"
+            },
+            "outputData": {
+                "filePickerInfoData": "filePickerInfoData",
+                "isDatasetCreate": "isDatasetCreate"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "onMount": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getFilePickerConfiguration"
+                },
+                {
+                    "action": "setInitialValuesForFile",
+                    "condition": "ctx.HostedFileNameContext"
+                },
+                {
+                    "action": "getFileExtensionsFromObjectSetSource"
+                }
+            ]
+        },
+        "setInitialValuesForFile": {
+            "actionType": "JSFunctionAsync",
+            "method": "setInitialValuesForFile",
+            "inputData": {
+                "HostedFileNameContext": "{{ctx.HostedFileNameContext}}",
+                "uploadFileSelectionData": "{{fields.uploadFileSelectionData}}",
+                "uploadFileProvider": "{{data.uploadFileProvider}}"
+            },
+            "outputData": {
+                "uploadFileSelectionData": "uploadFileSelectionData",
+                "filePickerInfoData": "filePickerInfoData"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "getFilePickerConfiguration": {
+            "actionType": "JSFunction",
+            "method": "getFilePickerConfiguration",
+            "inputData": {
+                "fileConfigRootType": "add"
+            },
+            "outputData": {
+                "uploadFileProvider": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "getFileExtensionsFromObjectSetSource": {
+            "actionType": "JSFunction",
+            "method": "getFileExtensionsFromObjectSetSource",
+            "inputData": {
+                "objectSetSource": "{{props.subPanelContext.objectSetSource}}"
+            },
+            "outputData": {
+                "fileExtension": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "cleanUp": {
+            "actionType": "JSFunction",
+            "method": "resetUploadFileSelectionData",
+            "inputData": {
+                "uploadFileSelectionData": "{{data.uploadFileSelectionData}}"
+            },
+            "outputData": {
+                "uploadFileSelectionData": ""
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "dataProviders": {
+        "getRelationListProvider": {
+            "response": "{{data.relationList}}",
+            "totalFound": "{{data.relationList.length}}"
+        },
+        "getDatasetTypeListProvider": {
+            "response": "{{data.datasetTypeList}}",
+            "totalFound": "{{data.datasetTypeList.length}}"
+        },
+        "getDatasetReferenceListProvider": {
+            "response": "{{data.references}}",
+            "totalFound": "{{data.references.length}}"
+        }
+    },
+    "onEvent": [],
+    "messages": {
+        "paletteObjectSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.pasteSuccessful}}",
+            "messageTextParams": [
+                "{{data.createdObject.props.object_string.dbValues[0]}}"
+            ]
+        }
+    },
+    "ctx": {
+        "HostedFileNameContext": null
+    },
+    "i18n": {
+        "fileUploadError": [
+            "awAddDirectiveMessages"
+        ],
+        "submitSuccessful": [
+            "awAddDirectiveMessages"
+        ],
+        "pasteSuccessful": [
+            "awAddDirectiveMessages"
+        ],
+        "pasteSuccessfulWithTargetLocation": [
+            "awAddDirectiveMessages"
+        ],
+        "submitSuccessfulWithTargetLocation": [
+            "awAddDirectiveMessages"
+        ],
+        "fileUploadInProgress": [
+            "awAddDirectiveMessages"
+        ],
+        "objectType": [
+            "awAddDirectiveMessages"
+        ],
+        "ADD_BUTTON_TITLE": [
+            "BaseMessages"
+        ],
+        "uploadFile": [
+            "awAddDirectiveMessages"
+        ],
+        "selectFileToAdd": [
+            "addObjectMessages"
+        ]
+    },
+    "conditions": {
+        "isRefreshRequired": {
+            "expression": "subPanelContext.addObject.refreshFlag  && !subPanelContext.panelPinned"
+        },
+        "showFileUploadWidget": {
+            "expression": "!subPanelContext.isDSMUsable"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "onMount",
+        "onUnmount": "cleanUp",
+        "onUpdate": [
+            {
+                "action": "updateCreationTypeBatchAction",
+                "observers":[ "viewModel.atomicData.typeListSelectionData.selected[0].propInternalValue", "props.datasetState.creationType" ]
+            },
+            {
+                "action": "setInitialValuesForFile",
+                "observers":[ "viewModel.ctx.HostedFileNameContext" ]
+            }
+        ]
+    }
+}

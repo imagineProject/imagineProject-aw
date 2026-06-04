@@ -1,0 +1,287 @@
+{
+    "schemaVersion": "1.0.0",
+    "data":
+    {
+        "_sublocation":
+        {
+            "name": "com.siemens.splm.client.schmgt:ScheduleNavigationSubLocation",
+            "label": {
+                "source": "/i18n/ScheduleManagerMessages",
+                "key": "ganttTitle"
+            },
+            "clientScopeURI": "Saw1ScheduleGantt",
+            "nameToken": "com.siemens.splm.client.schmgt:ScheduleNavigationSubLocation",
+            "context": {
+                "search": {
+                    "hideInContentSearchBox": true,
+                    "bulkFiltering": false
+                }
+            },
+            "selectionQueryParamKey": "c_uid",
+            "editSupportParamKeys": [ "c_uid"],
+            "viewModes": {
+                "TreeView": {
+                    "primaryWorkArea": "tree",
+                    "secondaryWorkArea": false
+                },
+                "TreeSummaryView": {
+                    "primaryWorkArea": "tree",
+                    "secondaryWorkArea": true
+                }
+            },
+            "awSubLocationPref": {
+                "orientation": "HORIZONTAL"
+            },
+            "supportedLayouts": [ "Awp0SinglePaneLayout", "Awp0TopBottomLayout" ],
+            "viewBase": "Saw1ScheduleNavigation",
+            "policy": "/policies/ganttPropertyPolicy.json"
+        },
+        "scheduleNavigationContext": {
+            "initialValues": {
+                "isStructureEditSupported": true,
+                "columnFilters": [],
+                "baselineUids": []
+            },
+            "meta": {}
+        },
+        "searchState": {
+            "initialValues": {
+            },
+            "meta": {
+                "categories": [ {
+                    "filterValues": [ {
+                        "selected": {
+                            "field": "true",
+                            "type": "ViewModelProperty"
+                        }
+                    } ]
+                } ]
+            }
+        },
+        "objNavState": {
+            "initialValues": {
+                "pwaSelection": []
+            },
+            "meta": {}
+        },
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "selectionModels": {
+        "schNavSelectionModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "actions": {
+        "initialize": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "intializeScheduleNavigationSublocation"
+                },
+                {
+                    "action": "initializeSearchState"
+                },
+                {
+                    "action": "updateSubPanelContext"
+                },
+                {
+                    "action": "getChangedStateParams"
+                }
+            ]
+        },
+        "intializeScheduleNavigationSublocation": {
+            "actionType": "JSFunction",
+            "method": "intializeScheduleNavigationSublocation",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "eventSubscriptions": "eventSubscriptions"
+            },
+            "deps": "js/scheduleNavigationService"
+        },
+        "initializeSearchState": {
+            "actionType": "JSFunctionAsync",
+            "method": "createStateFromUrl",
+            "inputData": {
+                "provider": "{{data._sublocation}}",
+                "searchStateProp": null,
+                "searchState": "{{data.searchState}}",
+                "searchStateUpdater": "{{data.updateAtomicData}}",
+                "skipURL": false,
+                "searchCriteria": null,
+                "pwaSelectionModel": "{{data.selectionModels.schNavSelectionModel}}"
+            },
+            "deps": "js/awSearchSublocationService"
+        },
+        "updateSubPanelContext": {
+            "actionType": "JSFunctionAsync",
+            "method": "getSubPanelContextData",
+            "inputData": {
+                "provider": "{{data._sublocation}}",
+                "baseSelection": "{{subPanelContext.openedObject}}",
+                "objNavSelectionModel": "{{data.selectionModels.schNavSelectionModel}}",
+                "objNavStateAtomicDataRef": "{{data.atomicDataRef.objNavState}}",
+                "objNavStateUpdater": "{{data.updateAtomicData}}"
+            },
+            "outputData": {
+                "_sublocation": ""
+            },
+            "deps": "js/objectNavigationService"
+        },
+        "getChangedStateParams": {
+            "actionType": "JSFunction",
+            "method": "getChangedStateParams",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}"
+            },
+            "outputData": {
+                "changedParams": "changedParams"
+            },
+            "deps": "js/selectionSyncUtils"
+        },
+        "updateURL": {
+            "actionType": "JSFunction",
+            "method": "updateURL",
+            "inputData": {
+                "searchStateProp": null,
+                "searchState": "{{data.searchState}}",
+                "searchStateUpdater": "{{data.updateAtomicData}}",
+                "skipURL": false
+            },
+            "deps": "js/awSearchSublocationService"
+        },
+        "handleSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateSelection"
+                },
+                {
+                    "action": "updateSearchStateWithSelection"
+                }
+            ]
+        },
+        "updateSelection": {
+            "actionType": "JSFunction",
+            "method": "handleSelectionChange",
+            "inputData": {
+                "localSelectionData": "{{data.selectionData}}",
+                "parentSelectionData": null,
+                "selectionQueryParamKey": "{{data._sublocation.selectionQueryParamKey}}"
+            },
+            "deps": "js/awDefaultSublocationService"
+        },
+        "updateSearchStateWithSelection": {
+            "actionType": "JSFunction",
+            "method": "updateSearchStateWithSelectionData",
+            "inputData": {
+                    "searchStateProp": null,
+                    "searchState": "{{fields.searchState}}",
+                    "selectionData": "{{data.selectionData}}"
+            },
+            "deps": "js/awSearchSublocationService"
+        },
+        "syncSelectionWithURL": {
+            "actionType": "JSFunction",
+            "method": "getSelectionParamsToSyncInObjectNav",
+            "inputData": {
+                "selectedObjects": "{{data.objNavState.pwaSelection}}",
+                "selectionQueryParamKey": "c_uid",
+                "baseSelection": "{{data._sublocation && data._sublocation.baseSelection ? data._sublocation.baseSelection : subPanelContext.openedObject}}"
+            },
+            "deps": "js/scheduleNavigationBreadcrumbService"
+        },
+        "handleObjNavSelection": {
+            "actionType": "JSFunction",
+            "method": "handleSelectionChange",
+            "inputData": {
+                "localBaseSelection": "{{data._sublocation.baseSelection}}",
+                "localSelectionData": "{{data.selectionData}}",
+                "selectionModel": "{{data.selectionModels.schNavSelectionModel}}",
+                "objNavStateAtomicDataRef": "{{data.atomicDataRef.objNavState}}",
+                "objNavStateUpdater": "{{data.updateAtomicData}}"
+            },
+            "deps": "js/objectNavigationService"
+        },
+        "actOnStateChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setDefaultContextChangedVal"
+                },
+                {
+                    "action": "getUpdatedSearchContextOnStateChange"
+                }
+            ]
+        },
+        "setDefaultContextChangedVal": {
+            "actionType": "JSFunction",
+            "method": "setDefaultContextChangedVal",
+            "inputData": {},
+            "outputData": {
+                "objNavContextChanged": "objNavContextChanged"
+            },
+            "deps": "js/objectNavigationService"
+        },
+        "getUpdatedSearchContextOnStateChange": {
+            "actionType": "JSFunctionAsync",
+            "method": "getUpdatedSearchContextOnStateChange",
+            "inputData": {
+                "localSubPanelContext": "{{data._sublocation}}",
+                "baseSelection": "{{data.objNavState.baseSelection}}",
+                "objNavSelectionModel": "{{data.selectionModels.schNavSelectionModel}}",
+                "objNavStateAtomicDataRef": "{{data.atomicDataRef.objNavState}}",
+                "objNavStateUpdater": "{{data.updateAtomicData}}"
+            },
+            "outputData": {
+                "_sublocation": "localSubPanelContext",
+                "objNavContextChanged": "objNavContextChanged",
+                "changedParams": "changeInParams"
+            },
+            "deps": "js/scheduleNavigationBreadcrumbService"
+        },
+        "destroyScheduleNavigationSublocation": {
+            "actionType": "JSFunction",
+            "method": "destroyScheduleNavigationSublocation",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/scheduleNavigationService"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "stateChangeSuccess",
+            "action": "actOnStateChange",
+            "cacheEventData": true
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "initialize",
+        "onUnmount": "destroyScheduleNavigationSublocation",
+        "onUpdate": [ {
+            "action": "updateURL",
+            "observers": [ "viewModel.atomicData.searchState" ]
+        },
+        {
+            "action": "handleSelectionChange",
+            "observers": [
+                "viewModel.atomicData.selectionData"
+            ]
+        },
+        {
+            "action": "syncSelectionWithURL",
+            "observers": ["viewModel.atomicData.objNavState.pwaSelection"]
+        },
+        {
+            "action": "handleObjNavSelection",
+            "observers": ["viewModel.atomicData.selectionData"]
+        } ]
+    },
+    "i18n": {
+        "ganttTitle": [ "ScheduleManagerMessages" ]
+    }
+}

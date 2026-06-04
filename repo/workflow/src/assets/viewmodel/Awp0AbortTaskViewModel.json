@@ -1,0 +1,360 @@
+{
+    "schemaVersion":"1.0.0",
+    "imports":
+    [
+        "js/aw-command-panel.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-widget.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-i18n.directive",
+        "js/aw-break.directive",
+        "js/visible-when.directive"
+    ],
+
+    "actions": {
+        "loadProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData":
+            {
+                "objects":
+                [
+                    "{{props.subPanelContext.selectionData.value.selected[0]}}"
+                ],
+                "attributes": [
+                    "object_name",
+                    "object_desc",
+                    "comments",
+                    "secure_task",
+                    "parent_process"
+                ]
+            },
+            "policy":
+            {
+                "types":
+                [
+                    {
+                        "name": "Signoff",
+                        "properties":
+                        [
+                            {
+                                "name": "fnd0ParentTask",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "object_string"
+                            },
+                            {
+                                "name": "object_desc"
+                            }
+                        ]
+
+                    },
+                    {
+
+                        "name": "EPMTask",
+                        "properties":
+                        [
+                            {
+                                "name": "object_name"
+                            },
+                            {
+                                "name": "object_desc"
+                            },
+                            {
+                                "name": "comments"
+                            },
+                            {
+                                "name": "secure_task"
+                            },
+                            {
+                                "name": "parent_process",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            }
+
+                        ]
+                    },
+                    {
+
+                        "name": "Job",
+                        "properties":
+                        [
+                            {
+                                "name": "object_desc"
+                            }
+
+                        ]
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "abortTask.taskPropertiesLoaded"
+                    }
+                ]
+            }
+        },
+
+        "abortTaskPropertiesLoaded": {
+            "actionType": "JSFunction",
+            "method": "populatePanelData",
+            "inputData": {
+                "data": "{{data}}",
+                "selected": "{{props.subPanelContext.selectionData.value.selected[0]}}"
+            },
+            "outputData": {
+                "taskName": "taskName",
+                "description": "description"
+            },
+            "deps": "js/Awp0AbortTask"
+        },
+
+        "abort": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2014-06-Workflow",
+            "method": "performAction3",
+            "inputData":  {
+                "input":
+                [
+                    {
+                        "actionableObject": "{{props.subPanelContext.selectionData.value.selected[0]}}",
+                        "action": "SOA_EPM_abort_action",
+                        "password": "{{data.password.dbValue}}",
+                        "supportingValue": "",
+                        "supportingObject": "",
+                        "propertyNameValues": "{{function:getComments}}"
+                    }
+                ]
+            },
+            "deps": "js/Awp0PerformTask",
+            "events": {
+                "success":
+                [
+                    {
+                        "name": "primaryWorkarea.reset",
+                        "condition": "subPanelContext.openedObject === undefined"
+                    },
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "condition": "subPanelContext.openedObject !== undefined",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": [
+                                "{{props.subPanelContext.openedObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "condition": "subPanelContext.openedObject === undefined && ctx.selected !== undefined && ctx.sublocation.clientScopeURI === 'Awp0ShowObject'",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": [
+                                "{{ctx.selected}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "abortEPMTask.completed"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "condition": "errorCode.code !== 33321",
+                        "message": "serverError"
+                    }
+                ]
+            }
+
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [
+                    {
+                        "name": "complete",
+                        "condition": "!data.isDestroyed()",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog",
+                        "condition": "!data.isDestroyed()"
+                    }
+                ]
+            }
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cacheInitialSelection",
+                    "condition": "!data.initialSelection"
+                },
+                {
+                    "action": "closePanel",
+                    "condition": "data.initialSelection !== props.subPanelContext.selectionData.selected[0].uid"
+                }
+            ]
+        },
+        "cacheInitialSelection":{
+            "actionType": "JSFunction",
+            "method": "cacheSelection",
+            "inputData": {
+                "selectedUid": "{{props.subPanelContext.selectionData.selected[0].uid}}"
+            },
+            "outputData": {
+                "initialSelection": ""
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "updateSelectionData": {
+            "actionType": "JSFunction",
+            "method": "updateSelectionData",
+            "inputData": {
+                "selectionData": "{{subPanelContext.selectionData}}",
+                "selected": "{{subPanelContext.selected}}"
+            },
+            "deps": "js/Awp0InboxUtils"
+        },
+        "loadPropertiesForPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateSelectionData",
+                    "condition": "ctx.locationContext['ActiveWorkspace:Location'] === 'com.siemens.splm.clientfx.tcui.xrt.showObjectLocation'"
+                },
+                {
+                    "action": "loadProperties"
+                }
+            ]
+        }
+    },
+
+    "onEvent":
+    [
+        {
+            "eventId": "abortTask.taskPropertiesLoaded",
+            "action": "abortTaskPropertiesLoaded"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+
+    "data":
+    {
+        "taskName":
+        {
+            "displayName": "{{i18n.taskName}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "renderingHint": "label"
+        },
+        "description":
+        {
+            "displayName": "{{i18n.object_desc}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "renderingHint": "label"
+        },
+        "comments":
+        {
+            "displayName": "{{i18n.comments}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "maxLength": 4000,
+            "numberOfLines": 3,
+            "renderingHint": "textarea"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "loadPropertiesForPanel",
+        "onUpdate": {
+            "action": "closePanelOnSelectionChange",
+            "observers": [ "props.subPanelContext.selectionData.selected" ]
+        }
+    },
+
+    "functions":
+    {
+        "getComments":
+        {
+            "functionName": "getComments",
+            "parameters":
+            [
+                "{{data}}"
+            ]
+        }
+    },
+    "messages": {
+        "serverError": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "conditions": {
+        "isAbortButtonVisible":
+        {
+            "expression": "data.comments.dbValue && data.comments.dbValue !== undefined && data.comments.dbValue.length>0"
+        },
+        "showInstructions":
+        {
+            "expression": "data.description.dbValue && data.description.dbValue !== undefined && data.description.dbValue.length>0"
+        }
+    },
+
+    "i18n": {
+        "abortTaskTitle": ["InboxMessages"],
+        "taskName": ["InboxMessages"],
+        "object_desc": ["InboxMessages"],
+        "abort": ["InboxMessages"],
+        "comments": ["InboxMessages"]
+    }
+}

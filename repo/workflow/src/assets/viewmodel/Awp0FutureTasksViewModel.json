@@ -1,0 +1,332 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports": [
+
+        "js/aw-include.directive",
+        "js/exist-when.directive",
+        "js/aw-command-panel-section.directive"
+    ],
+    "actions":
+    {
+        "initFutureTasksPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getSelectedObjects"
+                },
+                {
+                    "action": "resetInitialSelectedProcess"
+                }
+            ]
+        },
+        "getSelectedObjects": {
+            "actionType": "JSFunctionAsync",
+            "method": "getAdaptedObjects",
+            "inputData": {
+                "sourceObjects": [
+                    "{{props.subPanelContext.selected}}"
+                ]
+            },
+            "outputData": {
+                "adaptedObjects": ""
+            },
+            "deps": "js/adapterService"
+        },
+        "resetInitialSelectedProcess": {
+            "actionType": "JSFunction",
+            "method": "cacheSelection",
+            "inputData": {
+                "selectedProcess": ""
+            },
+            "outputData": {
+                "renderProcessUid": ""
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        },
+        "populateOrHideFutureTaskBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "populateOrHideFutureTaskTable"
+                },
+                {
+                    "action": "initTableData",
+                    "condition": "conditions.isFutureTaskTableVisible"
+                },
+                {
+                    "action": "resetFutureTaskTableOptions",
+                    "condition": "!data.isFutureTaskTableVisible"
+                },
+                {
+                    "action": "resetAssignmentStateContext",
+                    "condition": "!data.isFutureTaskTableVisible"
+                },
+                {
+                    "action": "closeOpenPanel",
+                    "condition": "!data.isFutureTaskTableVisible && data.selectionData.selected && data.selectionData.selected.length > 0"
+                }
+            ]
+        },
+        "populateOrHideFutureTaskTable": {
+            "actionType": "JSFunction",
+            "method": "populateOrHideFutureTaskTable",
+            "inputData": {
+                "viewName": "{{data.eventMap['awCommandPanelSection.collapse'].name}}",
+                "isCollapsed": "{{data.eventMap['awCommandPanelSection.collapse'].isCollapsed}}"
+            },
+            "outputData": {
+                "isFutureTaskTableVisible": ""
+            },
+            "deps": "js/Awp0TasksUtils"
+        },
+        "collapseUpcomingTaskTable": {
+            "actionType": "JSFunction",
+            "method": "collapseGivenSection",
+            "inputData": {
+                "data": "{{data}}",
+                "sectionName": "Awp0FutureTasksPanelSection"
+            },
+            "deps": "js/Awp0TasksUtils"
+        },
+        "resetFutureTaskTableOptions": {
+            "actionType": "JSFunction",
+            "method": "resetFutureTaskTableOptions",
+            "inputData": {
+            },
+            "outputData": {
+                "renderObject" : "renderObject",
+                "isDataInit" : "isDataInit"
+            },
+            "deps": "js/Awp0TasksUtils"
+        },
+        "resetAssignmentStateContext": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{fields.assignmentState}}",
+                "value": {
+                    "parentChildMap": null,
+                    "taskAssignmentDataObject": null,
+                    "isStartEditEnabled": false,
+                    "isModified": false,
+                    "selectedPals": []
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "closeOpenPanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            }
+        },
+        "initTableData": {
+            "actionType": "JSFunction",
+            "method": "initTableRenderOptions",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "selectedObject": "{{data.adaptedObjects[0]}}",
+                "renderProcessUid": "{{data.renderProcessUid}}"
+            },
+            "outputData": {
+                "treeOperationMode": "treeOperationMode",
+                "renderObject": "renderObject",
+                "isDataInit": "isDataInit"
+            },
+            "deps": "js/Awp0TaskAssignmentTable"
+        },
+        "handleSelectionBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "handleTaskNodeSelection",
+                    "condition": "data.selectionData && data.selectionData.selected && !data.assignmentState.newTaskSelectedUid"
+                }
+            ]
+        },
+        "handleTaskNodeSelection": {
+            "actionType": "JSFunction",
+            "method": "handleTaskNodeSelection",
+            "inputData": {
+                "taskObject": "{{data.selectionData}}",
+                "assignmentState": "{{fields.assignmentState}}",
+                "parentSelectionData": "{{props.subPanelContext.selectionData}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/Awp0TaskAssignmentTable"
+        },
+        "updateFutureTasksTable": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getSelectedProcessToRender"
+                },
+                {
+                    "action": "initTableData",
+                    "condition": "conditions.isFutureTaskTableVisible"
+                },
+                {
+                    "action": "updateTable",
+                    "condition": "conditions.isFutureTaskTableVisible"
+                }
+            ]
+        },
+        "getSelectedProcessToRender": {
+            "actionType": "JSFunction",
+            "method": "cacheSelection",
+            "inputData": {
+                "selectedProcess": "{{props.subPanelContext.xrtState.value.customContext.selectedProcess}}"
+            },
+            "outputData": {
+                "renderProcessUid": ""
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        },
+        "updateTable": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{fields.assignmentState}}",
+                "value": {
+                    "isReloadTable": true,
+                    "parentChildMap": null,
+                    "taskAssignmentDataObject": null,
+                    "isStartEditEnabled": false,
+                    "isModified": false,
+                    "selectedPals": []
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "handleCdmRelatedModifiedFutureTaskBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "isRefreshFutureTaskNeeded",
+                    "condition": "parameters.eventData.refreshLocationFlag && data.renderObject"
+                },
+                {
+                    "action": "resetInitialSelectedProcess",
+                    "condition": "parameters.eventData.refreshLocationFlag && data.isRefreshFutureTaskTable"
+                },
+                {
+                    "action": "initTableData",
+                    "condition": "parameters.eventData.refreshLocationFlag && data.isRefreshFutureTaskTable && conditions.isFutureTaskTableVisible"
+                },
+                {
+                    "action": "updateTable",
+                    "condition": "parameters.eventData.refreshLocationFlag && data.isRefreshFutureTaskTable && conditions.isFutureTaskTableVisible"
+                }
+            ]
+        },
+        "isRefreshFutureTaskNeeded": {
+            "actionType": "JSFunction",
+            "method": "isRefreshLocationNeeded",
+            "deps": "js/Awp0WorkflowUtils",
+            "inputData": {
+                "eventdata": "{{parameters.eventData}}",
+                "selection": [
+                    "{{data.adaptedObjects[0]}}",
+                    "{{data.renderObject}}"
+                ]
+            },
+            "outputData": {
+                "isRefreshFutureTaskTable": ""
+            }
+        }
+    },
+    "functions":
+    {
+
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "awCommandPanelSection.collapse",
+            "action": "populateOrHideFutureTaskBatchAction",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "workflowNativeBreadCrumb.update",
+            "condition": "conditions.isFutureTaskTableVisible",
+            "action": "collapseUpcomingTaskTable"
+        },
+        {
+            "eventId": "workflowViewer.openProcessInViewer",
+            "condition": "conditions.isFutureTaskTableVisible",
+            "action": "collapseUpcomingTaskTable"
+        },
+        {
+            "eventId": "workflow.collapseFutureTaskTable",
+            "condition": "conditions.isFutureTaskTableVisible",
+            "action": "collapseUpcomingTaskTable"
+        },
+        {
+            "eventId": "cdm.relatedModified",
+            "action": "handleCdmRelatedModifiedFutureTaskBatchAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+
+    ],
+
+    "data":
+    {
+        "sectionCommands": "Awp0EditCommands_Right",
+        "assignmentState": {
+            "initialValues": {
+                "isStartEditEnabled": false,
+                "isModified": false
+            },
+            "meta": {
+            }
+        },
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initFutureTasksPanel",
+        "onUnmount": "closeOpenPanel",
+        "onUpdate": [
+            {
+                "action": "handleSelectionBatchJob",
+                "observers": [ "viewModel.atomicData.selectionData.selected" ]
+            },
+            {
+                "action": "updateFutureTasksTable",
+                "observers": [ "props.subPanelContext.xrtState.value.customContext.selectedProcess" ]
+            }
+        ]
+    },
+    "ctx": {
+        "activeToolsAndInfoCommand.commandId": null
+    },
+    "conditions":
+    {
+        "isFutureTaskViewForNonTaskObject": {
+            "expression": "( data.adaptedObjects[0].modelType.typeHierarchyArray.indexOf('EPMTask') <= -1 && data.adaptedObjects[0].modelType.typeHierarchyArray.indexOf('Signoff') <= -1)"
+        },
+        "isFutureTaskTableVisible": {
+            "expression": "data.isFutureTaskTableVisible"
+        }
+    },
+    "i18n":
+    {
+        "upcomingTasks": ["InboxMessages"]
+    }
+
+}

@@ -1,0 +1,443 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+    ],
+    "lifecycleHooks": {
+        "render": "render",
+        "onMount": "getTreeData",
+        "onUpdate": [],
+        "onUnmount": "clearSelectedNode"
+    },
+    "actions": {
+        "render": {
+            "method": "awSavedQueryStandardClauseRenderFunction",
+            "deps": "js/AwSavedQueryStandardClauseService"
+        },
+        "getTypeDescriptions": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2015-10-Session",
+            "method": "getTypeDescriptions2",
+            "inputData": {
+                "typeNames": ["{{props.subPanelContext.queryState.currentSearchType}}"]
+            },
+            "outputData": {
+                "typeDescriptionsOutput": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "getParentTypeProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2015-10-Session",
+            "method": "getTypeDescriptions2",
+            "inputData": {
+                "typeNames": ["{{data.typeDescriptionsOutput.types[0].parentTypeName}}"]
+            },
+            "outputData": {
+                "parentTypeProperties": "{{function:parseParentTypeProperties}}"
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "getTreeData": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getAddClausePanelDisplayNameInternalNamePref"
+                },
+                {
+                    "action": "getAddClausePanelTypePropertyAllPropertyPref"
+                },
+                {
+                    "action": "getTypeDescriptions"
+                },
+                {
+                    "action": "getParentTypeProperties"
+                },
+                {
+                    "action": "renameKeys"
+                },
+                {
+                    "action": "expandRoot"
+                },
+                {
+                    "action": "removeNonSelectedTypesFromTree"
+                },
+                {
+                    "action": "filterTreeForStandard"
+                },
+                {
+                    "action": "sortPropertiesByDisplayName"
+                },
+                {
+                    "action": "removeDuplicateProperties"
+                },
+                {
+                    "action": "filterOutLongStringPropTypes"
+                },
+                {
+                    "action": "updateHierarchyString"
+                },
+                {
+                    "action": "addDummyChildren"
+                },
+                {
+                    "action": "assignChildTreeToParent"
+                },
+                {
+                    "action": "filterTreeByTypeProperties"
+                }
+            ]
+        },
+        "renameKeys": {
+            "actionType": "JSFunction",
+            "method": "renameKeys",
+            "inputData": {
+                "typeDescriptionsTypes": "{{data.typeDescriptionsOutput.types}}"
+            },
+            "outputData": {
+                "tempTree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "expandRoot": {
+            "actionType": "JSFunction",
+            "method": "expandRoot",
+            "inputData": {
+                "tempTree": "{{data.tempTree}}"
+            },
+            "outputData": {
+                "tempTree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "removeNonSelectedTypesFromTree": {
+            "actionType": "JSFunction",
+            "method": "removeNonSelectedTypesFromTree",
+            "inputData": {
+                "tempTree": "{{data.tempTree}}"
+            },
+            "outputData": {
+                "tempTree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "updateTreeSelection": {
+            "actionType": "JSFunction",
+            "method": "updateTreeSelection",
+            "inputData": {
+                "node": "{{parameters.eventData.node}}",
+                "searchState": "{{props.subPanelContext.context.searchState}}"
+            },
+            "outputData": {
+                "selectedNode": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "handleTreeSelection": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearSelectedNode"
+                },
+                {
+                    "action": "updateTreeSelection"
+                },
+                {
+                    "action": "updateSubPanelContextForTypeSelectionPopup"
+                },
+                {
+                    "action": "changeActiveViewToSelectType"
+                }
+            ]
+        },
+        "updateSubPanelContextForTypeSelectionPopup": {
+            "actionType": "JSFunction",
+            "method": "updateSubPanelContextForTypeSelectionPopup",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "viewModel": "{{data}}"
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "changeActiveViewToSelectType": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.context.searchState}}",
+                "value": {
+                    "activeView": "selectType"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "filterTreeForStandard": {
+            "actionType": "JSFunction",
+            "method": "filterTreeByPropertyTypes",
+            "inputData": {
+                "tempTree": "{{data.tempTree}}",
+                "types": [1, 2]
+            },
+            "outputData": {
+                "tempTree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "filterTreeByQuery": {
+            "actionType": "JSFunction",
+            "method": "filterTreeByQuery",
+            "inputData": {
+                "searchQuery": "{{data.searchBox.dbValue}}",
+                "tree": "{{data.tree}}"
+            },
+            "outputData": {
+                "filteredTreeByQuery": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "filterTreeWithSearchBox": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearSelectedNode"
+                },
+                {
+                    "action": "filterTreeByQuery"
+                },
+                {
+                    "action": "filterTreeByTypeProperties"
+                },
+                {
+                    "action": "addDummyChildrenAfterFiltering"
+                }
+            ]
+        },
+        "sortPropertiesByDisplayName": {
+            "actionType": "JSFunction",
+            "method": "sortPropertiesByDisplayName",
+            "inputData": {
+                "tempTree": "{{data.tempTree}}"
+            },
+            "outputData": {
+                "tempTree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "removeDuplicateProperties": {
+            "actionType": "JSFunction",
+            "method": "removeDuplicateProperties",
+            "inputData": {
+                "tempTree": "{{data.tempTree}}"
+            },
+            "outputData": {
+                "tempTree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "filterOutLongStringPropTypes": {
+            "actionType": "JSFunction",
+            "method": "filterOutLongStringPropTypes",
+            "inputData": {
+                "tempTree": "{{data.tempTree}}"
+            },
+            "outputData": {
+                "tempTree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "updateHierarchyString": {
+            "actionType": "JSFunction",
+            "method": "updateHierarchyString",
+            "inputData": {
+                "tempTree": "{{data.tempTree}}",
+                "childHierarchyPath": "{{data.childHierarchyPath}}"
+            },
+            "outputData": {
+                "tempTree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "addDummyChildren": {
+            "actionType": "JSFunction",
+            "method": "addDummyChildren",
+            "inputData": {
+                "tempTree": "{{data.tempTree}}",
+                "workspaceObjectSubTypes": "{{props.subPanelContext.workspaceObjectSubTypes}}"
+            },
+            "outputData": {
+                "tempTree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "addDummyChildrenAfterFiltering": {
+            "actionType": "JSFunction",
+            "method": "addDummyChildrenAfterFiltering",
+            "inputData": {
+                "filteredTree": "{{data.filteredTree}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "filteredTree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "assignChildTreeToParent": {
+            "actionType": "JSFunction",
+            "method": "assignChildTreeToParent",
+            "inputData": {
+                "tree": "{{data.tree}}",
+                "childTree": "{{data.tempTree}}",
+                "childHierarchyPath": "{{data.childHierarchyPath}}"
+            },
+            "outputData": {
+                "tree": ""
+            },
+            "events": {
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "switchViewMode": {
+            "actionType": "JSFunction",
+            "method": "switchViewMode",
+            "inputData": {
+                "newViewMode": "{{parameters.eventData.newViewMode}}"
+            },
+            "outputData": {
+                "displayMode": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "clearSelectedNode": {
+            "actionType": "JSFunction",
+            "method": "clearSelectedNode",
+            "inputData": {
+                "tree": "{{data.tree}}",
+                "filteredTree": "{{data.filteredTree}}",
+                "searchState": "{{props.subPanelContext.context.searchState}}"
+            },
+            "outputData": {
+                "selectedNode": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "switchTypeOrAllProperties": {
+            "actionType": "JSFunction",
+            "method": "switchTypeOrAllProperties",
+            "inputData": {
+                "newTypeOrAllMode": "{{parameters.eventData.newTypeOrAllMode}}"
+            },
+            "outputData": {
+                "typeOrAllProperties": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "filterTreeByTypeProperties": {
+            "actionType": "JSFunction",
+            "method": "filterTreeByTypeProperties",
+            "inputData": {
+                "tree": "{{data.tree}}",
+                "filteredTreeByQuery": "{{data.filteredTreeByQuery}}",
+                "searchBoxValue": "{{data.searchBox.dbValue}}",
+                "typeOrAllProperties": "{{data.typeOrAllProperties}}",
+                "parentPropertyDescriptors": "{{data.parentTypeProperties}}"
+            },
+            "outputData": {
+                "filteredTree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "updateTypeOrAllProperties": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearSelectedNode"
+                },
+                {
+                    "action": "switchTypeOrAllProperties"
+                },
+                {
+                    "action": "filterTreeWithSearchBox",
+                    "condition": "data.searchBox.dbValue"
+                },
+                {
+                    "action": "filterTreeByTypeProperties"
+                }
+            ]
+        },
+        "getAddClausePanelDisplayNameInternalNamePref": {
+            "actionType": "JSFunction",
+            "method": "getAddClausePanelDisplayNameInternalNamePref",
+            "outputData": {
+                "displayMode": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "getAddClausePanelTypePropertyAllPropertyPref": {
+            "actionType": "JSFunction",
+            "method": "getAddClausePanelTypePropertyAllPropertyPref",
+            "outputData": {
+                "typeOrAllProperties": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "updateTreeSelectionBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearSelectedNode"
+                },
+                {
+                    "action": "updateTreeSelection"
+                }
+            ]
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "data": {
+        "searchBox": {
+            "dbValue": "",
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "propertyDisplayName": "",
+            "requiredText": "{{i18n.filterProperties}}"
+        }
+    },
+    "functions": {
+        "parseParentTypeProperties": {
+            "functionName": "parseParentTypeProperties",
+            "parameters": []
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "propertyTree.treeNodeSelected",
+            "action": "updateTreeSelectionBatchJob",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Awp0SavedQueryAddClausePanelChangeViewMode",
+            "action": "switchViewMode",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Awp0SavedQueryAddClausePanelChangeTypeOrAllProperties",
+            "action": "updateTypeOrAllProperties",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+    ],
+    "messages": {},
+    "conditions": {},
+    "i18n": {
+        "filterProperties": [ "SearchMessages" ]
+    }
+}

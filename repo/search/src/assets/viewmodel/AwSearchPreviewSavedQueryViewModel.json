@@ -1,0 +1,243 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "lovDataInfo": {},
+        "resultSectionID": 1,
+        "_isInputSectionCollapsed": false,
+        "selectionData": {
+            "initialValues": {
+            },
+            "meta": {}
+        },
+        "searchState": {
+            "initialValues": {
+                "provider" : "Awp0SavedQuerySearchProvider",
+                "advancedSearchCriteria": "",
+                "savedQuery":{
+                    "name": "",
+                    "value": ""
+                }
+            },
+            "meta": {}
+        }
+    },
+    "props": {
+        "advSearchVMO": {
+            "type": "object"
+        },
+        "advQueryAttributes": {
+            "type": "object"
+        },
+        "hide-title": {
+            "type": "BOOLEAN"
+        },
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "show-result": {
+            "type": "object"
+        },
+        "active-search": {
+            "type": "object"
+        }
+    },
+    "actions": {
+        "populateInputCaption": {
+            "actionType": "JSFunction",
+            "method": "populateInputCaption",
+            "inputData": {
+                "resultsText": "{{i18n.inputText}}"
+            },
+            "outputData": {
+                "inputText": "inputText"
+            },
+            "deps": "js/advancedSearchService"
+        },
+        "getAttributeModelObject": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2016-12-AdvancedSearch",
+            "method": "getSelectedQueryCriteria",
+            "inputData": {
+                "selectedQuery": {
+                    "uid": "{{props.subPanelContext.searchState.pwaSelection[0].uid}}",
+                    "type": "ImanQuery"
+                }
+            },
+            "outputData": {
+                "advancedQueryAttributeModelObject": "{{function:updateSearchAttributesWithSelectedQuery}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "updateAttributes"
+                } ]
+            },
+            "deps": "js/advancedSearchService"
+        },
+        "updateAttributes": {
+            "actionType": "JSFunction",
+            "method": "updateOrClearSearchAttributes",
+            "inputData": {
+                "data": {
+                    "advancedQueryAttributeModelObject": "{{data.advancedQueryAttributeModelObject}}",
+                    "awp0AdvancedVMObject": {
+                        "props": {
+                            "awp0AdvancedQueryName": {
+                                "dbValue": "{{props.subPanelContext.searchState.pwaSelection[0].uid}}"
+                            }
+                        }
+                    }
+                },
+                "searchState": "{{subPanelContext.searchState}}"
+            },
+            "outputData": {
+                "awp0AdvancedQueryAttributes": ""
+            },
+            "deps": "js/advancedSearchService"
+        },
+        "doAdvancedSearch": {
+            "actionType": "JSFunction",
+            "method": "doAdvancedSearch",
+            "inputData": {
+                "awp0AdvancedVMObject": {
+                    "dbValue": "{{props.subPanelContext.searchState.pwaSelection[0].uid}}",
+                    "uiValues": "{{props.subPanelContext.searchState.pwaSelection[0].props.query_name.uiValues}}"
+                },
+                "awp0AdvancedQueryAttributes": "{{data.awp0AdvancedQueryAttributes}}",
+                "searchState": "{{fields.searchState}}",
+                "skipUrl": true
+            },
+            "deps": "js/advancedSearchService"
+        },
+        "clearAll": {
+            "actionType": "JSFunction",
+            "method": "clearAllAction",
+            "inputData": {
+                "attributes": "{{data.awp0AdvancedQueryAttributes}}"
+            },
+            "outputData": {
+                "awp0AdvancedQueryAttributes": ""
+            },
+            "deps": "js/advancedSearchUtils"
+        },
+        "updateResultsCaption": {
+            "actionType": "JSFunction",
+            "method": "updateResultsCaption",
+            "inputData": {
+                "resultsText": "{{i18n.resultsText}}",
+                "searchState": "{{data.searchState}}",
+                "customResultsCount": "{{data.searchState.WSOMFindSetSearchLimit}}"
+            },
+            "outputData": {
+                "resultsText": "resultsText"
+            },
+            "deps": "js/advancedSearchService"
+        },
+        "loadAttributeLOV": {
+            "actionType": "JSFunctionAsync",
+            "method": "getInitialLOVValues",
+            "inputData": {
+                "viewModel": "{{data}}",
+                "dataProviderName": "tcDataprovider"
+            },
+            "outputData": {
+                "lovDataInfo": "{{function:processLOVEntries}}"
+            },
+            "deps": "js/lovService"
+        },
+        "collapseInputSection": {
+            "actionType": "JSFunction",
+            "method": "collapseInputSection",
+            "inputData": {
+            },
+            "outputData": {
+                "_isInputSectionCollapsed": ""
+            },
+            "deps": "js/advancedSearchService"
+        },
+        "toggleInputSection": {
+            "actionType": "JSFunction",
+            "method": "toggleInputSection",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "searchContext": "{{data.searchState.preFilterContext}}"
+            },
+            "outputData": {
+                "_isInputSectionCollapsed": ""
+            },
+            "deps": "js/advancedSearchService"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "updateAttributes",
+            "action": "updateAttributes"
+        },
+        {
+            "eventId": "awPanelSection.collapse",
+            "action": "toggleInputSection",
+            "cacheEventData": true,
+            "criteria": {
+                "name": "inputSection"
+            }
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "populateInputCaption",
+        "onUpdate": [ {
+                "action": "updateResultsCaption",
+                "observers": [ "viewModel.searchState.cursorInfoString" ]
+            },
+            {
+                "action": "getAttributeModelObject",
+                "observers": [
+                    "props.subPanelContext.searchState.pwaSelection"
+                ]
+            },
+            {
+                "action": "collapseInputSection",
+                "observers": [
+                    "viewModel.searchState.referencingSavedQuery"
+                ]
+            }
+        ]
+    },
+    "conditions": {
+        "awp0AdvancedQueryNameChanged": {
+            "expression": "props.subPanelContext.searchState.pwaSelection[0].uid",
+            "trackValues": true
+        },
+        "isMobileMode": {
+            "expression": "subPanelContext.sidenavMode === 'mobile'"
+        },
+        "nonMobileMode": {
+            "expression": "subPanelContext.sidenavMode && subPanelContext.sidenavMode !== 'mobile'"
+        }
+    },
+    "dataProviders": {
+        "tcDataprovider": {
+            "initializeAction": "loadAttributeLOV",
+            "response": "{{data.lovDataInfo.lovEntries}}",
+            "moreValuesExist": "{{data.lovDataInfo.moreValuesExist}}",
+            "lovUsage": "{{data.lovDataInfo.lovUsage}}",
+            "totalFound": "{{data.totalFound}}"
+        }
+    },
+    "functions": {
+        "processLOVEntries": {
+            "functionName": "processLOVEntries"
+        },
+        "updateSearchAttributesWithSelectedQuery": {
+            "functionName": "updateSearchAttributesWithSelectedQuery",
+            "parameters": [
+                "{{response}}"
+            ]
+        }
+    },
+    "i18n": {
+        "resultsText": [ "SearchMessages" ],
+        "inputText": [ "SearchMessages" ],
+        "Awp0PreviewQuery": [ "SearchMessages" ],
+        "searchBtn": [ "SearchMessages" ]
+
+    }
+}

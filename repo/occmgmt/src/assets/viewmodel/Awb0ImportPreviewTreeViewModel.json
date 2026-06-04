@@ -1,0 +1,122 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "actions": {
+        "publishClientRefreshEventForPlTable": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "importPreviewTree.plTable.clientRefresh"
+                } ]
+            }
+        },
+        "doGridDataProvider": {
+            "actionType": "dataProvider",
+            "method": "importPreviewDataProvider"
+        },
+        "publishPreviewRefreshEventForPlTable": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "importPreviewTree.plTable.reload"
+                } ]
+            }
+        },
+        "loadTreeData": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeTableData",
+            "inputData": {
+                "treeLoadInput": "request.treeLoadInput",
+                "dataProvider": "{{data.dataProviders.importPreviewDataProvider}}",
+                "subPanelContext":"{{subPanelContext}}",
+                "declViewModel": "{{data}}",
+                "cursor": {
+                    "startIndex": -1,
+                    "endIndex": -1,
+                    "pageSize": 100,
+                    "startReached": false,
+                    "endReached": false
+                }
+            },
+            "outputData": {
+                "treeLoadResult": "treeLoadResult",
+                "searchResults": "childNodes",
+                "totalFound": "totalChildCount"
+            },
+            "deps": "js/importPreviewTreeDataService"
+        },
+        "loadImportPreviewProperties": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeTableProperties",
+            "inputData": {
+                "propertyLoadInput": "request.propertyLoadInput"
+            },
+            "deps": "js/importPreviewTreeDataService"
+        },
+        "dummyAction": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": []
+            }
+        }
+    },
+    "dataProviders": {
+        "importPreviewDataProvider": {
+            "initializeAction": "loadTreeData",
+            "nextAction": "loadTreeData",
+            "previousAction": "loadTreeData",
+            "cacheCollapse": true,
+            "treeLoadResult": "{{data.treeLoadResult}}",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "accessMode": "tree",
+                "topNodeUid": "{{subPanelContext.occContext.currentState.uid}}"
+            }
+        },
+        "importPreviewPropertyProvider": {
+            "action": "loadImportPreviewProperties",
+            "propertyLoadResult": "action.result.propertyLoadResult"
+        }
+
+    },
+    "columnProviders": {
+        "importPreviewColumnProvider": {
+            "saveColumnAndLoadAction": "dummyAction",
+            "resetColumnAction": "dummyAction",
+            "columns": "{{data.columns}}"
+        }
+    },
+    "grids": {
+        "importPreviewTree": {
+            "dataProvider": "importPreviewDataProvider",
+            "propertyProvider": "importPreviewPropertyProvider",
+            "columnProvider": "importPreviewColumnProvider",
+            "enableArrangeMenu": true,
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableDragAndDrop":false,
+                "enablePinning":false,
+                "enableSorting": false,
+                "enableGridMenu": false,
+                "useStaticFirstCol": true,
+                "showContextMenu": false
+            }
+        }
+    },
+    "onEvent": [ {
+        "eventId": "dataProvider.reset",
+        "action": "doGridDataProvider"
+    },
+    {
+        "eventId": "reRenderTableOnClient",
+        "action": "publishClientRefreshEventForPlTable"
+    },
+    {
+        "eventId": "reloadPreview",
+        "action": "publishPreviewRefreshEventForPlTable"
+    } ],
+    "i18n": {}
+}

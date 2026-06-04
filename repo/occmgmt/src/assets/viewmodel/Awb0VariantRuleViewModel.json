@@ -1,0 +1,149 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-link-with-popup.directive",
+        "js/aw-property-non-edit-val.directive",
+        "js/aw-include.directive"
+    ],
+    "actions": {
+        "initializeVariantInfo": {
+            "actionType": "JSFunction",
+            "method": "getInitialVariantConfigurationData",
+            "inputData": {
+                "data": "{{data}}",
+                "occContext":"{{props.subPanelContext.occContext}}",
+                "configSvrEndItem": "{{props.subPanelContext.configSvrEndItem}}"
+            },
+            "outputData":{
+                "appliedVariantRules":"appliedVariantRules",
+                "openProduct":"openProduct"
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "addNewVariantRule": {
+            "actionType": "JSFunction",
+            "method": "addNewVariantRule",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData":{
+                "newVariantRule":"newVariantRule",
+                "appliedVariantRules":"appliedVariantRules"
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "clearVariantInfo": {
+            "actionType": "JSFunction",
+            "method": "clearVariantConfigurationData",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "updateCurrentVariantRule": {
+            "actionType": "JSFunction",
+            "method": "updateCurrentVariantRule",
+            "inputData": {
+                "data": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "outputData":{
+                "appliedVariantRules":"appliedVariantRules"
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "unsetVariantRuleChangeFlag": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "variantRule.changeRule",
+                "value": false
+            },
+            "deps": "js/appCtxService"
+        }
+    },
+    "conditions": {
+        "isUpdateApplicable": {
+            "expression": "subPanelContext.occContext.viewKey === viewKey"
+        },
+        "isInAce": {
+            "expression": "ctx.sublocation.clientScopeURI === 'Awb0OccurrenceManagement' && ctx.sublocation.nameToken !== com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+        }
+
+    },
+    "lifecycleHooks": {
+        "onUpdate":
+        {
+            "action": "initializeVariantInfo",
+            "observers": [ "props.subPanelContext.occContext.supportedFeatures","props.subPanelContext.occContext.productContextInfo"]
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "awConfigPanel.variantInfoChanged",
+            "cacheEventData": true,
+            "condition": "conditions.isUpdateApplicable",
+            "action": "updateCurrentVariantRule"
+        },
+        {
+            "eventId": "awConfigPanel.newVariantRuleCreated",
+            "action": "clearVariantInfo"
+        },
+        {
+            "eventId": "occDataLoadedEvent",
+            "action": "unsetVariantRuleChangeFlag"
+        },
+        {
+            "eventId": "awb0AddNewVariantRuleCmdEvent",
+            "action": "addNewVariantRule"
+        }
+    ],
+    "data": {
+        "defaultVariantRule": {
+            "displayName": "{{i18n.useNoVariantRuleLabel}}",
+            "uiValue": "{{i18n.useNoVariantRuleLabel}}",
+            "type": "STRING"
+        },
+        "currentVariantRule": {
+            "uiValue": "{{data.currentVariantRule}}",
+            "type": "STRING"
+        },
+        "customVariantRule": {
+            "displayName": "{{i18n.customVariantRule}}",
+            "type": "STRING"
+        },
+        "newVariantRule": {
+            "displayName": "{{i18n.new}}",
+            "type": "STRING"
+        },
+        "customVariantPanelTitle": {
+            "uiValue": "{{i18n.customVariantRule}}",
+            "type": "STRING"
+        },
+        "isCustomVariantRuleApplied": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        },
+        "variantRuleFilterBox": {
+            "displayName": "{{i18n.filter}}",
+            "type": "STRING",
+            "dbValue": ""
+        }
+    },
+
+    "functions": {
+
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "i18n": {
+        "customVariantRule": [ "OccurrenceManagementConstants" ],
+        "useNoVariantRuleLabel": [ "OccurrenceManagementConstants" ],
+        "errorInGettingPreferredConfigInfo": [ "OccurrenceManagementMessages" ],
+        "new": [ "OccurrenceManagementConstants" ],
+        "filter": [ "OccurrenceManagementConstants" ]
+    }
+}

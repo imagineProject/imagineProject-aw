@@ -1,0 +1,243 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports": [],
+    "actions": {
+        "updatePropsEditability": {
+            "actionType": "JSFunction",
+            "method": "updatePropsEditability",
+            "inputData": {
+                "isEditing": "{{props.subPanelContext.context.searchState.editing}}"
+            },
+            "outputData": {
+                "queryName.isEditable": "isEditable",
+                "queryName.isEnabled": "isEditable",
+                "queryDescription.isEditable": "isEditable",
+                "queryDescription.isEnabled": "isEditable"
+            },
+            "deps": "js/AwSearchQueryBuilderService"
+        },
+        "editingValueChanged": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updatePropsEditability"
+                },
+                {
+                    "action": "resetQueryNameAndDesc",
+                    "condition": "props.subPanelContext.context.searchState.editing === 'cancel'"
+                }
+            ]
+        },
+        "updateQueryNameState": {
+            "actionType": "JSFunction",
+            "method": "updateQueryNameState",
+            "inputData": {
+                "queryNameProp": "{{data.queryName}}",
+                "queryState": "{{data.queryState}}"
+            },
+            "deps": "js/AwSearchQueryBuilderService"
+        },
+        "saveQuery": {
+            "actionType": "JSFunction",
+            "method": "saveQuery",
+            "inputData": {
+                "queryState": "{{data.queryState}}",
+                "currentClauses": "{{parameters.eventData.clauses}}",
+                "searchState": "{{props.subPanelContext.context.searchState}}"
+            },
+            "deps": "js/AwSearchQueryBuilderService"
+        },
+        "updateQueryDescState": {
+            "actionType": "JSFunction",
+            "method": "updateQueryDescState",
+            "inputData": {
+                "queryDescProp": "{{data.queryDescription}}",
+                "queryState": "{{data.queryState}}"
+            },
+            "deps": "js/AwSearchQueryBuilderService"
+        },
+        "initializeQueryStateBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getQueryProperties"
+                },
+                {
+                    "action": "initializeQueryState"
+                },
+                {
+                    "action": "setGetQueryClausesFlag"
+                }
+            ]
+        },
+        "setGetQueryClausesFlag": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.context.searchState}}",
+                "value": {
+                    "getQueryClausesFlag": true
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "initializeQueryState": {
+            "actionType": "JSFunction",
+            "method": "initializeQueryState",
+            "inputData": {
+                "queryState": "{{data.queryState}}",
+                "searchStateUpdater": "{{data.updateAtomicData}}",
+                "queryNameProp": "{{data.queryName}}",
+                "queryDescriptionProp": "{{data.queryDescription}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "outputData": {
+                "queryName": "queryNameProp",
+                "queryDescription": "queryDescProp"
+            },
+            "deps": "js/AwSearchQueryBuilderService"
+        },
+        "resetEditingValue": {
+            "actionType": "JSFunction",
+            "method": "resetEditingValue",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/AwSearchQueryBuilderService"
+        },
+        "resetEditingValueBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "resetEditingValue",
+                    "condition": "!props.subPanelContext.context.searchState.saveAsUid"
+                }
+            ]
+        },
+        "setStartEdit": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.context.searchState}}",
+                "value": {
+                    "editing": "startEdit"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "setStartEditBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setStartEdit",
+                    "condition": "props.subPanelContext.context.searchState.saveAsUid && props.subPanelContext.context.searchState.saveAsUid !== ''"
+                }
+            ]
+        },
+        "resetQueryNameAndDesc": {
+            "actionType": "JSFunction",
+            "method": "resetQueryNameAndDesc",
+            "inputData": {
+                "queryState": "{{data.queryState}}",
+                "queryNameProp": "{{data.queryName}}",
+                "queryDescriptionProp": "{{data.queryDescription}}"
+            },
+            "outputData": {
+                "queryName": "queryNameProp",
+                "queryDescription": "queryDescProp"
+            },
+            "deps": "js/AwSearchQueryBuilderService"
+        },
+        "getQueryProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": [
+                    {
+                        "uid": "{{props.subPanelContext.selected.uid}}",
+                        "type": "ImanQuery"
+                    }
+                ],
+                "attributes": [
+                    "query_name",
+                    "query_desc",
+                    "query_clauses"
+                ]
+            },
+            "deps": "js/AwSearchQueryBuilderService"
+        }
+    },
+    "data": {
+        "queryName": {
+            "displayName": "{{i18n.Name}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": false,
+            "isEnabled": false,
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE"
+        },
+        "queryDescription": {
+            "displayName": "{{i18n.Description}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "numberOfLines": 3,
+            "maxLength": 4000,
+            "renderingHint": "textarea",
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE",
+            "isEditable": false,
+            "isEnabled": false
+        },
+        "queryState": {
+            "initialValues": {},
+            "meta": {
+            }
+        }
+    },
+    "functions": {},
+    "conditions": {},
+    "messages": {},
+    "lifecycleHooks": {
+        "onMount": "initializeQueryStateBatchJob",
+        "onUpdate": [
+            {
+                "action": "editingValueChanged",
+                "observers": [ "props.subPanelContext.context.searchState.editing" ]
+            },
+            {
+                "action": "resetEditingValue",
+                "observers": [ "props.subPanelContext.selected.uid" ]
+            },
+            {
+                "action": "updateQueryNameState",
+                "observers": [ "viewModel.data.queryName.dbValue" ]
+            },
+            {
+                "action": "updateQueryDescState",
+                "observers": [ "viewModel.data.queryDescription.dbValue" ]
+            },
+            {
+                "action": "saveQuery",
+                "observers": [ "viewModel.data.queryState.currentClauses" ]
+            },
+            {
+                "action": "setStartEditBatchJob",
+                "observers": [ "props.subPanelContext.context.searchState.saveAsUid" ]
+            }
+        ]
+    },
+    "onEvent": [
+        {
+            "eventId": "ImanQueryOverviewClausesUpdated",
+            "action": "saveQuery",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+    ],
+    "i18n": {
+        "Name": [ "SearchMessages" ],
+        "Description": [ "SearchMessages" ],
+        "properties": [ "SearchMessages" ]
+    }
+}

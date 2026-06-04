@@ -1,0 +1,535 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-default-cell.directive",
+        "js/aw-list.directive",
+        "js/aw-splitter.directive",
+        "js/aw-button.directive",
+        "js/aw-i18n.directive",
+        "js/aw-togglebutton.directive",
+        "js/aw-separator.directive",
+        "js/visible-when.directive",
+        "js/extended-tooltip.directive",
+        "js/aw-link-with-popup-menu.directive",
+        "js/aw-guidance-message.directive"
+    ],
+    "dataProviders": {
+        "DataAssistantValuesProvider": {
+            "dataProviderType": "Static",
+            "response": [ {
+                    "staticDisplayValue": "{{i18n.MyRecent}}",
+                    "staticElementObject": "MyRecent",
+                    "dbValue": "MyRecent",
+                    "selected": true
+                },
+                {
+                    "staticDisplayValue": "{{i18n.TeamRecent}}",
+                    "staticElementObject": "TeamRecent",
+                    "dbValue": "TeamRecent",
+                    "selected": false
+                },
+                {
+                    "staticDisplayValue": "{{i18n.favoritesTitle}}",
+                    "staticElementObject": "Favorites",
+                    "dbValue": "Favorites",
+                    "selected": false
+                },
+                {
+                    "staticDisplayValue": "{{i18n.Clipboard}}",
+                    "staticElementObject": "Clipboard",
+                    "dbValue": "Clipboard",
+                    "selected": false
+                }
+            ],
+            "totalFound": 4,
+            "inputData": {
+                "selectionData": "{{fields.selectionData}}"
+            }
+        },
+        "TeamRecentProvider": {
+            "action": "getRelevantObjects",
+            "response": "{{data.relevantSearchResults}}",
+            "totalFound": "{{data.relevantTotalFound}}",
+            "commandsAnchor": "awa_dataAssistant"
+        },
+        "MyRecentProvider": {
+            "action": "getRecentObjects",
+            "response": "{{data.recentSearchResults}}",
+            "totalFound": "{{data.recentTotalFound}}",
+            "commandsAnchor": "awa_dataAssistant"
+        },
+        "MyClipboardProvider": {
+            "action": "updateClipboardContent",
+            "response": "{{data.awaClipboardContent}}",
+            "totalFound": "{{data.awaClipboardContent.length}}",
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        },
+        "MyFavoritesProvider": {
+            "action": "getFavoritesObjects",
+            "response": "{{data.favoritesSearchResults}}",
+            "totalFound": "{{data.favoritesTotalFound}}",
+            "commandsAnchor": "awa_dataAssistant"
+        }
+    },
+    "actions": {
+        "initMyRecent": {
+            "actionType": "dataProvider",
+            "method": "MyRecentProvider"
+        },
+        "initTeamsRecent": {
+            "actionType": "dataProvider",
+            "method": "TeamRecentProvider"
+        },
+        "initMyFavorites": {
+            "actionType": "dataProvider",
+            "method": "MyFavoritesProvider"
+        },
+        "initClipboard": {
+            "actionType": "dataProvider",
+            "method": "MyClipboardProvider"
+        },
+        "initRecent": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "initMyRecent",
+                    "condition": "conditions.isRecent"
+                },
+                {
+                    "action": "initClipboard",
+                    "condition": "conditions.isClipboard"
+                },
+                {
+                    "action": "initMyFavorites",
+                    "condition": "conditions.isFavorites"
+                },
+                {
+                    "action": "initTeamsRecent",
+                    "condition": "conditions.isTeamRecent"
+                }
+            ]
+        },
+        "EnablePrediction": {
+            "actionType": "JSFunction",
+            "method": "enablePrediction",
+            "deps": "js/PredictiveUtils"
+        },
+        "DisablePrediction": {
+            "actionType": "JSFunction",
+            "method": "disablePrediction",
+            "deps": "js/PredictiveUtils"
+        },
+        "getRecentObjects": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "attributesToInflate": [
+                            "awp0CellProperties",
+                            "awp0ThumbnailImageTicket"
+                        ],
+                        "searchCriteria": {
+                            "search": ""
+                        },
+                        "maxToLoad": "{{data.maxCountMyRecent}}",
+                        "maxToReturn": "{{data.maxCountMyRecent}}",
+                        "startIndex": 0,
+                        "providerName": "Awp0RecentObjectsProvider"
+                    }
+                }
+            },
+            "outputData": {
+                "recentTotalFound": "totalLoaded",
+                "recentSearchResults": "{{json:searchResultsJSON}}"
+            }
+        },
+        "getRelevantObjects": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData": {
+                "searchInput": {
+                    "attributesToInflate": [
+                        "awp0CellProperties",
+                        "awp0ThumbnailImageTicket"
+                    ],
+                    "maxToLoad": "{{data.maxCountTeamRecent}}",
+                    "maxToReturn": "{{data.maxCountTeamRecent}}",
+                    "startIndex": 0,
+                    "providerName": "{{ctx.preferences.AWA_provider_as_team_recent[0]}}"
+                }
+            },
+            "outputData": {
+                "relevantTotalFound": "totalLoaded",
+                "relevantSearchResults": "searchResults"
+            }
+        },
+        "getFavoritesObjects": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "attributesToInflate": [
+                            "awp0CellProperties",
+                            "awp0ThumbnailImageTicket"
+                        ],
+                        "searchCriteria": {
+                            "search": ""
+                        },
+                        "maxToLoad": "{{data.maxCountFavorites}}",
+                        "maxToReturn": "{{data.maxCountFavorites}}",
+                        "startIndex": 0,
+                        "searchFilterFieldSortType": "Priority",
+                        "providerName": "Awp0FavoritesProvider"
+                    }
+                }
+            },
+            "outputData": {
+                "favoritesTotalFound": "totalLoaded",
+                "favoritesSearchResults": "{{json:searchResultsJSON}}"
+            }
+        },
+        "populateFreshPrediction": {
+            "actionType": "JSFunction",
+            "method": "serviceCall",
+            "inputData": {
+                "eventData": "{{data.eventData}}"
+            },
+            "outputData": {
+                "predictions": ""
+            },
+            "deps": "js/PredictiveUtils"
+        },
+        "populatePredictions": {
+            "actionType": "JSFunction",
+            "method": "populatePredictions",
+            "deps": "js/PredictiveUtils"
+        },
+        "selectionChangeEventAction": {
+            "actionType": "JSFunction",
+            "method": "selectionChangeEventListener",
+            "inputData": {
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/PredictiveUtils"
+        },
+        "stateChangeEventAction": {
+            "actionType": "JSFunction",
+            "method": "stateChangeEventListener",
+            "inputData": {
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/PredictiveUtils"
+        },
+        "loadMoreRecentObjects": {
+            "actionType": "JSFunction",
+            "method": "updateMaxCount",
+            "inputData": {
+                "maxCount": "{{data.maxCountMyRecent}}",
+                "type": "MyRecent"
+            },
+            "outputData": {
+                "maxCountMyRecent": "result.newMaxCount"
+            },
+            "events": {
+                "success": [ {
+                    "name": "loadMoreMyRecents"
+                } ]
+            },
+            "deps": "js/PredictiveUtils"
+        },
+        "loadMoreTeamObjects": {
+            "actionType": "JSFunction",
+            "method": "updateMaxCount",
+            "inputData": {
+                "maxCount": "{{data.maxCountTeamRecent}}",
+                "type": "TeamRecent"
+            },
+            "outputData": {
+                "maxCountTeamRecent": "result.newMaxCount"
+            },
+            "events": {
+                "success": [ {
+                    "name": "loadMoreTeamRecents"
+                } ]
+            },
+            "deps": "js/PredictiveUtils"
+        },
+        "loadMoreFavoriteObjects": {
+            "actionType": "JSFunction",
+            "method": "updateMaxCount",
+            "inputData": {
+                "maxCount": "{{data.maxCountFavorites}}",
+                "type": "Favorites"
+            },
+            "outputData": {
+                "maxCountFavorites": "result.newMaxCount"
+            },
+            "events": {
+                "success": [ {
+                    "name": "loadMoreFavorites"
+                } ]
+            },
+            "deps": "js/PredictiveUtils"
+        },
+        "updateClipboardContent": {
+            "actionType": "JSFunction",
+            "method": "updateClipboardContent",
+            "outputData": {
+                "awaClipboardContent": "awaClipboardContent"
+            },
+            "deps": "js/PredictiveUtils"
+        },
+        "toggleBtnAction": {
+            "actionType": "JSFunction",
+            "method": "expertModeEnabled",
+            "inputData": {
+                "setexpertMode": "{{data.expertButton.dbValue}}",
+                "showTutorRibbon": "{{data.showTutorRibbon}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "expertButton.dbValue": "result.newExpertButtonDbValue",
+                "showTutorRibbon": "result.tutorRibbonStatus"
+            },
+            "deps": "js/PredictiveUtils"
+        },
+        "promptExpert": {
+            "actionType": "JSFunction",
+            "method": "promptExpert",
+            "deps": "js/PredictiveUtils",
+            "inputData": {
+                "expertButton": "{{data.expertButton}}",
+                "showTutorRibbon": "{{data.showTutorRibbon}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "expertButton.dbValue": "result.newExpertButtonDbValue",
+                "showTutorRibbon": "result.tutorRibbonStatus"
+            }
+        },
+        "tabChangeEventAction": {
+            "actionType": "JSFunction",
+            "method": "tabChangeEventListener",
+            "deps": "js/PredictiveUtils"
+        },
+        "dataAssistantChangeAction": {
+            "actionType": "JSFunction",
+            "method": "handleSelectionChange",
+            "inputData": {
+                "dataAssistantSelectionData": "{{data.selectionData}}"
+            },
+            "outputData": {
+                "currentDataAssistantOption": "result.currentDataAssistantOption"
+            },
+            "deps": "js/PredictiveUtils"
+        },
+        "rePopulatePrediction": {
+            "actionType": "JSFunction",
+            "method": "refreshPredictions",
+            "inputData": {
+                "oldPredictions": "{{data.predictions}}"
+            },
+            "deps": "js/PredictiveUtils"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "appCtx.register",
+            "criteria": {
+                "name": "mselected"
+            },
+            "action": "selectionChangeEventAction",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "appCtx.register",
+            "criteria": {
+                "name": "sublocation"
+            },
+            "action": "stateChangeEventAction",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "primary.tabSetRegistered",
+            "action": "tabChangeEventAction"
+        },
+        {
+            "eventId": "loadMoreTeamRecents",
+            "action": "initTeamsRecent"
+        },
+        {
+            "eventId": "loadMoreFavorites",
+            "action": "initMyFavorites"
+        },
+        {
+            "eventId": "loadMoreMyRecents",
+            "action": "initMyRecent"
+        },
+        {
+            "eventId": "appCtx.register",
+            "condition": "name === 'awClipBoardProvider'",
+            "action": "initClipboard"
+        },
+        {
+            "eventId": "appCtx.update",
+            "criteria": {
+                "name": "awSidenavConfig",
+                "target": "globalSidenavContext.globalNavigationSideNav"
+            },
+            "action": "promptExpert"
+        },
+        {
+            "eventId": "populatePrediction",
+            "action": "populateFreshPrediction",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "prediction-idle",
+            "action": "rePopulatePrediction"
+        },
+        {
+            "eventId": "assistant-state-change",
+            "action": "initRecent"
+        },
+        {
+            "eventId": "assistant-tab-change",
+            "action": "initRecent"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "EnablePrediction",
+        "onUnmount": "DisablePrediction",
+        "onUpdate": [
+            {
+                "action": "dataAssistantChangeAction",
+                "observers": [
+                    "viewModel.atomicData.selectionData"
+                ]
+            },
+            {
+                "action": "initRecent",
+                "observers": [
+                    "viewModel.data.currentDataAssistantOption"
+                ]
+            }
+        ]
+    },
+    "data": {
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "maxCountMyRecent": 5,
+        "maxCountTeamRecent": 5,
+        "maxCountFavorites": 5,
+        "anchorCount": 0,
+        "cellAnchorCount": 0,
+        "expertTimeout": 300,
+        "IsCellCmdVisible": true,
+        "showTutorRibbon": false,
+        "predictions": {},
+        "dataAssistant": {
+            "displayName": "{{i18n.MyRecent}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "dbValue": "MyRecent"
+        },
+        "expertButton": {
+            "displayName": "{{i18n.TutorModeTitle}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": false,
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE"
+        },
+        "tutorModeTooltip": {
+            "view": "extendedTooltipDefault"
+        },
+        "tutorModeTooltipContext": {
+            "title": "{{i18n.TutorModeTitle}}",
+            "description": "{{i18n.TutorModeDesc}}"
+        },
+        "currentDataAssistantOption": "MyRecent"
+    },
+    "conditions": {
+        "isRecent": {
+            "expression": "data.currentDataAssistantOption==='MyRecent'"
+        },
+        "isTeamRecent": {
+            "expression": "data.currentDataAssistantOption==='TeamRecent'"
+        },
+        "isFavorites": {
+            "expression": "data.currentDataAssistantOption==='Favorites'"
+        },
+        "isClipboard": {
+            "expression": "data.currentDataAssistantOption==='Clipboard'"
+        },
+        "loadMoreRecent": {
+            "expression": "data.currentDataAssistantOption==='MyRecent' && data.maxCountMyRecent == 5 && data.recentTotalFound > 0"
+        },
+        "loadMoreTeam": {
+            "expression": "data.currentDataAssistantOption==='TeamRecent' && data.maxCountTeamRecent == 5 && data.relevantTotalFound > 0"
+        },
+        "loadMoreFavorite": {
+            "expression": "data.currentDataAssistantOption==='Favorites' && data.maxCountFavorites == 5 && data.favoritesTotalFound > 0"
+        },
+        "expertModeEnabled": {
+            "expression": "(ctx.preferences.AWA_list_expert_users.includes(ctx.userSession.props.group_name.dbValue + '::' + ctx.userSession.props.role_name.dbValue + '::' + ctx.userSession.props.user_id.dbValue)) && (ctx.preferences.AWA_enable_command_addl_features[0] === 'true') && (ctx.awSidenavConfig.globalSidenavContext.globalNavigationSideNav.pinned === true)"
+        },
+        "showTutorRibbon": {
+            "expression": "data.showTutorRibbon"
+        }
+    },
+    "messages": {
+        "tutorModeOnMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.TutorModeRibbon}}"
+        }
+    },
+    "i18n": {
+        "PredictCommandTitle": [
+            "PredictiveUiMessages"
+        ],
+        "MyCommands": [
+            "PredictiveUiMessages"
+        ],
+        "MyRecent": [
+            "PredictiveUiMessages"
+        ],
+        "TeamRecent": [
+            "PredictiveUiMessages"
+        ],
+        "favoritesTitle": [
+            "ZeroCompileCommandBaseMessages"
+        ],
+        "Clipboard": [
+            "CaptionMessages"
+        ],
+        "MoreButtonText": [
+            "PredictiveUiMessages"
+        ],
+        "TutorModeDisabled": [
+            "PredictiveUiMessages"
+        ],
+        "TutorModeReminder": [
+            "PredictiveUiMessages"
+        ],
+        "TutorModeTitle": [
+            "PredictiveUiMessages"
+        ],
+        "TutorModeDesc": [
+            "PredictiveUiMessages"
+        ],
+        "TutorModeRibbon": [
+            "PredictiveUiMessages"
+        ],
+        "MORE_BUTTON_TITLE": [
+            "BaseMessages"
+        ]
+    }
+}

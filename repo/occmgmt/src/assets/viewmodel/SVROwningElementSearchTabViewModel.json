@@ -1,0 +1,198 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports": 
+    [
+        "js/aw-panel-body.directive",
+        "js/aw-search-box.directive",        
+        "js/aw-list.directive",
+        "js/aw-default-cell.directive"
+    ],
+
+    "actions": 
+    {
+        "search":
+        {
+            "actionType": "JSFunction",
+            "method": "fetchSubBOTypesForVariant",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },                  
+            "deps": "js/variantInfoConfigurationService"
+        },
+        
+        "fetchSubBOTypes": 
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-04-DataManagement",
+            "method": "findDisplayableSubBusinessObjectsWithDisplayNames",
+            "inputData":
+            {
+                "input": [ {
+                    "boTypeName": "ItemRevision",
+                    "exclusionBOTypeNames": []
+                } ]
+            },
+            "outputData":
+            {
+                "subBusinessObjects":"{{function:processSoaResponseForBOTypes}}" 
+            },
+            "deps": "js/endItemUnitEffectivityConfigurationService",
+            "events": {
+                "success":
+                    [{
+                        "name": "searchSVROwningItems.doSearch"
+                    }],
+                "failure":
+                    [{
+                        "name": "searchSVROwningItems.doSearch"
+                    }]                       
+            },
+            "actionMessages": {
+                "failure": 
+                [
+                    {
+                        "message": "errorInGettingSubtypesofEndItem"
+                    }
+                ]
+            }            
+        },     
+        
+        "doSearch":
+        {
+            "actionType": "dataProvider",
+            "method": "searchSVROwningItems"
+        },
+            
+        "searchForSVROwningItems": 
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2016-03-Finder",
+            "method": "performSearch",
+            "inputData":
+            {
+                "columnConfigInput":
+                {
+                    "clientName": "AWClient",
+                    "clientScopeURI":"Awp0SearchResults",
+                    "columnsToExclude": [],
+                    "hostingClientName": "",
+                    "operationType": "intersection"
+                },
+                "saveColumnConfigData":
+                {
+                    "columnConfigId": "",
+                    "clientScopeURI": "",
+                    "columns": [],
+                    "scope": "",
+                    "scopeName": ""
+                },
+                "searchInput":
+                {
+                    "attributesToInflate": [ "" ],
+                    "internalPropertyName": "",
+                    "maxToLoad": 50,
+                    "maxToReturn": 50,
+                    "providerName": "Awp0FullTextSearchProvider",
+                    "searchCriteria":
+                    {
+                       "searchString": "{{data.searchString.dbValue}}"
+                    },
+                    "searchFilterFieldSortType": "Priority",
+                    "searchFilterMap": {"WorkspaceObject.object_type" : "{{data.subBusinessObjects}}"},
+                    "searchSortCriteria": [],
+                    "startIndex": "{{data.dataProviders.searchSVROwningItems.startIndex}}"
+                }
+            },
+            "outputData":
+            {
+                "svrOwningItemsFound": "searchResults",
+                "svrOwningItemsTotalFound": "totalFound"
+            },
+            
+            "deps": "js/variantInfoConfigurationService"
+        },
+        
+        "svrOwningItemChanged":
+        {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [
+                    {
+                        "name": "configPanel.updateConfigItems"
+                    }                                     
+                ]
+            }
+        },
+
+        "updateConfigItems":
+        {
+            "actionType": "JSFunction",
+            "method": "updateConfigItems",
+            "inputData": 
+            {
+                "newItemSelected": "{{data.dataProviders.searchSVROwningItems.selectedObjects[0]}}",    
+                "occContext": "{{props.subPanelContext.occContext}}"
+            },
+        "deps": "js/variantInfoConfigurationService"
+        }
+    },
+
+    "data": 
+    {
+        "searchString": 
+        {
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "true",
+            "dbValue": ""
+        }  
+    },
+
+    "dataProviders": 
+    {
+        "searchSVROwningItems": 
+        {
+            "action": "searchForSVROwningItems",
+            "response": "{{data.svrOwningItemsFound}}",
+            "totalFound": "{{data.svrOwningItemsTotalFound}}",
+            "selectionModelMode": "single"
+        }
+    },
+    
+    "onEvent": [
+        {
+            "eventId": "searchSVROwningItems.selectionChangeEvent",
+            "action": "svrOwningItemChanged"
+        },
+        {
+            "eventId": "searchSVROwningItems.doSearch",
+            "action": "doSearch"
+        },
+        {
+            "eventId": "configPanel.updateConfigItems",
+            "action": "updateConfigItems"
+        },
+        {
+            "eventId": "searchSVROwningItems.fetchSubBOTypes",
+            "action": "fetchSubBOTypes"
+        }
+    ],
+    
+    "messages": 
+    {
+        "errorInGettingSubtypesofEndItem": 
+        {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.errorInGettingSubtypesofEndItem}}"
+        }
+    },
+    
+    "i18n": 
+    {   
+        "errorInGettingSubtypesofEndItem": ["OccurrenceManagementMessages"]
+    }  
+}

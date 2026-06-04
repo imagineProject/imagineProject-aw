@@ -1,0 +1,265 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "changeScope": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateScope"
+                },
+                {
+                    "action": "revealGroups",
+                    "condition": "conditions.isGroupScope"
+                },
+                {
+                    "action": "revealRoles",
+                    "condition": "conditions.isRoleScope"
+                },
+                {
+                    "action": "revealWorkspace",
+                    "condition": "conditions.isWorkspaceScope"
+                }
+            ]
+        },
+        "revealWorkspace": {
+            "actionType": "dataProvider",
+            "method": "workspaceNamesProvider"
+        },
+        "revealRoles": {
+            "actionType": "dataProvider",
+            "method": "searchForRoles"
+        },
+        "revealGroups": {
+            "actionType": "dataProvider",
+            "method": "searchForGroups"
+        },
+        "loadRoles": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData":
+            {
+                "searchInput":
+                {
+                    "maxToLoad": 50,
+                    "maxToReturn": 50,
+                    "providerName": "Awp0ResourceProvider",
+                    "searchCriteria": {
+                        "responseType": "",
+                        "searchString": "{{data.searchRoles.dbValue}}",
+                        "resourceProviderContentType": "Role"
+                    },
+                    "searchFilterFieldSortType": "Alphabetical",
+                    "searchFilterMap": {},
+                    "searchSortCriteria": [],
+                    "startIndex": "{{data.dataProviders.searchForRoles.startIndex}}"
+                }
+            },
+            "outputData":
+            {
+                "searchRoleResults": "{{function:parseRoleResults}}",
+                "totalRoles": "totalFound"
+            },
+            "deps": "js/AwColumnConfigScopeService"
+        },
+        "loadGroups": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData":
+            {
+                "searchInput":
+                {
+                    "maxToLoad": 50,
+                    "maxToReturn": 50,
+                    "providerName": "Awp0ResourceProvider",
+                    "searchCriteria": {
+                        "responseType": "",
+                        "searchString": "{{data.searchGroups.dbValue}}",
+                        "resourceProviderContentType": "Group"
+                    },
+                    "searchFilterFieldSortType": "Alphabetical",
+                    "searchFilterMap": {},
+                    "searchSortCriteria": [],
+                    "startIndex": "{{data.dataProviders.searchForGroups.startIndex}}"
+                }
+            },
+            "outputData":
+            {
+                "searchGroupResults": "{{function:parseGroupResults}}",
+                "totalGroups": "totalFound"
+            },
+            "deps": "js/AwColumnConfigScopeService"
+        },
+        "getWorkspacesActionForColumnConfig": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2017-12-DataManagement",
+            "method": "getAvailableWorkspaces",
+            "inputData":
+            {
+                "filterParams":
+                {
+                    "scope": "all"
+                }
+            },
+            "outputData": {
+                "workspacesList": "{{function:parseWorkspaces}}"
+            },
+            "deps": "js/AwColumnConfigScopeService"
+        },
+        "updateScope": {
+            "actionType": "JSFunction",
+            "method": "updateScope",
+            "inputData": {
+                "scopeState": "{{props.columnConfigScope}}",
+                "scopeValue": "{{data.columnConfigScope.dbValue}}"
+            },
+            "deps": "js/AwColumnConfigScopeService"
+        },
+        "updateSelection": {
+            "actionType": "JSFunction",
+            "method": "updateSelection",
+            "inputData": {
+                "scopeState": "{{props.columnConfigScope}}",
+                "scopeValue": "{{data.columnConfigScope.dbValue}}",
+                "groupDataprovider": "{{dataProviders.searchForGroups}}",
+                "roleDataprovider": "{{dataProviders.searchForRoles}}",
+                "workspaceDataprovider": "{{dataProviders.workspaceNamesProvider}}"
+            },
+            "deps": "js/AwColumnConfigScopeService"
+        }
+    },
+    "data": {
+        "columnConfigScope": {
+            "displayName": "{{i18n.scopeTitle}}",
+            "type": "STRING",
+            "dataProvider": "columnConfigScopeDataProvider",
+            "uiValue": "{{i18n.site}}",
+            "dbValue": "Site",
+            "isSelectOnly": true,
+            "emptyLOVEntry": false
+        },
+        "searchWorkspace": {
+            "displayName": "{{i18n.searchWorkspaceTitle}}",
+            "dbValue": "",
+            "type": "STRING"
+        },
+        "searchGroups": {
+            "displayName": "{{i18n.searchGroupTitle}}",
+            "dbValue": "",
+            "type": "STRING"
+        },
+        "searchRoles": {
+            "displayName": "{{i18n.searchRoleTitle}}",
+            "dbValue": "",
+            "type": "STRING"
+        },
+        "columnConfigScopeValues": [
+            {
+                "propDisplayValue": "{{i18n.site}}",
+                "propInternalValue": "Site"
+            },
+            {
+                "propDisplayValue": "{{i18n.group}}",
+                "propInternalValue": "Group"
+            },
+            {
+                "propDisplayValue": "{{i18n.role}}",
+                "propInternalValue": "Role"
+            },
+            {
+                "propDisplayValue": "{{i18n.workspace}}",
+                "propInternalValue": "Workspace"
+            }
+        ]
+    },
+    "dataProviders": {
+        "columnConfigScopeDataProvider": {
+            "response": "{{data.columnConfigScopeValues}}",
+            "moreValuesExist": false
+        },
+        "workspaceNamesProvider": {
+            "action": "getWorkspacesActionForColumnConfig",
+            "response": "{{data.workspacesList}}",
+            "totalFound": "{{data.workspacesList.length}}",
+            "selectionModelMode": "single"
+        },
+        "searchForRoles": {
+            "action": "loadRoles",
+            "response": "{{data.searchRoleResults}}",
+            "totalFound": "{{data.totalRoles}}",
+            "selectionModelMode": "single"
+        },
+        "searchForGroups": {
+            "action": "loadGroups",
+            "response": "{{data.searchGroupResults}}",
+            "totalFound": "{{data.totalGroups}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "conditions": {
+        "isGroupScope": {
+            "expression": "data.columnConfigScope.dbValue === 'Group'"
+        },
+        "isRoleScope": {
+            "expression": "data.columnConfigScope.dbValue === 'Role'"
+        },
+        "isWorkspaceScope": {
+            "expression": "data.columnConfigScope.dbValue === 'Workspace'"
+        },
+        "enableScopeSelector": {
+            "expression": "props.columnConfigId.value.length > 0"
+        }
+    },
+    "functions": {
+        "parseWorkspaces": {
+            "functionName": "parseWorkspaces",
+            "parameters": [
+                "{{data.searchWorkspace.dbValue}}",
+                "{{i18n.workspaceId}}"
+            ]
+        },
+        "parseGroupResults": {
+            "functionName": "parseGroupResults",
+            "parameters": [
+                "{{i18n.parent}}"
+            ]
+        },
+        "parseRoleResults": {
+            "functionName": "parseRoleResults",
+            "parameters": [
+                "{{i18n.description}}"
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [ {
+            "action": "updateSelection",
+            "observers":[ "viewModel.dataProviders.workspaceNamesProvider.selectedObjects[0].cellHeader1",
+                           "viewModel.dataProviders.searchForRoles.selectedObjects[0].displayName",
+                           "viewModel.dataProviders.searchForGroups.selectedObjects[0].displayName"
+                        ]
+        } ]
+    },
+    "props": {
+        "column-config-scope": {
+            "type": "object"
+        },
+        "column-config-id": {
+            "type": "object"
+        }
+    },
+    "i18n": {
+        "scopeTitle": ["tableConfigsMessages"],
+        "searchWorkspaceTitle" : ["tableConfigsMessages"],
+        "searchGroupTitle": ["tableConfigsMessages"],
+        "searchRoleTitle": ["tableConfigsMessages"],
+        "site": ["tableConfigsMessages"],
+        "group": ["tableConfigsMessages"],
+        "role": ["tableConfigsMessages"],
+        "workspace": ["tableConfigsMessages"],
+        "workspaceId": ["tableConfigsMessages"],
+        "parent": ["tableConfigsMessages"],
+        "description": ["tableConfigsMessages"]
+    }
+}

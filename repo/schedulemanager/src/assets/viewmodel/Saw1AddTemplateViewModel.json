@@ -1,0 +1,210 @@
+{
+    "schemaVersion": "1.0.0",
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "data": {
+        "searchString": {
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "allGroups": {
+            "displayName": "{{i18n.owningGroup}}",
+            "type": "STRING",
+            "dataProvider": "dataProviderGroupValues",
+            "dbValue": "",
+            "dispValue": "{{i18n.allGroups}}"
+        },
+        "allUsers": {
+            "displayName": "{{i18n.owningUser}}",
+            "type": "STRING",
+            "dataProvider": "dataProviderUserValues",
+            "dbValue": "",
+            "dispValue": "{{i18n.allUsers}}"
+        },
+        "filterText": {
+            "displayName": "{{i18n.filter}}",
+            "type": "STRING"
+        }
+    },
+    "actions": {
+        "revealAction": {
+            "actionType": "dataProvider",
+            "method": "getScheduleSearchProvider"
+        },
+        "getScheduleTemplates": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData": {
+                "searchInput": {
+                    "maxToLoad": 50,
+                    "maxToReturn": 50,
+                    "providerName": "Saw1ScheduleSearchProvider",
+                    "searchCriteria": {
+                        "searchContentType": "ScheduleTemplates",
+                        "searchString": "{{data.filterText.dbValue}}",
+                        "groupUID": "{{data.allGroups.dbValues[0]}}",
+                        "userUID": "{{data.allUsers.dbValues[0]}}"
+                    },
+                    "startIndex": "{{data.dataProviders.getScheduleSearchProvider.startIndex}}",
+                    "searchFilterFieldSortType": "Alphabetical"
+                }
+            },
+            "outputData": {
+                "searchResults": "searchResults",
+                "totalFound": "totalFound",
+                "totalLoaded": "totalLoaded",
+                "noResultsFound": "{{i18n.noResultsFound}}"
+            }
+        },
+        "AddSchedules": {
+            "actionType": "JSFunction",
+            "method": "addSchedules",
+            "inputData": {
+                "selectedTemplate": "{{data.dataProviders.getScheduleSearchProvider.selectedObjects[0]}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "navigateToCreateSchedulePanelEvent"
+                } ]
+            },
+            "deps": "js/Saw1CreateScheduleFromTemplateService"
+        },
+        "getGroupLovAction": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0ResourceProvider",
+                        "startIndex": "{{data.dataProviders.dataProviderGroupValues.startIndex}}",
+                        "searchCriteria": {
+                            "resourceProviderContentType": "Group"
+                        }
+                    }
+                }
+            },
+            "outputData": {
+                "searchResults": "{{function:getGroupLov}}",
+                "totalLoaded": "totalLoaded",
+                "totalFound": "totalFound"
+            }
+        },
+        "getUserLovAction": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0ResourceProvider",
+                        "startIndex": "{{data.dataProviders.dataProviderUserValues.startIndex}}",
+                        "searchCriteria": {
+                            "resourceProviderContentType": "Users",
+                            "searchSubGroup": "true"
+                        }
+                    }
+                }
+            },
+            "outputData": {
+                "searchResults": "{{function:getUserLov}}",
+                "totalLoaded": "totalLoaded",
+                "totalFound": "totalFound"
+            }
+        },
+        "navigateToCreateSchedulePanelAction": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "Saw1CreateScheduleFromTemplate"
+            }
+        }
+    },
+    "dataProviders": {
+        "dataProviderGroupValues": {
+            "action": "getGroupLovAction",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "totalLoaded": "{{data.totalLoaded}}",
+            "noResultsFound": "{{i18n.noResultsFound}}"
+        },
+        "dataProviderUserValues": {
+            "action": "getUserLovAction",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "totalLoaded": "{{data.totalLoaded}}",
+            "noResultsFound": "{{i18n.noResultsFound}}"
+        },
+        "getScheduleSearchProvider": {
+            "action": "getScheduleTemplates",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "commandsAnchor": "aw_schTemplateCellCommand",
+            "selectionModelMode": "single",
+            "noResultsFound": "{{i18n.noResultsFound}}"
+        }
+    },
+    "functions": {
+        "getGroupLov": {
+            "functionName": "getGroupLov",
+            "parameters": [
+                "{{data.i18n.allGroups}}"
+            ],
+            "deps": "js/Saw1CreateScheduleFromTemplateService"
+        },
+        "getUserLov": {
+            "functionName": "getUserLov",
+            "parameters": [
+                "{{data.i18n.allUsers}}"
+            ],
+            "deps": "js/Saw1CreateScheduleFromTemplateService"
+        }
+    },
+    "conditions": {
+        "showAddButton": {
+            "expression": "data.dataProviders.getScheduleSearchProvider.selectedObjects.length > 0"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "awPopupWidget.close",
+            "action": "getScheduleSearchProvider"
+        },
+        {
+            "eventId": "navigateToCreateSchedulePanelEvent",
+            "action": "navigateToCreateSchedulePanelAction"
+        }
+    ],
+    "messages": {
+        "displayError": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "revealAction",
+        "onUpdate": {
+            "action": "revealAction",
+            "observers": [ "viewModel.data.allGroups.dbValues[0]" ]
+        }
+    },
+    "i18n": {
+        "owningGroup": [ "ScheduleManagerMessages" ],
+        "allGroups": [ "ScheduleManagerMessages" ],
+        "owningUser": [ "ScheduleManagerMessages" ],
+        "allUsers": [ "ScheduleManagerMessages" ],
+        "add": [ "ScheduleManagerMessages" ],
+        "noResultsFound": [ "InboxMessages" ]
+    }
+
+}

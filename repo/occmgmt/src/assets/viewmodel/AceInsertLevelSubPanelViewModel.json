@@ -1,0 +1,390 @@
+{
+    "schemaVersion": "1.0.0",
+    "data":
+    {
+        "triggerCreate": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        },
+        "addPanelState": {
+            "initialValues": {
+                "creationType": "",
+                "createdObject": "",
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {}
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub",
+                "context": {}
+            },
+            "meta": {}
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {
+                "selectedProjects": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "triggerAssign": {
+                    "field": "true",
+                    "type": "BOOLEAN"
+                }
+            }
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions":
+    {
+
+        "createAndInsertElement": {
+            "actionType": "JSFunction",
+            "method": "updateCreateTrigger",
+            "inputData": {
+                "triggerCreate": "{{data.triggerCreate}}",
+                "value": true
+            },
+            "outputData": {
+                "triggerCreate": "triggerCreate"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "insertElements":{
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2020-12-OccurrenceManagement",
+            "method": "insertLevel2",
+            "inputData":{
+                "insertLevelInput":{
+                    "elements":"{{ctx.aceActiveContext.context.insertLevelInput.selectedElements}}",
+                    "objectToBeInserted":"{{function:getParentElementToInsertLevel}}",
+                    "productContext":"{{props.subPanelContext.occContext.productContextInfo}}",
+                    "sortCriteria":{
+                        "propertyName": "{{ctx.aceActiveContext.context.sortCriteria[0].fieldName}}",
+                        "sortingOrder": "{{ctx.aceActiveContext.context.sortCriteria[0].sortDirection}}"
+                    }
+                }
+            },
+            "outputData": {
+                "insertElementResponse":""
+            },
+            "events":{
+                "success":[
+                {
+                    "name": "insertLevel.elementsInserted"
+                }
+            ],
+            "failure": [ {
+                "name": "insertElement.clearCreatedElementField"
+            }]
+            },
+            "actionMessages": {
+                "success": [ {
+                        "message": "oneelementInsertSuccessfulMessage",
+                        "condition": "ctx.aceActiveContext.context.insertLevelInput.selectedElements.length===1"
+                    },
+                    {
+                        "message": "multipleelementsInsertSuccessfulMessage",
+                        "condition": "ctx.aceActiveContext.context.insertLevelInput.selectedElements.length>1"
+                    }
+                ],
+                "failure": [ {
+                    "message": "insertLevelFailure"
+                }]
+            },
+            "deps": "js/aceInsertElementService"
+        },
+        "newElementCreatedPostProcessing": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                        "name": "insertElement.insertObjectToSelectedElement",
+                        "condition": "conditions.isObjectCreated"
+                    }
+                ]
+            }
+        },
+        "clearCreatedElementField": {
+            "actionType": "JSFunction",
+            "method": "clearCreatedElementField",
+            "inputData": { },
+            "outputData": {
+                "createdObject" : ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "insertElement.closePanel"
+                } ]
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "CREATE_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "autoAssignProperty": {
+            "actionType": "JSFunction",
+            "method": "autoAssignProperty",
+            "inputData": {
+                "prop": "{{parameters.prop}}",
+                "operationType": "CREATE",
+                "pattern": "{{parameters.newPattern}}",
+                "selectedObj": "{{}}",
+                "hasRevRule": "{{data.hasRevRuleAttached}}"
+            },
+
+            "deps": "js/autoAssignService"
+        },
+        "deSelectFromInactiveView":{
+            "actionType": "JSFunction",
+            "method": "deSelectFromInactiveView",
+            "inputData": {
+                "objectsToDeselect": "{{ctx.aceActiveContext.context.insertLevelInput.selectedElements}}"
+            },
+            "deps": "js/aceStructureEditService"
+        },
+        "elementsInserted":{
+            "actionType": "JSFunction",
+            "method": "elementsInserted",
+            "inputData": {
+                "insertElementResponse": "{{data.insertElementResponse}}"
+            },
+            "outputData":{
+                "newParent" : "newParent",
+                "addElementResponseForNewParent" : "addElementResponseForNewParent",
+                "oldParentElement" : "oldParentElement",
+                "addElementResponseForOldParent" : "addElementResponseForOldParent"
+            },
+            "events": {
+                "success": [ {
+                    "name": "aceDeSelectFromInactiveView",
+                    "eventData": {
+                        "objectsToDeSelect": "{{ctx.aceActiveContext.context.insertLevelInput.selectedElements}}"
+                    }
+                },{
+                    "name": "addElement.elementsAdded",
+                    "eventData": {
+                        "updatedParentElement":"{{oldParentElement}}",
+                        "addElementResponse": "{{addElementResponseForOldParent}}",
+                        "viewToReact": "{{props.subPanelContext.contextKey}}"
+                    }
+                },
+                {
+                    "name": "addElement.elementsAdded",
+                    "eventData": {
+                        "updatedParentElement":"{{newParent}}",
+                        "addElementResponse": "{{addElementResponseForNewParent}}",
+                        "viewToReact": "{{props.subPanelContext.contextKey}}"
+                    }
+                },
+                {
+                    "name": "aceElementsSelectionUpdatedEvent",
+                    "eventData": {
+                        "objectsToSelect": ["{{newParent}}"],
+                        "viewToReact": "{{props.subPanelContext.contextKey}}"
+                    }
+                },
+                {
+                    "name": "insertElement.clearCreatedElementField"
+                }
+             ]
+            },
+            "deps": "js/aceInsertElementService"
+        },
+        "setActiveView":{
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "initInsertLevelSubPanelAction": {
+            "actionType": "JSFunction",
+            "method": "initInsertLevelSubPanel",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "headerSectionElement": ""
+            },
+            "deps": "js/aceInsertElementService"
+        }
+    },
+
+    "dataProviders": {
+
+    },
+
+    "lifecycleHooks": {
+        "onMount": "initInsertLevelSubPanelAction",
+        "onUpdate": {
+            "action": "newElementCreatedPostProcessing",
+            "observers": [ "viewModel.atomicData.addPanelState.createdObject" ]
+        }
+    },
+
+    "onEvent":
+    [
+        {
+            "eventId": "insertElement.insertObjectToSelectedElement",
+            "action": "insertElements"
+        },
+        {
+            "eventId": "addObject.addOprfailed",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "insertElement.clearCreatedElementField",
+            "action": "clearCreatedElementField"
+        },
+        {
+            "eventId": "insertElement.closePanel",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "insertLevel.elementsInserted",
+            "action": "elementsInserted"
+        },
+        {
+            "eventId": "aceDeSelectFromInactiveView",
+            "action": "deSelectFromInactiveView"
+        },
+        {
+            "eventId": "awPattern.newPatternSelected",
+            "inputArgs": {
+                "prop": "{{eventData.prop}}",
+                "newPattern": "{{eventData.newPattern}}"
+            },
+            "action": "autoAssignProperty"
+        },
+        {
+            "eventId": "appCtx.register",
+            "condition": "conditions.isSelectionChangeEventTriggered",
+            "action": "closePanel"
+        }
+    ],
+
+    "functions":
+    {
+        "getParentElementToInsertLevel": {
+            "functionName": "getParentElementToInsertLevel",
+            "parameters": [
+                "{{data}}",
+                "{{addPanelState.createdObject}}",
+                "{{addPanelState.sourceObjects}}"
+            ]
+        }
+    },
+
+    "conditions":
+    {
+        "isNewTabInsertButtonVisible": {
+            "expression": "addPanelState.selectedTab.view==='NewTabPageSub' && addPanelState.creationType"
+        },
+        "isPalleteTabVisible": {
+            "expression": "addPanelState.selectedTab.view==='PaletteTabPageSub'"
+        },
+        "isPaletteTabAddButtonVisible": {
+            "expression": "addPanelState.selectedTab.view==='PaletteTabPageSub' && addPanelState.sourceObjects.length === 1"
+        },
+        "isSearchTabVisible":{
+            "expression": "addPanelState.selectedTab.view==='SearchTabPageSub'"
+        },
+        "isSearchTabAddButtonVisible": {
+            "expression": "addPanelState.selectedTab.view==='SearchTabPageSub' && addPanelState.sourceObjects.length  === 1"
+        },
+        "isSelectionChangeEventTriggered": {
+            "expression": "name == 'selected'"
+        },
+        "isObjectCreated": {
+            "expression": "addPanelState.createdObject"
+        }
+    },
+
+    "messages":
+    {
+        "oneelementInsertSuccessfulMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.elementInsertSuccessful}}",
+            "messageTextParams": [
+                "{{data.insertElementResponse.newParent.props.object_string.uiValues[0]}}",
+                "{{ctx.aceActiveContext.context.insertLevelInput.selectedElements[0].props.object_string.dbValues[0]}}"
+            ]
+        },
+        "multipleelementsInsertSuccessfulMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.multipleelementsInsertSuccessful}}",
+            "messageTextParams": [
+                "{{data.insertElementResponse.newParent.props.object_string.uiValues[0]}}"
+            ]
+        },
+        "insertLevelFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{data.insertElementResponse.ServiceData.partialErrors[0].errorValues[0].message}}"
+        }
+    },
+
+    "i18n":
+    {
+        "elementInsertSuccessful":
+        [
+            "OccurrenceManagementMessages"
+        ],
+        "multipleelementsInsertSuccessful":
+        [
+            "OccurrenceManagementMessages"
+        ],
+        "BACK_BUTTON_TITLE": [
+            "BaseMessages"
+        ],
+        "insertButton":
+        [
+            "OccurrenceManagementConstants"
+        ],
+        "aboveTitle":
+        [
+            "OccurrenceManagementConstants"
+        ],
+        "objectsString":
+        [
+            "OccurrenceManagementConstants"
+        ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

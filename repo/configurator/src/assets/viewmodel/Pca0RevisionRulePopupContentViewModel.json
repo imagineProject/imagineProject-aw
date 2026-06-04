@@ -1,0 +1,156 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-list-filter.directive"
+    ],
+    "data": {
+        "revRulefilterBox": {
+            "displayName": "{{i18n.filterTitle}}",
+            "type": "STRING",
+            "dbValue": ""
+        }
+    },
+    "actions": {
+        "initializePopupView": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "initializeData"
+                },
+                {
+                    "action": "doDataProvider"
+                }
+            ]
+        },
+        "initializeData": {
+            "actionType": "JSFunction",
+            "method": "initializePopupData",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "outputData": {
+                "isRevRuleActionDefaultBehavior": "isRevRuleActionDefaultBehavior",
+                "isRevRuleDataCached": "isRevRuleDataCached"
+            },
+            "deps": "js/pca0RevisionRuleConfigurationService"
+        },
+        "doDataProvider": {
+            "actionType": "dataProvider",
+            "method": "revisionRulesDataProvider"
+        },
+        "doRevisionRulesDataProviderJob": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getCachedRevisionRules",
+                    "condition": "data.isRevRuleDataCached.dbValue === true && data.revRulefilterBox.dbValue === ''"
+                },
+                {
+                    "action": "loadRevisionRules",
+                    "condition": "data.isRevRuleDataCached.dbValue !== true"
+                },
+                {
+                    "action": "filterRevisionRules",
+                    "condition": "data.isRevRuleDataCached.dbValue === true && data.revRulefilterBox.dbValue !== ''"
+                }
+            ]
+        },
+        "loadRevisionRules": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadRevisionRules",
+            "inputData": {
+                "contextKey": "{{subPanelContext.contextKey}}",
+                "dataprovider": "{{data.dataProviders.revisionRulesDataProvider}}"
+            },
+            "outputData": {
+                "revisionRules": "result.revisionRules",
+                "totalFound": "result.totalFound",
+                "isRevRuleDataCached.dbValue": "result.isRevRuleDataCached"
+            },
+            "deps": "js/pca0RevisionRuleConfigurationService"
+        },
+        "getCachedRevisionRules": {
+            "actionType": "JSFunction",
+            "method": "getCachedRevisionRules",
+            "outputData": {
+                "revisionRules": "result.revisionRules",
+                "totalFound": "result.totalFound"
+            },
+            "deps": "js/pca0RevisionRuleConfigurationService"
+        },
+        "filterRevisionRules": {
+            "actionType": "JSFunction",
+            "method": "getFilteredRevisionRules",
+            "inputData": {
+                "filterString": "{{data.revRulefilterBox.dbValue}}"
+            },
+            "outputData": {
+                "revisionRules": "result.revisionRules",
+                "totalFound": "result.totalFound"
+            },
+            "deps": "js/pca0RevisionRuleConfigurationService"
+        },
+        "performSelectRevisionRuleInDropDown": {
+            "actionType": "JSFunction",
+            "method": "performSelectRevisionRuleInDropDown",
+            "inputData": {
+                "contextKey": "{{subPanelContext.contextKey}}",
+                "dataprovider": "{{data.dataProviders.revisionRulesDataProvider}}",
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "outputData": {
+                "itemSelectedOnLoad": ""
+            },
+            "deps": "js/pca0RevisionRuleConfigurationService"
+        },
+        "performUpdateRevisionRule": {
+            "actionType": "JSFunctionAsync",
+            "method": "performUpdateRevisionRule",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}",
+                "viewModel": "{{data}}"
+            },
+            "outputData": {
+                "itemSelectedOnLoad": false
+            },
+            "deps": "js/pca0RevisionRuleConfigurationService"
+        },
+        "resetContentSelection": {
+            "actionType": "JSFunction",
+            "method": "resetContentSelectionInfo",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "deps": "js/pca0RevisionRuleConfigurationService"
+        }
+    },
+    "dataProviders": {
+        "revisionRulesDataProvider": {
+            "action": "doRevisionRulesDataProviderJob",
+            "response": "{{data.revisionRules}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "messages": {
+        "errorInGettingPreferredConfigInfo": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.errorInGettingPreferredConfigInfo}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializePopupView",
+        "onUnmount": "resetContentSelection"
+    },
+    "onEvent": [ {
+            "eventId": "revisionRulesDataProvider.modelObjectsUpdated",
+            "cacheEventData": true,
+            "action": "performSelectRevisionRuleInDropDown"
+        },
+        {
+            "eventId": "revisionRulesDataProvider.selectionChangeEvent",
+            "cacheEventData": true,
+            "action": "performUpdateRevisionRule"
+        }
+    ],
+    "i18n": { "errorInGettingPreferredConfigInfo": [ "FullScreenConfigurationMessages" ] },
+    "functions": {}
+}

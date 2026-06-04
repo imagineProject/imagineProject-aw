@@ -1,0 +1,790 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "copyScheduleInProcessFlag": false,
+        "activeView": "AddObjectPrimarySub",
+        "openOnCreate": {
+            "displayName": "{{i18n.openOnCreate}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": false,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "isRunAsync":
+        {
+            "displayName": "{{i18n.isRunAsync}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": false,
+            "labelPosition" : "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "addPanelState": {
+            "initialValues": {
+                "creationType": "",
+                "createdObject": "",
+                "sourceObjects": "",
+                "selectedTab": "",
+                "xrtTypeLoaded": ""
+            },
+            "meta": {}
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub",
+                "context": {}
+            },
+            "meta": {}
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {
+                "selectedProjects": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "triggerAssign": {
+                    "field": "true",
+                    "type": "BOOLEAN"
+                }
+            }
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "saveAsPolicy": {
+            "types": [
+                {
+                    "name": "ScheduleTask",
+                    "properties": [
+                        {
+                            "name": "object_name"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        },
+        "saveAsNewEditHandler": {
+            "context": "SAVEAS_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+
+    },
+    "actions": {
+        "performPostProcessingAfterXRTLoaded": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "initializeDefaultProps",
+                    "condition": "conditions.isXRTTypeLoaded"
+                },
+                {
+                    "action": "initializeDefaultPropsOnSaveAs",
+                    "condition": "conditions.isAddACopy"
+                }
+            ]
+        },
+        "initialize": {
+            "actionType": "JSFunction",
+            "method": "initializeDefaultProps",
+            "inputData": {
+                "createType": "{{addPanelState.creationType.props.type_name.dbValues[0]}}",
+                "editHandler": "{{editHandlers.addPanelEditHandler}}",
+                "timezoneList":"{{data.timezoneList}}"
+            },
+            "deps": "js/Saw1CreateScheduleService"
+        },
+        "initializeDefaultPropsOnSaveAs": {
+            "actionType": "JSFunction",
+            "method": "initializeDefaultPropsOnSaveAs",
+                "inputData": {
+                    "createType": "{{addPanelState.creationType}}",
+                    "type": "SAVEAS",
+                    "editHandler": "{{editHandlers.saveAsNewEditHandler}}",
+                    "schedule":"{{addPanelState.sourceObjects[0]}}"
+                },
+            "deps": "js/Saw1CreateScheduleService"
+        },
+        "validateAndCreateSchedule": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getObjCreateEditableProperties"
+                },
+                {
+                    "action": "setCreateInProgress"
+                },
+                {
+                    "action": "createSchedule"
+                },
+                {
+                    "action": "updateAddPanelStateWithCreatedObject"
+                }
+            ]
+        },
+        "setCreateInProgress": {
+            "actionType": "modifyCtx",
+            "inputData": {
+                "methodType": "register",
+                "name": "addItemEventProgressing",
+                "value": true
+            }
+        },
+        "setCreateInProgressFalse": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "inputData": {
+                "name": "addItemEventProgressing"
+            },
+            "deps": "js/appCtxService"
+        },
+        "getObjCreateEditableProperties": {
+            "actionType": "JSFunction",
+            "method": "getObjCreateEditableProperties",
+            "inputData": {
+                "createType": "{{addPanelState.creationType.props.type_name.dbValues[0]}}",
+                "type": "CREATE",
+                "propertyNames": [
+                    "object_name",
+                    "fnd0TimeZone",
+                    "start_date",
+                    "finish_date"
+                ],
+                "editHandler": "{{editHandlers.addPanelEditHandler}}"
+            },
+            "outputData": {
+                "object_name": "object_name",
+                "fnd0TimeZone": "fnd0TimeZone",
+                "start_date": "start_date",
+                "finish_date": "finish_date"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "createSchedule": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2008-06-ScheduleManagement",
+            "method": "createSchedule",
+            "inputData": {
+                "newSchedules": "{{function:getCreateScheduleInput}}"
+            },
+            "outputData": {
+                "createScheduleResponse": ""
+            },
+            "events": {
+                "failure": [ {
+                        "name": "setCreateInProgressFalse"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "createObjectSuccess",
+                    "condition": "!subPanelContext.relationType"
+                } ],
+                "failure": [ {
+                        "condition": "errorCode=='invalidStartDateOrFinishDate'",
+                        "message": "invalidStartDateOrFinishDate"
+                    },
+                    {
+                        "condition": "errorCode !=='invalidStartDateOrFinishDate'",
+                        "message": "soaErrorMessage"
+                    }
+                ]
+            },
+            "deps": "js/Saw1CreateScheduleService"
+        },
+        "updateAddPanelStateWithCreatedObject": {
+            "actionType": "JSFunction",
+            "method": "setCreatedObjectOnState",
+            "inputData": {
+                "createdObject": "{{data.createScheduleResponse.schedules}}",
+                "addPanelState": "{{data.addPanelState}}"
+            },
+            "outputData": {
+                "addPanelState": ""
+            },
+            "deps": "js/Saw1CreateObjectUtils"
+        },
+        "performPostProcessingAfterCreate": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "onNewScheduleCreated",
+                "condition": "conditions.isObjectCreated"
+            } ]
+        },
+        "onNewScheduleCreated": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                        "name": "addSchedule.assignProjects"
+                    },
+                    {
+                        "condition": "subPanelContext.relationType",
+                        "name": "addSchedule.createRelation"
+                    },
+                    {
+                        "condition": "!subPanelContext.relationType && data.openOnCreate.dbValue === true",
+                        "name": "addSchedule.openOnCreate"
+                    },
+                    {
+                        "condition": "!ctx.panelContext.relationType",
+                        "name": "setCreateInProgressFalse"
+                    },
+                    {
+                        "condition": "!ctx.panelContext.relationType && data.openOnCreate.dbValue === false",
+                        "name": "primaryWorkarea.reset"
+                    },
+                    {
+                        "condition": "!subPanelContext.relationType && !subPanelContext.panelPinned",
+                        "name": "closePopup"
+                    }
+                ]
+            }
+        },
+        "assignProjectsToCreatedObject": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-09-ProjectLevelSecurity",
+            "method": "assignOrRemoveObjects",
+            "inputData": {
+                "assignedOrRemovedobjects": [ {
+                    "projects": "{{projectState.selectedProjects}}",
+                    "objectToAssign": "{{addPanelState.createdObject}}",
+                    "objectToRemove": []
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "soaErrorMessage"
+                } ]
+            }
+        },
+        "openCreatedObject": {
+            "actionType": "Navigate",
+            "navigateTo": "com_siemens_splm_clientfx_tcui_xrt_showObject",
+            "navigationParams": {
+                "uid": "{{data.createScheduleResponse.schedules[0].uid}}"
+            }
+        },
+        "openCreatedSchedule": {
+            "actionType": "Navigate",
+            "navigateTo": "com_siemens_splm_clientfx_tcui_xrt_showObject",
+            "navigationParams": {
+            "uid": "{{data.createdSchedule.uid}}"
+            }
+        },
+        "toggleAddACopy": {
+            "actionType": "JSFunction",
+            "method": "toggleAddACopyState",
+            "inputData": {
+                "addPanelState": "{{data.addPanelState}}"
+            },
+            "outputData": {
+                "addPanelState": "addPanelState"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "copySchedule": {
+            "actionType": "JSFunctionAsync",
+            "method": "copySchedules",
+            "inputData": {
+                "addPanelState": "{{data.addPanelState}}",
+                "xrtState": "{{data.xrtState}}",
+                "saveAsEditHandler": "{{editHandlers.saveAsNewEditHandler}}",
+                "saveAsPolicy": "{{data.saveAsPolicy}}"
+            },
+            "deps":"js/Saw1CreateScheduleService",
+            "outputData":
+            {
+                "createdSchedule": "createdSchedule"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "copySchedule.openOnCreate",
+                        "condition": "data.openOnCreate.dbValue === true"
+                    },
+                    {
+                        "name": "createScheduleCompleteInChanges",
+                        "condition":"data.createRelationForSchedInChanges == true"
+                    },
+                    {
+                        "name": "primaryWorkarea.reset",
+                        "condition": "data.openOnCreate.dbValue === false"
+                    },
+                    {
+                        "name": "copySchedule.endProcess",
+                        "condition": ""
+                    },
+                    {
+                        "name": "closePopup",
+                       "condition":"conditions.isMySchedulesLocation && !subPanelContext.panelPinned"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                            "message": "createObjectSuccessInChanges",
+                            "condition": "data.createRelationForSchedInChanges == true"
+                        },
+                        {
+                            "message": "createObjectSuccess",
+                            "condition": "data.isRunAsync.dbValue === false && data.createRelationForSchedInChanges == false"
+                     } ],
+                "failure": [ {
+                    "condition": "errorCode=='invalidStartDateOrFinishDate'",
+                    "message": "invalidStartDateOrFinishDate"
+                } ]
+            }
+        },
+        "copyScheduleAsync": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2011-06-ScheduleManagement",
+            "method": "copySchedulesAsyncClient",
+            "inputData": {
+                "schToCopy":"{{function:getCopyScheduleInput}}"
+            },
+            "deps": "js/Saw1CreateScheduleService",
+            "events": {
+                "success": [
+                    {
+                        "name": "closePopup"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaErrorMessage"
+                    }
+                ]
+            }
+        },
+        "relateSchedules": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getSourceObjectsForPasteOperation"
+                },
+                {
+                    "action": "pasteSchedules"
+                }
+            ]
+        },
+        "getSourceObjectsForPasteOperation": {
+            "actionType": "JSFunction",
+            "method": "getSourceObjectsForPasteOperation",
+            "inputData": {
+                "addPanelState": "{{data.addPanelState}}"
+            },
+            "outputData": {
+                "sourceObjectsForPasteOpn": ""
+            },
+            "deps": "js/Saw1CreateObjectUtils"
+        },
+        "pasteSchedules": {
+            "actionType": "JSFunctionAsync",
+            "method": "execute",
+            "inputData": {
+                "targetObject": "{{subPanelContext.targetObject}}",
+                "sourceObjects": "{{data.sourceObjectsForPasteOpn}}",
+                "relationName": "{{subPanelContext.relationType}}"
+            },
+            "outputData": {},
+            "events": {
+                "success": [ {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{subPanelContext.targetObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "setCreateInProgressFalse"
+                    },
+                    {
+                        "condition": "!subPanelContext.panelPinned",
+                        "name": "closePopup"
+                    },
+                    {
+                        "condition": "data.openOnCreate.dbValue === true",
+                        "name": "addSchedule.openOnCreate"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                        "condition": "addPanelState.createdObject.length == 1",
+                        "message": "createSingleRelationSuccess"
+                    },
+                    {
+                        "condition": "addPanelState.createdObject.length.length > 1",
+                        "message": "createMultiRelationSuccess"
+                    }
+                ]
+            },
+            "deps": "js/pasteService"
+        },
+        "pasteCopiedSchedules": {
+            "actionType": "JSFunctionAsync",
+            "method": "execute",
+            "inputData": {
+                "targetObject": "{{ctx.panelContext.targetObject}}",
+                "sourceObjects": [ "{{data.createdSchedule}}"],
+                "relationName": "{{ctx.panelContext.relationType}}"
+            },
+            "outputData": {},
+            "events": {
+                "success": [ {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{ctx.panelContext.targetObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "setCreateInProgressFalse"
+                    },
+                    {
+                        "condition": "!subPanelContext.panelPinned",
+                        "name": "closePopup"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                        "condition": "addPanelState.createdObject.length == 1",
+                        "message": "createSingleRelationSuccess"
+                    },
+                    {
+                        "condition": "addPanelState.createdObject.length.length > 1",
+                        "message": "createMultiRelationSuccess"
+                    }
+                ]
+            },
+            "deps": "js/pasteService"
+        },
+        "closePopupWindow":{
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "setActiveView":{
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "copyScheduleInProcess":{
+            "actionType": "JSFunction",
+            "method": "copyScheduleInProcess",
+            "outputData": {
+                "copyScheduleInProcessFlag":""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "copySchedule.inProcess",
+                        "condition": ""
+                    }
+                ]
+            },
+            "deps": "js/Saw1CreateScheduleService"
+        },
+        "copyScheduleProcessEnd":{
+            "actionType": "JSFunction",
+            "method": "copyScheduleProcessEnd",
+            "inputData": {
+                "createdSchedule": "{{data.createdSchedule}}"
+            },
+            "outputData": {
+                "copyScheduleInProcessFlag": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "copySchedule.pasteCopiedSchedules",
+                        "condition": ""
+                    }
+                ]
+            },
+            "deps": "js/Saw1CreateScheduleService"
+        },
+        "initializeDefaultProps": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getTimezoneLov"
+                },
+                {
+                    "action": "initialize"
+                }
+            ]
+        },
+        "getTimezoneLov":{
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-LOV",
+            "method": "getInitialLOVValues",
+            "inputData":
+            {
+                "initialData":
+                {
+                    "lovInput":
+                    {
+                        "boName": "TCCalendar",
+                        "operationName": "Search"
+                    },
+                    "propertyName": "time_zone"
+                }
+            },
+            "outputData": {
+                "timezoneList": "{{function:getTimezoneList}}",
+                "moreValuesExist":"moreValuesExist"
+            },
+            "deps": "js/AwCalendarUtils"
+        }
+    },
+    "functions": {
+        "getCreateScheduleInput": {
+            "functionName": "getCreateScheduleInput",
+            "parameters": [
+                "{{addPanelState.creationType.props.type_name.dbValues[0]}}",
+                "{{editHandlers.addPanelEditHandler}}"
+            ]
+        },
+        "getCopyScheduleInput": {
+            "functionName": "getCopyScheduleInput",
+            "parameters": [
+                "{{data.addPanelState}}",
+                "{{data.xrtState}}",
+                "{{editHandlers.saveAsNewEditHandler}}"
+            ]
+        }
+    },
+    "messages": {
+        "createObjectSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.scheduleObjectAdded}}",
+            "messageTextParams": [
+                "{{data.object_name.dbValue}}"
+            ]
+        },
+        "invalidStartDateOrFinishDate": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.invalidStartDateOrFinishDate}}"
+        },
+        "createSingleRelationSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.pasteSuccessful}}",
+            "messageTextParams": [
+                "{{data.object_name.dbValue}}"
+            ]
+        },
+        "createMultiRelationSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.mutiRelationObject}}",
+            "messageTextParams": [
+                "{{addPanelState.createdObject.length}}"
+            ]
+        },
+        "soaErrorMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "partialErrorMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{data.partialErrors[0].errorValues[0].message}}"
+        }
+    },
+    "onEvent": [  {
+            "eventId": "closePopup",
+            "action": "closePopupWindow"
+        },
+        {
+            "eventId": "setCreateInProgressFalse",
+            "action": "setCreateInProgressFalse"
+        },
+        {
+            "eventId": "addSchedule.assignProjects",
+            "action": "assignProjectsToCreatedObject"
+        },
+        {
+            "eventId": "addSchedule.createRelation",
+            "cacheEventData": true,
+            "action": "relateSchedules"
+        },
+        {
+            "eventId": "addSchedule.openOnCreate",
+            "action": "openCreatedObject"
+        },
+        {
+            "eventId": "copySchedule.inProcess",
+            "action": "copySchedule"
+        },
+        {
+            "eventId": "copySchedule.endProcess",
+            "action": "copyScheduleProcessEnd"
+        },
+        {
+            "eventId": "copySchedule.openOnCreate",
+            "action": "openCreatedSchedule"
+        },
+        {
+            "eventId": "gwt.SubLocationContentSelectionChangeEvent",
+            "action": "closePopupWindow"
+        },
+        {
+            "eventId": "copySchedule.pasteCopiedSchedules",
+            "action": "pasteCopiedSchedules"
+        }
+    ],
+    "conditions": {
+        "isNewTabAddButtonEnable": {
+            "expression": "addPanelState.creationType"
+        },
+        "isPaletteSearchTabAddACopyButtonEnable": {
+            "expression": "addPanelState.sourceObjects && addPanelState.sourceObjects.length === 1  && !addPanelState.isAddACopy"
+        },
+        "hasValidCreateInputProps": {
+            "expression": "data.object_name.dbValue && data.object_name.dbValue != '' && data.fnd0TimeZone.dbValue && data.fnd0TimeZone.dbValue != '' && data.start_date.dbValue && data.start_date.dbValue != '' && data.finish_date.dbValue && data.finish_date.dbValue != '' "
+        },
+        "isXRTTypeLoaded": {
+            "expression": "addPanelState.creationType && xrtState.xrtTypeLoaded"
+        },
+        "isObjectCreated": {
+            "expression": "addPanelState.createdObject"
+        },
+        "hasProjectsToAssign": {
+            "expression": "projectState.selectedProjects.length > 0"
+        },
+        "isPaletteSearchTabAddACopyButtonVisible": {
+            "expression": "addPanelState.sourceObjects && addPanelState.sourceObjects.length === 1 && ( addPanelState.selectedTab.view==='SearchTabPageSub' || addPanelState.selectedTab.view==='PaletteTabPageSub' ) && !addPanelState.isAddACopy"
+        },
+        "isPaletteSearchTabAddACopyCancelButtonVisible": {
+            "expression": "addPanelState.sourceObjects && addPanelState.sourceObjects.length === 1 && addPanelState.isAddACopy"
+        },
+        "isPaletteSearchTabAddACopyCancelButtonActivate": {
+            "expression": "!data.copyScheduleInProcessFlag"
+        },
+        "isMySchedulesLocation":{
+            "expression":"subPanelContext.provider.parentStateName === 'mySchedules'"
+        },
+        "isMyChangeLocation":{
+            "expression":"ctx.locationContext['ActiveWorkspace:Location'] === 'com.siemens.splm.clientfx.tcui.xrt.showObjectLocation' || ctx.locationContext['ActiveWorkspace:Location'] === 'com.siemens.splm.client.change:changesLocation'"
+        },
+        "isTypeNotNull": {
+            "expression": "addPanelState.selectedTab.view==='NewTabPageSub' && addPanelState.creationType.props.type_name.dbValues[0]"
+        },
+        "isPaletteSearchAddCopyButtonVisible": {
+            "expression": "addPanelState.selectedTab.view!=='NewTabPageSub' && !addPanelState.isAddACopy"
+        },
+        "isPaletteSearchTabAddButtonVisible": {
+            "expression": "addPanelState.sourceObjects && addPanelState.sourceObjects.length === 1 && ( addPanelState.selectedTab.view==='SearchTabPageSub' || addPanelState.selectedTab.view==='PaletteTabPageSub' ) && !addPanelState.isAddACopy"
+        },
+        "isAddACopy": {
+            "expression": "addPanelState.isAddACopy === true"
+        },
+        "shouldRelateTargetObject": {
+            "expression": "ctx.panelContext.relationType"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [ {
+                "action": "performPostProcessingAfterXRTLoaded",
+                "observers": [ "viewModel.atomicData.xrtState.xrtTypeLoaded" ]
+            },
+            {
+                "action": "performPostProcessingAfterCreate",
+                "observers": [ "viewModel.atomicData.addPanelState.createdObject" ]
+            }
+        ],
+        "onUnmount": "setCreateInProgressFalse"
+    },
+    "ctx": {
+        "panelContext": {
+            "type": "Object"
+        },
+        "addItemEventProgressing": {
+            "type": "Object"
+        }
+    },
+    "i18n": {
+        "createScheduleTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "create": [
+            "ScheduleManagerMessages"
+        ],
+        "scheduleObjectAdded": [
+            "ScheduleManagerMessages"
+        ],
+        "invalidStartDateOrFinishDate": [
+            "ScheduleManagerMessages"
+        ],
+        "newTabTitle": [
+            "awAddDirectiveMessages"
+        ],
+        "paletteTabTitle": [
+            "awAddDirectiveMessages"
+        ],
+        "searchText": [
+            "UIMessages"
+        ],
+        "add": [
+            "ScheduleManagerMessages"
+        ],
+        "pasteSuccessful": [
+            "awAddDirectiveMessages"
+        ],
+        "mutiRelationObject": [
+            "awAddDirectiveMessages"
+        ],
+        "openOnCreate": [
+            "ScheduleManagerMessages"
+        ],
+        "isRunAsync": [
+            "ScheduleManagerMessages"
+        ],
+        "BACK_BUTTON_TITLE": [
+            "BaseMessages"
+        ],
+        "ADD_BUTTON_TITLE": [
+            "BaseMessages"
+        ],
+        "addACopy": [
+            "addObjectMessages"
+        ],
+        "cancel": [
+            "addObjectMessages"
+        ]
+    }
+}

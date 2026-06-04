@@ -1,0 +1,993 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports":
+    [
+        "js/aw-panel-body.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-widget.directive",
+        "js/visible-when.directive",
+        "js/aw-password.directive",
+        "js/aw-guidance-message.directive"
+    ],
+
+    "actions":
+    {
+        "initPanel" : {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setTCSSOEnabled"
+                },
+                {
+                    "action": "registerPerformPanelProps"
+                },
+                {
+                    "action": "loadProperties"
+                },
+                {
+                    "action": "initDigitalSignature"
+                }
+            ]
+        },
+        "loadProperties":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData":
+            {
+                "objects":
+                [
+                    "{{props.subPanelContext.taskToPerform}}"
+                ],
+                "attributes": [
+                    "object_string",
+                    "object_desc",
+                    "comments",
+                    "secure_task",
+                    "has_failure_paths",
+                    "fnd0ParentTask",
+                    "parent_task",
+                    "decision",
+                    "user_all_signoffs"
+                ]
+            },
+            "policy":
+            {
+                "types":
+                [
+                    {
+                        "name": "Signoff",
+                        "properties":
+                        [
+                            {
+                                "name": "fnd0DecisionSetLOV",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "resource_pool",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "fnd0DecisionRequired"
+                            },
+                            {
+                                "name": "decision"
+                            },
+                            {
+                                "name": "responsible_party"
+                            },
+                            {
+                                "name": "group_member"
+                            },
+                            {
+                                "name": "fnd0ParentTask",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "object_string"
+                            },
+                            {
+                                "name": "object_desc"
+                            },
+                            {
+                                "name": "comments"
+                            },
+                            {
+                                "name": "fnd0RequireCompleteConfirm"
+                            },
+                            {
+                                "name": "fnd0TaskExecutionErrors"
+                            },
+                            {
+                                "name": "fnd0TaskExecutionStatus"
+                            }
+                        ]
+
+                    },
+                    {
+                       "name": "ListOfValuesInteger",
+                       "properties":
+                       [
+                          {
+                             "name": "lov_values"
+                          },
+                          {
+                             "name": "lov_value_descriptions"
+                          }
+                       ]
+                    },
+                    {
+                        "name": "ResourcePool",
+                        "properties":
+                        [
+                           {
+                              "name": "group"
+                           },
+                           {
+                              "name": "role"
+                           }
+                        ]
+                    },
+                    {
+                        "name": "EPMPerformSignoffTask",
+                        "properties":
+                        [
+                            {
+                              "name": "parent_task"
+                            },
+                            {
+                              "name": "has_failure_paths"
+                            },
+                            {
+                              "name": "secure_task"
+                            },
+                            {
+                            "name": "user_all_signoffs",
+                            "modifiers":
+                            [
+                                {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                }
+                            ]
+                            },
+                            {
+                                "name": "fnd0Instructions"
+                            },
+                            {
+                                "name": "parent_process",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            }
+
+                        ]
+                   },
+                   {
+                    "name": "EPMTask",
+                    "properties":
+                    [
+                       {
+                          "name": "parent_task"
+                       },
+                       {
+                          "name": "has_failure_paths"
+                       },
+                       {
+                          "name": "secure_task"
+                       },
+                       {
+                        "name": "user_all_signoffs",
+                        "modifiers":
+                        [
+                            {
+                                "name": "withProperties",
+                                "Value": "true"
+                            }
+                        ]
+                        },
+                        {
+                            "name": "fnd0ObjectsToDigitallySign",
+                            "modifiers":
+                            [
+                                {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "fnd0IsPKIAuthRequired",
+                            "modifiers":
+                            [
+                                {
+                                    "name": "withProperties",
+                                    "Value": "true"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "fnd0Instructions"
+                        }
+                    ]
+                   },
+                   {
+                       "name": "Job",
+                       "properties":
+                       [
+                           {
+                               "name": "object_desc"
+                           }
+
+                       ]
+                   }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "signoffTask.taskPropertiesLoaded"
+                    }
+                ]
+            },
+
+            "deps": "js/Awp0SignoffPerform"
+        },
+
+        "initDigitalSignature":
+        {
+            "actionType": "JSFunctionAsync",
+            "method": "initDigitalSignature",
+            "inputData":
+            {
+                "selection": "{{props.subPanelContext.taskToPerform}}"
+            },
+            "outputData":{
+                "isDSConfigured": ""
+            },
+            "deps": "js/Awp0SignoffPerform"
+        },
+
+        "setTCSSOEnabled": {
+            "actionType": "JSFunctionAsync",
+            "method": "setTCSSOEnabled",
+            "outputData":
+            {
+                "isTCSSOEnabled": ""
+            },
+            "deps": "js/Awp0PerformTask"
+        },
+
+        "approveDS":
+        {
+            "actionType": "JSFunction",
+            "method": "performTaskDS",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "actionableObject": "{{data.psTaskObject}}",
+                "action": "SOA_EPM_approve_action",
+                "supportingValue": "SOA_EPM_approve",
+                "supportingObject": "{{data.signoffObject}}"
+            },
+            "deps": "js/Awp0SignoffPerform"
+        },
+
+        "approve":
+        {
+            "actionType": "JSFunction",
+            "method": "performTask",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "actionableObject": "{{data.psTaskObject}}",
+                "action": "SOA_EPM_approve_action",
+                "supportingValue": "SOA_EPM_approve",
+                "supportingObject": "{{data.signoffObject}}"
+            },
+            "deps": "js/Awp0SignoffPerform"
+        },
+        "undoDecision":
+        {
+            "actionType": "JSFunction",
+            "method": "performTask",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "actionableObject": "{{data.psTaskObject}}",
+                "action": "SOA_EPM_no_action",
+                "supportingValue": "SOA_EPM_no_decision",
+                "supportingObject": "{{data.signoffObject}}"
+            },
+            "deps": "js/Awp0SignoffPerform"
+        },
+
+        "undoDecisionDS":
+        {
+            "actionType": "JSFunction",
+            "method": "performTaskDS",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "actionableObject": "{{data.psTaskObject}}",
+                "action": "SOA_EPM_no_action",
+                "supportingValue": "SOA_EPM_no_decision",
+                "supportingObject": "{{data.signoffObject}}"
+            },
+            "deps": "js/Awp0SignoffPerform"
+        },
+
+        "reject":
+        {
+            "actionType": "JSFunction",
+            "method": "performTask",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "actionableObject": "{{data.psTaskObject}}",
+                "action": "SOA_EPM_reject_action",
+                "supportingValue": "SOA_EPM_reject",
+                "supportingObject": "{{data.signoffObject}}"
+            },
+            "deps": "js/Awp0SignoffPerform"
+        },
+
+        "rejectDS":
+        {
+            "actionType": "JSFunction",
+            "method": "performTaskDS",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "actionableObject": "{{data.psTaskObject}}",
+                "action": "SOA_EPM_reject_action",
+                "supportingValue": "SOA_EPM_reject",
+                "supportingObject": "{{data.signoffObject}}"
+            },
+            "deps": "js/Awp0SignoffPerform"
+        },
+
+        "populatePanelData":
+        {
+            "actionType": "JSFunction",
+            "method": "populatePanelData",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "selection": "{{props.subPanelContext.taskToPerform}}",
+                "fields": "{{fields}}"
+            },
+            "outputData":{
+                "taskName": "taskName",
+                "description": "description",
+                "workflowDescription": "workflowDescription",
+                "decision": "decision",
+                "decisionIntValue": "decisionIntValue",
+                "psTaskObject": "psTaskObject",
+                "isAcknowledge": "isAcknowledge",
+                "approveText": "approveText",
+                "rejectText": "rejectText",
+                "undoDecision": "undoDecision",
+                "signoffObject": "signoffObject",
+                "taskErrors": "taskErrors",
+                "isWarning": "isWarning"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "checkForSSOReauthEvent"
+                    }
+                ]
+            },
+            "deps": "js/Awp0SignoffPerform"
+        },
+
+        "verifyApprove": {
+            "actionType": "JSFunction",
+            "method": "getSelectedPath",
+            "inputData":
+            {
+                "taskResult": "{{data.approveText}}",
+                "data": "{{data}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "checkRequireConfirmationEventApprove",
+                        "condition": "!data.isDSConfigured && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] === '1'"
+
+                    },
+                    {
+                        "name": "approveEvent",
+                        "condition": "!data.isDSConfigured && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] !== '1'"
+                    },
+                    {
+                        "name": "checkRequireConfirmationApproveDS",
+                        "condition": "data.isDSConfigured && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] === '1'"
+                    },
+                    {
+                        "name": "approveDSEvent",
+                        "condition": "data.isDSConfigured && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] !== '1'"
+                    }
+                ]
+            },
+            "deps": "js/Awp0SignoffPerform"
+        },
+
+        "verifyUndoDecision": {
+            "actionType": "JSFunction",
+            "method": "getSelectedPath",
+            "inputData":
+            {
+                "taskResult": "{{data.undoDecision}}",
+                "data": "{{data}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "checkRequireConfirmationEventUndoDecision",
+                        "condition": "!data.isDSConfigured && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] === '1'"
+                    },
+                    {
+                        "name": "undoDecisionEvent",
+                        "condition": "!data.isDSConfigure && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] !== '1'"
+                    },
+                    {
+                        "name": "checkRequireConfirmationEventUndoDecisionDS",
+                        "condition": "data.isDSConfigure && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] === '1'"
+                    },
+                    {
+                        "name": "undoDecisionDSEvent",
+                        "condition": "data.isDSConfigure && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] !== '1'"
+                    }
+                ]
+            },
+            "deps": "js/Awp0SignoffPerform"
+        },
+
+        "verifyReject": {
+            "actionType": "JSFunction",
+            "method": "getSelectedPath",
+            "inputData":
+            {
+                "taskResult": "{{data.rejectText}}",
+                "data": "{{data}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "checkRequireConfirmationEventReject",
+                        "condition": "!data.isDSConfigured && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] === '1'"
+                    },
+                    {
+                        "name": "rejectEvent",
+                        "condition": "!data.isDSConfigured && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] !== '1'"
+                    },
+                    {
+                        "name": "checkRequireConfirmationRejectDS",
+                        "condition": "data.isDSConfigured && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] === '1'"
+                    },
+                    {
+                        "name": "rejectDSEvent",
+                        "condition": "data.isDSConfigured && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] !== '1'"
+                    }
+                ]
+            },
+            "deps": "js/Awp0SignoffPerform"
+        },
+
+        "registerPerformPanelProps": {
+            "actionType": "JSFunction",
+            "method": "registerPerformPanelProps",
+            "deps": "js/Awp0PerformTask"
+        },
+
+        "unregisterPerformPanelProp": {
+            "actionType": "JSFunction",
+            "method": "unregisterPerformPanelProp",
+            "deps": "js/Awp0PerformTask"
+        },
+        "checkForSSOReauthAction": {
+            "actionType": "JSFunction",
+            "method": "checkForReauthentication",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "deps": "js/Awp0PerformTask"
+        }
+    },
+
+    "data":
+    {
+        "taskName":
+        {
+            "displayName": "{{i18n.taskName}}",
+            "type": "STRING",
+            "isEditable" : "false",
+            "dbValue":"",
+            "uiValue":"",
+            "renderingHint": "label"
+        },
+
+        "description":
+        {
+            "displayName": "{{i18n.object_desc}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "isRequired": "false",
+            "uiValue":"",
+            "dbValue":"",
+            "renderingHint": "label"
+        },
+
+        "decision":
+        {
+            "displayName": "{{i18n.decision}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "isRequired": "false",
+            "uiValue":"",
+            "dbValue":"",
+            "renderingHint": "label"
+        },
+
+        "comments":
+        {
+            "displayName": "{{i18n.comments}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "numberOfLines": 3,
+            "maxLength": 4000,
+            "dbValue": "",
+            "uiValue": "",
+            "renderingHint": "textarea"
+        },
+
+        "password":
+        {
+            "displayName": "{{i18n.passwordDisplayName}}",
+            "type": "STRING",
+            "isEditable": "true",
+            "isRequired": "true",
+            "dispValue":"",
+            "dbValue":""
+        },
+
+        "workflowDescription":
+        {
+            "displayName": "{{i18n.workflowDescription}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "isRequired": "false",
+            "uiValue":"",
+            "dbValue":"",
+            "renderingHint": "label"
+        },
+        "taskErrors": {
+            "type": "STRING",
+            "isEditable": "true",
+            "isRequired": "true",
+            "dispValue":"",
+            "dbValue":""
+        }
+    },
+
+    "onEvent":
+    [
+        {
+            "eventId": "signoffTask.taskPropertiesLoaded",
+            "action": "populatePanelData"
+        },
+        {
+            "eventId": "Awp0PerformTask.updateInternalPanel",
+            "action": "loadProperties"
+        },
+        {
+            "eventId": "checkRequireConfirmationEventApprove",
+            "message": "checkRequireConfirmationApproveMessage"
+        },
+        {
+            "eventId": "checkRequireConfirmationEventReject",
+            "message": "checkRequireConfirmationRejectMessage"
+        },
+        {
+            "eventId": "checkRequireConfirmationApproveDS",
+            "message": "checkRequireConfirmationApproveDSMessage"
+        },
+        {
+            "eventId": "checkRequireConfirmationRejectDS",
+            "message": "checkRequireConfirmationRejectDSMessage"
+        },
+        {
+            "eventId": "checkRequireConfirmationEventUndoDecision",
+            "message": "checkRequireConfirmationUndoMessage"
+        },
+        {
+            "eventId": "checkRequireConfirmationEventUndoDecisionDS",
+            "message": "checkRequireConfirmationUndoDSMessage"
+        },
+        {
+            "eventId": "undoDecisionEvent",
+            "action": "undoDecision"
+        },
+        {
+            "eventId": "undoDecisionDSEvent",
+            "action": "undoDecisionDS"
+        },
+        {
+            "eventId": "approveEvent",
+            "action": "approve"
+        },
+        {
+            "eventId": "rejectEvent",
+            "action": "reject"
+        },
+        {
+            "eventId": "approveDSEvent",
+            "action": "approveDS"
+        },
+        {
+            "eventId": "rejectDSEvent",
+            "action": "rejectDS"
+        },
+        {
+            "eventId": "editHandlerStateChange",
+            "condition": "state === 'saved'",
+            "cacheEventData": true,
+            "action": "populatePanelData"
+        },
+        {
+            "eventId": "checkForSSOReauthEvent",
+            "action": "checkForSSOReauthAction"
+        }
+    ],
+
+    "lifecycleHooks":{
+        "onMount": "initPanel",
+        "onUnmount": "unregisterPerformPanelProp"
+    },
+
+    "messages":
+    {
+        "displayError":
+        {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.displayError}}",
+            "messageTextParams":
+            [
+                "{{data.taskName.uiValue}}",
+                "{{data.errorMessage}}"
+            ]
+        },
+        "checkRequireConfirmationApproveMessage":
+        {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.requireConfirmationSetTaskResult}}",
+            "messageTextParams": [
+                "{{data.taskName.uiValue}}",
+                "{{data.approveText}}"
+            ],
+            "navigationOptions":
+            [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}",
+                    "action": "cancelAction"
+                },
+                {
+                    "option": "Complete",
+                    "text": "{{i18n.selectedPath}}",
+                    "action": "approve"
+                }
+            ]
+        },
+        "checkRequireConfirmationRejectMessage":
+        {
+             "messageType": "WARNING",
+            "messageText": "{{i18n.requireConfirmationSetTaskResult}}",
+            "messageTextParams": [
+                "{{data.taskName.uiValue}}",
+                "{{data.rejectText}}"
+            ],
+            "navigationOptions":
+            [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}",
+                    "action": "cancelAction"
+                },
+                {
+                    "option": "Complete",
+                    "text": "{{i18n.selectedPath}}",
+                    "action": "reject"
+                }
+            ]
+        },
+        "checkRequireConfirmationApproveDSMessage":
+        {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.requireConfirmationSetTaskResult}}",
+            "messageTextParams": [
+                "{{data.taskName.uiValue}}",
+                "{{data.approveText}}"
+            ],
+            "navigationOptions":
+            [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}",
+                    "action": "cancelAction"
+                },
+                {
+                    "option": "Complete",
+                    "text": "{{i18n.selectedPath}}",
+                    "action": "approveDS"
+                }
+            ]
+        },
+        "checkRequireConfirmationRejectDSMessage":
+        {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.requireConfirmationSetTaskResult}}",
+            "messageTextParams": [
+                "{{data.taskName.uiValue}}",
+                "{{data.rejectText}}"
+            ],
+            "navigationOptions":
+            [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}",
+                    "action": "cancelAction"
+                },
+                {
+                    "option": "Complete",
+                    "text": "{{i18n.selectedPath}}",
+                    "action": "rejectDS"
+                }
+            ]
+        },
+        "checkRequireConfirmationUndoMessage":
+        {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.requireConfirmationSetTaskResult}}",
+            "messageTextParams": [
+                "{{data.taskName.uiValue}}",
+                "{{data.undoDecision}}"
+            ],
+            "navigationOptions":
+            [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}",
+                    "action": "cancelAction"
+                },
+                {
+                    "option": "Complete",
+                    "text": "{{i18n.selectedPath}}",
+                    "action": "undoDecision"
+                }
+            ]
+        },
+        "checkRequireConfirmationUndoDSMessage":
+        {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.requireConfirmationSetTaskResult}}",
+            "messageTextParams": [
+                "{{data.taskName.uiValue}}",
+                "{{data.undoDecision}}"
+            ],
+            "navigationOptions":
+            [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}",
+                    "action": "cancelAction"
+                },
+                {
+                    "option": "Complete",
+                    "text": "{{i18n.selectedPath}}",
+                    "action": "undoDecisionDS"
+                }
+            ]
+        },
+        "testMessageError": {
+            "messageType": "ERROR",
+            "messageText": "{{data.taskErrors.uiValue}}"
+        },
+        "testMessageWarning": {
+            "messageType": "WARNING",
+            "messageText": "{{data.taskErrors.uiValue}}"
+        }
+    },
+
+    "preferences":
+    [
+        "WRKFLW_hide_subsequent_task_errors"
+    ],
+
+    "conditions":
+    {
+        "isSecureTask":
+        {
+            "expression": "data.psTaskObject && data.psTaskObject.props.secure_task.dbValues[ 0 ] === '1' && !data.isTCSSOEnabled"
+        },
+
+        "isAcknowledgeTask":
+        {
+            "expression": "data.isAcknowledge"
+        },
+
+        "showInstructions":
+        {
+            "expression": "data.description.dbValue && data.description.dbValue.length > 0"
+        },
+
+        "showDecision":
+        {
+            "expression": "data.decision.dbValue && data.decision.dbValue.length > 0"
+        },
+
+        "showUndoDecision":
+        {
+            "expression": "data.decisionIntValue && data.decisionIntValue > 0"
+        },
+
+        "isValidToComplete":
+        {
+            "expression": "((conditions.isSecureTask && data.password.dbValue && data.password.dbValue.length>0) || (conditions.isSecureTask === false ))"
+        },
+
+        "showWorkflowDescription":
+        {
+            "expression": "data.workflowDescription.dbValue && data.workflowDescription.dbValue.length > 0"
+        },
+        "isToolAndInfoAreaPanel": {
+            "expression": "subPanelContext.isToolAndInfoAreaPanel===true"
+        },
+        "showUndoDecisionButton": {
+            "expression": "data.undoDecision && conditions.showUndoDecision"
+        },
+        "showApproveDecisionButton": {
+            "expression": "data.approveText && !conditions.showUndoDecision"
+        },
+        "showRejectDecisionButton": {
+            "expression": "data.rejectText && !conditions.isAcknowledgeTask && !conditions.showUndoDecision"
+        },
+        "isChildTaskError": {
+            "expression": "data.taskErrors.uiValue && data.taskErrors.uiValue"
+        },
+        "isWarning":
+        {
+            "expression": "data.isWarning"
+        }
+
+    },
+
+    "i18n":
+    {
+        "taskName":
+        [
+            "InboxMessages"
+        ],
+
+        "taskInstructions":
+        [
+            "InboxMessages"
+        ],
+
+        "performTask":
+        [
+            "InboxMessages"
+        ],
+
+        "comments":
+        [
+            "InboxMessages"
+        ],
+
+        "approve":
+        [
+            "InboxMessages"
+        ],
+
+        "reject":
+        [
+            "InboxMessages"
+        ],
+
+        "passwordDisplayName":
+        [
+            "InboxMessages"
+        ],
+
+        "displayError":
+        [
+            "InboxMessages"
+        ],
+
+        "description":
+        [
+            "InboxMessages"
+        ],
+
+        "object_desc":
+        [
+            "InboxMessages"
+        ],
+
+        "acknowledge":
+        [
+            "InboxMessages"
+        ],
+        "confirm":
+        [
+            "InboxMessages"
+        ],
+        "cancel":
+        [
+            "InboxMessages"
+        ],
+        "requireConfirmationApprove":
+        [
+            "InboxMessages"
+        ],
+        "requireConfirmationReject":
+        [
+            "InboxMessages"
+        ],
+        "requireConfirmationSetTaskResult":
+        [
+            "InboxMessages"
+        ],
+        "decision":
+        [
+            "InboxMessages"
+        ],
+        "undoDecision":
+        [
+            "InboxMessages"
+        ],
+        "workflowDescription":
+        [
+            "InboxMessages"
+        ]
+
+    }
+}

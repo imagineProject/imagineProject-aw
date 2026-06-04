@@ -1,0 +1,404 @@
+{
+    "schemaVersion" : "1.0.0",
+    "actions":
+    {
+        "getPartitionHierarchyAndUpdatePanelState": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "resetSearchResults",
+                    "condition": "data.state.dbValue === 'search'"
+                },
+                {
+                    "action": "getPartitionHierarchy"
+                },
+                {
+                    "action": "updatePartitionPanelState",
+                    "condition": "data.searchBox && data.searchBox.dbValue === ''"
+                }
+            ]
+        },
+        "resetSearchResults": {
+            "actionType": "JSFunction",
+            "method": "resetResults",
+            "inputData": {
+                "type": "search"
+            },
+            "outputData": {
+                "searchVMNodes":"searchVMNodes"
+            },
+            "deps": "js/AwPartitionHierarchyPopupService"
+        },
+        "getPartitionHierarchy": {
+            "actionType": "JSFunctionAsync",
+            "method": "getPartitionHierarchy",
+            "inputData": {
+                "data": "{{data}}",
+                "partitionScheme": "{{subPanelContext.sharedData.clickedObj}}",
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "outputData": {
+                "treeLoadResult": "treeLoadResult",
+                "searchResults": "childNodes",
+                "totalFound": "totalChildCount",
+                "productContextInfo": "productContext",
+                "isFilteringValid":"isApplyVisible"
+            },
+            "events": {
+                "success": [ {
+                    "name": "partitionDataProvider.multiSelectModeAction",
+                    "eventData": {
+                        "multiSelect": true
+                    }
+                }
+             ]
+            },
+            "deps": "js/AwPartitionHierarchyPopupService"
+        },
+        "loadPartitionProperties": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadTreeTableProperties",
+            "inputData": {
+                "propertyLoadInput": "request.propertyLoadInput"
+            },
+            "outputData": {
+                "dataProviders.partitionDataProvider.columnConfig": "result.propertyLoadResult.columnConfig"
+            },
+            "events": {
+                "success": [ {
+                    "name": "partitionPropertyProvider.propertiesLoaded"
+                } ]
+            },
+            "deps": "js/AwPartitionHierarchyPopupService"
+        },
+        "getSelectedObjectsAndUpdatePanelState": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getSelectedObjects"
+                },
+                {
+                    "action": "updateSelectedPartitionInfo",
+                    "condition": "subPanelContext.partitionSelectionData !== undefined"
+                },
+                {
+                    "action": "updatePartitionPanelState"
+                }
+            ]
+        },
+        "getSelectedObjects": {
+            "actionType": "JSFunction",
+            "method": "onPartitionSelection",
+            "inputData": {
+                "data": "{{data}}",
+                "subPanelContext":"{{subPanelContext}}",
+                "eventData": "{{data.eventMap}}"
+            },
+            "outputData": {
+                "newlySelectedPartitions": "newlySelectedPartitions",
+                "prevSelectedPartitions": "prevSelectedPartitions",
+                "unSelectedPartitions": "unSelectedPartitions",
+                "isFilteringValid":"isFilteringValid"
+            },
+            "deps": "js/AwPartitionHierarchyPopupService"
+        },
+        "initialPartitionSelectionOnPanelAndUpdatePanelState": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "initialPartitionSelectionOnPanel"
+                },
+                {
+                    "action": "updatePartitionPanelState"
+                }
+            ]
+        },
+        "initialPartitionSelectionOnPanel":{
+            "actionType": "JSFunction",
+            "method": "initialPartitionSelectionOnPanel",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "outputData": {
+                "prevSelectedPartitions": "prevSelectedPartitions",
+                "isFilteringValid":"isFilteringValid"
+            },
+            "deps": "js/AwPartitionHierarchyPopupService"
+        },
+        "doSearch": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "partitionHierarchy.searchInitiated"
+                    }
+                ]
+            }
+        },
+        "getSearchedPartitions": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cacheTreeExpansionState"
+                },
+                {
+                    "action": "performFacetSearch"
+                }
+            ]
+        },
+        "cacheTreeExpansionState":{
+            "actionType": "JSFunction",
+            "method": "getExpandedPartitionsCSId",
+            "inputData":
+            {
+                "data":"{{data}}",
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "deps": "js/AwPartitionHierarchyPopupService"
+        },
+        "performFacetSearch":{
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2018-05-Finder",
+            "method": "performFacetSearch",
+            "inputData": {
+                "facetSearchInput": {
+                    "providerName": "Awb0FullTextSearchProvider",
+                    "maxToReturn": 50,
+                    "searchCriteria": {
+                        "categoryForFacetSearch": "{{subPanelContext.sharedData.clickedObj.internalName}}",
+                        "facetSearchString": "{{data.searchBox.dbValue}}",
+                        "forceThreshhold": "",
+                        "productContextUids": "{{data.productContextInfo.uid}}",
+                        "searchString": "$DefaultSearchProvider_STD$*"
+                    },
+                    "searchFilterMap": {},
+                    "startIndex": 0
+                }
+            },
+            "outputData": {
+                "categories": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "partitionHierarchy.searchCompleted"
+                }
+             ]
+            },
+            "deps": "js/AwFilterPanelUtils"
+        },
+        "getPartitionsListOnSearch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "resetLoadedResults",
+                    "condition": "data.state.dbValue === 'load'"
+                },
+                {
+                    "action": "getPartitionsList"
+                }
+            ]
+        },
+        "resetLoadedResults": {
+            "actionType": "JSFunction",
+            "method": "resetResults",
+            "inputData": {
+                "type": "load"
+            },
+            "outputData": {
+                "vmNodes":"vmNodes"
+            },
+            "deps": "js/AwPartitionHierarchyPopupService"
+        },
+        "getPartitionsList":{
+            "actionType": "JSFunction",
+            "method": "getPartitionsList",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "partitionScheme": "{{subPanelContext.sharedData.clickedObj}}"
+            },
+            "outputData": {
+                "treeLoadResult": "treeLoadResult"
+            },
+            "events": {
+                "success": [ {
+                    "name": "partitionHierarchyTreeTable.plTable.reload"
+                }
+             ]
+            },
+            "deps": "js/AwPartitionHierarchyPopupService"
+        },
+        "updatePartitionPanelState":{
+            "actionType": "JSFunction",
+            "method": "updatePartitionPanelState",
+            "inputData": {
+                "loadedPartition":"{{data.totalFound}}",
+                "isFilterButtonEnable":"{{data.isFilteringValid}}",
+                "parentState": "{{props.parentState}}"
+            },
+            "deps": "js/AwPartitionHierarchyPopupService"
+        },
+        "updateSelectedPartitionInfo":{
+            "actionType": "JSFunction",
+            "method": "updateSelectedPartitionInfo",
+            "inputData": {
+                "newlySelectedPartitions":"{{data.newlySelectedPartitions}}",
+                "partitionSelectionInfo": "{{subPanelContext.partitionSelectionData}}"
+            },
+            "deps": "js/AwPartitionHierarchyPopupService"
+        },
+        "destroy":{
+            "actionType": "JSFunction",
+            "method": "destroyPartitionFilterPanel",
+            "inputData":
+            {
+                "data":"{{data}}",
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "deps": "js/AwPartitionHierarchyPopupService"
+        }
+    },
+    "lifecycleHooks": {
+        "onUnmount": "destroy"
+    },
+    "onEvent": [
+        {
+            "eventId": "partitionHierarchyTreeTable.gridSelection",
+            "cacheEventData": true,
+            "action": "getSelectedObjectsAndUpdatePanelState"
+        },
+        {
+            "eventId": "partitionPropertyProvider.propertiesLoaded",
+            "cacheEventData": true,
+            "action": "initialPartitionSelectionOnPanelAndUpdatePanelState"
+        },
+        {
+            "eventId": "partitionHierarchy.searchInitiated",
+            "action": "getSearchedPartitions"
+        },
+        {
+            "eventId": "partitionHierarchy.searchCompleted",
+            "cacheEventData": true,
+            "action": "getPartitionsListOnSearch"
+        },
+        {
+            "eventId":  " searchResultFlatList.Loaded",
+            "action": "loadPartitionProperties"
+        }
+    ],
+    "messages":{},
+    "data":
+    {
+        "filterBox":
+        {
+            "displayName": "",
+            "type": "STRING",
+            "dbValue": "{{i18n.filterString}}",
+            "isEditable": "true",
+            "requiredText": "Filter"
+        },
+        "searchBox":
+        {
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "true",
+            "dbValue": ""
+        },
+        "state":
+        {
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "true",
+            "dbValue": ""
+        },
+        "newlySelectedPartitions":
+        {
+            "isArray": "true",
+            "dbValue": [ ]
+        },
+        "prevSelectedPartitions":
+        {
+            "isArray": "true",
+            "dbValue": [ ]
+        },
+        "unSelectedPartitions":
+        {
+            "isArray": "true",
+            "dbValue": [ ]
+        },
+        "vmNodes":[],
+        "searchVMNodes":
+        {
+            "isArray": "true",
+            "dbValue": [ ]
+        }
+    },
+    "grids": {
+        "partitionHierarchyTreeTable": {
+            "dataProvider": "partitionDataProvider",
+            "columnProvider": "partitionColProvider",
+            "propertyProvider": "partitionPropertyProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableExpansionStateCaching": false,
+                "enablePinning": false,
+                "enableSorting": false,
+                "useStaticFirstCol": true,
+                "isFilteringEnabled": false
+            }
+        }
+    },
+    "dataProviders":
+    {
+        "partitionDataProvider": {
+            "action": "getPartitionHierarchyAndUpdatePanelState",
+            "initializeAction": "getPartitionHierarchyAndUpdatePanelState",
+            "treeLoadResult": "{{data.treeLoadResult}}",
+            "inputData": {
+                "accessMode": "tree",
+                "topNodeUid": "top"
+            },
+            "selectionModelMode": "multiple",
+            "multiSelectModeAction" : true,
+            "cacheCollapse": true
+        },
+
+        "partitionPropertyProvider": {
+            "action": "loadPartitionProperties",
+            "propertyLoadResult": "action.result.propertyLoadResult"
+        }
+    },
+    "columnProviders": {
+        "partitionColProvider": {
+            "columns": [
+                {
+                    "typeName": "ptn0Partition",
+                    "name": "object_name",
+                    "displayName": "Name",
+                    "maxWidth": 300,
+                    "minWidth": 200,
+                    "width": 200,
+                    "isTreeNavigation": true,
+                    "pinnedLeft":true,
+                    "enableColumnMenu": false,
+                    "enableColumnMoving": false
+                }
+            ]
+        }
+    },
+    "i18n":{
+        "OrganizationSchemeSectionName": ["Occmgmt4GFMessages"],
+        "filterString": [ "OccmgmtPartitionMessages" ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "parent-state":{
+            "type": "object"
+        }
+    }
+}

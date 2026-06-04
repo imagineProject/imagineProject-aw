@@ -1,0 +1,281 @@
+{
+    "schemaVersion" : "1.0.0",
+    "actions": {
+        "initializeConfigBaselineClauseProperties": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setTodayForLMDCheckBoxTrue",
+                    "condition": "subPanelContext && subPanelContext.activeView && subPanelContext.activeView === 'AddClauses'"
+                },
+                {
+                    "action": "configBaselineClausePropertyValueInitialized",
+                    "condition": "subPanelContext && subPanelContext.activeView && subPanelContext.activeView === 'RevisionRuleAdminPanel'"
+                },
+                {
+                    "action": "setConfigBaselineTypeToAny",
+                    "condition": "subPanelContext && subPanelContext.activeView && subPanelContext.activeView === 'AddClauses'"
+                },
+                {
+                    "action": "setConfigBaselineStateToAny",
+                    "condition": "subPanelContext && subPanelContext.activeView && subPanelContext.activeView === 'AddClauses'"
+                },
+                {
+                    "action": "setConfigBaselineLMDToday",
+                    "condition": "subPanelContext && subPanelContext.activeView && subPanelContext.activeView === 'AddClauses'"
+                }
+            ]
+        },
+        "setConfigBaselineTypeToAny": {
+            "actionType": "JSFunction",
+            "method": "setConfigBaselineTypeToAny",
+            "deps": "js/configurationBaselinesClauseService"
+        },
+        "setConfigBaselineStateToAny": {
+            "actionType": "JSFunction",
+            "method": "setConfigBaselineStateToAny",
+            "deps": "js/configurationBaselinesClauseService"
+        },
+        "setConfigBaselineLMDToday": {
+            "actionType": "JSFunction",
+            "method": "setConfigBaselineLMDToday",
+            "inputData": {
+                "data": "{{data}}",
+                "date": "{{fields.config_baseline_date}}",
+                "occContext": "{{subPanelContext.occContext}}"
+            },
+            "deps": "js/configurationBaselinesClauseService"
+        },
+        "setTodayForLMDCheckBoxTrue": {
+            "actionType": "JSFunction",
+            "method": "setTodayForLMDCheckBoxTrue",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/configurationBaselinesClauseService"
+        },
+        "onUpdateLastModifiedDateBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "onUpdateConfigBaselineLMD"
+                }
+            ]
+        },
+        "onUpdateConfigBaselineLMD": {
+            "actionType": "JSFunction",
+            "method": "setConfigBaselineLMD",
+            "inputData": {
+                "data": "{{data}}",
+                "date": "{{fields.config_baseline_date}}"
+            },
+            "deps": "js/configurationBaselinesClauseService"
+        },
+        "configBaselineClausePropertyValueInitialized": {
+            "actionType": "JSFunction",
+            "method": "configBaselineClausePropertyValueInitialized",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "config_baseline": "config_baseline",
+                "config_baseline_state": "config_baseline_state",
+                "config_baseline_date": "config_baseline_date",
+                "todayForLMD": "todayForLMD"
+            },
+            "deps": "js/configurationBaselinesClauseService"
+        },
+        "loadConfigBaselines":{
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-LOV",
+            "method": "getInitialLOVValues",
+            "inputData": {
+                    "initialData": {
+                        "propertyName" : "fnd0BaselineType",
+                        "lovInput": {
+                            "owningObject": {
+                                "type": "Fnd0HasBaselineTypeEntry"
+                            },
+                            "operationName": "Create",
+                            "boName": "Fnd0HasBaselineTypeEntry"
+                        }
+                   }
+            },
+            "outputData": {
+                "configBaselinesListResponse": "{{function:processConfigBaselines}}",
+                "totalConfigBaselines": "totalFound",
+                "totalLoaded": "totalLoaded"
+            },
+            "deps": "js/configurationBaselinesClauseService"
+        },
+        "validateConfigBaselineEntry": {
+            "actionType": "JSFunction",
+            "method": "validateConfigBaselineWidgetValue",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "selected" : "request.selected"
+            },
+            "outputData":{
+                "validEvent":"valid",
+                "messageForLocationEntry":"message"
+            },
+            "deps": "js/configurationBaselinesClauseService"
+        },
+        "updateConfigBaselineClauseText":{
+            "actionType": "JSFunction",
+            "method": "updateConfigBaselineClauseText",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "outputData":{
+                "config_baseline":""
+            },
+            "deps": "js/configurationBaselinesClauseService"
+        },
+        "configBaselineListSelectionChanged": {
+            "actionType": "JSFunction",
+            "method": "configBaselineListSelectionChanged",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "deps": "js/configurationBaselinesClauseService"
+        },
+        "setConfigBaselineState": {
+            "actionType": "JSFunction",
+            "method": "setConfigBaselineState",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "deps": "js/configurationBaselinesClauseService"
+        }
+    },
+    "data" : {
+        "config_baseline": {
+            "type": "STRING",
+            "dataProvider": "configBaselineDataProvider",
+            "dbValue": "Any",
+            "uiValue": "{{i18n.any}}",
+            "isRequired": "true",
+            "displayName": "{{i18n.configurationBaselineType}}",
+            "emptyLOVEntry": false
+        },
+        "config_baseline_state": {
+            "type": "STRING",
+            "isRequired": "false",
+            "hasLov": true,
+            "displayName": "{{i18n.configurationBaselineState}}",
+            "isEditable": "true",
+            "dbValue": "",
+            "uiValue": "{{i18n.any}}",
+            "emptyLOVEntry": false
+        },
+        "config_baseline_state_List": {
+            "type": "STRING",
+            "dbValue": [
+                { "propDisplayValue": "{{i18n.any}}", "propInternalValue": "" },
+                { "propDisplayValue": "{{i18n.configurationBaselineOpen}}", "propInternalValue": "Open" },
+                { "propDisplayValue": "{{i18n.configurationBaselineClose}}", "propInternalValue": "Closed" }
+            ]
+        },
+        "config_baseline_date": {
+            "displayName": "{{i18n.configurationBaselineLMD}}",
+            "isRequired": "false",
+            "type": "DATETIME",
+            "dbValue": "",
+            "uiValue": ""
+        },
+        "moreValuesExist": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        },
+        "todayForLMD": {
+            "displayName": "{{i18n.useToday}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+    "dataProviders":
+    {
+        "configBaselineDataProvider": {
+            "initializeAction": "loadConfigBaselines",
+            "nextAction": "loadConfigBaselines",
+            "response": "{{data.configBaselinesListResponse.configBaselineList}}",
+            "totalFound": "{{data.totalConfigBaselines}}",
+            "selectionModelMode": "single",
+            "moreValuesExist": "{{data.configBaselinesListResponse.moreValuesExist}}",
+            "validateAction": "validateConfigBaselineEntry",
+            "valid": "{{data.validConfigBaseline}}",
+            "message": "{{data.messageForConfigBaselineEntry}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeConfigBaselineClauseProperties"
+    },
+    "conditions": {
+        "configBaselineDateValueChanged": {
+            "expression": "data.config_baseline_date.dbValue",
+            "trackValues": true
+        },
+        "isTimeEnabled": {
+            "expression": "props.subPanelContext.occContext && props.subPanelContext.occContext.productContextInfo.props.awb0EffDate.propertyDescriptor.constantsMap.timeEnabled"
+        },
+        "todayForLMDUnchecked": {
+            "expression": "!data.todayForLMD.dbValue || data.todayForLMD.dbValue === 'false'"
+        }
+    },
+    "i18n": {
+        "configurationBaseline": [ "RevisionRuleAdminConstants" ],
+        "configurationBaselineType": [ "RevisionRuleAdminConstants" ],
+        "configurationBaselineState": [ "RevisionRuleAdminConstants" ],
+        "configurationBaselineOpen": [ "RevisionRuleAdminConstants" ],
+        "configurationBaselineClose": [ "RevisionRuleAdminConstants" ],
+        "configurationBaselineLMD": [ "RevisionRuleAdminConstants" ],
+        "any": [ "RevisionRuleAdminConstants" ],
+        "useToday": ["RevisionRuleAdminConstants"]
+    },
+    "functions":
+    {
+        "processConfigBaselines": {
+            "functionName": "processConfigBaselines",
+            "parameters": [
+                "{{data}}"
+            ]
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "RevisionRuleAdminPanel.updateConfigBaselineClauseText",
+            "action": "updateConfigBaselineClauseText"
+        },
+        {
+            "eventId": "RevisionRuleAdminEventClause.configBaselineClausePropertyValueInitialized",
+            "action": "configBaselineClausePropertyValueInitialized"
+        },
+        {
+            "eventId": "config_baseline.lovValueChanged",
+            "action": "configBaselineListSelectionChanged",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "config_baseline_state.lovValueChanged",
+            "action": "setConfigBaselineState",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "condition.expressionValueChanged",
+            "action": "onUpdateConfigBaselineLMD",
+            "criteria": {
+                "condition": "conditions.configBaselineDateValueChanged"
+            },
+            "cacheEventData": true
+        }
+    ]
+}

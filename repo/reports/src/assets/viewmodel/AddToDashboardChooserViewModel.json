@@ -1,0 +1,482 @@
+{
+    "schemaVersion" : "1.0.0",
+    "data":{
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "dashboardLocation": ["Reports"],
+        "reportId":{
+            "dbValue": "",
+            "uiValue": ""
+        }
+    },
+    "actions": {
+        "initialize":{
+            "actionType": "batchJob",
+            "steps": [{
+                "action": "loadDashboardTabs",
+                "condition": "!ctx.dashboardObjects"
+            }, {
+                "action": "startLoading"
+            }]
+        },
+        "loadDashboardTabs":{
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "attributesToInflate": ["owning_user", "Fnd0Applicable_Assignment"],
+                        "maxToLoad": -1,
+                        "maxToReturn": -1,
+                        "providerName": "Rb0ReportsDataProvider",
+                        "searchCriteria": {
+                            "isFilterMapRequired": "False",
+                            "sourceObject": "",
+                            "relationsPath": "{{function:getRelationsPathForDashboardTabsLoading}}"
+                        },
+                        "searchFilterFieldSortType": "",
+                        "startIndex": "",
+                        "searchFilterMap6": "",
+                        "searchSortCriteria": ""
+                    },
+                    "inflateProperties": true,
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Awp0ReportBuilder"
+                    }
+                },
+                "1": {
+                    "types": [ {
+                        "name": "Rb0ReportsDashboard",
+                        "properties": [
+                            {
+                                "name": "rb0DashboardName"
+                            },
+                            {
+                                "name": "rb0SourceDashboard"
+                            },
+                            {
+                                "name": "rb0DashboardDescription"
+                            },
+                            {
+                                "name": "rb0DashboardLocation"
+                            },
+                            {
+                                "name": "rb0DashboardId"
+                            },
+                            {
+                                "name": "rb0DashboardTemplatesList"
+                            },
+                            {
+                                "name": "owning_user"
+                            },
+                            {
+                                "name": "Fnd0Applicable_Assignment"
+                            }
+                        ]
+                    } ]
+                }
+            },
+            "outputData":{
+                "ctx.dashboardObjects": "{{json:searchResultsJSON}}"
+            }
+        },
+        "startLoading": {
+            "actionType": "dataProvider",
+            "method": "dashboardDataProvider"
+        },
+        "checkSelection": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "addSelectedDashboardReportForTabbedandClose",
+                "condition": "data.selectionData.selected.length > 0"
+            }]
+        },
+        "getSelectedAdvancedQuery":{
+            "actionType": "JSFunction",
+            "method": "getSelectedAdvancedQuery",
+            "deps": "js/showMyDashboardService",
+            "inputData": {
+                "searchState": "{{subPanelContext.searchState}}"
+            },
+            "outputData": {
+                "selectedAdvancedQuery": "selectedAdvancedQuery",
+                "rd_params": "rd_params",
+                "rd_param_values": "rd_param_values"
+            }
+        },
+        "generateReportId":{
+            "actionType": "TcSoaService",
+            "serviceName": "Reports-2007-01-CrfReports",
+            "method": "generateReportDefintionIds",
+            "inputData": {
+                "inputCriteria": [ {
+                    "category": "SummaryReport",
+                    "clientId": "",
+                    "source": "",
+                    "status": ""
+                } ]
+            },
+            "outputData": {
+                "reportId": "{{function:getNewReportId}}"
+            },
+            "deps": "js/addNewReportService"
+        },
+        "addReportAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2008-06-DataManagement",
+            "method": "createObjects",
+            "inputData": {
+                "input": [ {
+                    "clientId": "1",
+                    "data": {
+                        "boName": "ReportDefinition",
+                        "stringProps": {
+                            "rd_name": "{{subPanelContext.searchState.savedQuery.name}}",
+                            "rd_source": "Active Workspace",
+                            "rd_folder_name": "CrfHome",
+                            "rd_class": "",
+                            "rd_id": "{{data.reportId.dbValue}}",
+                            "rd_description": ""
+                        },
+                        "intProps": {
+                            "rd_state": 0,
+                            "rd_type": 0
+                        },
+                        "stringArrayProps": {
+                            "rd_parameters": "{{data.rd_params}}",
+                            "rd_param_values": "{{data.rd_param_values}}"
+                        },
+                        "boolProps": {
+                            "fnd0IsAsync": false
+                        },
+                        "compoundCreateInput": {
+                            "rd_query_source": [ {
+                                "boName": "CrfQuerySource",
+                                "tagProps": {
+                                    "qry_src_tc_qry": "{{data.selectedAdvancedQuery}}"
+                                }
+                            } ]
+                        }
+                    }
+                } ]
+            },
+            "outputData": {
+                "createdReportDefObject": "output[0].objects[0]"
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "showReportCreateErrorMessage",
+                    "condition": "errorCode.code === 515106"
+                }]
+            },
+            "deps": "js/addNewReportService"
+        },
+        "createRelationsForNone": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "createRelations",
+            "inputData": {
+                "input": [
+                    {
+                        "primaryObject": {
+                            "type": "ReportDefinition",
+                            "uid": "{{data.createdReportDefObject.uid}}"
+                        },
+                        "secondaryObject": {
+                            "type": "User",
+                            "uid": "{{ctx.userSession.props.user.dbValue}}"
+                        },
+                        "relationType": "Fnd0Applicable_Assignment",
+                        "clientId": ""
+                    }
+                ]
+            },
+            "outputData":{
+                "output": ""
+            },
+            "deps": "js/ShareTemplateService"
+        },
+        "createReportFromAdvQuery":{
+            "actionType": "batchJob",
+            "steps": [{
+                "action": "getSelectedAdvancedQuery"
+            }, {
+                "action": "generateReportId"
+            }, {
+                "action": "addReportAction",
+                "condition": "conditions.isCreateReportPossible"
+            },{
+                "action": "createRelationsForNone",
+                "condition": "data.createdReportDefObject"
+            }]
+        },
+        "addSelectedDashboardReportForTabbedandClose": {
+            "actionType":"batchJob",
+            "steps": [
+                {
+                    "action": "createReportFromAdvQuery",
+                    "condition": "conditions.isQueryBuilderLocation"
+                },
+                {
+                    "action": "addSelectedDashboardReportForTabbed",
+                    "condition": "ctx.showAddToDashboardCommand || (conditions.isQueryBuilderLocation && data.createdReportDefObject)"
+                },
+                {
+                    "action": "removeSelectedDashboardReportForTabbed",
+                    "condition": "!ctx.showAddToDashboardCommand && !conditions.isQueryBuilderLocation"
+                },
+                {
+                    "action": "checkForDashboardConfigCommand",
+                    "condition": "!conditions.isQueryBuilderLocation"
+                },
+                {
+                    "action": "closePanel"
+                }
+            ]
+        },
+        "addSelectedDashboardReportForTabbed": {
+            "actionType": "JSFunction",
+            "method": "addSelectedDashboardReportForTabbed",
+            "deps": "js/showMyDashboardService",
+            "inputData": {
+                "selectedReportDef": "{{function:getSelectedRepObject}}",
+                "tabObject": "{{data.selectionData.selected[0]}}",
+                "sourceUid": {"uid": "{{function:getUIDForSelectObject}}"},
+                "searchState": "{{subPanelContext.searchState}}"
+            },
+            "actionMessages":
+            {
+                "success":
+                [
+                    {
+                        "message": "addToDashboardSucessMessage",
+                        "condition": "ctx.selected && ctx.selected.type === 'ReportDefinition'"
+                    },
+                    {
+                        "message": "addToDashboardSucessMessagePWA",
+                        "condition": "ctx.pselected && ctx.pselected.type === 'ReportDefinition'"
+                    },
+                    {
+                        "message": "addToDashboardSucessMessageScenario2",
+                        "condition": "subPanelContext.selectedReport !== undefined"
+                    },
+                    {
+                        "message": "addToDashboardSucessMessageAtQueryBuilderLoc",
+                        "condition": "data.createdReportDefObject"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "addToDashboardFailureMsg",
+                        "condition": "ctx.selected && ctx.selected.type === 'ReportDefinition'"
+                    },
+                    {
+                        "message": "addToDashboardFailureMsgPWA",
+                        "condition": "ctx.pselected && ctx.pselected.type === 'ReportDefinition'"
+                    },
+                    {
+                        "message": "addToDashboardFailureMsg2",
+                        "condition": "subPanelContext.selectedReport !== undefined"
+                    },
+                    {
+                        "message": "addToDashboardFailureMessageAtQueryBuilderLoc",
+                        "condition": "data.createdReportDefObject"
+                    }
+                ]
+            }
+        },
+        "removeSelectedDashboardReportForTabbed": {
+            "actionType": "JSFunction",
+            "method": "removeSelectedDashboardReportForTabbed",
+            "deps": "js/showMyDashboardService",
+            "inputData": {
+                "selectedReportDef": "{{function:getSelectedRepObject}}",
+                "dashboardTabObject": "{{data.selectionData.selected[0]}}",
+                "searchState": "{{subPanelContext.searchState}}"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "removeReportFailure"
+                    }
+                ]
+            }
+        },
+        "checkForDashboardConfigCommand":{
+            "actionType": "JSFunction",
+            "method": "checkForDashboardConfigCommand",
+            "inputData": {
+                "selectedReport": "{{function:getSelectedRepObject}}",
+                "sourceUid": {"uid": "{{function:getUIDForSelectObject}}"},
+                "preferenceName": "{{props.subPanelContext.dashboardListPreference}}"
+            },
+            "deps": "js/reportsCommonService"
+        },
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "inputData": {
+                "popupId": "{{props.subPanelContext.popupOptions.popUpId}}",
+                "targetEvent": "{{$event}}"
+            },
+            "deps": "js/popupService"
+        },
+        "getDashboardChooserList": {
+            "actionType": "JSFunction",
+            "method": "getDashboardChooserList",
+            "deps": "js/showMyDashboardService",
+            "inputData": {
+                "selectedReportDef": "{{function:getSelectedRepObject}}"
+            },
+            "outputData": {
+                "dashboardObjects": ""
+            }
+        }
+    },
+    "dataProviders": {
+        "dashboardDataProvider": {
+            "action": "getDashboardChooserList",
+            "response": "{{data.dashboardObjects}}",
+            "totalFound": "{{data.dashboardObjects.length}}",
+            "selectionModelMode": "single",
+            "inputData": {
+                "selectionData": "{{fields.selectionData}}"
+            }
+        }
+    },
+    "lifecycleHooks": {
+        "onMount" : "initialize",
+        "onUpdate": [{
+            "action": "checkSelection",
+            "observers": ["viewModel.atomicData.selectionData.selected.length"]
+        }]
+    },
+    "functions": {
+        "getNewReportId":{
+            "functionName": "getNewReportId",
+            "parameters": ["{{data.reportId}}"]
+        },
+        "getSelectedRepObject": {
+            "functionName": "getSelectedRepObject",
+            "parameters": [
+                "{{subPanelContext.selectedReport}}",
+                "{{data.createdReportDefObject}}"
+            ]
+        },
+        "getUIDForSelectObject":{
+            "functionName": "getUIDForSelectObject",
+            "parameters": [
+                "{{subPanelContext.selectedReport}}",
+                "{{data.createdReportDefObject}}",
+                "{{subPanelContext.reportSourceObjectUid}}"
+            ]
+        },
+        "getRelationsPathForDashboardTabsLoading":{
+            "functionName": "getRelationsPathForDashboardTabsLoading",
+            "parameters": ["{{data.dashboardLocation}}"],
+            "deps": "js/showMyDashboardService"
+        }
+    },
+    "i18n": {
+        "addToDashboardSuccessMsgWithDashboardName":["ReportChartMessages"],
+        "removeFailureMsg": ["ReportChartMessages"]
+    },
+    "messages": {
+        "addToDashboardSucessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.addToDashboardSuccessMsgWithDashboardName}}",
+            "messageTextParams": [
+                "{{ctx.selected.props.rd_name.dbValues[0]}}",
+                "{{data.selectionData.selected[0].props.rb0DashboardName.uiValues[0]}}"
+            ]
+        },
+        "addToDashboardSucessMessagePWA": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.addToDashboardSuccessMsgWithDashboardName}}",
+            "messageTextParams": [
+                "{{ctx.pselected.props.rd_name.dbValues[0]}}",
+                "{{data.selectionData.selected[0].props.rb0DashboardName.uiValues[0]}}"
+            ]
+        },
+        "addToDashboardSucessMessageScenario2": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.addToDashboardSuccessMsgWithDashboardName}}",
+            "messageTextParams": [
+                "{{subPanelContext.selectedReport.props.rd_name.dbValues[0]}}",
+                "{{data.selectionData.selected[0].props.rb0DashboardName.uiValues[0]}}"
+            ]
+        },
+        "addToDashboardSucessMessageAtQueryBuilderLoc":{
+            "messageType": "INFO",
+            "messageText": "{{i18n.addToDashboardSuccessMsgWithDashboardName}}",
+            "messageTextParams": [
+                "{{data.createdReportDefObject.props.rd_name.dbValues[0]}}",
+                "{{data.selectionData.selected[0].props.rb0DashboardName.uiValues[0]}}"
+            ]
+        },
+        "addToDashboardFailureMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.addToDashboardFailureMsg}}",
+            "messageTextParams": [
+                "{{ctx.selected.props.rd_name.dbValues[0]}}",
+                "{{data.selectionData.selected[0].props.rb0DashboardName.uiValues[0]}}",
+                "{{errorCode}}"
+            ]
+        },
+        "addToDashboardFailureMsgPWA": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.addToDashboardFailureMsg}}",
+            "messageTextParams": [
+                "{{ctx.pselected.props.rd_name.dbValues[0]}}",
+                "{{data.selectionData.selected[0].props.rb0DashboardName.uiValues[0]}}",
+                "{{errorCode}}"
+            ]
+        },
+        "addToDashboardFailureMsg2": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.addToDashboardFailureMsg}}",
+            "messageTextParams": [
+                "{{subPanelContext.selectedReport.props.rd_name.dbValues[0]}}",
+                "{{data.selectionData.selected[0].props.rb0DashboardName.uiValues[0]}}",
+                "{{errorCode}}"
+            ]
+        },
+        "addToDashboardFailureMessageAtQueryBuilderLoc":{
+            "messageType": "ERROR",
+            "messageText": "{{i18n.addToDashboardFailureMsg}}",
+            "messageTextParams": [
+                "{{data.createdReportDefObject.props.rd_name.dbValues[0]}}",
+                "{{data.selectionData.selected[0].props.rb0DashboardName.uiValues[0]}}",
+                "{{errorCode}}"
+            ]
+        },
+        "removeReportFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.removeFailureMsg}}",
+            "messageTextParams": [
+                "{{data.selectionData.selected[0].props.rb0DashboardName.uiValues[0]}}",
+                "{{errorCode}}"
+            ]
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "preference-name": {
+            "type": "string"
+        }
+    },
+    "conditions": {
+        "isQueryBuilderLocation": {
+            "expression": "ctx.sublocation.historyNameToken === 'teamcenter_search_advancedSearch' && subPanelContext.searchState.savedQuery.name && subPanelContext.searchState.savedQuery.value && subPanelContext.searchState.totalFound > 0"
+        },
+        "isCreateReportPossible": {
+            "expression": "data.reportId.dbValue && data.selectedAdvancedQuery.uid"
+        }
+    }
+}

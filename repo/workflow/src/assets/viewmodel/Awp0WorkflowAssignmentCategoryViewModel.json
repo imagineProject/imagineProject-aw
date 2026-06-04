@@ -1,0 +1,578 @@
+
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-label.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-back-button.directive",
+        "js/aw-command-panel-section.directive",
+        "js/aw-list.directive",
+        "js/exist-when.directive",
+        "js/aw-repeat.directive",
+        "js/aw-i18n.directive",
+        "js/visible-when.directive",
+        "js/aw-include.directive",
+        "js/aw-panel-header.directive",
+        "js/aw-break.directive"
+    ],
+
+    "actions": {
+        "initDataProvider": {
+            "actionType": "dataProvider",
+            "methods": ["assignerDataProvider", "reviewersDataProvider", "adhocReviewersDataProvider", "acknowledgersDataProvider", "notifyeesDataProvider"]
+        },
+        "addSelectedUsersNarrowMode": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getSelectedUsers",
+                    "condition": "conditions.isAddUsersNarrowMode"
+                },
+                {
+                    "action": "addSelectedUsersInternal",
+                    "condition": "conditions.isAddUsersNarrowMode"
+                },
+                {
+                    "action": "navigateToMainPanel",
+                    "condition": "conditions.isAddUsersNarrowMode"
+                },
+                {
+                    "action": "resentUserPanelContextData",
+                    "condition": "props.subPanelContext.sidenavMode === 'mobile' && conditions.isAddUsersNarrowMode"
+                },
+                {
+                    "action": "resentUserPanelWithAdditionalContextData",
+                    "condition": "props.subPanelContext.sidenavMode !== 'mobile' && props.addUserPanelState.isAddButtonNeeded && conditions.isAddUsersNarrowMode"
+                }
+            ]
+        },
+        "getSelectedUsers": {
+            "actionType": "JSFunctionAsync",
+            "method": "getValidObjectsToAdd",
+            "inputData": {
+                "propName": "{{props.addUserPanelState.criteria}}",
+                "selectedUsers": "{{props.addUserPanelState.selectedUsers}}",
+                "baseActiveFiltersStructure": "{{props.addUserPanelState.baseActiveFiltersStructure}}"
+            },
+            "outputData": {
+                "selectedUsers": ""
+            },
+            "deps": "js/Awp0WorkflowAssignmentUtils"
+        },
+        "addSelectedUsersInternal": {
+            "actionType": "JSFunction",
+            "method": "addSelectedUsers",
+            "inputData": {
+                "propName": "{{props.addUserPanelState.propName}}",
+                "userPanelContext": "{{props.addUserPanelState}}",
+                "selectedUsers": "{{data.selectedUsers}}",
+                "subPanelContext": "{{props.taskInfoObject}}"
+            },
+            "deps": "js/Awp0WorkflowAssignmentPanelService"
+        },
+        "resentUserPanelContextData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.addUserPanelState}}",
+                "value" : {
+                    "propName": null,
+                    "selectedUsers": []
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "resentUserPanelWithAdditionalContextData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.addUserPanelState}}",
+                "value" : {
+                    "propName": null,
+                    "selectedUsers": [],
+                    "isAddButtonNeeded": false
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "navigateToMainPanel": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.activeState}}",
+                "value": {
+                    "activeView": "{{props.activeState.prePanelId}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "addTaskAssignment": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getSelectedUsers"
+                },
+                {
+                    "action": "addTaskAssignmentInternal",
+                    "condition": "commandContext.propName && !commandContext.isParticipantProp"
+                }
+            ]
+        },
+        "addTaskAssignmentInternal": {
+            "actionType": "JSFunction",
+            "method": "addSelectedUsersOnPanel",
+            "inputData": {
+                "propName": "{{commandContext.propName}}",
+                "isParticipantProp": false,
+                "commandContext": "{{commandContext}}",
+                "selectedObjects": "{{data.selectedUsers}}",
+                "subPanelContext": "{{props.taskInfoObject}}"
+            },
+            "deps": "js/Awp0WorkflowAssignmentPanelService"
+        },
+        "updateReviewersSelectionBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "filterAssistantPredictions",
+                    "condition": "ctx.preferences && ctx.preferences.AWA_is_feature_installed && ctx.preferences.AWA_is_feature_installed[ 0 ] === 'true' && ctx.preferences.AWA_enable_people_picker_suggestions && ctx.preferences.AWA_enable_people_picker_suggestions[ 0 ] === 'true'"
+                },
+                {
+                    "action": "updateProfileReviewersSelection"
+                }
+            ]
+        },
+        "filterAssistantPredictions": {
+            "actionType": "JSFunction",
+            "method": "filterAssistantPredictions",
+            "inputData": {
+                "selectedObjects": "{{dataProviders.reviewersDataProvider.selectedObjects}}"
+            },
+            "deps": "js/peoplePickerAssistantUtils"
+        },
+        "updateProfileReviewersSelection": {
+            "actionType":"JSFunction",
+            "method":"updateProfileReviewerSelection",
+            "inputData":{
+                "selectedObjects": "{{dataProviders.reviewersDataProvider.selectedObjects}}",
+                "contextObject": "{{props.addUserPanelState}}",
+                "criteria" : "{{props.addUserPanelState.defaultCriteria}}"
+            },
+            "deps":"js/Awp0WorkflowAssignmentPanelService"
+        },
+        "openPeoplePickerPanel": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "populateUserPanelCriteria"
+                },
+                {
+                    "action": "navigateToUserPanel",
+                    "condition": "props.subPanelContext.sidenavMode === 'mobile'"
+                }
+            ]
+        },
+        "populateUserPanelCriteria": {
+            "actionType": "JSFunction",
+            "method": "openUserPanel",
+            "inputData": {
+                "commandContext": "{{commandContext}}",
+                "subPanelContext": "{{props.addUserPanelState}}",
+                "criteria" : "{{props.addUserPanelState.defaultCriteria}}"
+            },
+            "deps": "js/Awp0WorkflowAssignmentPanelService"
+        },
+        "navigateToUserPanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "AwPeoplePicker"
+            }
+        },
+        "updateAssigneeDataProvider": {
+            "actionType": "JSFunction",
+            "method": "updateAssigneeDataProvider",
+            "inputData": {
+                "dataProvider": "{{dataProviders.assignerDataProvider}}",
+                "modelObjects": "{{props.taskInfoObject.props.assignee.modelObjects}}"
+            },
+            "deps": "js/Awp0WorkflowAssignmentPanelService"
+        },
+        "updateReviewersDataProvider": {
+            "actionType": "JSFunction",
+            "method": "updateReviewersDataProvider",
+            "inputData": {
+                "dataProvider": "{{dataProviders.reviewersDataProvider}}",
+                "modelObjects": "{{props.taskInfoObject.props.reviewers.modelObjects}}",
+                "reviewersProp": "{{props.taskInfoObject.props.reviewers}}",
+                "requiredString": "{{i18n.required}}",
+                "sidenavMode": "{{props.taskInfoObject.sidenavMode}}",
+                "taskInfoObject": "{{props.taskInfoObject}}"
+            },
+            "outputData": {
+                "reviewerObjects": ""
+            },
+            "deps": "js/Awp0WorkflowAssignmentPanelService"
+        },
+        "updateAdditionalReviewersDataProvider": {
+            "actionType": "JSFunction",
+            "method": "updateDataProvider",
+            "inputData": {
+                "dataProvider": "{{dataProviders.adhocReviewersDataProvider}}",
+                "modelObjects": "{{props.taskInfoObject.props.additionalReviewers.modelObjects}}"
+            },
+            "deps": "js/Awp0WorkflowAssignmentPanelService"
+        },
+        "updateAcknowledgersDataProvider": {
+            "actionType": "JSFunction",
+            "method": "updateDataProvider",
+            "inputData": {
+                "dataProvider": "{{dataProviders.acknowledgersDataProvider}}",
+                "modelObjects": "{{props.taskInfoObject.props.acknowledgers.modelObjects}}"
+            },
+            "deps": "js/Awp0WorkflowAssignmentPanelService"
+        },
+        "updateNotifyeesDataProvider": {
+            "actionType": "JSFunction",
+            "method": "updateDataProvider",
+            "inputData": {
+                "dataProvider": "{{dataProviders.notifyeesDataProvider}}",
+                "modelObjects": "{{props.taskInfoObject.props.notifyees.modelObjects}}"
+            },
+            "deps": "js/Awp0WorkflowAssignmentPanelService"
+        },
+        "removeTaskAssignment": {
+            "actionType": "JSFunction",
+            "method": "removeUsersTaskAssignment",
+            "inputData": {
+                "commandContext": "{{commandContext}}",
+                "selected": "{{commandContext.selectedObjects}}",
+                "subPanelContext": "{{props.taskInfoObject}}",
+                "requiredString": "{{i18n.required}}"
+            },
+            "deps": "js/Awp0WorkflowAssignmentPanelService"
+        },
+        "updateTaskSelectionBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateAssigneeDataProvider",
+                    "condition": "data.initialSelection !== undefined && data.initialSelection !== props.taskObject.uid && conditions.isTaskObjectSelected"
+                },
+                {
+                    "action": "updateReviewersDataProvider",
+                    "condition": "data.initialSelection !== undefined && data.initialSelection !== props.taskObject.uid && conditions.isMultiUserTaskSelected"
+                },
+                {
+                    "action": "updateAdditionalReviewersDataProvider",
+                    "condition": "data.initialSelection !== undefined && data.initialSelection !== props.taskObject.uid && conditions.isProfileObjectPresent && conditions.isMultiUserTaskSelected"
+                },
+                {
+                    "action": "updateAcknowledgersDataProvider",
+                    "condition": "data.initialSelection !== undefined && data.initialSelection !== props.taskObject.uid && conditions.isRouteTaskSelected"
+                },
+                {
+                    "action": "updateNotifyeesDataProvider",
+                    "condition": "data.initialSelection !== undefined && data.initialSelection !== props.taskObject.uid && conditions.isRouteTaskSelected"
+                },
+                {
+                    "action": "cacheInitialSelection"
+                }
+            ]
+        },
+        "cacheInitialSelection":{
+            "actionType": "JSFunction",
+            "method": "cacheSelection",
+            "inputData": {
+                "selectedUid": "{{props.taskObject.uid}}"
+            },
+            "outputData": {
+                "initialSelection": ""
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        },
+        "resetSearchSelectionAction": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.addUserPanelState}}",
+                "value" : {
+                    "resetSearchSelection": "{{props.taskInfoObject.resetSearchSelection}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "setActiveSelection": {
+            "actionType": "JSFunction",
+            "method": "setActiveSelection",
+            "inputData": {
+                "assignerModel": "{{data.dataProviders.assignerDataProvider.selectionModel}}",
+                "reviewersModel": "{{data.dataProviders.reviewersDataProvider.selectionModel}}",
+                "adhocModel": "{{data.dataProviders.adhocReviewersDataProvider.selectionModel}}",
+                "acknowledgersModel": "{{data.dataProviders.acknowledgersDataProvider.selectionModel}}",
+                "notifyeesModel": "{{data.dataProviders.notifyeesDataProvider.selectionModel}}",
+                "data": "{{data}}"
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        }
+    },
+    "data": {
+        "addUsersOnPanelAnchor": "awp0_addUsersOnPanelAnchor",
+        "assignerSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "reviewersSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "adhocReviewersSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "acknowledgersSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "notifyeesSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "isPanelCase": true
+    },
+
+    "dataProviders": {
+        "assignerDataProvider":{
+            "response": "{{props.taskInfoObject.props.assignee.modelObjects}}",
+            "totalFound": "{{props.taskInfoObject.props.assignee.modelObjects.length}}",
+            "totalLoaded": "{{props.taskInfoObject.props.assignee.modelObjects.length}}",
+            "selectionModelMode": "single",
+            "inputData": {
+                "selectionData": "{{fields.assignerSelectionData}}"
+            }
+        },
+        "reviewersDataProvider":{
+            "action": "updateReviewersDataProvider",
+            "response": "{{data.reviewerObjects}}",
+            "totalFound": "{{data.reviewerObjects.length}}",
+            "totalLoaded": "{{data.reviewerObjects.length}}",
+            "selectionModelMode": "multiple",
+            "commandsAnchor": "aw_profileCellCommand",
+            "inputData": {
+                "selectionData": "{{fields.reviewersSelectionData}}",
+                "selectionModel": "{{data.selectionModels.reviewersSelectionModel}}"
+            }
+        },
+        "adhocReviewersDataProvider":{
+            "response": "{{props.taskInfoObject.props.additionalReviewers.modelObjects}}",
+            "totalFound": "{{props.taskInfoObject.props.additionalReviewers.modelObjects.length}}",
+            "totalLoaded": "{{props.taskInfoObject.props.additionalReviewers.modelObjects.length}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionData": "{{fields.adhocReviewersSelectionData}}"
+            }
+        },
+        "acknowledgersDataProvider":{
+            "response": "{{props.taskInfoObject.props.acknowledgers.modelObjects}}",
+            "totalFound": "{{props.taskInfoObject.props.acknowledgers.modelObjects.length}}",
+            "totalLoaded": "{{props.taskInfoObject.props.acknowledgers.modelObjects.length}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionData": "{{fields.acknowledgersSelectionData}}"
+            }
+        },
+        "notifyeesDataProvider": {
+            "response": "{{props.taskInfoObject.props.notifyees.modelObjects}}",
+            "totalFound": "{{props.taskInfoObject.props.notifyees.modelObjects.length}}",
+            "totalLoaded": "{{props.taskInfoObject.props.notifyees.modelObjects.length}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionData": "{{fields.notifyeesSelectionData}}"
+            }
+        }
+    },
+    "selectionModels": {
+        "reviewersSelectionModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "messages": {
+    },
+    "lifecycleHooks": {
+        "onMount": "initDataProvider",
+        "onUpdate": [
+            {
+                "action": "updateAssigneeDataProvider",
+                "observers": [ "props.taskInfoObject.props.assignee.updateUids" ]
+            },
+            {
+                "action": "updateReviewersDataProvider",
+                "observers": [ "props.taskInfoObject.props.reviewers.updateUids" ]
+            },
+            {
+                "action": "updateAdditionalReviewersDataProvider",
+                "observers": [ "props.taskInfoObject.props.additionalReviewers.updateUids" ]
+            },
+            {
+                "action": "updateAcknowledgersDataProvider",
+                "observers": [ "props.taskInfoObject.props.acknowledgers.updateUids" ]
+            },
+            {
+                "action": "updateNotifyeesDataProvider",
+                "observers": [ "props.taskInfoObject.props.notifyees.updateUids" ]
+            },
+            {
+                "action": "addSelectedUsersNarrowMode",
+                "observers": [ "props.addUserPanelState.value.selectedUsers" ]
+            },
+            {
+                "action": "updateTaskSelectionBatchAction",
+                "observers": [ "props.taskObject.uid" ]
+            },
+            {
+                "action": "updateReviewersSelectionBatchAction",
+                "observers": [ "viewModel.atomicData.reviewersSelectionData.selected" ]
+            },
+            {
+                "action": "resetSearchSelectionAction",
+                "observers": [ "props.taskInfoObject.resetSearchSelection" ]
+            }
+
+        ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "add-user-panel-state": {
+            "type": "object"
+        },
+        "task-object": {
+            "type": "object"
+        },
+        "assignment-state": {
+            "type": "object"
+        },
+        "active-state": {
+            "type": "object"
+        },
+        "task-assignment-data": {
+            "type": "object"
+        },
+        "task-info-object": {
+            "type": "object"
+        },
+        "command-anchor": {
+            "type": "string"
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "addSelectionToMainPanel",
+            "action": "addSelectedUsersNarrowMode"
+        },
+        {
+            "eventId": "workflow.openUserPickerPanel",
+            "action": "openPeoplePickerPanel",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "workflow.removeTaskAssignment",
+            "action": "removeTaskAssignment",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "workflow.addTaskAssignment",
+            "action": "addTaskAssignment",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "assignerDataProvider.selectionChangeEvent",
+            "cacheEventData": true,
+            "action": "setActiveSelection"
+        },
+        {
+            "eventId": "reviewersDataProvider.selectionChangeEvent",
+            "cacheEventData": true,
+            "action": "setActiveSelection"
+        },
+        {
+            "eventId": "adhocReviewersDataProvider.selectionChangeEvent",
+            "cacheEventData": true,
+            "action": "setActiveSelection"
+        },
+        {
+            "eventId": "acknowledgersDataProvider.selectionChangeEvent",
+            "cacheEventData": true,
+            "action": "setActiveSelection"
+        },
+        {
+            "eventId": "notifyeesDataProvider.selectionChangeEvent",
+            "cacheEventData": true,
+            "action": "setActiveSelection"
+        }
+    ],
+
+    "conditions":
+    {
+        "isRouteTaskSelected": {
+            "expression": "props.taskObject.modelType.typeHierarchyArray.indexOf('EPMRouteTask') >= 0 || props.taskObject.modelType.typeHierarchyArray.indexOf('EPMRouteTaskTemplate') >= 0"
+        },
+        "isReviewOrAckOrRouteTaskSelected": {
+            "expression": "props.taskObject.modelType.typeHierarchyArray.indexOf('EPMReviewTask') >= 0 || props.taskObject.modelType.typeHierarchyArray.indexOf('EPMAcknowledgeTask') >= 0 || props.taskObject.modelType.typeHierarchyArray.indexOf('EPMRouteTask') >= 0 || conditions.isReviewOrAckOrRouteTaskTemplateSelected"
+        },
+        "isReviewOrAckOrRouteTaskTemplateSelected": {
+            "expression": "props.taskObject.modelType.typeHierarchyArray.indexOf('EPMReviewTaskTemplate') >= 0 || props.taskObject.modelType.typeHierarchyArray.indexOf('EPMAcknowledgeTaskTemplate') >= 0 || props.taskObject.modelType.typeHierarchyArray.indexOf('EPMRouteTaskTemplate') >= 0"
+        },
+        "isTaskObjectSelected": {
+            "expression": "props.taskObject.modelType.typeHierarchyArray.indexOf('EPMTask') > -1 || props.taskObject.modelType.typeHierarchyArray.indexOf('EPMTaskTemplate') > -1"
+        },
+        "isMultiUserTaskSelected": {
+            "expression": "conditions.isReviewOrAckOrRouteTaskSelected || conditions.isReviewOrAckOrRouteTaskTemplateSelected"
+        },
+        "isOnlyTaskObjectSelected": {
+            "expression": "props.taskObject.modelType.typeHierarchyArray.indexOf('EPMTask') > -1"
+        },
+        "isProfileObjectPresent": {
+            "expression": "props.taskInfoObject.props.reviewers.isProfileExist"
+        },
+        "isAddUsersNarrowMode": {
+            "expression": "((props.subPanelContext.sidenavMode === 'mobile' && props.addUserPanelState.propName && !props.addUserPanelState.participantType && props.addUserPanelState.selectedUsers && props.addUserPanelState.selectedUsers.length > 0) || (props.subPanelContext.sidenavMode !== 'mobile' && props.addUserPanelState.isAddButtonNeeded && props.addUserPanelState.propName && !props.addUserPanelState.participantType && props.addUserPanelState.selectedUsers && props.addUserPanelState.selectedUsers.length > 0))"
+        },
+        "isReviewerDPCase": {
+            "expression": "props.taskInfoObject.props.reviewers.supportedDPTypes && props.taskInfoObject.props.reviewers.supportedDPTypes.length > 0"
+        },
+        "isReviewerNoResultsCase": {
+            "expression": "conditions.isMultiUserTaskSelected && !conditions.isProfileObjectPresent && !conditions.isReviewerDPCase"
+        }
+    },
+
+    "i18n": {
+        "taskAssignments": [ "WorkflowCommandPanelsMessages" ],
+        "modify": [ "WorkflowCommandPanelsMessages" ],
+        "task": [ "WorkflowCommandPanelsMessages" ],
+        "Workflow_Name": [ "WorkflowCommandPanelsMessages" ],
+        "status": [ "WorkflowCommandPanelsMessages" ],
+        "assignments": [ "WorkflowCommandPanelsMessages" ],
+        "Assigner": [ "WorkflowCommandPanelsMessages" ],
+        "assignee": [ "WorkflowCommandPanelsMessages" ],
+        "addReviewerLabelText": [ "InboxMessages" ],
+        "additionalReviewers": [ "InboxMessages" ],
+        "Acknowledgers": [ "WorkflowCommandPanelsMessages" ],
+        "Notifyees": [ "WorkflowCommandPanelsMessages" ],
+        "required": [ "WorkflowCommandPanelsMessages" ],
+        "duplicateReviewerMsg": [ "WorkflowCommandPanelsMessages" ],
+        "wasNotAdded": [ "WorkflowCommandPanelsMessages" ],
+        "multipleDuplicateMsg": [ "WorkflowCommandPanelsMessages" ],
+        "panelModificationWarningMsg": [ "WorkflowCommandPanelsMessages" ],
+        "save": [ "InboxMessages" ],
+        "discard": [ "InboxMessages" ]
+    }
+
+}
+

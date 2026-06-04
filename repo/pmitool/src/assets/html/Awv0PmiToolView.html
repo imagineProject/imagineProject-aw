@@ -1,0 +1,56 @@
+<aw-command-panel caption="i18n.PmiPanelTitle" context="subPanelContext">
+    <aw-panel-body>
+        <aw-command-panel-section exist-when="conditions.isInACESublocation" caption="{{conditions.isLeafStructureEnabled ? i18n.showingPmiAndLeafStrFor : i18n.showingPmiFor}}" class="aw-pmitool-showSection" context="subPanelContext">
+            <aw-list dataprovider="data.dataProviders.selectionProvider">
+                <aw-occmgmt-cell vmo="item"></aw-occmgmt-cell>
+            </aw-list>
+            <div title="{{i18n.notCurrentlyVisible}}" exist-when="conditions.selectionIsNotVisible">
+                <aw-guidance-message show-type="true" message="{{conditions.isLeafStructureEnabled ? 'VisibilityMessageWarningForPmiAndLeafStr' : 'VisibilityMessageWarning'}}" banner-style="true" show-icon="true">
+                    <aw-button action="turnOnVisibility">
+                        <aw-i18n>i18n.show</aw-i18n>
+                    </aw-button>
+                </aw-guidance-message>
+            </div>
+            <div title="{{i18n.hasNoPmi}}" exist-when="!conditions.selectionIsNotVisible && conditions.selectionHasNoPmi && !conditions.isLeafStructureEnabled">
+                <aw-guidance-message show-type="true" message="NoPmiMessageWarning" banner-style="true" show-icon="true"></aw-guidance-message>
+            </div>
+        </aw-command-panel-section>
+        <div visible-when="conditions.isLeafStructureEnabled && !conditions.selectionIsNotVisible">
+            <aw-label class="aw-pmiTool-refsetLabel" prop="data.activeReferenceSet"></aw-label>
+            <div class='sw-button-group'>
+                <aw-popup-wrapper popup="changeReferenceSetAction">     
+                    <aw-button class='small' action="changeReferenceSetAction">i18n.changeRefSet</aw-button>               
+                </aw-popup-wrapper>
+            </div>
+        </div>
+        <aw-tab-set tabs="data.tabModels"></aw-tab-set>
+        <aw-command-panel-section visible-when="data.selectedTab.tabkey!=='leafStructureTab' && !conditions.selectionHasNoPmi" caption="i18n.stepThroughLabel" anchor="data.stepOverCommands" context="{...fields, ...props}">
+            <div name="Model Views" exist-when="data.selectedTab.tabkey==='modelViewesTab' && conditions.targetHasMVData">
+                <aw-tree name="'treePmiModelView'" tree="data.mvData.modelViewData" class="treePmi">
+                    <aw-model-view-checkbox-tree sub-panel-context="props.subPanelContext" node="node" mv-atomic="fields.mvData" pmi-atomic="fields.pmiData" pmi-raw-state="fields.pmiRawEntityState"></aw-model-view-checkbox-tree>
+                </aw-tree>
+            </div>
+
+            <div name="Types" exist-when="data.selectedTab.tabkey==='entitiesTab' && conditions.targetHasTypeGroupsData">
+                <aw-tree name="'treePmiTypes'" tree="data.pmiData.entities" class="treePmi">
+                    <aw-model-view-checkbox-tree sub-panel-context="props.subPanelContext" node="node" mv-atomic="fields.mvData" pmi-atomic="fields.pmiData" pmi-raw-state="fields.pmiRawEntityState"></aw-model-view-checkbox-tree>
+                </aw-tree>
+            </div>
+        </aw-command-panel-section>
+        <aw-command-panel-section visible-when="data.selectedTab.tabkey==='leafStructureTab' && conditions.isLeafStructureEnabled" context="{...fields, ...props}">
+            <div title="{{i18n.hasNoLeafStruct}}" exist-when="!conditions.targetHasLeafStructData">
+                <aw-guidance-message show-type="true" message="NoLeafStructMessageWarning" banner-style="true" show-icon="true"></aw-guidance-message>
+            </div>
+            <div exist-when="conditions.targetHasLeafStructData" class="sw-column w-12">
+                <div class="sw-row h-12" exist-when="data.selectedTab.tabkey==='leafStructureTab'">
+                    <aw-splm-table gridid="leafStructureGrid" use-tree="true" show-decorators="true" show-check-box="true"></aw-splm-table>
+                </div>
+            </div>
+        </aw-command-panel-section>
+    </aw-panel-body>
+    <aw-panel-footer>
+        <aw-button visible-when="(conditions.targetHasMVData || conditions.targetHasTypeGroupsData) && data.selectedTab.tabkey!=='leafStructureTab'" action="reorientTextAction">
+            <aw-i18n>i18n.reorientText</aw-i18n>
+        </aw-button>
+    </aw-panel-footer>
+</aw-command-panel>

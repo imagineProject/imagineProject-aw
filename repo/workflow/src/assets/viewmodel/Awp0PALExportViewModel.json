@@ -1,0 +1,410 @@
+{
+    "schemaVersion" : "1.0.0",
+        "imports":
+    [
+        "js/aw-command-panel.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-widget.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-i18n.directive",
+        "js/visible-when.directive",
+        "js/aw-button.directive",
+        "js/aw-checkbox.directive",
+        "js/aw-checkbox-list.directive",
+        "js/aw-break.directive",
+        "js/enable-when.directive"
+    ],
+    "actions":
+    {
+        "initPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadSupportedLanguages"
+                },
+                {
+                    "action": "getTransferModes"
+                }
+            ]
+        },
+        "loadSupportedLanguages" : {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-04-LanguageInformation",
+            "method": "getLanguagesList",
+            "inputData": {
+                "scenario": "supportedLanguages"
+            },
+            "outputData": {
+                "allLanguageList" : "languageList"
+            },
+            "events": {
+                "success": [ {
+                        "name": "exportPAL.generateList"
+                    },
+                    {
+                        "name": "exportPAL.getSiteMasterLanguage"
+                    }
+                ]
+            },
+            "deps": "js/Awp0PALImportExport"
+        },
+        "getTransferModes" : {
+            "actionType": "TcSoaService",
+            "serviceName": "GlobalMultiSite-2007-06-ImportExport",
+            "method": "getTransferModes",
+            "inputData": {
+                "inputs": {
+                    "scope": "EXPORT",
+                    "schemaFormat": "PLMXML"
+                }
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "TransferMode",
+                        "properties": [
+                            {
+                                "name": "object_name"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "transferModeObjects": "transferModeObjects"
+            }
+        },
+        "getSiteMasterLanguage" : {
+            "actionType": "JSFunctionAsync",
+            "method": "getGlobalConstantValues2",
+            "inputData":
+            {
+                "constantTypesPopulated": ["SiteMasterLanguage"]
+            },
+            "outputData": {
+                "masterLanguageValues": "constantValues",
+                "defaultMasterLanguage" : "constantValues[0].value[0]"
+            },
+            "events": {
+                "success": [ {
+                        "name": "exportPAL.populateMasterLanguage"
+                    }
+                ]
+            },
+            "deps": "soa/constantsService"
+        },
+        "convertToList": {
+            "actionType": "JSFunction",
+            "method": "createListModelObjects",
+            "inputData": {
+                "input": "{{data.allLanguageList}}",
+                "propName": "languageName"
+            },
+            "outputData": {
+                "languageListValues": ""
+            },
+            "deps": "js/listBoxService"
+        },
+        "populateMasterLanguage": {
+            "actionType": "JSFunction",
+            "method": "populateMasterLanguage",
+            "inputData": {
+                "data": "{{data}}",
+                "defaultMasterLanguage": "{{data.defaultMasterLanguage}}"
+            },
+            "outputData": {
+                "masterLanguage": ""
+            },
+            "deps": "js/Awp0PALImportExport"
+        },
+        "exportPAL": {
+            "actionType": "TcSoaService",
+            "serviceName": "GlobalMultiSite-2010-04-ImportExport",
+            "method": "exportObjectsToPLMXML",
+            "inputData": {
+                "transfermode" : "{{function:getImportTransferModeUid}}",
+                "exportObjects": "{{function:getExportObjects}}",
+                "xmlFileName": "{{function:getExportFileName}}",
+                "languages": "{{function:getExportLanguageOptions}}",
+                "sessionOptions":
+                [
+                    {
+                        "name": "pdiIOR",
+                        "value": ""
+                    },
+                    {
+                        "name": "soaIOR",
+                        "value": ""
+                    },
+                    {
+                        "name": "packResult",
+                        "value": "false"
+                    },
+                    {
+                        "name": "PIE_Export_ImanFile_Tickets",
+                        "value": "true"
+                    }
+                ]
+            },
+            "outputData": {
+                "fileTicket": "xmlFileTicket.ticket",
+                "logFileTicket": "logFileTicket.ticket"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "exportPAL.openFile",
+                        "condition": "data.fileTicket !== 0"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [{
+                    "message": "successExportPAL"
+                }],
+                "failure":[
+                    {
+                        "message":"errorExportPAL"
+                    }
+                ]
+            },
+            "deps": "js/Awp0PALImportExport"
+        },
+        "openExportFile": {
+            "actionType": "JSFunction",
+            "method": "openFile",
+            "inputData": {
+                "data": "{{data.fileTicket}}"
+            },
+            "deps": "js/fmsUtils",
+            "events": {
+                "success": [ {
+                        "name": "exportPAL.viewExportedLogFile"
+                    }
+                ]
+            }
+        },
+        "openLogFile": {
+            "actionType": "JSFunction",
+            "method": "openFile",
+            "inputData": {
+                "data": "{{data.logFileTicket}}"
+            },
+            "deps": "js/fmsUtils",
+            "events": {
+                "success": [ {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }, {
+                        "name": "closeDialog"
+                    }
+                ]
+            }
+        },
+        "viewExportedLogFile": {
+            "actionType": "JSFunction",
+            "method": "viewExportedLogFile",
+            "inputData": {},
+            "deps": "js/Awp0PALImportExport"
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                        "name": "complete",
+                        "condition": "!data.isDestroyed()",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }, {
+                        "name": "closeDialog",
+                        "condition": "!data.isDestroyed()"
+                    }
+                ]
+            }
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cacheInitialSelection",
+                    "condition": "!data.initialSelection"
+                },
+                {
+                    "action": "closePanel",
+                    "condition": "data.initialSelection !== props.subPanelContext.selectionData.selected[0].uid"
+                }
+            ]
+        },
+        "cacheInitialSelection":{
+            "actionType": "JSFunction",
+            "method": "cacheSelection",
+            "inputData": {
+                "selectedUid": "{{props.subPanelContext.selectionData.selected[0].uid}}"
+            },
+            "outputData": {
+                "initialSelection": ""
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "data":
+    {
+        "masterLanguage": {
+            "displayName": "{{i18n.masterLanguage}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "isRequired": "false"
+        },
+        "fileName": {
+            "displayName": "{{i18n.fileName}}",
+            "type": "STRING",
+            "isEditable": "true",
+            "isRequired": "true"
+        },
+        "continueOnError": {
+            "displayName": "{{i18n.continueOnError}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "propertyLabelDisplay": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": false
+        },
+        "languageList": {
+            "displayName": "{{i18n.languageList}}",
+            "type": "STRING",
+            "isArray": true,
+            "hasLov": true,
+            "dataProvider": "languageListCheckBoxProvider"
+        },
+
+        "context" : "assignment_list_export"
+    },
+    "dataProviders": {
+        "languageListCheckBoxProvider":
+        {
+            "response": "{{data.languageListValues}}",
+            "moreValuesExist": false
+        }
+    },
+    "messages":
+    {
+        "successExportPAL":
+        {
+            "messageType": "INFO",
+            "messageText": "{{i18n.successExportPAL}}"
+        },
+        "errorExportPAL":{
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initPanel"
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "exportPAL.openFile",
+            "action": "openExportFile"
+        },
+        {
+            "eventId": "exportPAL.openLogFile",
+            "action": "openLogFile"
+        },
+        {
+            "eventId": "exportPAL.getSiteMasterLanguage",
+            "action": "getSiteMasterLanguage"
+        },
+        {
+            "eventId": "exportPAL.populateMasterLanguage",
+            "action": "populateMasterLanguage"
+        },
+        {
+            "eventId": "exportPAL.generateList",
+            "action": "convertToList"
+        },
+        {
+            "eventId": "exportPAL.viewExportedLogFile",
+            "action": "viewExportedLogFile"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+    "ctx": {
+        "mselected": null,
+        "pselected": null,
+        "selected": null
+    },
+    "i18n":
+    {
+        "exportPAL": ["WorkflowPalMgmtMessages"],
+        "export": ["WorkflowPalMgmtMessages"],
+        "fileName": ["WorkflowDesignerMessages"],
+        "continueOnError": ["WorkflowDesignerMessages"],
+        "successExportPAL": ["WorkflowPalMgmtMessages"],
+        "viewLogFile": ["WorkflowDesignerMessages"],
+        "languageList": ["WorkflowDesignerMessages"],
+        "options" : ["WorkflowDesignerMessages"],
+        "masterLanguage" : ["WorkflowDesignerMessages"],
+        "masterLanguageValue" : ["WorkflowPalMgmtMessages"]
+    },
+    "functions":
+    {
+        "getImportTransferModeUid":
+        {
+            "functionName": "getTransferModeUid",
+            "parameters":
+            [
+                "{{data}}"
+            ]
+        },
+        "getExportObjects":
+        {
+            "functionName": "getExportObjects",
+            "parameters":
+            [
+                "{{props.subPanelContext.selectionData.value}}"
+            ]
+        },
+        "getExportFileName" : {
+            "functionName": "getExportFileName",
+            "parameters": [
+                "{{data.fileName.dbValue}}"
+            ]
+        },
+        "getExportLanguageOptions" : {
+            "functionName": "getExportLanguageOptions",
+            "parameters": [
+                "{{data.languageList.dbValue}}"
+            ]
+        }
+    },
+    "conditions":
+    {
+        "isValidToExport":
+        {
+            "expression": "data.transferModeObjects !== null && data.transferModeObjects.length > 0 && data.languageListValues !== null && data.fileName.dbValue !== '' && data.fileName.dbValue !== null && data.fileName.dbValue !== undefined"
+        },
+        "isLanguageListLoaded": {
+            "expression": "data.languageListValues && data.languageListValues.length > 0"
+        }
+    }
+}

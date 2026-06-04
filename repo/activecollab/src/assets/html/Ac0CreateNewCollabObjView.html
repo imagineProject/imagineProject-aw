@@ -1,0 +1,67 @@
+<aw-panel-body>
+    <aw-guidance-message exist-when="data.showUserWarnMessageVal" message="participantSourceReadAccessWarningMsg" banner-style="true" show-icon="true" show-type="false"></aw-guidance-message>
+    <!-- <aw-guidance-message exist-when="ctx.Ac0ConvCtx.showWarnMsg" visible-when="ctx.Ac0ConvCtx.showWarnMsg" message="participantSourceReadAccessWarningMsg" banner-style="true" show-icon="true" show-type="false"></aw-guidance-message>-->
+    <aw-guidance-message exist-when="data.convType.dbValue == 'message' && data.showWarnOnRemovingUserMsg.dbValue === true" message="participantRemovalWarningMsg" banner-style="true" show-icon="true" show-type="true"></aw-guidance-message>
+    <aw-break exist-when="ctx.Ac0ConvCtx.showWarnMsg || data.showWarnOnRemovingUserMsg.dbValue === true"></aw-break>
+    <aw-panel-section>
+        <aw-property-label prop="data.sourceLabel" visible-when="props.subPanelContext.createNewConversation"></aw-property-label>
+        <div class="sw-column w-12">
+            <div class="sw-row justify-justified" visible-when="props.subPanelContext.createNewConversation">
+                <div class="sw-column w-9">
+                    <aw-chip-list class="aw-layout-wrap aw-activecollab-chipList" dataprovider="data.dataProviders.srcObjDataProvider" ui-icon-action="removeSrcObjAction"></aw-chip-list>
+                </div>
+                <div class="sw-column w-3">
+                    <aw-command-bar context="{ createContext: { sharedData: props.subPanelContext.sharedData, ckEditor: data.ckeInstance.cke } }" anchor="ac0_createConvSourceCmds" alignment="HORIZONTAL"></aw-command-bar>
+                </div>
+            </div>
+        </div>
+        <aw-property-label prop="data.participantLabel" visible-when="props.subPanelContext.createNewConversation && (conditions.isConvActionable || conditions.isConvMessage || subPanelContext.sharedData.currentSelectedSnapshot || ctx.Ac0ConvCtx.currentSelectedSnapshot )"></aw-property-label>
+        <aw-label prop="data.participantNonReqLabel" visible-when="props.subPanelContext.createNewConversation && !conditions.isConvActionable && !conditions.isConvMessage && !subPanelContext.sharedData.currentSelectedSnapshot && !ctx.Ac0ConvCtx.currentSelectedSnapshot"></aw-label>
+        <div class="sw-column w-12">
+            <div class="sw-row justify-justified" visible-when="props.subPanelContext.createNewConversation">
+                <div class="sw-column w-4" visible-when="data.userChipsObj.userChips.length === 0">
+                    <aw-command-bar context="{ createContext: { sharedData: props.subPanelContext.sharedData, ckEditor: data.ckeInstance.cke } }" anchor="ac0_createConvParticipantCmds" alignment="HORIZONTAL"></aw-command-bar>
+                </div>
+                <div class="sw-column w-9">
+                    <div class="aw-layout-wrap aw-activecollab-chipList">
+                        <div aw-repeat="chip: data.userChipsObj.userChips">
+                            <aw-chip chip="chip" ui-icon-action="removeUserAction"></aw-chip>
+                        </div>
+                    </div>
+                    <!-- <aw-chip-list class="aw-layout-wrap aw-activecollab-chipList" visible-when="data.dataProviders.userDataProvider.viewModelCollection.totalFound > 0" dataprovider="data.dataProviders.userDataProvider" ui-icon-action="removeUserAction"></aw-chip-list> -->
+                </div>
+                <div class="sw-column w-3.5" visible-when="data.userChipsObj.userChips.length > 0">
+                    <aw-command-bar context="{ createContext: { sharedData: props.subPanelContext.sharedData, ckEditor: data.ckeInstance.cke } }" anchor="ac0_createConvParticipantCmds" alignment="HORIZONTAL"></aw-command-bar>
+                </div>
+            </div>
+        </div>
+        <div class="sw-column w-12" visible-when="props.subPanelContext.createNewConversation">
+            <aw-checkbox visible-when="props.subPanelContext.createNewConversation" prop="data.convTypeChk" extended-tooltip="data.convTypeChkTooltip" action="changeConvType" ></aw-checkbox>
+            <aw-checkbox visible-when="props.subPanelContext.createNewConversation && ctx.preferences.Ac0EnableTrackedDiscussions[0]==='true'" prop="data.convActionableChk" extended-tooltip="data.convActionableTooltip" action="changeConvActionable" ></aw-checkbox>
+            <aw-listbox show-when="conditions.isConvActionable && ctx.preferences.Ac0EnableTrackedDiscussions[0]==='true'" prop="data.status" list="data.statusLOV" action="setPriorityAndStatusValues"></aw-listbox>
+            <aw-listbox show-when="conditions.isConvActionable && ctx.preferences.Ac0EnableTrackedDiscussions[0]==='true'" prop="data.priority" list="data.priorityLOV" action="setPriorityAndStatusValues"></aw-listbox>
+        </div>
+        <div class="sw-column w-12">
+            <aw-property-label prop="data.messageLabel"></aw-property-label>
+            <!-- <div class="aw-activecollab-editor gwt-TextArea"> -->
+            <!-- <textarea id="ckeditor" name="ckeditor"></textarea> -->
+            <div class="aw-activecollab-create aw-activecollab-editor" id="ac0-ckEditor-container">
+                <div class="aw-activecollab-messageSkeleton" id="ac0-messageBox-skeleton-loader"></div>
+                <div id="{{data.ckEditorDomId}}" name="{{data.ckEditorDomId}}"></div>
+            </div>
+        </div>
+        <aw-flex-row height="1.5f"></aw-flex-row>
+        <aw-layout-slot name="ac0_snapshot" context="{subPanelContext: data, sharedData:props.subPanelContext.sharedData, occmgmtContext: props.subPanelContext.occmgmtContext}" class="aw-layout-fit" visible-when="!ctx.Ac0ConvCtx.editConvCtx"></aw-layout-slot>
+        <aw-panel-section caption="i18n.snapshot" exist-when="ctx.Ac0ConvCtx.editConvCtx.props.inflatedRelatedObjList.length > 0">
+            <div class="w-12 aw-viewersnapshot-snapshotPanel aw-activecollab-snapshotTile" has-floating-cell-commands="false" exist-when="ctx.Ac0ConvCtx.editConvCtx.props.inflatedRelatedObjList.length > 0">
+                <aw-product-snapshot-card vmo="{{ctx.Ac0ConvCtx.editConvCtx.props.inflatedRelatedObjList[0]}}" command-anchor="aw_ProductSnapshotOnDiscussion2" context="{{{data:data, sharedData:props.subPanelContext.sharedData}}}" exist-when="ctx.Ac0ConvCtx.editConvCtx.props.inflatedRelatedObjList.length > 0"></aw-product-snapshot-card>
+            </div>
+        </aw-panel-section>
+    </aw-panel-section>
+</aw-panel-body>
+<aw-panel-footer>
+    <div class="sw-button-wrapper">
+        <aw-button visible-when="!ctx.Ac0ConvCtx.editConvCtx" enable-when="props.subPanelContext.createNewConversation && conditions.validInputDataForCreateConv" action="postConversation"><aw-i18n>i18n.postConversation</aw-i18n></aw-button>
+        <aw-button visible-when="ctx.Ac0ConvCtx.editConvCtx" enable-when="props.subPanelContext.createNewConversation && conditions.validInputDataForEditConv"  action="postConversation"><aw-i18n>i18n.save</aw-i18n></aw-button>
+    </div>
+</aw-panel-footer>

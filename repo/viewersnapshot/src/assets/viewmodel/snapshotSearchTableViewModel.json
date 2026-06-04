@@ -1,0 +1,300 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "data": {
+        "tableLoaded": false
+    },
+    "actions": {
+        "initDataProvider": {
+            "actionType": "JSFunction",
+            "method": "initSearch",
+            "inputData": {
+                "data": "{{data.actions}}",
+                "actionName": "doGridDataProvider",
+                "tableLoaded": "{{data.tableLoaded}}"
+            },
+            "deps": "js/awSearchService"
+        },
+        "openSharedWithMe":{
+            "actionType": "JSFunction",
+            "method": "changeTab",
+            "inputData": {
+                "0": "primary",
+                "1": "Shared With Me"
+            },
+            "deps": "js/tabRegistry.service"
+        },
+        "openCreatedByMe":{
+            "actionType": "JSFunction",
+            "method": "changeTab",
+            "inputData": {
+                "0": "primary",
+                "1": "Created By Me"
+            },
+            "deps": "js/tabRegistry.service"
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "doGridDataProvider": {
+            "actionType": "dataProvider",
+            "method": "gridDataProvider"
+        },
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": "",
+                    "searchInput": {
+                        "attributesToInflate": [
+                            "object_name",
+                            "creation_date",
+                            "owning_user",
+                            "awb0ProductsInSession"
+                        ],
+                        "internalPropertyName": "",
+                        "maxToLoad": "{{subPanelContext.searchState.maxToLoad}}",
+                        "maxToReturn": "{{subPanelContext.searchState.maxToReturn}}",
+                        "providerName": "{{subPanelContext.searchState.provider}}",
+                        "searchCriteria": "{{subPanelContext.searchState.criteria}}",
+                        "searchFilterFieldSortType": "Alphabetical",
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.gridDataProvider.startIndex}}",
+                            "endIndex": "{{data.dataProviders.gridDataProvider.endIndex}}",
+                            "startReached": "{{data.dataProviders.gridDataProvider.startReached}}",
+                            "endReached": "{{data.dataProviders.gridDataProvider.endReached}}"
+                        },
+                        "startIndex": "{{data.dataProviders.gridDataProvider.startIndex}}",
+                        "searchFilterMap6": "{{subPanelContext.searchState.activeFilterMap}}",
+                        "searchSortCriteria": [ {
+                            "fieldName":"{{ctx.state.params.fieldName}}",
+                            "sortDirection": "{{ctx.state.params.sortOrder}}"
+                        } ]
+                    },
+                    "inflateProperties": true
+                },
+                "1": {
+                    "types": [ {
+                        "name": "BusinessObject",
+                        "properties": [ {
+                            "name": "awp0CellProperties"
+                        },
+                        {
+                            "name": "owning_user"
+                        } ]
+                    },
+                    {
+                        "name": "Fnd0Snapshot",
+                        "properties": [ {
+                            "name": "fnd0OwningIdentifier"
+                        } ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "tableLoaded": true,
+                "output": "{{function:processOutput}}",
+                "dataProviders.gridDataProvider.cursorObject": "cursor",
+                "dataProviders.gridDataProvider.cursorObject.startReached": true
+            },
+            "events": {
+                "success": [ {
+                    "name": "snapshotSearchTable.selectFirstItem"
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "snapshotSearchTableErrorMsg"
+                } ]
+            }
+        },
+        "selectFirstItem": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "gridDataProvider.selectAction",
+                    "eventData": {
+                        "setSelection": "{{data.searchResults.objects[0].uid}}"
+                    }
+                } ]
+            }
+        },
+        "resetProductSnapshot":{
+            "actionType":"Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name":"primaryWorkarea.reset"
+                }]}
+
+        },
+        "dialogActionForContextMenu": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                }
+            }
+        }
+    },
+    "functions": {
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.searchState}}"
+            ],
+            "deps": "js/awSearchService"
+        }
+    },
+    "dataProviders": {
+        "gridDataProvider": {
+            "action": "loadData",
+            "editContext": "TABLE_CONTEXT",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            },
+            "contextMenuCommandsAnchor": "product_snapshot_table_cell_commands"
+        }
+    },
+    "columnProviders": {
+        "clientScopeUI": {
+            "columns": [ {
+                    "typeName": "Fnd0Snapshot",
+                    "propertyName": "object_name",
+                    "displayName": "{{i18n.snapshotName}}",
+                    "maxWidth": 300,
+                    "minWidth": 200,
+                    "width": 200,
+                    "enableColumnMenu": false
+                },
+                {
+                    "typeName": "Fnd0Snapshot",
+                    "propertyName": "creation_date",
+                    "displayName": "{{i18n.snapshotCreationDate}}",
+                    "maxWidth": 300,
+                    "minWidth": 200,
+                    "width": 200,
+                    "enableColumnMenu": false
+                },
+                {
+                    "typeName": "Fnd0Snapshot",
+                    "propertyName": "awb0ProductsInSession",
+                    "displayName": "{{i18n.underlyingProduct}}",
+                    "maxWidth": 300,
+                    "minWidth": 200,
+                    "width": 200,
+                    "enableColumnMenu": false
+                },
+                {
+                    "typeName": "Fnd0Snapshot",
+                    "propertyName": "owning_user",
+                    "displayName": "{{i18n.owning_user}}",
+                    "maxWidth": 300,
+                    "minWidth": 200,
+                    "width": 200,
+                    "enableColumnMenu": false
+                }
+            ]
+        }
+    },
+    "grids": {
+        "snapshotGridView": {
+            "dataProvider": "gridDataProvider",
+            "columnProvider": "clientScopeUI",
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "enableGridMenu": true,
+                "enableSorting": false
+            }
+        }
+    },
+    "onEvent": [ {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent"
+        },
+        {
+            "eventId": "$locationChangeSuccess",
+            "action": "resetProductSnapshot"
+        },
+        {
+            "eventId": "snapshotSearchTable.selectFirstItem",
+            "action": "selectFirstItem"
+        }
+    ],
+    "messages": {
+        "snapshotSearchTableErrorMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onInit": "initialize",
+        "onUpdate": {
+            "action": "initDataProvider",
+            "observers": [
+                "props.subPanelContext.searchState.criteria.searchString",
+                "props.subPanelContext.searchState.filterString"
+            ]
+        }
+    },
+    "conditions": {
+        "isEmptySearchResult": {
+            "expression": "!subPanelContext.searchState.searchInProgress && subPanelContext.searchState.totalFound==0 && !subPanelContext.searchState.totalLoaded"
+        },
+        "isNoItemsCreatedByMe": {
+            "expression": "subPanelContext.provider.name === 'mySnapshots'"
+        },
+        "isNoItemsSharedByMe": {
+            "expression": "subPanelContext.provider.name === 'sharedByMeSnapshots'"
+        },
+        "isNoItemsSharedWithMe": {
+            "expression": "subPanelContext.provider.name === 'sharedwithMeSnapshots'"
+        }
+    },
+    "i18n": {
+        "snapshotName": [
+            "ViewerSnapshotMessages"
+        ],
+        "snapshotCreationDate": [
+            "ViewerSnapshotMessages"
+        ],
+        "owning_user": [
+            "ViewerSnapshotMessages"
+        ],
+        "underlyingProduct": [
+            "ViewerSnapshotMessages"
+        ],
+        "noSnapshotsFound": [
+            "ViewerSnapshotMessages"
+        ],
+        "noSnapshotsCreatedByMeHint": [
+            "ViewerSnapshotMessages"
+        ],
+        "noSnapshotsSharedByMeHint": [
+            "ViewerSnapshotMessages"
+        ],
+        "noSnapshotsSharedWitMeHint": [
+            "ViewerSnapshotMessages"
+        ],
+        "snapshotsCreatedByMe": [
+            "ViewerSnapshotMessages"
+        ],
+        "snapshotsSharedWithMe": [
+            "ViewerSnapshotMessages"
+        ]
+    }
+}

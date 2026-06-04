@@ -1,0 +1,132 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {
+        "render": "render",
+        "onMount": "getTreeData",
+        "onUpdate": [
+            {
+                "action": "filterTreeWithSearchBox",
+                "observers": [ "viewModel.data.searchBox.dbValue" ]
+            }
+        ]
+    },
+    "actions": {
+        "render": {
+            "method": "awSavedQueryPropertySelectionSubpanelRenderFunction",
+            "deps": "js/AwSavedQueryPropertySelectionSubpanelService"
+        },
+        "getReferencedByProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2015-10-Session",
+            "method": "getTypeDescriptions2",
+            "inputData": {
+                "typeNames": ["{{props.subPanelContext.selectedType.value}}"],
+                "options": {
+                    "GetRelatedTypePD": ["{{props.subPanelContext.queryState.currentSearchType}}"]
+                }
+            },
+            "outputData": {
+                "typeDescriptionsOutput": ""
+            }
+        },
+        "getTreeData": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getReferencedByProperties"
+                },
+                {
+                    "action": "renameKeys"
+                },
+                {
+                    "action": "expandRoot"
+                },
+                {
+                    "action": "removeNonSelectedTypesFromTree"
+                },
+                {
+                    "action": "sortPropertiesByDisplayName"
+                }
+            ]
+        },
+        "renameKeys": {
+            "actionType": "JSFunction",
+            "method": "renameKeys",
+            "inputData": {
+                "typeDescriptionsTypes": "{{data.typeDescriptionsOutput.types}}"
+            },
+            "outputData": {
+                "tempTree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "expandRoot": {
+            "actionType": "JSFunction",
+            "method": "expandRoot",
+            "inputData": {
+                "tempTree": "{{data.tempTree}}"
+            },
+            "outputData": {
+                "tempTree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "removeNonSelectedTypesFromTree": {
+            "actionType": "JSFunction",
+            "method": "removeNonSelectedTypesFromTree",
+            "inputData": {
+                "tempTree": "{{data.tempTree}}"
+            },
+            "outputData": {
+                "tempTree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "filterTreeWithSearchBox": {
+            "actionType": "JSFunction",
+            "method": "filterTreeByQuery",
+            "inputData": {
+                "searchQuery": "{{data.searchBox.dbValue}}",
+                "tree": "{{data.tree}}"
+            },
+            "outputData": {
+                "filteredTree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "sortPropertiesByDisplayName": {
+            "actionType": "JSFunction",
+            "method": "sortPropertiesByDisplayName",
+            "inputData": {
+                "tempTree": "{{data.tempTree}}"
+            },
+            "outputData": {
+                "tree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        }
+    },
+    "onEvent": [],
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "data": {
+        "searchBox": {
+            "dbValue": "",
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "propertyDisplayName": "",
+            "requiredText": "{{i18n.filterProperties}}"
+        }
+    },
+    "dataProviders": {},
+    "i18n": {
+        "filterProperties": [
+            "SearchMessages"
+        ]
+    }
+}

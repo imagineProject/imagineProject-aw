@@ -1,0 +1,297 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-command-panel-section.directive",
+        "js/aw-textarea.directive",
+        "js/aw-scrollpanel.directive"
+    ],
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "actions": {
+        "postProcessSetDisplayFormulaeInEditor": {
+            "actionType": "JSFunction",
+            "method": "postProcessSetDisplayFormulaeInEditor",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}",
+                "soaResponse": "{{data.eventData.soaResponse}}"
+            },
+            "outputData": {
+                "formula.display": ""
+            },
+            "deps": "js/pca0VariantFormulaEditorService"
+        },
+        "setDisplayFormulaInEditor": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2021-06-ConfiguratorManagement",
+            "method": "getVariantFormulae",
+            "inputData": {
+                "configPerspective": {
+                    "type": "Cfg0ConfiguratorPerspective",
+                    "uid": "{{subPanelContext.configPerspectiveUid}}"
+                },
+                "formulaType": "displayFormula",
+                "variantObjects": [ {
+                    "variantObjectId": "1",
+                    "affecteObjectUid": "{{function:getSelectedObjUid}}",
+                    "expression": {
+                        "formula": "",
+                        "exprID": "",
+                        "exprType": 23
+                    }
+                } ]
+            },
+            "policy": {},
+            "outputData": {
+                "getVariantFormulaeResponse": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "pca0VariantFormulaEditor.postProcessSetDisplayFormulaeInEditor",
+                    "eventData": {
+                        "soaResponse": "{{data.getVariantFormulaeResponse}}"
+                    }
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "displayErrorCode"
+                } ]
+            },
+            "deps": "js/pca0VariantFormulaEditorService"
+        },
+        "initializeEditorProps": {
+            "actionType": "JSFunction",
+            "method": "initializeEditorProps",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}",
+                "formula": "{{data.atomicDataRef.formula}}",
+                "editorObject":"{{data.atomicDataRef.editorObject}}"
+            },
+            "outputData": {
+                "contextKey": "result.contextKey",
+                "formula": "result.formula",
+                "editorObject": "result.editorObject"
+            },
+            "deps": "js/pca0VariantFormulaEditorService"
+        },
+        "initialize": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "initializeEditorProps"
+                },
+                {
+                    "action": "initializeEditHandler"
+                }
+            ]
+        },
+        "saveFormula": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "setVariantExpressionData",
+                    "condition": "!conditions.isHostedPcaMode && data.editorObject.editContext === 'saveInProgress'"
+                },
+                {
+                    "action": "saveFormulaInNonTcApp",
+                    "condition": "conditions.isHostedPcaMode && data.editorObject.editContext === 'saveInProgress'"
+                }
+            ]
+        },
+        "setVariantExpressionData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "setVariantExpressionData3",
+            "inputData": {
+                "input": {
+                    "configPerspective": {
+                        "uid": "{{subPanelContext.configPerspectiveUid}}",
+                        "type": "Cfg0ConfiguratorPerspective"
+                    },
+                    "selectedExpressions": "{{function:convertGridFromFormulaToJsonString}}",
+                    "requestInfo": {
+                        "requestType": []
+                    }
+                }
+            },
+            "outputData": {
+                "saveFormulaResponse": ""
+            },
+            "events": {
+                "success": [ {
+                        "name": "pca0VariabilityTree.editModeChanged",
+                        "eventData": {
+                            "gridID": "variantConditionAuthoringGrid",
+                            "editOperation": "saveComplete"
+                        }
+                    },
+                    {
+                        "name": "Pca0VariantConditionAuthoringGrid.postProcessSetVariantExpressionData"
+                    },
+                    {
+                        "name": "pca0VariantFormulaEditor.postProcessSaveVariantFormula"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "pca0VariantFormulaEditor.handleSaveActionFailure"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "displayErrorCode"
+                } ]
+            },
+            "deps": "js/pca0ExpressionGridService"
+        },
+        "saveFormulaInNonTcApp": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0VariantFormulaEditor.saveFormula",
+                    "eventData": {
+                        "formula":"{{data.formula.internal}}",
+                        "affectedObjectUid": "{{function:getSelectedObjUid}}"
+                    }
+                } ]
+            },
+            "deps": "js/pca0VariantFormulaEditorService"
+        },
+        "handleSaveActionFailure": {
+            "actionType": "JSFunction",
+            "method": "handleSaveActionFailure",
+            "inputData": {
+                "ServiceData":"{{data.saveFormulaResponse.ServiceData}}",
+                "editorObject":"{{data.atomicDataRef.editorObject}}"
+            },
+            "deps": "js/pca0VariantFormulaEditorService"
+        },
+        "postProcessSaveVariantFormula": {
+            "actionType": "JSFunction",
+            "method": "postProcessSaveVariantFormula",
+            "inputData": {
+                "contextKey": "{{subPanelContext.contextKey}}",
+                "editorObject":"{{data.atomicDataRef.editorObject}}"
+            },
+            "deps": "js/pca0VariantFormulaEditorService"
+        },
+        "initializeEditHandler": {
+            "actionType": "JSFunction",
+            "method": "initializeEditHandler",
+            "inputData": {
+                "declViewModel": "{{data}}"
+            },
+            "deps": "js/pca0VariantFormulaEditorService"
+        },
+        "reloadVariabilityData": {
+            "actionType": "JSFunction",
+            "method": "reloadVariabilityData",
+            "inputData": {
+                "editorObject":"{{data.atomicDataRef.editorObject}}"
+            },
+            "deps": "js/pca0VariantFormulaEditorService"
+        }
+    },
+    "data": {
+        "formula":{
+            "initialValues":{},
+            "meta":{}
+        },
+        "editorObject":{
+            "initialValues":{
+                "useIntellisense":true,
+                "syntaxValidationInProgress":false,
+                "clearFormulaInProgress":false,
+                "isFullScreenSupported":true,
+                "showFormulaSuggesterCommandBar":true
+            },
+            "meta":{}
+        },
+        "variantFormulaEditHandler": {
+            "context": "FORMULA_EDIT_CONTEXT"
+        },
+        "variantFormulaEditorTitle": {
+            "displayName": "{{i18n.variantFormulaEditorTitle}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "{{i18n.variantFormulaEditorTitle}}",
+            "dispValue": ""
+        }
+    },
+    "i18n": {
+        "variantFormulaEditorTitle": [ "ConfiguratorMessages" ]
+    },
+    "onEvent": [ {
+            "eventId": "pca0VariantFormulaEditor.refresh",
+            "action": "initializeEditorProps"
+        },
+        {
+            "eventId": "pca0VariantFormulaEditor.setDisplayFormulaInEditor",
+            "cacheEventData": false,
+            "action": "setDisplayFormulaInEditor"
+        },
+        {
+            "eventId": "pca0VariantFormulaEditor.postProcessSetDisplayFormulaeInEditor",
+            "cacheEventData": true,
+            "action": "postProcessSetDisplayFormulaeInEditor"
+        },
+        {
+            "eventId": "pca0VariantFormulaEditor.postProcessSaveVariantFormula",
+            "cacheEventData": false,
+            "action": "postProcessSaveVariantFormula"
+        },
+        {
+            "eventId": "Pca0HostedConfigurator.saveCompleteInNonTcApp",
+            "action": "postProcessSaveVariantFormula"
+        },
+        {
+            "eventId": "pca0VariantFormulaEditor.handleSaveActionFailure",
+            "action": "handleSaveActionFailure"
+        },
+        {
+            "eventId": "Pca0FilterCriteriaSettings.filterCriteriaUpdated",
+            "action": "reloadVariabilityData"
+        }
+    ],
+    "conditions": {
+        "isHostedPcaMode": {
+            "expression": "props.subPanelContext.isHostedPCAMode !== undefined && props.subPanelContext.isHostedPCAMode === true"
+        }
+    },
+    "functions": {
+        "convertGridFromFormulaToJsonString": {
+            "functionName": "convertGridFromFormulaToJsonString",
+            "parameters": [
+                "{{data.formula.internal}}",
+                "{{subPanelContext.contextKey}}"
+            ]
+        },
+        "getSelectedObjUid": {
+            "functionName": "getSelectedObjUid",
+            "parameters": [
+                "{{subPanelContext.contextKey}}"
+            ]
+        }
+    },
+    "messages": {
+        "displayErrorCode": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initialize",
+        "onUpdate": [
+            {
+                "action": "saveFormula",
+                "observers": [
+                    "fields.formula"
+                ]
+            }
+        ]
+    }
+}

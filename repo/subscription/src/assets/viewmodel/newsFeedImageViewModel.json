@@ -1,0 +1,224 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "actions": {
+        "onReveal": {
+            "actionType": "dataProvider",
+            "method": "imageDataProvider"
+        },
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "attributesToInflate": "{{subPanelContext.searchState.tableViewProperties}}",
+                        "maxToLoad": "{{subPanelContext.searchState.maxToLoad}}",
+                        "maxToReturn": "{{subPanelContext.searchState.maxToReturn}}",
+                        "providerName": "{{subPanelContext.searchState.provider}}",
+                        "searchCriteria": "{{subPanelContext.searchState.criteria}}",
+                        "searchFilterFieldSortType": "{{subPanelContext.searchState.sortType}}",
+                        "startIndex": "{{data.dataProviders.listDataProvider.startIndex}}",
+                        "searchFilterMap6": "{{subPanelContext.searchState.activeFilterMap}}",
+                        "searchSortCriteria": "{{subPanelContext.searchState.sortCriteria}}"
+                    },
+                    "inflateProperties": false
+                },
+                "1": {
+                    "types": [ {
+                        "name": "BusinessObject",
+                        "properties": [ {
+                            "name": "awp0CellProperties"
+                        } ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "output": "{{function:processOutput}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "newsFeedFilterPanelOpenCloseEvent",
+                        "condition": "subPanelContext.searchState.totalFound > 0 && !ctx.activeNavigationCommand"
+                    },
+                    {
+                        "name": "noMessagesFoundEvent",
+                        "condition": "subPanelContext.searchState.totalFound <= 0"
+                    },
+                    {
+                        "name": "selectFirstItemEvent",
+                        "condition": "subPanelContext.searchState.totalFound > 0"
+                    }
+                ]
+            }
+        },
+        "newsFeedFilterPanelOpenCloseEvent": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view": "Sub0NewsFeedFilters",
+                    "parent": ".aw-layout-workarea",
+                    "placement": "left",
+                    "width": "MEDIUM",
+                    "height": "FULL",
+                    "isCloseVisible": false,
+                    "push": true
+                }
+            },
+            "outputData": {
+                "popupId": "id"
+            }
+        },
+        "noMessagesFoundAction": {
+            "actionType": "JSFunction",
+            "method": "updateSearchState",
+            "deps": "js/awMessageService",
+            "inputData": {
+                "searchState":"{{subPanelContext.searchState}}",
+                "value":{
+                    "saveFilterSelectionVisibility":true
+                }
+            }
+        },
+        "contentLoaded": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "askSavedFilterConfig",
+                    "condition": "ctx.savedFilters === undefined"
+                },
+                {
+                    "action": "onReveal",
+                    "condition": "ctx.savedFilters && ctx.savedFilters.length >= 0"
+                }
+            ]
+        },
+        "askSavedFilterConfig": {
+            "actionType": "TcSoaService",
+            "serviceName": "Administration-2012-09-PreferenceManagement",
+            "method": "getPreferences",
+            "inputData": {
+                "preferenceNames": [ "AWC_NewsFeed_SavedFilters" ],
+                "includePreferenceDescriptions": false
+            },
+            "outputData": {
+                "userSavedFilterConfig": "response[0].values.values"
+            },
+            "events": {
+                "success": [ {
+                    "name": "loadFromSaveSelection"
+                } ]
+            }
+        },
+        "loadFromSaveSelection": {
+            "actionType": "JSFunction",
+            "method": "loadFromSaveSelection",
+            "deps": "js/awMessageService",
+            "inputData": {
+                "data": "{{data}}",
+                "subPanelContext":"{{subPanelContext}}"
+            },
+            "events":{
+                "success":[
+                    {
+                        "name": "revealEvent",
+                        "condition": "ctx.savedFilters && ctx.savedFilters.length >= 0"
+                    }
+                ]
+            }
+        },
+        "selectFirstItem": {
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.imageDataProvider.selectionModel}}",
+                "newSelection": "{{data.searchResults.objects[0].uid}}"
+            },
+            "deps": "js/selectionModelFactory"
+        },
+        "setViewedByMe": {
+            "actionType": "JSFunction",
+            "method": "updatePrimarySelection",
+            "inputData": {
+                "selected": "{{props.subPanelContext.selectionData}}"
+            },
+            "deps": "js/awMessageService"
+        }
+    },
+    "dataProviders": {
+        "imageDataProvider": {
+            "action": "loadData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            },
+            "commandsAnchor": "aw_newsfeedShowObjectCellCommandAction"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "revealEvent",
+            "action": "onReveal"
+        },
+        {
+            "eventId": "loadFromSaveSelection",
+            "action": "loadFromSaveSelection"
+        },
+        {
+            "eventId": "newsFeedFilterPanelOpenCloseEvent",
+            "action": "newsFeedFilterPanelOpenCloseEvent"
+        },
+        {
+            "eventId": "noMessagesFoundEvent",
+            "action": "noMessagesFoundAction"
+        },
+        {
+            "eventId": "selectFirstItemEvent",
+            "action": "selectFirstItem"
+        }
+    ],
+    "functions": {
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.searchState}}"
+            ],
+            "deps": "js/awSearchService"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [
+        {
+            "action": "contentLoaded",
+            "observers": [
+                "props.subPanelContext.searchState.criteria.searchString",
+                "props.subPanelContext.searchState.filterString"
+            ]
+        },
+        {
+            "action":"setViewedByMe",
+            "observers":[ "props.subPanelContext.selectionData.value.selected" ]
+        }
+        ]
+    },
+    "ctx": {
+        "activeNavigationCommand": {
+            "type": "boolean"
+        }
+    },
+    "i18n": {
+        "noNewsFeed": [
+            "SubscriptionMessages"
+        ],
+        "noNewsFeedHint": [
+            "SubscriptionMessages"
+        ]
+    }
+}
+

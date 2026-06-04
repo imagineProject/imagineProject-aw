@@ -1,0 +1,255 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "addElementState":{
+            "initialValues":{
+                "AddOccurrencePropertiesOnCreate" : false,
+                "parentElements" : [],
+                "parentToLoadAllowedTypes" : null,
+                "siblingElements" : [],
+                "elementCreateInput" : null,
+                "fetchPagedOccurrences" : null,
+                "isCopyButtonEnabled" : null,
+                "previousSelectionUid" : "",
+                "Awb0ElementCreateSubView" : false,
+                "numberOfElements" : 1,
+                "occurrenceTypeName": "PSOccurrence",
+                "isSubstituteElementAddPanel": true,
+                "fetchOccurrenceTypesFor": "substituteGroup",
+                "allowedTabs":"substitutes"
+            },
+            "meta": {
+            }
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "numberOfElements": {
+            "dbValue": 1
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_SUBSTITUTE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions":
+    {
+        "updateAddElementStateForAceSiblingPanelAction":
+        {
+            "actionType": "JSFunction",
+            "method": "updateStateForAceAddSiblingPanel",
+            "inputData":
+            {
+                "selectedObjects": "{{subPanelContext.occContext.pwaSelection}}",
+                "addElementState": "{{data.addElementState}}"
+            },
+            "outputData": {
+                "addElementState" : ""
+            },
+
+            "deps": "js/aceAddElementService"
+        },
+        "addSubstituteElementToSetBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getBOMLineForSelectedPWAElement"
+                },
+                {
+                    "action": "addSubstituteElementToSet"
+                }
+            ]
+        },
+        "getBOMLineForSelectedPWAElement": {
+            "actionType": "JSFunction",
+            "method": "getBackingObjectsSync",
+            "inputData": {
+                "viewModelObjects": "{{subPanelContext.context.occContext.pwaSelection}}"
+            },
+            "outputData": {
+                "selectedBOMLines": ""
+            },
+            "deps": "js/aceBackingObjectProviderService"
+        },
+        "addSubstituteElementToSet": {
+            "actionType": "TcSoaService",
+            "serviceName": "StructureManagement-2024-12-Substitutes",
+            "method": "deleteOrUpdateSubstituteGroups",
+            "inputData": {
+                "updateSubstituteGroups": [{
+                    "bomLineHavingSubstituteGroup": "{{data.selectedBOMLines[0]}}",
+                    "substituteGroup": "{{ctx.mselected[0].fnd0OccSubstGroupObj}}",
+                    "updateSubstituteGroupBomLines": {
+                        "substituteBOMLinesToBeAdded":[{
+                            "groupSet":"{{ctx.mselected[0].fnd0setId}}",
+                            "substituteLines":"{{function:getBOMLineForSelectedSWAElement}}"
+                        }]
+                    }
+                }]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "reloadsubstituteGroupTable"
+                    },
+                    {
+                        "name": "closePanelAfterAddingSubstitutes"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "addComponentToSubstituteGroupFailure"
+                    }
+                ]
+            },
+           "deps": "js/aceBackingObjectProviderService"
+        },
+        "closeDialogIfNotPinned": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "closeDialogPanel",
+                    "condition": "!conditions.isPanelPinned"
+                }
+            ]
+        },
+        "closeDialogPanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "CREATE_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "setSubstituteElementTypeOnUpdate": {
+            "actionType": "JSFunction",
+            "method": "setSubstituteElementTypeOnUpdate",
+            "inputData": {
+                "addElementState": "{{data.addElementState}}"
+            },
+            "outputData": {
+                "addElementState": ""
+            },
+            "deps": "js/aceOccurrenceSubstituteGroupService"
+        },
+        "addPropertiesAndSetCreateInputContext": {
+            "actionType": "JSFunction",
+            "method": "buildElementCreateInputAndUpdateState",
+            "inputData": {
+                "value": "{{data}}",
+                "subPanelContext": {
+                    "addElementState": "{{fields.addElementState}}",
+                    "editHandler": "{{editHandlers.addPanelEditHandler}}"
+                }
+            },
+            "outputData": {},
+            "events": {
+                "success": [
+                    {
+                        "name": "setCreateInputContextSuccess",
+                        "excludeLocalDataCtx": true
+                    }
+                ]
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "closeDialogPanel",
+                    "condition": "conditions.isPwaSelectionChanged"
+                }
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "updateAddElementStateForAceSiblingPanelAction",
+        "onUpdate": [
+            {
+                "action": "setSubstituteElementTypeOnUpdate",
+                "observers": ["fields.addElementState.allowedPSOccurrenceTypes"]
+            },
+            {
+                "action": "closePanelOnSelectionChange",
+                "observers": [ "props.subPanelContext.occContext.pwaSelection" ]
+            }
+        ]
+    },
+    "onEvent": [
+        {
+            "eventId": "addElement.elementsAdded",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "addSubstituteElementToSetBatchJob"
+        },
+        {
+            "eventId": "addSubstituteElementsEvent",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "addSubstituteElementToSetBatchJob"
+        },
+        {
+            "eventId": "closePanelAfterAddingSubstitutes",
+            "action": "closeDialogIfNotPinned"
+        },
+        {
+            "eventId": "awb0Element.addElementProperties",
+            "action": "addPropertiesAndSetCreateInputContext",
+            "condition": "!conditions.isElementPropertiesSectionVisible"
+        },
+        {
+            "eventId": "ace.activateWindow",
+            "action": "closeDialogPanel",
+            "condition": "!conditions.isPanelPinned"
+        }
+    ],
+    "messages": {
+        "addComponentToSubstituteGroupFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "functions": {
+        "getBOMLineForSelectedSWAElement": {
+            "functionName": "getBackingObjectsSync",
+            "parameters": [
+                "{{parameters.eventData.objectsToSelect}}"
+            ]
+        }
+    },
+    "conditions": {
+        "isElementPropertiesSectionVisible":{
+            "expression": "data.addElementState.Awb0ElementCreateSubView"
+        },
+        "isPanelPinned": {
+            "expression": "subPanelContext.panelPinned"
+        },
+        "isPwaSelectionChanged": {
+            "expression": "(subPanelContext.occContext.pwaSelection !== undefined && addElementState.previousSelectionUid !== '' && addElementState.previousSelectionUid !== subPanelContext.occContext.pwaSelection[0].uid) || subPanelContext.occContext.pwaSelection.length > 1"
+        }
+    },
+    "i18n": {
+        "toTitle": [
+            "OccurrenceManagementConstants"
+        ],
+        "addSubstituteElementsTitle": [
+            "OccurrenceManagementConstants"
+        ]
+    }
+}

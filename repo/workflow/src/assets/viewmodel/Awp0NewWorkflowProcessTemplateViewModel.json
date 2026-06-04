@@ -1,0 +1,652 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-command-panel.directive",
+        "js/visible-when.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-i18n.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-widget.directive",
+        "js/aw-listbox.directive",
+        "js/aw-list.directive",
+        "js/exist-when.directive",
+        "js/aw-radiobutton.directive",
+        "js/aw-break.directive",
+        "js/aw-guidance-message.directive"
+    ],
+    "actions": {
+        "reveal": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2013-05-Workflow",
+            "method": "getWorkflowTemplates",
+            "inputData": {
+                "input": [
+                    {
+                        "clientId": "allTemplates",
+                        "getFiltered": false,
+                        "includeUnderConstruction": true
+                    }
+                ]
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "EPMTaskTemplate",
+                        "properties": [
+                            {
+                                "name": "template_name"
+                            },
+                            {
+                                "name": "object_desc"
+                            },
+                            {
+                                "name": "fnd0Instructions"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "allTemplates": "templatesOutput[0].workflowTemplates"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "createProessTemplate.templatesLoaded"
+                    }
+                ]
+            }
+        },
+        "populatePanelData": {
+            "actionType": "JSFunction",
+            "method": "populatePanelData",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "taskTemplates": "taskTemplates",
+                "processTemplates":"processTemplates",
+                "validTaskTemplateTypes":"validTaskTemplateTypes",
+                "workflowProcessTemplates":"workflowProcessTemplates",
+                "workflowTaskTemplates":"workflowTaskTemplates"
+            },
+            "deps": "js/Awp0CreateWorkflowTemplate"
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "closeDialog",
+                        "condition": "!data.isDestroyed()"
+                    }
+                ]
+            }
+        },
+        "createTemplate": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2019-06-Workflow",
+            "method": "createOrUpdateTemplate",
+            "inputData": {
+                "input": [
+                    {
+                        "clientID": "createProcessTemplate",
+                        "templateName": "{{data.templateName.dbValue}}",
+                        "templateDesc": "{{data.templateDescription.dbValue}}",
+                        "baseTemplate": "{{function:getSelectedBaseTemplateUid}}",
+                        "additionalData": "{{function:getCreateAdditionalData}}"
+                    }
+                ]
+            },
+            "outputData": {
+                "createdObject": "createdorUpdatedObjects['0'].templateObject"
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "BusinessObject",
+                        "properties": [
+                            {
+                                "name": "awp0CellProperties"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "workflowDesigner.createdTemplateObject",
+                        "condition": "data.createdObject"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "createTemplateSuccess"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "createTemplateFailure"
+                    }
+                ]
+            },
+            "deps": "js/Awp0CreateWorkflowTemplate"
+        },
+        "updateCtxEditInfo": {
+            "actionType": "JSFunction",
+            "method": "updateWorkflowEditCtx",
+            "deps": "js/Awp0WorkflowDesignerUtils",
+            "inputData": {
+                "name": "workflowDgmEditCtx",
+                "editObjectUid": "{{data.createdObject.uid}}",
+                "isEditMode": true
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "closeDialog"
+                    },
+                    {
+                        "name": "primaryWorkarea.reset"
+                    }
+                ]
+            }
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "registerCreateObjectContext": {
+            "actionType": "JSFunction",
+            "method": "registerCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "newlyCreatedTemplateObjUid",
+                "value": "{{data.createdObject.uid}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "workflowDesigner.createdTemplateEdit"
+                    }
+                ]
+            }
+        },
+        "registerCreateObjectContextPaletteOpen": {
+            "actionType": "JSFunction",
+            "method": "registerCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "openTaskPalette",
+                "value": true
+            }
+        },
+        "registerInitializeLayoutFromPreference": {
+            "actionType": "JSFunction",
+            "method": "registerCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "initializeLayoutFromPreference",
+                "value": true
+            }
+        },
+        "createTaskTemplateTypeChangeAction": {
+            "actionType": "JSFunction",
+            "method": "createTaskTemplateTypeChangeAction",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/Awp0CreateWorkflowTemplate"
+        },
+        "loadTaskTemplateObjects": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": ""
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "attributesToInflate": [
+                            "object_name",
+                            "owning_user",
+                            "object_desc",
+                            "fnd0Instructions",
+                            "state"
+                        ],
+                        "startIndex": "{{data.dataProviders.getTaskTemplateTypes.startIndex}}",
+                        "providerName": "Awp0TaskSearchProvider",
+                        "searchCriteria": {
+                            "searchString": "",
+                            "taskProviderContentType": "EPMRootTaskProcessTemplate"
+                        },
+                        "searchFilterFieldSortType": "Alphabetical",
+                        "searchFilterMap6": {
+                            "EPMTaskTemplate.template_classification": [
+                                {
+                                    "searchFilterType": "StringFilter",
+                                    "stringValue": "1"
+                                }
+                            ]
+                        }
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "taskTemplateSearchResultJSON": "{{json:searchResultsJSON}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "createProessTemplate.templatesLoaded"
+                    }
+                ]
+            }
+        },
+        "loadTaskTemplateTypes": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2016-03-Finder",
+            "method": "performSearch",
+            "inputData": {
+                "searchInput": {
+                    "maxToLoad": 2000,
+                    "maxToReturn": 2000,
+                    "providerName": "Awp0TypeSearchProvider",
+                    "searchCriteria": {
+                        "searchString": "",
+                        "listOfIncludeObjectTypes": "EPMTaskTemplate",
+                        "loadSubTypes": "true",
+                        "typeSelectorId": ""
+                    },
+                    "attributesToInflate": [
+                        "type_name",
+                        "object_string"
+                    ],
+                    "startIndex": 0
+                }
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "ImanType",
+                        "properties": [
+                            {
+                                "name": "type_name"
+                            },
+                            {
+                                "name": "fnd0InternalName"
+                            },
+                            {
+                                "name": "object_string"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "taskTemplateObjectTypes": "{{function:getTaskTemplateObjectTypeList}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "taskTemplateObjectTypes.populateValidTaskTemplateTypes",
+                        "condition": "data.workflowTaskTemplates.dbValue"
+                    }
+                ]
+            },
+            "deps": "js/Awp0CreateWorkflowTemplate"
+        },
+        "selectDefaultObjectType": {
+            "actionType": "JSFunction",
+            "method": "selectDefaultTaskTemplateType",
+            "inputData": {
+                "prop": "{{data.workflowTaskTemplateObjectType}}",
+                "taskTemplateObjectTypes": "{{data.taskTemplateObjectTypes}}"
+            },
+            "deps": "js/Awp0CreateWorkflowTemplate"
+        },
+        "setTaskTemplateType": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2019-06-Workflow",
+            "method": "createOrUpdateTemplate",
+            "inputData": {
+                "input": [
+                    {
+                        "clientID": "updateProcessTemplate",
+                        "templateToUpdate": "{{data.createdObject.uid}}",
+                        "additionalData": {
+                            "task_type": [
+                                "{{data.workflowTaskTemplateObjectType.dbValue}}"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "outputData": {
+                "createdObject": "createdorUpdatedObjects['0'].templateObject"
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "BusinessObject",
+                        "properties": [
+                            {
+                                "name": "awp0CellProperties"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "workflowDesigner.createdTemplateObject",
+                        "condition": "data.createdObject"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "message": "createTemplateSuccess"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "createTemplateFailure"
+                    }
+                ]
+            }
+        },
+        "populateTaskTemplateTypes": {
+            "actionType": "JSFunction",
+            "method": "populateValidTaskTemplateTypes",
+            "inputData": {
+                "data": "{{data}}",
+                "selectedTaskTemplateProp": "{{data.workflowTaskTemplates.dbValue}}",
+                "taskTemplateObjectTypes": "{{data.taskTemplateObjectTypes}}"
+            },
+            "outputData": {
+                "validTaskTemplateTypes":"validTaskTemplateTypes"
+            },
+            "deps": "js/Awp0CreateWorkflowTemplate"
+        },
+        "navigateToCustomTaskTemplateLink": {
+            "actionType": "JSFunction",
+            "method": "navigateToURL",
+            "inputData": {
+                "urlString": "{{data.customTaskTemplateLinkProp.urlString}}"
+            },
+            "deps": "js/Awp0WorkflowDesignerUtils"
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cacheInitialSelection",
+                    "condition": "!data.initialSelection"
+                },
+                {
+                    "action": "closePanel",
+                    "condition": "data.initialSelection !== props.subPanelContext.selectionData.selected[0].uid"
+                }
+            ]
+        },
+        "cacheInitialSelection":{
+            "actionType": "JSFunction",
+            "method": "cacheSelection",
+            "inputData": {
+                "selectedUid": "{{props.subPanelContext.selectionData.selected[0].uid}}"
+            },
+            "outputData": {
+                "initialSelection": ""
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        }
+    },
+    "data": {
+        "workflowProcessTemplates": {
+            "type": "STRING",
+            "displayName": "{{i18n.basedOn}}",
+            "hasLov": true
+        },
+        "templateName": {
+            "displayName": "{{i18n.Workflow_Name}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "maxLength": 128
+        },
+        "templateDescription": {
+            "displayName": "{{i18n.Description}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "maxLength": 240,
+            "numberOfLines": 3,
+            "dbValue": ""
+        },
+        "createTaskTemplateType": {
+            "displayName": "{{i18n.createTaskTemplateType}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "dbValue": "workflow",
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE"
+        },
+        "createTaskTemplateTypeValues": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.Workflow}}",
+                    "propInternalValue": "workflow"
+                },
+                {
+                    "propDisplayValue": "{{i18n.task}}",
+                    "propInternalValue": "task"
+                }
+            ]
+        },
+        "workflowTaskTemplates": {
+            "type": "STRING",
+            "displayName": "{{i18n.basedOn}}",
+            "hasLov": true
+        },
+        "workflowTaskTemplateObjectType": {
+            "type": "STRING",
+            "displayName": "{{i18n.typeString}}",
+            "hasLov": true
+        },
+        "customTaskTemplateLinkProp": {
+            "displayName": "{{i18n.sectionString}}",
+            "type": "STRING"
+        },
+        "ootbTaskArray": [
+            "EPMReviewTaskTemplate",
+            "EPMAcknowledgeTaskTemplate",
+            "EPMRouteTaskTemplate",
+            "EPMAddStatusTaskTemplate",
+            "EPMConditionTaskTemplate",
+            "EPMDoTaskTemplate",
+            "EPMOrTaskTemplate",
+            "EPMValidateTaskTemplate",
+            "EPMSelectSignoffTaskTemplate",
+            "EPMPerformSignoffTaskTemplate",
+            "EPMNotifyTaskTemplate",
+            "ECMChecklistTaskTemplate",
+            "ECMImpactAnalysisTaskTemplate",
+            "ECMPrepareECOTaskTemplate",
+            "EPMSyncTaskTemplate",
+            "EPMTaskTemplate"
+        ]
+    },
+    "ctx":{
+        "graph":{
+            "type": "object"
+        },
+        "workflowDgmEditCtx":{
+            "type":"object"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": {
+            "action": "closePanelOnSelectionChange",
+            "observers": [ "props.subPanelContext.selectionData.selected" ]
+        }
+    },
+    "messages": {
+        "createTemplateSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.createTemplateSuccess}}",
+            "messageTextParams": [
+                "{{data.templateName.dbValue}}"
+            ]
+        },
+        "customTaskTemplateMessageInfo": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.customTaskTemplateMessage1}}",
+            "messageTextParams": [],
+            "messageTextLinks": [
+            ]
+        },
+        "createTemplateFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "createProessTemplate.templatesLoaded",
+            "action": "populatePanelData"
+        },
+        {
+            "eventId": "workflowDesigner.createdTemplateEdit",
+            "action": "updateCtxEditInfo"
+        },
+        {
+            "eventId": "workflowDesigner.createdTemplateObject",
+            "action": "registerCreateObjectContext"
+        },
+        {
+            "eventId": "workflowDesigner.createdTemplateObject",
+            "action": "registerInitializeLayoutFromPreference"
+        },
+        {
+            "eventId": "workflowDesigner.createdTemplateObject",
+            "condition": "ctx.ViewModeContext.ViewModeContext === 'SummaryView' || ctx.ViewModeContext.ViewModeContext === 'TableSummaryView'",
+            "action": "registerCreateObjectContextPaletteOpen"
+        },
+        {
+            "eventId": "workflowDesigner.loadTaskTemplateObjects",
+            "action": "loadTaskTemplateObjects"
+        },
+        {
+            "eventId": "workflowDesigner.loadTaskTemplateTypes",
+            "action": "loadTaskTemplateTypes"
+        },
+        {
+            "eventId": "taskTemplateObjectTypes.populateValidTaskTemplateTypes",
+            "action": "populateTaskTemplateTypes"
+        },
+        {
+            "eventId": "workflowDesigner.setTaskTemplateType",
+            "action": "setTaskTemplateType"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+    "functions": {
+        "getTaskTemplateObjectTypeList": {
+            "functionName": "getTaskTemplateObjectTypeList",
+            "parameters": []
+        },
+        "getSelectedBaseTemplateUid": {
+            "functionName": "getSelectedBaseTemplateUid",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getCreateAdditionalData": {
+            "functionName": "getCreateAdditionalData",
+            "parameters": [
+                "{{data}}"
+            ]
+        }
+    },
+    "conditions": {
+        "isValidForProcessCreation": {
+            "expression": "data.createTaskTemplateType.dbValue === 'workflow' && data.templateName.dbValue"
+        },
+        "isValidForTaskTemplateCreation": {
+            "expression": "data.createTaskTemplateType.dbValue === 'task' && data.templateName.dbValue && data.workflowTaskTemplates.dbValue && data.workflowTaskTemplateObjectType.dbValue"
+        },
+        "isValidToCreate": {
+            "expression": "conditions.isValidForProcessCreation || conditions.isValidForTaskTemplateCreation"
+        },
+        "isCustomTaskTemplateCreation": {
+            "expression": "( data.workflowTaskTemplateObjectType && data.workflowTaskTemplateObjectType.dbValue != '' && data.workflowTaskTemplateObjectType.dbValue != undefined ) && data.ootbTaskArray && data.ootbTaskArray.length > 0  && data.ootbTaskArray.indexOf( data.workflowTaskTemplateObjectType.dbValue ) <= -1"
+        }
+    },
+    "i18n": {
+        "newWorkflowProcessTemplate": [
+            "WorkflowDesignerMessages"
+        ],
+        "basedOn": [
+            "WorkflowPalMgmtMessages"
+        ],
+        "Add_Title": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "createTemplateSuccess": [
+            "WorkflowDesignerMessages"
+        ],
+        "Workflow_Name": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "customTaskTemplateMessage1": [ "WorkflowDesignerMessages" ],
+        "Workflow_Template": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "Description": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "none": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "offlineOption": [
+            "WorkflowDesignerMessages"
+        ],
+        "createTaskTemplateType": [
+            "WorkflowDesignerMessages"
+        ],
+        "task": [
+            "WorkflowDesignerMessages"
+        ],
+        "Workflow": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "typeString": [
+            "WorkflowDesignerMessages"
+        ],
+        "sectionString": [
+            "WorkflowDesignerMessages"
+        ],
+        "customTaskTemplateMessage": [
+            "WorkflowDesignerMessages"
+        ]
+    }
+}

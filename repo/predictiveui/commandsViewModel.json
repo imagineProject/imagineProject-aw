@@ -1,0 +1,283 @@
+{
+  "commands": {
+    "Awa0ShowPredictions": {
+      "iconId": "cmdAssistant",
+      "title": "{{i18n.PredictCommandTitle}}",
+      "description": "{{i18n.PredictCommandDesc}}"
+    },
+    "Awa0Copy": {
+      "iconId": "cmdCopy",
+      "description": "{{i18n.Awp0CopyTitle}}"
+    },
+    "Awa0Like": {
+      "iconId": "cmdThumbsUp",
+      "description": "{{i18n.LikeCommandTitle}}",
+      "selected": {
+        "iconId": "cmdThumbsUpFilled"
+      }
+    },
+    "Awa0DisLike": {
+      "iconId": "cmdThumbsDown",
+      "description": "{{i18n.DisLikeCommandTitle}}",
+      "selected": {
+        "iconId": "cmdThumbsDownFilled"
+      }
+    },
+    "Awa0Highlight": {
+      "iconId": "cmdHighlight",
+      "description": "{{i18n.HighlightCommandTitle}}"
+    },
+    "Awa0Open": {
+      "iconId": "cmdOpen",
+      "title": "{{i18n.Awp0ShowObjectTitle}}"
+    }
+  },
+  "commandHandlers": {
+    "Awa0ShowPredictionsCommandHandler": {
+      "id": "Awa0ShowPredictions",
+      "action": "Awa0ShowPredictionsAction",
+      "activeWhen": {
+        "condition": "conditions.condShowPredictionsCommand"
+      },
+      "visibleWhen": {
+        "condition": "conditions.condShowPredictionsCommand"
+      }
+    },
+    "Awa0OpenHandler": {
+      "id": "Awa0Open",
+      "action": "openCellCommandAction",
+      "activeWhen": true,
+      "visibleWhen": true
+    },
+    "Awa0CopyHandler": {
+      "id": "Awa0Copy",
+      "action": "copyCellCommandAction",
+      "activeWhen": true,
+      "visibleWhen": true,
+      "enableWhen": {
+        "condition": "conditions.cellCopyCommandVisible"
+      }
+    },
+    "Awa0LikeHandler": {
+      "id": "Awa0Like",
+      "action": "likePredictionAction",
+      "activeWhen": true,
+      "visibleWhen": true,
+      "selectWhen": {
+        "condition": "conditions.isCommandLiked"
+      }
+    },
+    "Awa0DisLikeHandler": {
+      "id": "Awa0DisLike",
+      "action": "dislikePredictionAction",
+      "activeWhen": true,
+      "visibleWhen": true,
+      "selectWhen": {
+        "condition": "conditions.isCommandDisliked"
+      }
+    },
+    "Awa0HighlightHandler": {
+      "id": "Awa0Highlight",
+      "action": "highlightPredictionAction",
+      "activeWhen": true,
+      "visibleWhen": true
+    }
+  },
+  "commandPlacements": {
+    "Awa0ShowPredictionsPlacement": {
+      "id": "Awa0ShowPredictions",
+      "uiAnchor": "aw_globalNavigationbar",
+      "priority": 30
+    },
+    "Awa0CopyCommandPlacement": {
+      "id": "Awa0Copy",
+      "uiAnchor": "awa_dataAssistant",
+      "priority": 2,
+      "cellDisplay": {
+        "hover": true,
+        "position": "TOP_RIGHT",
+        "selected": true
+      }
+    },
+    "Awa0OpenCommandPlacement": {
+      "id": "Awa0Open",
+      "uiAnchor": "awa_dataAssistant",
+      "priority": 1,
+      "cellDisplay": {
+        "hover": true,
+        "position": "TOP_RIGHT",
+        "selected": true
+      }
+    },
+    "Awa0HighlightCommandPlacement": {
+      "id": "Awa0Highlight",
+      "uiAnchor": "awa_dataAssistantPanel",
+      "priority": 50
+    },
+    "Awa0LikeCommandPlacement": {
+      "id": "Awa0Like",
+      "uiAnchor": "awa_dataAssistantPanel",
+      "priority": 30
+    },
+    "Awa0DislikeCommandPlacement": {
+      "id": "Awa0DisLike",
+      "uiAnchor": "awa_dataAssistantPanel",
+      "priority": 40
+    }
+  },
+  "actions": {
+    "Awa0ShowPredictionsAction": {
+      "actionType": "Event",
+      "method": "Event",
+      "deps": "js/PredictiveUtils",
+      "inputData": {
+        "events": [
+          {
+            "name": "awsidenav.openClose",
+            "eventData": {
+              "id": "globalNavigationSideNav",
+              "includeView": "Awa0ShowPredictions",
+              "commandId": "Awa0ShowPredictions",
+              "keepOthersOpen": true,
+              "config": {
+                "width": "WIDE"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "openCellCommandAction": {
+      "actionType": "Navigate",
+      "navigateTo": "com_siemens_splm_clientfx_tcui_xrt_showObject",
+      "navigationParams": {
+        "uid": "{{commandContext.vmo.uid}}"
+      },
+      "events": {
+        "success": [
+          {
+            "name": "awsidenav.openClose",
+            "condition": "ctx.awSidenavConfig.globalSidenavContext.globalNavigationSideNav.pinned === false",
+            "eventData": {
+              "id": "globalNavigationSideNav",
+              "includeView": "Awa0ShowPredictions",
+              "commandId": "Awa0ShowPredictions",
+              "keepOthersOpen": true,
+              "config": {
+                "width": "WIDE"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "copyCellCommandAction": {
+      "actionType": "Copy",
+      "method": "copyUrlToClipboard",
+      "inputData": {
+        "objectToCopy": [
+          "{{commandContext.vmo}}"
+        ],
+        "copyType": "Object"
+      },
+      "actionMessages": {
+        "success": [
+          {
+            "message": "copySingleSuccessful1"
+          }
+        ]
+      },
+      "events": {
+        "success": [
+          {
+            "name": "awsidenav.openClose",
+            "condition": "ctx.awSidenavConfig.globalSidenavContext.globalNavigationSideNav.pinned === false",
+            "eventData": {
+              "id": "globalNavigationSideNav",
+              "includeView": "Awa0ShowPredictions",
+              "commandId": "Awa0ShowPredictions",
+              "keepOthersOpen": true,
+              "config": {
+                "width": "WIDE"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "likePredictionAction": {
+      "actionType": "JSFunction",
+      "method": "likePrediction",
+      "deps": "js/PredictiveUtils",
+      "inputData": {
+        "commandId": "{{commandContext}}"
+      }
+    },
+    "dislikePredictionAction": {
+      "actionType": "JSFunction",
+      "method": "dislikePrediction",
+      "deps": "js/PredictiveUtils",
+      "inputData": {
+        "commandId": "{{commandContext}}"
+      }
+    },
+    "highlightPredictionAction": {
+      "actionType": "JSFunction",
+      "method": "highlightPrediction",
+      "deps": "js/PredictiveUtils",
+      "inputData": {
+        "commandContext": "{{commandContext}}"
+      }
+    }
+  },
+  "messages": {
+    "copySingleSuccessful1": {
+      "messageType": "INFO",
+      "messageText": "{{i18n.copySingleSuccessful}}",
+      "messageTextParams": [
+        "{{ctx.awClipBoardProvider[0].props.object_string.displayValues[0]}}"
+      ]
+    }
+  },
+  "conditions": {
+    "cellCopyCommandVisible": {
+      "expression": "commandContext.vmo && ctx.sublocation.nameToken !== ctx.defaultRoutePath"
+    },
+    "condShowPredictionsCommand": {
+      "expression": "ctx.preferences.AWA_is_feature_installed && ctx.preferences.AWA_is_feature_installed[0]==='true'"
+    },
+    "isCommandLiked": {
+      "expression": "commandContext.isLiked"
+    },
+    "isCommandDisliked": {
+      "expression": "commandContext.isDisliked"
+    }
+  },
+  "onEvent": [],
+  "i18n": {
+    "LikeCommandTitle": [
+      "PredictiveUiMessages"
+    ],
+    "DisLikeCommandTitle": [
+      "PredictiveUiMessages"
+    ],
+    "HighlightCommandTitle": [
+      "PredictiveUiMessages"
+    ],
+    "PredictCommandTitle": [
+      "PredictiveUiMessages"
+    ],
+    "PredictCommandDesc": [
+      "PredictiveUiMessages"
+    ],
+    "Awp0CopyTitle": [
+      "ZeroCompileCommandMessages"
+    ],
+    "Awp0ShowObjectTitle": [
+      "ShowObjectMessages"
+    ],
+    "copySingleSuccessful": [
+      "ZeroCompileCommandMessages"
+    ]
+  }
+}

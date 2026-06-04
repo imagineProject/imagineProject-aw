@@ -1,0 +1,834 @@
+{
+    "schemaVersion": "1.0.0",
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "actions": {
+        "doSelectionSummaryDataProvider": {
+            "actionType": "dataProvider",
+            "method": "selectionSummaryDataProvider"
+        },
+        "doSelectionSummaryOrIncompleteDataProvider": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "doSelectionSummaryDataProvider",
+                    "condition": "!conditions.isInSelectionTypeIncomplete"
+                },
+                {
+                    "action": "doIncompleteFamiliesDataProvider",
+                    "condition": "conditions.isInSelectionTypeIncomplete"
+                }
+            ]
+        },
+        "refreshSelectionSummary": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadSelectionSummaryDataFromServer",
+                    "condition": "ctx.fscContext.guidedMode"
+                },
+                {
+                    "action": "doSelectionSummaryOrIncompleteDataProvider"
+                }
+            ]
+        },
+        "afterExpandInManualModeBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "populateResponseInfoAfterExpand"
+                },
+                {
+                    "action": "resetStalenessFlag"
+                },
+                {
+                    "action": "doSelectionSummaryOrIncompleteDataProvider"
+                }
+            ]
+        },
+        "populateResponseInfoAfterExpand": {
+            "actionType": "JSFunction",
+            "method": "populateResponseInfoAfterExpand",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}"
+            },
+            "outputData": {
+                "selectionSummaryTableData":"{{function:parseVCVSelectionSummaryResponse}}"
+            },
+            "deps": "js/Pca0SelectionSummaryService"
+        },
+        "loadColumnsForSelectionsSummary": {
+            "actionType": "JSFunction",
+            "method": "loadColumnsForSelectionsSummary",
+            "outputData": {
+                "dataProviders.selectionSummaryDataProvider.columnConfig": ""
+            },
+            "deps": "js/Pca0SelectionSummaryService"
+        },
+        "loadColumnsForIncompleteFamilies": {
+            "actionType": "JSFunction",
+            "method": "loadColumnsForIncompleteFamilies",
+            "outputData": {
+                "dataProviders.incompleteFamiliesDataProvider.columnConfig": ""
+            },
+            "deps": "js/Pca0SelectionSummaryService"
+        },
+        "displaySelectionCount": {
+            "actionType": "JSFunction",
+            "method": "displaySelectionCount",
+            "inputData": {
+                "selectionTypeList": "{{data.selectionType}}",
+                "legendDetails": "{{data.legendDetails}}",
+                "selectionType": "{{data.typeOfSelectionList.dbValue}}",
+                "filteredSelectionsVMOs": "{{data.selectionSummaryTableData.filteredSelectionsVMOs}}",
+                "filteredIncompleteFamiliesVMOs": "{{data.selectionSummaryTableData.filteredIncompleteFamiliesVMOs}}"
+            },
+            "outputData": {
+                "legendDetails": ""
+            },
+            "deps": "js/Pca0SelectionSummaryService"
+        },
+        "applySortAndFilterRowsOnIncompleteFamily": {
+            "actionType": "JSFunction",
+            "method": "applySortAndFilterRows",
+            "inputData": {
+                "incompleteFamiliesTableData": "{{data.selectionSummaryTableData.incompleteFamiliesVMOs}}",
+                "columnFilters":"{{data.columnProviders.incompleteFamiliesColumnProvider.columnFilters}}",
+                "sortCriteria":"{{data.columnProviders.incompleteFamiliesColumnProvider.sortCriteria}}",
+                "typeOfSelectionList":"{{data.typeOfSelectionList.dbValue}}",
+                "isStale":"{{data.isStale}}"
+            },
+            "outputData": {
+                "selectionSummaryTableData.filteredIncompleteFamiliesVMOs": ""
+            },
+            "deps": "js/Pca0SelectionSummaryService"
+        },
+        "doIncompleteFamiliesDataProvider": {
+            "actionType": "dataProvider",
+            "method": "incompleteFamiliesDataProvider"
+        },
+        "loadSelectionSummaryDataFromServer": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "policy": {
+                "types": "{{function:getPropertyPolicy}}",
+                "override":true
+            },
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{function:getFscConfigPerspective}}",
+                    "scopes": [ "{{ctx.fscContext.currentScope ? ctx.fscContext.currentScope : ''}}" ],
+                    "selectedExpressions": "{{function:convertSelectedExpressionJsonObjectToString}}",
+                    "selectedContext": "{{function:getSelectionForVariantContext}}",
+                    "payloadStrings": "{{ctx.variantConfigContext.payloadStrings}}",
+                    "requestInfo": {
+                        "requestType": [ "selectionSummary" ],
+                        "profileSettings": [ "{{function:getProfileSettingsForFsc}}" ],
+                        "moduleHierarchy": [ "{{ctx.fscContext.configurationModuleHierarchy ? ctx.fscContext.configurationModuleHierarchy : ''}}" ],
+                        "selectionSummary": [ "{{data.typeOfSelectionList.dbValue === 'User' ? 'userSelections' : 'allSelections'}}" ]
+                    }
+                }
+            },
+            "outputData": {
+                "selectedExpressions": "selectedExpressions",
+                "tableData": "{{function:getConfigExpressionsForExpandInGuidedMode}}",
+                "isStale": "{{function:updateStalenessFlag}}",
+                "isSelectionSummaryLoaded": true,
+                "selectionSummaryTableData":"{{function:parseVCVSelectionSummaryResponse}}"
+            },
+            "deps": "js/Pca0SelectionSummaryService"
+        },
+        "clearInvalidFamiliesFromContext": {
+            "actionType": "JSFunction",
+            "method": "clearInvalidFamiliesFromContext",
+            "deps": "js/Pca0SelectionSummaryService"
+        },
+        "flagContentAsStale": {
+            "actionType": "JSFunction",
+            "method": "toggleBooleanProperty",
+            "inputData": {
+                "shouldReset": false
+            },
+            "outputData": {
+                "isStale": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "resetStalenessFlag": {
+            "actionType": "JSFunction",
+            "method": "toggleBooleanProperty",
+            "inputData": {
+                "shouldReset": true
+            },
+            "outputData": {
+                "isStale": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "initDirtyFlagInManualMode": {
+            "actionType": "JSFunction",
+            "method": "initDirtyFlag",
+            "inputData": {
+                "fscState": "{{props.subPanelContext.fscState}}"
+            },
+            "outputData": {
+                "isStale": ""
+            },
+            "deps": "js/Pca0SelectionSummaryService"
+        },
+        "batchForUserSelection": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "flagContentAsStale"
+                },
+                {
+                    "action" : "updateSelectionSummaryVMOs"
+                },
+                {
+                    "action": "updateIncompleteFamiliesVMOs",
+                    "condition": "conditions.isInSelectionTypeIncomplete"
+                },
+                {
+                    "action": "doSelectionSummaryOrIncompleteDataProvider"
+                }
+            ]
+        },
+        "updateIncompleteFamiliesVMOs": {
+            "actionType": "JSFunction",
+            "method": "updateIncompleteFamiliesVMOs",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}",
+                "treeDataProvider":"{{data.dataProviders.incompleteFamiliesDataProvider}}"
+            },
+            "outputData": {
+                "selectionSummaryTableData.incompleteFamiliesVMOs": ""
+            },
+            "deps": "js/Pca0SelectionSummaryService"
+        },
+        "updateSelectionSummaryVMOs": {
+            "actionType": "JSFunction",
+            "method": "updateSelectionSummaryVMOs",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}",
+                "treeDataProvider":"{{data.dataProviders.selectionSummaryDataProvider}}"
+            },
+            "outputData": {
+                "selectionSummaryTableData.allSelectionsVMOs": ""
+            },
+            "deps": "js/Pca0SelectionSummaryService"
+        },
+        "batchForInitialUserSelectionUpdate": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setSelectionTypeLovValue"
+                },
+                {
+                    "action": "doSelectionSummaryOrIncompleteDataProvider"
+                },
+                {
+                    "action": "resetSwitchToUserSelectionsFlag"
+                }
+            ]
+        },
+        "batchAfterSystemSelectionsInManualModeCleared": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "clearInvalidFamiliesFromContext"
+                },
+                {
+                    "action": "removeSystemSelectionsFromSummary"
+                },
+                {
+                    "action": "doSelectionSummaryOrIncompleteDataProvider"
+                }
+            ]
+        },
+        "removeSystemSelectionsFromSummary": {
+            "actionType": "JSFunction",
+            "method": "removeSystemSelectionsFromSummary",
+            "inputData": {
+                "allSelectionsVMOs": "{{data.selectionSummaryTableData.allSelectionsVMOs}}"
+            },
+            "outputData": {
+                "selectionSummaryTableData.allSelectionsVMOs": "result.allSelectionsVMOs",
+                "selectionSummaryTableData.incompleteFamiliesVMOs": "result.incompleteFamiliesVMOs",
+                "isStale": "result.isStale"
+            },
+            "deps": "js/Pca0SelectionSummaryService"
+        },
+       "updateIfLoadedBeforeConfigExpressions": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "batchForInitialUserSelectionUpdate",
+                    "condition": "conditions.needsUpdateAfterLoadUnloadSVR"
+                }
+            ]
+        },
+        "clearSelectionSummary": {
+            "actionType": "JSFunction",
+            "method": "clearTableData",
+            "outputData": {
+                "selectionSummaryTableData": "result.selectionSummaryTableData",
+                "isStale": "result.isStale"
+            },
+            "deps": "js/Pca0SelectionSummaryService"
+        },
+        "handleTypeOfSelectionChangeBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "resetStalenessFlag",
+                    "condition": "conditions.isInGuidedModeAndSelectionChangedToTypeAll"
+                },
+                {
+                    "action": "loadSelectionSummaryDataFromServer",
+                    "condition": "conditions.isInGuidedModeAndSelectionChangedToTypeAll || (!conditions.isInGuidedMode && !data.isStale)"
+                },
+                {
+                    "action": "doSelectionSummaryOrIncompleteDataProvider"
+                }
+            ]
+        },
+        "setSelectionTypeLovValue": {
+            "actionType": "JSFunction",
+            "method": "setSelectionTypeLovValue",
+            "inputData": {
+                "isSelectionSummaryOpenedFromChip": "{{props.subPanelContext.isSelectionSummaryOpenedFromChip}}",
+                "typeOfSelectionListValues": "{{data.typeOfSelectionListValues}}",
+                "typeOfSelectionList": "{{data.typeOfSelectionList}}",
+                "switchToUserSelections": "{{data.switchToUserSelections}}"
+            },
+            "outputData": {
+                "typeOfSelectionList": ""
+            },
+            "events": {
+                "success": [
+                {
+                    "name": "Pca0SelectionSummaryDialog.callVCV3ForIncompleteFamilies",
+                    "condition": "conditions.isSelectionSummaryOpenedFromChip && conditions.isInSelectionTypeIncomplete"
+                }  ]
+            },
+            "deps": "js/Pca0SelectionSummaryService"
+        },
+        "initializeSelectionTypeBatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "setSelectionTypeLovValue",
+                "condition": "data.isSelectionSummaryLoaded"
+            },
+            {
+                "action": "doSelectionSummaryOrIncompleteDataProvider",
+                "condition": "data.isSelectionSummaryLoaded"
+            } ]
+        },
+        "handleSelectionChangeForSelectionSummary": {
+            "actionType": "JSFunction",
+            "method": "handleSelectionChangeForSelectionSummary",
+            "inputData": {
+                "eventData": "{{parameters.response}}",
+                "fscState": "{{props.subPanelContext.fscState}}"
+            },
+            "deps": "js/Pca0SelectionSummaryService"
+        },
+        "getIncompleteFamiliesListDataBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadSelectionSummaryDataFromServer",
+                    "condition": "conditions.openingIncompleteFamilies"
+                },
+                {
+                    "action":"applySortAndFilterRowsOnIncompleteFamily"
+                },
+                {
+                    "action": "displaySelectionCount"
+                }
+            ]
+        },
+        "loadSelectionSummaryData": {
+            "actionType":"batchJob",
+            "steps": [
+                {
+                    "action": "loadSelectionSummaryDataFromServer",
+                    "condition": "conditions.openingSelectionSummaryWithUserSelections"
+                },
+                {
+                    "action": "applySortAndFilterRowsOnSelections"
+                },
+                {
+                    "action": "displaySelectionCount"
+                }
+            ]
+        },
+        "applySortAndFilterRowsOnSelections": {
+            "actionType": "JSFunction",
+            "method": "applySortAndFilterRows",
+            "inputData": {
+                "allSelections": "{{data.selectionSummaryTableData.allSelectionsVMOs}}",
+                "columnFilters":"{{data.columnProviders.selectionSummaryColumnProvider.columnFilters}}",
+                "sortCriteria":"{{data.columnProviders.selectionSummaryColumnProvider.sortCriteria}}",
+                "typeOfSelectionList":"{{data.typeOfSelectionList.dbValue}}",
+                "isStale":"{{data.isStale}}"
+            },
+            "outputData": {
+                "selectionSummaryTableData.filteredSelectionsVMOs": ""
+            },
+            "deps": "js/Pca0SelectionSummaryService"
+        },
+        "Pca0ExpandForSummary": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0Features.evaluateVariability",
+                    "eventData": {
+                        "operationType": "expand"
+                    }
+                } ]
+            }
+        },
+        "clearAllBatchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearSelectionSummary"
+                },
+                {
+                    "action": "doSelectionSummaryOrIncompleteDataProvider"
+                }
+            ]
+        },
+        "handleColumnArrange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "doArrangeEvent",
+                    "condition": "parameters.eventData.arrangeType === 'saveColumnAction'"
+                },
+                {
+                    "action": "doSelectionSummaryOrIncompleteDataProvider",
+                    "condition": "parameters.eventData.arrangeType !== 'saveColumnAction'"
+                }
+            ]
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{parameters.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "updateSelectionsGridColumnConfig": {
+            "actionType": "JSFunction",
+            "method": "postArrangeUpdateColumnConfig",
+            "inputData": {
+                "soaResponse": "{{parameters.eventData}}",
+                "gridDataProvider": "{{data.dataProviders.selectionSummaryDataProvider}}"
+            },
+            "outputData": {
+                "dataProviders.selectionSummaryDataProvider.columnConfig": ""
+            },
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "updateIncompleteFamiliesGridColumnConfig": {
+            "actionType": "JSFunction",
+            "method": "postArrangeUpdateColumnConfig",
+            "inputData": {
+                "soaResponse": "",
+                "gridDataProvider": "{{data.dataProviders.incompleteFamiliesDataProvider}}"
+            },
+            "outputData": {
+                "dataProviders.incompleteFamiliesDataProvider.columnConfig": ""
+            },
+            "deps": "js/pca0GridCommonUtils"
+        },
+        "handleSvrLoadUnload": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setSwitchToUserSelectionsFlag",
+                    "condition": "data.isSelectionSummaryLoaded"
+                }
+            ]
+        },
+        "setSwitchToUserSelectionsFlag": {
+            "actionType": "JSFunction",
+            "method": "toggleBooleanProperty",
+            "inputData": {
+                "switchToUserSelections": false
+            },
+            "outputData": {
+                "switchToUserSelections": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "resetSwitchToUserSelectionsFlag": {
+            "actionType": "JSFunction",
+            "method": "toggleBooleanProperty",
+            "inputData": {
+                "switchToUserSelections": true
+            },
+            "outputData": {
+                "switchToUserSelections": ""
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "applySettingsOnSelectionSummary": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setSwitchToUserSelectionsFlag"
+                },
+                {
+                    "action": "setSelectionTypeLovValue"
+                },
+                {
+                    "action": "loadColumnsForSelectionsSummary"
+                },
+                {
+                    "action": "doSelectionSummaryDataProvider"
+                },
+                {
+                    "action": "resetSwitchToUserSelectionsFlag"
+                }
+            ]
+        }
+    },
+    "data": {
+        "typeOfSelectionListValues": {
+            "type": "STRING",
+            "dbValue": [ {
+                    "propDisplayValue": "{{i18n.user}}",
+                    "propDisplayDescription": "{{i18n.showUserSelection}}",
+                    "dispValue": "{{i18n.user}}",
+                    "propInternalValue": "User"
+                },
+                {
+                    "propDisplayValue": "{{i18n.all}}",
+                    "propDisplayDescription": "{{i18n.showAllSelection}}",
+                    "dispValue": "{{i18n.all}}",
+                    "propInternalValue": "All"
+                },
+                {
+                    "propDisplayValue": "{{i18n.incompleteFamilies}}",
+                    "propDisplayDescription": "{{i18n.showIncompleteFamiliesToggle}}",
+                    "dispValue": "{{i18n.incompleteFamilies}}",
+                    "propInternalValue": "Incomplete Families"
+                }
+            ]
+        },
+        "typeOfSelectionList": {
+            "displayName": "{{i18n.typeOfSelection}}",
+            "name": "typeOfSelectionList",
+            "type": "STRING",
+            "isRequired": true,
+            "hasLov": true,
+            "dbValue": "",
+            "dispValue": ""
+        },
+        "selectionType": {
+            "type": "STRING",
+            "dbValue": [ {
+                "displayName": "{{i18n.user}}",
+                "dbValue": "User",
+                "dispValue": "{{i18n.user}}",
+                "uiValue": "{{i18n.user}}"
+            },
+            {
+                "displayName": "{{i18n.system}}",
+                "dbValue": "System",
+                "dispValue": "{{i18n.system}}",
+                "uiValue": "{{i18n.system}}"
+            },
+            {
+                "displayName": "{{i18n.default}}",
+                "dbValue": "Default",
+                "dispValue": "{{i18n.default}}",
+                "uiValue": "{{i18n.default}}"
+            }
+            ]
+        },
+        "refreshSelectionSummary": {
+            "action": "refreshSelectionSummary",
+            "iconName": "cmdRefresh",
+            "tooltip": "{{i18n.refreshSelections}}"
+        },
+        "tooltipIncompleteFamilies": {
+            "extendedTooltipContent": "{{i18n.showIncompleteFamiliesToggle}}"
+        },
+        "legendDetails": {
+            "displayName": "",
+            "type": "STRING"
+        },
+        "selectionSummaryTableData": {
+            "allSelectionsVMOs": [],
+            "incompleteFamiliesVMOs": [],
+            "filteredSelectionsVMOs": [],
+            "filteredIncompleteFamiliesVMOs": []
+        },
+        "isStale": false,
+        "switchToUserSelections": false
+    },
+    "dataProviders": {
+        "selectionSummaryDataProvider": {
+            "action": "loadSelectionSummaryData",
+            "response": "{{data.selectionSummaryTableData.filteredSelectionsVMOs}}"
+        },
+        "incompleteFamiliesDataProvider": {
+            "action": "getIncompleteFamiliesListDataBatch",
+            "response": "{{data.selectionSummaryTableData.filteredIncompleteFamiliesVMOs}}"
+        }
+    },
+    "columnProviders": {
+        "selectionSummaryColumnProvider": {
+            "loadColumnAction": "loadColumnsForSelectionsSummary",
+            "columns": "{{data.columns}}",
+            "resetColumnAction": "updateSelectionsGridColumnConfig",
+            "saveColumnAndLoadAction": "updateSelectionsGridColumnConfig"
+        },
+        "incompleteFamiliesColumnProvider": {
+            "loadColumnAction": "loadColumnsForIncompleteFamilies",
+            "columns": "{{data.columns}}",
+            "resetColumnAction": "updateIncompleteFamiliesGridColumnConfig",
+            "saveColumnAndLoadAction": "updateIncompleteFamiliesGridColumnConfig"
+        }
+    },
+    "grids": {
+        "selectionSummaryTable": {
+            "dataProvider": "selectionSummaryDataProvider",
+            "columnProvider": "selectionSummaryColumnProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enablePinning": false,
+                "enableSorting": true,
+                "isFilteringEnabled": true
+            }
+        },
+        "incompleteFamiliesTable": {
+            "dataProvider": "incompleteFamiliesDataProvider",
+            "columnProvider": "incompleteFamiliesColumnProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enablePinning": false,
+                "enableSorting": true,
+                "isFilteringEnabled": true
+            }
+        }
+    },
+    "functions": {
+        "getFscConfigPerspective": {
+            "functionName": "getFscConfigPerspective",
+            "parameters": [ "{{props.subPanelContext.variantRuleData}}" ]
+        },
+        "convertSelectedExpressionJsonObjectToString": {
+            "functionName": "convertSelectedExpressionJsonObjectToString",
+            "parameters": [ "{{ctx.fscContext.selectedExpressions}}" ]
+        },
+        "getProfileSettingsForFsc": {
+            "functionName": "getProfileSettingsForFsc"
+        },
+        "getSelectionForVariantContext": {
+            "functionName": "getSelectionForVariantContext",
+            "parameters": [ "fscContext", "{{props.configCtx}}" ]
+        },
+        "getConfigExpressionsForExpandInGuidedMode": {
+            "functionName": "getConfigExpressionsForExpandInGuidedMode",
+            "parameters": []
+        },
+        "getPropertyPolicy": {
+            "functionName": "getPropertyPolicy",
+            "parameters": [ "variantConfigurationView" ]
+        },
+        "updateStalenessFlag": {
+            "functionName": "updateStalenessFlag",
+            "parameters": [ "{{data.isSelectionSummaryLoaded}}", "{{props.subPanelContext.isStale}}", "{{data.switchToUserSelections}}" ]
+        },
+        "parseVCVSelectionSummaryResponse": {
+            "functionName": "parseVCVSelectionSummaryResponse",
+            "parameters": [ "{{data.selectionSummaryTableData}}" ]
+        }
+    },
+    "ctx": {
+        "fscContext": {
+            "type": "object"
+        },
+        "fscContext.selectedExpressions": null
+    },
+    "lifecycleHooks": {
+        "onMount": "setSelectionTypeLovValue",
+        "onUpdate": [ {
+            "action": "initializeSelectionTypeBatch",
+            "observers": [ "viewModel.ctx.fscContext.guidedMode"]
+        },
+        {
+            "action": "updateIfLoadedBeforeConfigExpressions",
+            "observers": ["viewModel.ctx.fscContext.selectedExpressions"]
+        },{
+            "action": "handleSvrLoadUnload",
+            "observers": [ "props.subPanelContext.variantRuleData.variantRulesToLoad.length",
+                "props.subPanelContext.variantRuleData.variantRulesToLoad[0].uid",
+                "props.subPanelContext.selection[0].uid" ]
+        } ]
+    },
+    "i18n": {
+        "feature": [ "FullScreenConfigurationMessages" ],
+        "typeOfSelection": [ "FullScreenConfigurationMessages" ],
+        "name": [ "FullScreenConfigurationMessages" ],
+        "showSystemSelection": [ "FullScreenConfigurationMessages" ],
+        "showAllSelection": [ "FullScreenConfigurationMessages" ],
+        "showUserSelection": [ "FullScreenConfigurationMessages" ],
+        "showDefaultSelection": [ "FullScreenConfigurationMessages" ],
+        "refreshSelections": [ "FullScreenConfigurationMessages" ],
+        "module": [ "FullScreenConfigurationMessages" ],
+        "familyUpperCase": [ "ConfiguratorCommonMessages" ],
+        "all": [ "ConfiguratorCommonMessages" ],
+        "user": [ "ConfiguratorCommonMessages" ],
+        "system": [ "ConfiguratorCommonMessages" ],
+        "default": [ "ConfiguratorCommonMessages" ],
+        "incompleteFamilies": [ "FullScreenConfigurationMessages" ],
+        "showIncompleteFamiliesToggle": [ "FullScreenConfigurationMessages" ],
+        "refreshToUpdateSelections": [ "FullScreenConfigurationMessages" ],
+        "selectionSummaryTitle": [ "FullScreenConfigurationMessages" ],
+        "selectionSummaryGuidanceMessage": [ "FullScreenConfigurationMessages" ],
+        "cmdExpandSystemSelection": [ "ConfiguratorMessages" ],
+        "refresh": [ "ConfiguratorExplorerMessages" ]
+    },
+    "conditions": {
+        "isSelectionSummaryOpenedFromChip": {
+            "expression": "props.subPanelContext.isSelectionSummaryOpenedFromChip === true && !data.isSelectionSummaryLoaded"
+        },
+        "isInSelectionTypeIncomplete": {
+            "expression": "data.typeOfSelectionList.dbValues[0] === 'Incomplete Families'"
+        },
+        "showSelectionSummaryTable": {
+            "expression": "!conditions.isInSelectionTypeIncomplete"
+        },
+        "isInSelectionTypeAll": {
+            "expression": "data.typeOfSelectionList.dbValues[0] === 'All'"
+        },
+        "isInGuidedMode": {
+            "expression": "ctx.fscContext.guidedMode === true"
+        },
+        "isInGuidedModeAndSelectionChangedToTypeAll": {
+            "expression": "parameters.eventData.lovValue.dispValue !== 'User' && conditions.isInGuidedMode"
+        },
+        "needsUpdateAfterLoadUnloadSVR": {
+            "expression": "data.isSelectionSummaryLoaded && data.switchToUserSelections === true && ctx.fscContext.selectedExpressions !== undefined"
+        },
+        "refreshSelectionListForAllSelection": {
+            "expression": "data.isStale && conditions.isInGuidedMode && conditions.isInSelectionTypeAll"
+        },
+        "refreshSelectionListForIncompleteFamilies": {
+            "expression": "data.isStale && conditions.isInGuidedMode && conditions.isInSelectionTypeIncomplete"
+        },
+        "expandForAllSelection": {
+            "expression": "data.isStale && !conditions.isInGuidedMode && conditions.isInSelectionTypeAll || data.allFeaturesList.length === 0 && !conditions.isInGuidedMode && conditions.isInSelectionTypeAll"
+        },
+        "expandForIncompleteFamilies": {
+            "expression": "data.isStale && !conditions.isInGuidedMode && conditions.isInSelectionTypeIncomplete || data.familyList.length === 0 && !conditions.isInGuidedMode && conditions.isInSelectionTypeIncomplete"
+        },
+        "openingSelectionSummaryWithUserSelections": {
+            "expression": "!data.isSelectionSummaryLoaded || data.switchToUserSelections"
+        },
+        "openingIncompleteFamilies": {
+            "expression": "conditions.isSelectionSummaryOpenedFromChip || data.switchToUserSelections"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "Pca0SelectionSummaryDialog.refreshSelectionsDialog",
+            "action": "refreshSelectionSummary"
+        },
+        {
+            "eventId": "Pca0SelectionSummaryDialog.doSelectionSummaryOrIncompleteDataProvider",
+            "action": "doSelectionSummaryOrIncompleteDataProvider"
+        },
+        {
+            "eventId": "customVariantRule.userSelectionChanged",
+            "action": "batchForUserSelection",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Features.SystemSelectionsInManualModeCleared",
+            "action": "batchAfterSystemSelectionsInManualModeCleared"
+        },
+        {
+            "eventId": "Pca0Features.allSelectionsCleared",
+            "action": "clearAllBatchAction"
+        },
+        {
+            "eventId": "Pca0Features.Pca0Expanded",
+            "action": "afterExpandInManualModeBatch",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "typeOfSelectionList.lovValueChanged",
+            "action": "handleTypeOfSelectionChangeBatch",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "selectionSummaryDataProvider.selectionChangeEvent",
+            "inputArgs": {
+                "response": "{{eventData}}"
+            },
+            "action": "handleSelectionChangeForSelectionSummary"
+        },
+        {
+            "eventId": "incompleteFamiliesDataProvider.selectionChangeEvent",
+            "inputArgs": {
+                "response": "{{eventData}}"
+            },
+            "action": "handleSelectionChangeForSelectionSummary"
+        },
+        {
+            "eventId": "Pca0SelectionSummaryDialog.navigateToSelection",
+            "action": "handleSelectionChangeForSelectionSummary"
+        },
+        {
+            "eventId": "Pca0SelectionSummaryDialog.callVCV3ForIncompleteFamilies",
+            "action": "getIncompleteFamiliesListDataBatch"
+        },
+        {
+            "eventId": "columnArrange",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "handleColumnArrange",
+            "criteria": {
+                "name": "selectionSummaryTable"
+            }
+        },
+        {
+            "eventId": "columnArrange",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "handleColumnArrange",
+            "criteria": {
+                "name": "incompleteFamiliesTable"
+            }
+        },
+        {
+            "eventId": "Pca0SelectionSummary.settingsChanged",
+            "action": "applySettingsOnSelectionSummary"
+        }
+    ],
+    "messages": {
+        "selectionSummaryGuidanceMessage": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.selectionSummaryGuidanceMessage}}"
+        }
+    }
+}

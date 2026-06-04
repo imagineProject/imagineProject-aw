@@ -1,0 +1,253 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "sourceObjLink": {
+            "displayName": "{{props.metaData.details.moreSourceObjPopupLink.propertyDisplayName}}",
+            "type": "STRING",
+            "isRequired": "false"
+        },
+        "participantObjLink": {
+            "displayName": "{{props.metaData.details.moreParticipantPopupLink.propertyDisplayName}}",
+            "type": "STRING",
+            "isRequired": "false"
+        },
+        "convStatus": {
+            "propertyDisplayName": "{{props.metaData.details.props.collabStatus.displayValues[0]}}",
+            "displayName": "{{props.metaData.details.props.collabStatus.displayValues[0]}}",
+            "value": "{{props.metaData.details.props.collabStatus.displayValues[0]}}",
+            "type": "STRING"
+        },
+        "collabStatusChangeUser": {
+            "name": "collabStatusChangeUser",
+            "displayName": "{{props.metaData.details.collabStatusChangeUser.propertyDisplayName}}",
+            "value": "{{props.metaData.details.props.collabStatusChangeUser}}",
+            "displayValue": "{{props.metaData.details.props.collabStatusChangeUser.displayValues[0]}}",
+            "type": "STRING"
+        }
+    },
+    "ports": {
+    },
+    "actions": {
+        "noop": {
+            "actionType": "JSFunction",
+            "method": "getRandObjId",
+            "deps": "js/Ac0ConversationService"
+        },
+        "moreSourceObjPopup": {
+            "actionType": "popup",
+            "inputData": {
+                "options": {
+                    "view": "Ac0MoreSourceObjPopup",
+                    "placement": "top-start",
+                    "hasArrow": true,
+                    "whenParentScrolls": "close",
+                    "subPanelContext": {
+                        "srcObjList": "{{props.metaData.details.props.sourceObjList}}"
+                    }
+                }
+            }
+        },
+        "moreParticipantPopup": {
+            "actionType": "popup",
+            "inputData": {
+                "options": {
+                    "view": "Ac0MoreParticipantPopup",
+                    "placement": "top-start",
+                    "hasArrow": true,
+                    "whenParentScrolls": "close",
+                    "subPanelContext": {
+                        "participantUids": "{{props.metaData.details.props.participantUids}}"
+                    }
+                }
+            }
+        },
+        "doShowMoreConvCellCmds": {
+            "actionType": "popup",
+            "inputData": {
+                "options": {
+                    "view": "Ac0MoreConvCellCmdsPopup",
+                    "placement": "bottom-start",
+                    "hasArrow": true,
+                    "whenParentScrolls": "close",
+                    "subPanelContext": {
+                        "discussionItem": "{{props.metaData.details}}"
+                    }
+                }
+            }
+        },
+        "updateSourceObjLink": {
+            "actionType": "JSFunction",
+            "method": "updateMetaObjLinks",
+            "inputData": {
+                "linkData": "{{data.sourceObjLink}}",
+                "text": "{{props.metaData.details.moreSourceObjPopupLink.propertyDisplayName}}"
+            },
+            "outputData": {
+                "sourceObjLink": ""
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+        "updateParticipantLink": {
+            "actionType": "JSFunction",
+            "method": "updateMetaObjLinks",
+            "inputData": {
+                "linkData": "{{data.participantObjLink}}",
+                "text": "{{props.metaData.details.moreParticipantPopupLink.propertyDisplayName}}"
+            },
+            "outputData": {
+                "participantObjLink": ""
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+
+        "updateTrackedInfo": {
+            "actionType": "JSFunction",
+            "method": "updateTrackedInfo",
+            "inputData": {
+                "convStatus": "{{data.convStatus}}",
+                "text": "{{props.metaData.details.props.convStatus}}"
+            },
+            "outputData": {
+                "convStatus": ""
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+
+        "loadConvStatusLOV": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-LOV",
+            "method": "getInitialLOVValues",
+            "inputData": {
+                "initialData": {
+                    "propertyName": "ac0Status",
+                    "lovInput": {
+                        "operationName": "Search",
+                        "boName": "Ac0Conversation"
+                    }
+                }
+            },
+            "outputData": {
+                "statusLOV": "{{function:processStatusLOV}}"
+            },
+            "deps": "js/Ac0CreateCollabObjectService"
+        },
+
+        "updateConvStatusAction": {
+            "actionType": "JSFunctionAsync",
+            "method": "updateConvStatusAction",
+            "deps": "js/Ac0ConversationService",
+            "inputData": {
+                "data": "{{data}}",
+                "props": "{{props}}"
+            }
+        },
+
+        "clickObjChipAction": {
+            "actionType": "Navigate",
+            "navigateTo": "com_siemens_splm_clientfx_tcui_xrt_showObject",
+            "navigationParams": {
+                "uid": "{{props.metaData.details.chipData.objUid}}"
+            }
+        }
+    },
+
+    "functions": {
+        "processStatusLOV": {
+            "functionName": "processStatusLOV",
+            "parameters": [
+                "{{data}}",
+                "{{props.metaData.details}}"
+            ]
+        }
+    },
+
+    "dataProviders": {
+        "convStatusLOVDataProvider": {
+            "dataProviderType": "TcLOV",
+            "action": "loadConvStatusLOV",
+            "response": "{{data.statusLOV}}",
+            "totalFound": "{{data.statusLOV.length}}"
+        }
+    },
+
+    "onEvent": [
+        {
+            "eventId": "awlinkPopup.selected",
+            "cacheEventData": true,
+            "action": "updateConvStatusAction"
+        }
+    ],
+
+    "conditions": {
+        "onFeedTab": {
+            "expression": "ctx.Ac0ConvCtx.selectedTab === 'feedList'"
+        },
+        "isSourceObjVisible":
+        {
+            "expression":"props.metaData.details.props.sourceObjList.dbValues.length > 1 || props.metaData.details.props.sourceObjList.dbValues.length === 1 && ( (props.selecteObj.props.awb0UnderlyingObject && props.selectedObj.props.awb0UnderlyingObject.dbValues[0] === props.metaData.details.props.sourceObjList.dbValues[0].uid) || (props.selectedObj.selectionData.value.selected[0].uid === props.metaData.details.props.sourceObjList.dbValues[0].uid))"
+        },
+        "lovStatusValueUpdated": {
+            "expression": "data.eventData.property.dbValues !== data.eventData.previousSelect"
+        },
+        "inDiscussLocation":
+        {
+            "expression": "(ctx.sublocation.clientScopeURI === 'Ac0CollaborationFeed' || ctx.sublocation.clientScopeURI === 'Ac0CollaborationActions')"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "updateSourceObjLink",
+                "observers": [ "props.metaData.details.moreSourceObjPopupLink.propertyDisplayName" ]
+            },
+            {
+                "action": "updateParticipantLink",
+                "observers": [ "props.metaData.details.moreParticipantPopupLink.propertyDisplayName" ]
+            },
+            {
+                "action": "updateTrackedInfo",
+                "observers": [ "props.metaData.details.props.convStatus.dbValue" ]
+            }
+        ]
+    },
+    "props": {
+        "meta-data": {
+            "type": "object"
+        },
+        "links-format": {
+            "type": "object"
+        },
+        "selected-obj": {
+            "type": "object"
+        },
+        "shared-data-obj": {
+            "type": "object"
+        },
+        "search-state": {
+            "type": "object"
+        },
+        "reply-discussion": {
+            "type": "object"
+        },
+        "details": {
+            "type": "object"
+        },
+        "links-content": {
+            "type": "object"
+        }
+    },
+
+    "ctx": {
+        "preferences": {
+            "type": "object"
+        },
+        "Ac0ConvCtx": {
+            "type": "object"
+        }
+    },
+
+    "i18n": {
+        "graphqlErrorMsg": [ "ActiveCollabDeclarativeMessages" ]
+    }
+}

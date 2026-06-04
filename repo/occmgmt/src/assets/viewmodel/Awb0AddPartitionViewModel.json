@@ -1,0 +1,90 @@
+{
+    "schemaVersion" : "1.0.0",
+    "data":
+    {
+        "addElementState":{
+            "initialValues":{
+                "AddOccurrencePropertiesOnCreate" : false,
+                "parentElements" : [],
+                "parentToLoadAllowedTypes" : null,
+                "siblingElements" : [],
+                "elementCreateInput" : null,
+                "fetchPagedOccurrences" : true,
+                "isCopyButtonEnabled" : false,
+                "previousSelectionUid" : "",
+                "Awb0ElementCreateSubView" : false,
+                "numberOfElements" : 1,
+                "occurrenceTypeName": "PSOccurrence"
+            },
+            "meta": {}
+        }
+    },
+
+    "actions":
+    {
+        "setStateAddElementInputParentElementToSelectedElement":
+        {
+            "actionType": "JSFunction",
+            "method": "setStateAddElementInputParentElementToSelectedElement",
+            "inputData":
+            {
+                "addElementState": "{{data.addElementState}}",
+                "occContext" :"{{subPanelContext.occContext}}"
+            },
+            "outputData": {
+                "addElementState" : ""
+            },
+            "deps": "js/partitionAddPartitionService"
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "closeDialogPanel",
+                    "condition": "conditions.isPwaSelectionChanged"
+                }
+            ]
+        },
+        "closeDialogPanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "CREATE_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "conditions" :{
+        "isParentValid" : {
+            "expression" : "addElementState.parentElements.length>0"
+        },
+        "isPwaSelectionChanged": {
+            "expression": "(subPanelContext.occContext.pwaSelection !== undefined && addElementState.previousSelectionUid !== '' && addElementState.previousSelectionUid !== subPanelContext.occContext.pwaSelection[0].uid) || subPanelContext.occContext.pwaSelection.length > 1"
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "ace.activateWindow",
+            "action": "closeDialogPanel",
+            "condition": "!subPanelContext.panelPinned"
+        },
+        {
+            "eventId": "addElement.closePanel",
+            "action": "closeDialogPanel",
+            "condition": "!subPanelContext.panelPinned"
+        }
+    ],
+    "i18n":
+    {
+       "addPartition": ["OccmgmtPartitionMessages"]
+    },
+    "lifecycleHooks": {
+        "onMount":"setStateAddElementInputParentElementToSelectedElement",
+        "onUpdate":{
+            "action": "closePanelOnSelectionChange",
+            "observers": [ "props.subPanelContext.occContext.pwaSelection" ]
+        }
+    }
+}

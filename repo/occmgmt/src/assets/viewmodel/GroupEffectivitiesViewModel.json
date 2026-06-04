@@ -1,0 +1,115 @@
+{
+    "schemaVersion": "1.0.0",
+    "i18n": {
+        "groupEffectivities": [ "OccurrenceManagementConstants" ],
+        "edit": [ "OccurrenceManagementConstants" ],
+        "editGroupEffTitle": [ "OccurrenceManagementConstants" ]
+    },
+    "data": {
+        "commandGroupEffectivities": "awb0_commandGroupEffectivities",
+        "navViews":{
+            "initialValues": {
+                "items": []
+            },
+            "meta": { }
+        }
+    },
+    "functions": {
+        "removeEffectivityGroups": {
+            "functionName": "removeEffectivityGroups",
+            "parameters": [ "{{data.dataProviders.getAppliedGroupEffectivities.selectedObjects}}", "{{data.eventData.occContext}}" ]
+        }
+    },
+    "dataProviders": {
+        "getAppliedGroupEffectivities": {
+            "action": "getAllAppliedGroupEffectivities",
+            "commandsAnchor": "occmgmt_effectivity_cell_commands",
+            "response": "{{data.groupEffectivitiesApplied}}",
+            "totalFound": "{{data.groupEffectivitiesLength}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+    "actions": {
+        "getAllAppliedGroupEffectivities": {
+            "actionType": "JSFunction",
+            "method": "getAllAppliedGroupEffectivities",
+            "inputData": {
+                "occContext":"{{data.subPanelContext.occContext}}"
+            },
+            "outputData":{
+                "groupEffectivitiesApplied":"groupEffectivitiesApplied",
+                "groupEffectivitiesLength":"groupEffectivitiesLength"
+            },
+            "deps": "js/endItemUnitEffectivityConfigurationService"
+        },
+
+        "getAllAppliedGroupEffectivitiesAction": {
+            "actionType": "dataProvider",
+            "method": "getAppliedGroupEffectivities"
+        },
+        "removeAppliedGroupEffectivities": {
+            "actionType": "JSFunction",
+            "method": "applyEffectivityChange",
+            "inputData":{
+                "value": {
+                    "configContext": {
+                        "r_uid": "{{data.subPanelContext.occContext.productContextInfo.props.awb0CurrentRevRule.dbValues[0]}}",
+                        "eg_uids": "{{function:removeEffectivityGroups}}",
+                        "de": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EffDate.dbValues[0]}}",
+                        "var_uids": "{{data.subPanelContext.occContext.productContextInfo.props.awb0VariantRules.dbValues}}",
+                        "iro_uid": "{{data.subPanelContext.occContext.productContextInfo.props.awb0VariantRuleOwningRev.dbValues[0]}}",
+                        "startDate": "{{data.subPanelContext.occContext.productContextInfo.props.awb0StartEffDates.dbValues[0]}}",
+                        "endDate": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EndEffDates.dbValues[0]}}",
+                        "startFreshNavigation": true,
+                        "modified_param":"eg_uids"
+                    },
+                    "transientRequestPref": {
+                        "jitterFreePropLoad" : true,
+                        "userGesture": "EFFECTIVITY_CHANGE"
+                    }
+                },
+                "occContext":"{{data.subPanelContext.occContext}}"
+            },
+            "deps": "js/endItemUnitEffectivityConfigurationService"
+        },
+        "navigateToEditGroupEffectivity":{
+                "actionType": "JSFunction",
+                "method": "execute",
+                "deps": "js/editGroupEffectivityCommandHandler",
+                "inputData": {
+                    "vmo": "{{data.eventData.vmo}}",
+                    "subPanelContext": "{{props.subPanelContext}}",
+                    "title": "{{i18n.editGroupEffTitle}}"
+                }
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate":
+            {
+                "action": "getAllAppliedGroupEffectivitiesAction",
+                "observers": [ "props.subPanelContext.occContext.productContextInfo.uid" ]
+            }
+    },
+    "onEvent": [
+        {
+            "eventId": "removeGroupEffectivities",
+            "cacheEventData": true,
+            "action": "removeAppliedGroupEffectivities"
+        },
+        {
+            "eventId": "groupEffectivitiesView.groupEffectivitiesRemoved",
+            "action": "getAllAppliedGroupEffectivitiesAction"
+        },
+        {
+            "eventId": "navigateToEditUnitGroupEffectivity",
+            "cacheEventData": true,
+            "action": "navigateToEditGroupEffectivity"
+        }
+
+    ],
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

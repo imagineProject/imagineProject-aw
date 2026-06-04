@@ -1,0 +1,175 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub",
+                "context": {}
+            },
+            "meta": {}
+        },
+        "noPartAvailableMessage":{
+            "displayName": "",
+            "dbValue": "",
+            "type": "STRING",
+            "dispValue": "{{i18n.noPartAvailableMessage}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "alignedPartLabel":{
+            "displayName": "",
+            "dbValue": "",
+            "type": "STRING",
+            "dispValue": "{{i18n.alignedPartLabel}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        }
+    },
+    "actions":{
+        "setActiveView":{
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "getPartRevision": {
+            "actionType": "dataProvider",
+            "method": "getPartRevisionDataProvider"
+        },
+        "getPartRevisionData": {
+            "actionType": "JSFunction",
+            "method": "getRevisionData",
+            "inputData": {
+                "data": "{{data.dataProviders.getPartRevisionDataProvider}}",
+                "createObject": "{{parameters.eventData.createdObject}}",
+                "sourceObjects": "{{parameters.eventData.sourceObjects}}"
+            },
+            "deps": "js/Pma1Utils"
+        },
+        "Pma1RemoveAlignPartCommandAction": {
+            "actionType": "JSFunction",
+            "method": "removeObjects",
+            "inputData": {
+                "dataProvider": "{{parameters.vmo}}"
+            },
+            "deps": "js/Pma1Utils"
+        },
+        "getPartRequiredProperty": {
+            "actionType": "JSFunction",
+            "method": "getPanelProperty",
+            "inputData": {
+                "xrtState": "{{props.subPanelContext.xrtState}}",
+                "suffixes": ["is_partRequired","isPartRequired"]
+            },
+            "outputData": {
+                "isPartRequired": ""
+            },
+            "deps": "js/Pma1Utils"
+        },
+        "getCreateAlignedPartProperty": {
+            "actionType": "JSFunction",
+            "method": "getPanelProperty",
+            "inputData": {
+                "xrtState": "{{props.subPanelContext.xrtState}}",
+                "suffixes": ["createAlignedPart"]
+            },
+            "outputData": {
+                "createAlignedPart": ""
+            },
+            "deps": "js/Pma1Utils"
+        },
+        "initDesignPanel": {
+            "actionType": "JSFunction",
+            "method": "updateSubPanel",
+            "inputData": {
+                "props":"{{props.subPanelContext}}"
+            },
+            "deps": "js/Pma1Utils"
+        },
+        "init": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getPartRequiredProperty",
+                    "condition": "conditions.isCreatePanel"
+                },
+                {
+                    "action": "getCreateAlignedPartProperty",
+                    "condition": "conditions.isAlignPartCustomPanelExists"
+                },
+                {
+                    "action": "initDesignPanel",
+                    "condition": "!conditions.isAlignPartCustomPanelExists"
+                }
+            ]
+        }
+    },
+    "dataProviders": {
+        "getPartRevisionDataProvider": {
+            "response": "",
+            "totalFound": "",
+            "preSelection": false,
+            "selectionModelMode": "single",
+            "commandsAnchor": "aw_removePartCellCommandAction"
+        }
+    },
+    "onEvent":[
+        {
+            "eventId": "addObject.revisionCreated",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "getPartRevisionData"
+        },
+        {
+            "eventId": "pma1.navigateToDesignPanel",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "getPartRevisionData"
+        }
+    ],
+    "conditions": {
+        "isValidCommandSource":{
+            "expression":"ctx.activeNavigationCommand_dialog.commandId !== 'CbaAlignPart' && ctx.activeNavigationCommand_dialog.commandId !== 'CbaAlignDesign'"
+        },
+        "isCreatePanel":{
+            "expression":"conditions.isValidCommandSource && props.subPanelContext.activeState.value.activeView === 'AddObjectPrimarySub'"
+        },
+        "isRevisePanel":{
+            "expression":"conditions.isValidCommandSource && props.subPanelContext.activeState.value.activeView === 'Awp0ShowRevision'"
+        },
+        "isAlignPartCustomPanelVisible":{
+            "expression":"(props.subPanelContext.xrtState.xrtVMO.props[data.isPartRequired].value && !props.subPanelContext.xrtState.xrtVMO.props[data.createAlignedPart].value && conditions.isCreatePanel ) || ( (!props.subPanelContext.xrtState.xrtVMO.props.pma0KeepExistingPart.value && props.subPanelContext.xrtState.xrtVMO.props.pma0KeepExistingPart.fielddata.isEnabled) && conditions.isRevisePanel)"
+        },
+        "isAlignPartCustomPanelExists":{
+            "expression":"conditions.isCreatePanel || conditions.isRevisePanel"
+        },
+        "isAddPartWarningMessageVisible":{
+            "expression":"((props.subPanelContext.xrtState.xrtVMO.props[data.createAlignedPart].value && conditions.isCreatePanel) || ( props.subPanelContext.xrtState.xrtVMO.props.pma0KeepExistingPart.value && conditions.isRevisePanel)) && data.dataProviders.getPartRevisionDataProvider.viewModelCollection.loadedVMObjects.length>0"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount":"init"
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "i18n": {
+        "addPartInfoMessage": [
+            "PMA1AutomationMessages"
+        ],
+        "noPartAvailableMessage":[
+            "PMA1AutomationMessages"
+        ],
+        "alignedPartLabel":[
+            "PMA1AutomationConstants"
+        ]
+    }
+}

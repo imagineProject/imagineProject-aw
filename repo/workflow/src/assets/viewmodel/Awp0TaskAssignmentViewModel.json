@@ -1,0 +1,116 @@
+{
+
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-column.directive",
+        "js/aw-toolbar.directive",
+        "js/aw-widget.directive",
+        "js/aw-panel-body.directive",
+        "js/exist-when.directive",
+        "js/visible-when.directive",
+        "js/aw-row.directive"
+    ],
+
+    "data": {
+        "assignmentState": {
+            "initialValues": {
+                "isStartEditEnabled": false,
+                "isModified": false
+            },
+            "meta": {
+            }
+        },
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+
+    "actions": {
+        "initTableData": {
+            "actionType": "JSFunction",
+            "method": "initTableRenderOptions",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "selectedObject": "{{props.subPanelContext.selected}}"
+            },
+            "outputData": {
+                "treeOperationMode": "treeOperationMode",
+                "renderObject": "renderObject",
+                "isDataInit": "isDataInit"
+            },
+            "deps": "js/Awp0TaskAssignmentTable"
+        },
+        "handleSelectionBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "handleTaskNodeSelection",
+                    "condition": "data.selectionData && data.selectionData.selected && !data.assignmentState.newTaskSelectedUid"
+                }
+            ]
+        },
+        "handleTaskNodeSelection": {
+            "actionType": "JSFunction",
+            "method": "handleTaskNodeSelection",
+            "inputData": {
+                "taskObject": "{{data.selectionData}}",
+                "assignmentState": "{{fields.assignmentState}}",
+                "parentSelectionData": "{{props.subPanelContext.selectionData}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/Awp0TaskAssignmentTable"
+        },
+        "closeCurrentOpenedPanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "functions":
+    {
+
+    },
+    "conditions": {
+        "isAssignmentsTab":{
+            "expression": "subPanelContext.pageContext.primaryActiveTabId === 'tc_xrt_Assignments' || subPanelContext.activeTab.pageId === 'tc_xrt_Assignments'"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initTableData",
+        "onUnmount": "closeCurrentOpenedPanel",
+        "onUpdate": [
+            {
+                "action": "handleSelectionBatchJob",
+                "observers": [ "viewModel.atomicData.selectionData.selected" ]
+            }
+        ]
+    },
+    "ctx": {
+        "activeToolsAndInfoCommand.commandId": null
+    },
+    "props": {
+        "sub-panel-context":{
+            "type": "object"
+        }
+    },
+    "onEvent": [
+    ],
+
+    "i18n": {
+
+    }
+
+}

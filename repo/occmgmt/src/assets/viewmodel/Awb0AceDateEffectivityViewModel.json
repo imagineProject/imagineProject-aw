@@ -1,0 +1,711 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "data": {
+        "flag": {
+            "type": "STRING",
+            "dbValue": "{{props.subPanelContext.data.flag.dbValue}}"
+        },
+        "isShared": {
+            "displayName": "{{i18n.shareEffectivity}}",
+            "type":"BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": "{{props.subPanelContext.sharedData.isShared.dbValue}}"
+        },
+        "nameBox": {
+            "displayName": "{{i18n.name}}",
+            "type": "STRING",
+            "dbValue": "{{props.subPanelContext.sharedData.nameBox.dbValue}}",
+            "isRequired": "true",
+            "maxLength": 32
+        },
+        "startDate": {
+            "dbValue": "{{props.subPanelContext.sharedData.startDate.dbValue}}",
+            "type": "DATETIME",
+            "isRequired": "true",
+            "displayName": "{{i18n.startDate}}",
+            "isEditable": "true"
+        },
+
+        "endDate": {
+            "dbValue": "{{props.subPanelContext.sharedData.endDate.dbValue}}",
+            "uiValue": "{{props.subPanelContext.sharedData.endDate.uiValue}}",
+            "type": "{{props.subPanelContext.sharedData.endDate.type}}",
+            "isRequired": "true",
+            "validationCriteria": [ {
+                "condition": "data.endDate.dbValue !== '' && !conditions.isEndDateGreaterThanStartDate",
+                "value": "{{i18n.dateRangeInvalidMessage}}"
+            } ]
+        },
+        "endDateList": {
+            "type": "STRING",
+            "dbValue": [
+                { "propDisplayValue": "{{i18n.dateEffectivity}}", "propInternalValue": "Date" },
+                { "propDisplayValue": "{{i18n.upText}}", "propInternalValue": "UP" },
+                { "propDisplayValue": "{{i18n.soText}}", "propInternalValue": "SO" }
+            ]
+        },
+        "endDateOptions": {
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": true,
+            "displayName": "{{i18n.endDate}}",
+            "isEditable": "true",
+            "dbValue": "{{props.subPanelContext.sharedData.endDateOptions.dbValue}}",
+            "uiValue": "{{props.subPanelContext.sharedData.endDateOptions.uiValue}}"
+        },
+        "isProtected": {
+            "displayName": "{{i18n.protect}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": "{{props.subPanelContext.sharedData.isProtected.dbValue}}"
+        },
+        "endItemLabel": {
+            "displayName": "{{i18n.endItemMessage}}",
+            "type": "STRING"
+        },
+        "navigateCommand": {
+            "action": "navigateToEndItemPanelAction",
+            "iconName": "Replace",
+            "tooltip": "{{i18n.replaceElementBtn}}"
+        },
+        "endItemValForDate": {
+            "type": "STRING",
+            "uiValue": "{{props.subPanelContext.sharedData.endItemValForDate.uiValue}}",
+            "dbValue": "{{props.subPanelContext.sharedData.endItemValForDate.dbValue}}",
+            "isRequired": "true",
+            "displayName": "{{i18n.endItemMessage}}"
+        }
+    },
+    "i18n": {
+        "dateEffectivity": [
+            "OccurrenceManagementConstants"
+        ],
+        "shareEffectivity": [
+            "OccurrenceManagementConstants"
+        ],
+        "name": [
+            "OccurrenceManagementConstants"
+        ],
+        "upText": [
+            "OccurrenceManagementConstants"
+        ],
+        "soText": [
+            "OccurrenceManagementConstants"
+        ],
+        "startDate": [
+            "OccurrenceManagementConstants"
+        ],
+        "endDate": [
+            "OccurrenceManagementConstants"
+        ],
+        "dateEffectivityPlaceholder": [
+            "OccurrenceManagementConstants"
+        ],
+        "protect": [
+            "OccurrenceManagementConstants"
+        ],
+        "addElementBtn": [
+            "OccurrenceManagementConstants"
+        ],
+        "saveButtonText": [
+            "OccurrenceManagementConstants"
+        ],
+        "dateRangeInvalidMessage": [
+            "OccurrenceManagementMessages"
+        ],
+        "effectivitesSuccessfullyApplied":
+        [
+            "OccurrenceManagementMessages"
+        ],
+        "genericServerError":
+        [
+            "OccurrenceManagementMessages"
+        ],
+        "endItemMessage": [
+            "OccurrenceManagementConstants"
+        ],
+        "replaceElementBtn": [
+            "OccurrenceManagementConstants"
+        ]
+    },
+    "actions": {
+        "authorEffectivityClicked": {
+            "actionType":"JSFunction",
+            "method":"saveElementEffectivity",
+            "inputData":{
+                "elements": "{{props.subPanelContext.occContext.pwaSelection}}",
+                "operationType": "AUTHOR"
+            },
+            "outputData":{
+            },
+            "deps": "js/aceEffectivityService"
+        },
+        "editEffectivityClicked": {
+            "actionType":"JSFunction",
+            "method":"saveElementEffectivity",
+            "inputData":{
+                "elements": "{{props.subPanelContext.occContext.pwaSelection}}",
+                "operationType": "EDIT"
+            },
+            "outputData":{
+            },
+            "deps": "js/aceEffectivityService"
+        },
+        "onUpdateEndDateBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "onUpdateEndDate",
+                    "condition": "data.startDate.uiValue!== '' && data.endDate.dbValue!== ''"
+                }
+            ]
+        },
+        "onUpdateEndDate": {
+            "actionType": "JSFunction",
+            "method": "updateField",
+            "inputData": {
+                "fields": "{{fields}}",
+                "fieldNameToValidate": "endDate"
+            },
+            "deps": "js/occmgmtUtils"
+        },
+        "onUpdateShareCheckboxBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "onUpdateShareCheckbox",
+                    "condition": "fields.nameBox.touched === 'true'"
+                },
+                {
+                    "action": "updateShareRequiredField"
+                }
+            ]
+        },
+        "updateShareRequiredField": {
+            "actionType": "JSFunction",
+            "method": "updateNameBox",
+            "inputData": {
+                "fields": "{{fields}}",
+                "fieldNameToValidate": "nameBox",
+                "data": "{{data}}"
+            },
+            "deps": "js/aceEffectivityService"
+        },
+        "onUpdateShareCheckbox": {
+            "actionType": "JSFunction",
+            "method": "updateField",
+            "inputData": {
+                "fields": "{{fields}}",
+                "fieldNameToValidate": "nameBox"
+            },
+            "deps": "js/occmgmtUtils"
+        },
+        "updateIsProtectedValue": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "inputData": {
+                "path": "",
+                "value": {
+                    "isProtected": {
+                        "dbValue": "{{data.isProtected.dbValue}}"
+                    }
+                },
+                "target": "{{props.subPanelContext.sharedData}}"
+            },
+            "deps": "js/occmgmtUtils"
+        },
+        "authorEffectivity": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2020-12-OccurrenceManagement",
+            "method": "createAndAddElementEffectivity2",
+            "inputData": {
+                "input": {
+                    "elements": "{{props.subPanelContext.occContext.pwaSelection}}",
+                    "effectivityInfo": {
+                        "name": "{{function:getEffectivityName}}",
+                        "endItemRev": {
+                            "uid": "{{props.subPanelContext.sharedData.endItemValForDate.endItem.uid}}",
+                            "type": "{{props.subPanelContext.sharedData.endItemValForDate.endItem.type}}"
+                        },
+                        "unitRangeText": "",
+                        "dateRange": "{{function:getDateRangeText}}",
+                        "openEndedStatus": "{{data.endDate.openEndedStatus}}",
+                        "isProtected": "{{fields.isProtected.value}}",
+                        "isShared": "{{fields.isShared.value}}"
+                    },
+                    "effectivityResponseCriteria" : ""
+                }
+            },
+            "outputData": {
+                "effResp" : ""
+            },
+            "deps": "js/sharedEffectivityService",
+            "events": {
+                "success": [ {
+                        "name": "occurrenceUpdatedByEffectivityEvent",
+                        "eventData": {
+                            "updated": "{{data.effResp.ServiceData.updated}}",
+                            "deleted": "{{data.effResp.ServiceData.deleted}}",
+                            "viewToReact": "{{props.subPanelContext.provider.contextKey}}",
+                            "addedEffectivities": "",
+                            "state": "COMPLETED",
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "clearEffectivityFieldsEvent"
+                    },
+                    {
+                        "name": "closeDateEffectivityPanel",
+                        "condition": "data.effResp.ServiceData.updated && data.effResp.ServiceData.deleted.includes(ctx.selected.uid)"
+                    },
+                    {
+                        "name": "navigateToDisplayandRemovePanelEvent",
+                        "condition": "data.effResp.ServiceData.updated && data.effResp.ServiceData.updated.includes(ctx.selected.uid)"
+                    },
+                    {
+                        "name": "aceElementsDeSelectedEvent",
+                        "eventData": {
+                            "elementsToDeselect": "{{props.subPanelContext.occContext.pwaSelection}}"
+                        },
+                        "condition": "data.effResp.ServiceData.deleted && data.effResp.ServiceData.deleted.includes(ctx.selected.uid)"
+                    }
+                ],
+                "failure": [ {
+                    "name": "failedToAuthorEffectivityEvent",
+                    "eventData": {
+                        "effResp": "{{data.effResp}}"
+                    }
+                } ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "failedToCreateElementEffectivity"
+                    }
+                ],
+                "success": [
+                    {
+                        "condition": "props.subPanelContext.occContext.pwaSelection.length > 1",
+                        "message": "succsessfullyAddedEffectivityMessage"
+                    }
+                ]
+            }
+        },
+        "authorRevisionEffectivity": {
+            "actionType": "TcSoaService",
+            "serviceName": "StructureManagement-2014-12-Effectivity",
+            "method": "createReleaseStatusEffectivity",
+            "inputData": {
+                "input": [ {
+                    "releaseStatus": {
+                        "uid": "{{props.subPanelContext.sharedData.releaseStatus.uid}}",
+                        "type": "{{props.subPanelContext.sharedData.releaseStatus.type}}"
+                    },
+                    "effectivityInfoInput": {
+                        "effectivityId": "{{function:getEffectivityName}}",
+                        "endItem": {
+                            "uid": "{{props.subPanelContext.sharedData.endItemValForDate.endItem.uid}}",
+                            "type": "{{props.subPanelContext.sharedData.endItemValForDate.endItem.type}}"
+                        },
+                        "unitRangeText": "",
+                        "dateRange": "{{function:getDateRangeText}}",
+                        "openEndedStatus": "{{data.endDate.openEndedStatus}}",
+                        "isProtected": "{{fields.isProtected.value}}"
+                    }
+                } ]
+            },
+            "outputData": {
+                "ServiceData" : ""
+            },
+            "events": {
+                "success": [ {
+                        "name": "releaseStatusUpdatedByEffectivityEvent"
+                    },
+                    {
+                        "name": "clearEffectivityFieldsEvent"
+                    },
+                    {
+                        "name": "navigateToDisplayandRemoveRelEffPanelEvent"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "failedToCreateReleaseEffectivity"
+                    }
+                ]
+            },
+            "deps": "js/sharedEffectivityService"
+        },
+        "editEffectivity": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2017-06-OccurrenceManagement",
+            "method": "editElementEffectivity",
+            "inputData": {
+                "input": {
+                    "element": {
+                        "uid": "{{props.subPanelContext.occContext.pwaSelection[0].uid}}",
+                        "type": "{{props.subPanelContext.occContext.pwaSelection[0].type}}"
+                    },
+                    "effectivity": {
+                        "uid": "{{props.subPanelContext.sharedData.selectedCell.uid}}",
+                        "type": "{{props.subPanelContext.sharedData.selectedCell.type}}"
+                    },
+                    "effectivityInfo": {
+                        "name": "{{function:getEffectivityName}}",
+                        "endItemRev": {
+                            "uid": "{{props.subPanelContext.sharedData.endItemValForDate.endItem.uid}}",
+                            "type": "{{props.subPanelContext.sharedData.endItemValForDate.endItem.type}}"
+                        },
+                        "unitRangeText": "",
+                        "dateRange": "{{function:getDateRangeText}}",
+                        "openEndedStatus": "{{data.endDate.openEndedStatus}}",
+                        "isProtected": "{{fields.isProtected.value}}",
+                        "isShared": "{{fields.isShared.value}}"
+                    }
+                }
+            },
+            "outputData": {
+                "editEffResp": ""
+            },
+            "events": {
+                "success": [ {
+                        "name": "occurrenceUpdatedByEffectivityEvent",
+                        "eventData": {
+                            "updated": "{{data.editEffResp.updated}}",
+                            "deleted": "{{data.editEffResp.deleted}}",
+                            "viewToReact": "{{props.subPanelContext.provider.contextKey}}",
+                            "addedEffectivities": "",
+                            "state": "COMPLETED",
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "clearEffectivityFieldsEvent"
+                    },
+                    {
+                        "name": "closeDateEffectivityPanel",
+                        "condition": "data.editEffResp.deleted && data.editEffResp.deleted.includes(ctx.selected.uid)"
+                    },
+                    {
+                        "name": "navigateToDisplayandRemovePanelEvent",
+                        "condition": "data.editEffResp.updated && data.editEffResp.updated.includes(ctx.selected.uid)"
+                    },
+                    {
+                        "name": "aceElementsDeSelectedEvent",
+                        "eventData": {
+                            "elementsToDeselect": "{{ctx.selected}}"
+                        },
+                        "condition": "data.editEffResp.deleted && data.editEffResp.deleted.includes(ctx.selected.uid)"
+                    }
+                ],
+                "failure": [ {
+                    "name": "failedToEditEffectivityEvent",
+                    "eventData": {
+                        "editEffResp": "{{data.editEffResp}}"
+                    }
+                } ]
+            },
+
+            "actionMessages": {
+                "failure": [ {
+                    "message": "failedToUpdateElementEffectivity"
+                }
+                ]
+            },
+
+            "deps": "js/sharedEffectivityService"
+        },
+        "editRevisionEffectivity": {
+            "actionType": "TcSoaService",
+            "serviceName": "StructureManagement-2015-10-Effectivity",
+            "method": "editReleaseStatusEffectivity",
+            "inputData": {
+                "input": [ {
+                    "releaseStatus": {
+                        "uid": "{{props.subPanelContext.sharedData.releaseStatus.uid}}",
+                        "type": "{{props.subPanelContext.sharedData.releaseStatus.type}}"
+                    },
+                    "effectivityComponent": {
+                        "uid": "{{props.subPanelContext.sharedData.selectedCell.uid}}",
+                        "type": "{{props.subPanelContext.sharedData.selectedCell.type}}"
+                    },
+                    "effectivityInfoInput": {
+                        "effectivityId": "{{function:getEffectivityName}}",
+                        "endItem": {
+                            "uid": "{{props.subPanelContext.sharedData.endItemValForDate.endItem.uid}}",
+                            "type": "{{props.subPanelContext.sharedData.endItemValForDate.endItem.type}}"
+                        },
+                        "unitRangeText": "",
+                        "dateRange": "{{function:getDateRangeText}}",
+                        "openEndedStatus": "{{data.endDate.openEndedStatus}}",
+                        "isProtected": "{{fields.isProtected.value}}"
+                    }
+                } ]
+            },
+            "outputData": {
+                "ServiceData": ""
+            },
+            "events": {
+                "success": [ {
+                        "name": "releaseStatusUpdatedByEffectivityEvent"
+                    },
+                    {
+                        "name": "clearEffectivityFieldsEvent"
+                    },
+                    {
+                        "name": "navigateToDisplayandRemoveRelEffPanelEvent"
+                    }
+
+                ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "failedToUpdateReleaseEffectivity"
+                }
+                ]
+            },
+            "deps": "js/sharedEffectivityService"
+        },
+        "refreshSelectedObject": {
+            "actionType": "JSFunction",
+            "method": "updateEffectivities",
+            "inputData": {
+                "selectedModelObject": "{{ctx.selected}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/sharedEffectivityService"
+        },
+        "navigateToDisplayandRemovePanelAction": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "inputData": {
+                "path": "",
+                "value": {
+                    "previousView": "{{props.subPanelContext.sharedData.activeView}}",
+                    "activeView": "DisplayAndRemoveEffectivities"
+                },
+                "target": "{{props.subPanelContext.sharedData}}"
+            },
+            "deps": "js/occmgmtUtils"
+        },
+        "navigateToDisplayandRemoveRelEffPanelAction": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "inputData": {
+                "path": "",
+                "value": {
+
+                    "previousView": "{{props.subPanelContext.sharedData.activeView}}",
+                    "activeView": "DisplayAndRemoveEffectivitiesForRelStatus"
+                },
+                "target": "{{props.subPanelContext.sharedData}}"
+            },
+            "deps": "js/occmgmtUtils"
+        },
+        "updateProtectCheckBoxOnData": {
+            "actionType": "JSFunction",
+            "method": "updateProtectCheckBoxOnData",
+            "inputData": {
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "data":"{{data}}"
+            },
+            "outputData": {
+                "isProtected.dbValue": ""
+            },
+            "deps": "js/aceEffectivityService"
+        },
+        "navigateToEndItemPanelAction": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "inputData": {
+                "path": "",
+                "value": {
+                    "isShared":
+                    {
+                        "dbValue":"{{data.isShared.dbValue}}",
+                        "type": "BOOLEAN"
+                    },
+                    "nameBox":
+                    {
+                        "dbValue":"{{data.nameBox.dbValue}}"
+                    },
+                    "startDate":
+                    {
+                        "dbValue":"{{data.startDate.dbValue}}"
+                    },
+                    "endDate":
+                    {
+                        "dbValue":"{{data.endDate.dbValue}}",
+                        "type": "{{props.subPanelContext.sharedData.endDate.type}}"
+                    },
+                    "endDateOptions":
+                    {
+                        "dbValue":"{{data.endDateOptions.dbValue}}",
+                        "uiValue":"{{data.endDateOptions.uiValue}}"
+                    },
+                    "isProtected":
+                    {
+                        "dbValue":"{{data.isProtected.dbValue}}",
+                        "type": "BOOLEAN"
+                    },
+                    "previousView": "{{props.subPanelContext.sharedData.activeView}}",
+                    "activeView": "AuthorEffectivityEndItemPanel",
+                    "isDateOrUnitEff": true
+                },
+                "target": "{{props.subPanelContext.sharedData}}"
+            },
+            "deps": "js/occmgmtUtils"
+        },
+        "clearEffectivityFields": {
+            "actionType": "JSFunction",
+            "method": "clearAllEffectivityFields",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "i18n":"{{i18n}}",
+                "data": "{{data}}"
+            },
+            "deps": "js/aceEffectivityService"
+        },
+        "closeDateEffectivityPanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "conditions": {
+        "isEndDateGreaterThanStartDate": {
+            "expression": "data.endDate.dbValue > data.startDate.dbValue"
+        },
+        "isEqualDate": {
+            "expression": "(data.endDate.dbValue !== '' && data.startDate.dbValue !== '' ) && (data.endDate.dbValue - data.startDate.dbValue) === 0"
+        },
+        "isValidStartAndEndDate": {
+            "expression": "(data.startDate.dbValue !== '' && (data.endDateOptions.dbValue !== 'Date' || (data.endDate.dbValue !== '' && conditions.isEndDateGreaterThanStartDate && !conditions.isEqualDate)))"
+        },
+        "dateOrUnitEffectivityTypeRadioButton": {
+            "expression": "props.subPanelContext.sharedData.dateOrUnitEffectivityTypeRadioButton.dbValue",
+            "trackValues": true
+        },
+        "isValidEffectivityPanel": {
+            "expression": "(!data.isShared.dbValue || data.isShared.dbValue === 'false' || data.nameBox.dbValue ) && conditions.isValidStartAndEndDate"
+        },
+        "isRevisionEffectivity": {
+            "expression": "data.flag.dbValue === 'AUTHORREVISION'"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount":"updateProtectCheckBoxOnData",
+        "onUpdate": [
+            {
+                "action": "onUpdateEndDateBatchJob",
+                "observers": ["viewModel.data.endDate.dbValue", "viewModel.data.startDate.dbValue"]
+            },
+            {
+                "action": "onUpdateShareCheckboxBatchJob",
+                "observers": ["viewModel.data.isShared.dbValue"]
+            }
+        ]
+    },
+    "onEvent": [
+        {
+            "eventId": "saveEventForElemEffAuthor",
+            "action": "authorEffectivity"
+        },
+        {
+            "eventId": "saveEventForElemEffEdit",
+            "action": "editEffectivity"
+        },
+        {
+            "eventId": "releaseStatusUpdatedByEffectivityEvent",
+            "action": "refreshSelectedObject",
+            "condition": "props.subPanelContext.sharedData.activeView === 'AddReleaseStatusEffectivities' || props.subPanelContext.sharedData.activeView === 'EditEffectivities'"
+        },
+        {
+            "eventId": "navigateToDisplayandRemovePanelEvent",
+            "action": "navigateToDisplayandRemovePanelAction"
+        },
+        {
+            "eventId": "navigateToDisplayandRemoveRelEffPanelEvent",
+            "action": "navigateToDisplayandRemoveRelEffPanelAction"
+        },
+        {
+            "eventId": "clearEffectivityFieldsEvent",
+            "action": "clearEffectivityFields"
+        },
+        {
+            "eventId": "closeDateEffectivityPanel",
+            "action": "closeDateEffectivityPanel"
+        }
+    ],
+    "functions": {
+        "getEffectivityName": {
+            "functionName": "getEffectivityName",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getDateRangeText": {
+            "functionName": "getDateRangeText",
+            "parameters": [
+                "{{data}}",
+                "{{props.subPanelContext}}"
+            ]
+        }
+    },
+    "messages": {
+       "succsessfullyAddedEffectivityMessage":
+        {
+            "messageType": "INFO",
+            "messageText": "{{i18n.effectivitesSuccessfullyApplied}}",
+            "messageTextParams":
+            [
+                "{{props.subPanelContext.occContext.pwaSelection.length}}"
+            ]
+        },
+        "failedToCreateElementEffectivity": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.genericServerError}}",
+            "messageTextParams": [
+                "{{data.effResp.ServiceData.partialErrors[0].errorValues[0].message}}"
+            ]
+        },
+        "failedToUpdateElementEffectivity": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.genericServerError}}",
+            "messageTextParams": [
+                "{{data.editEffResp.partialErrors[0].errorValues[0].message}}"
+            ]
+        },
+        "failedToCreateReleaseEffectivity": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.genericServerError}}",
+            "messageTextParams": [
+                "{{data.ServiceData.partialErrors[0].errorValues[0].message}}"
+            ]
+        },
+        "failedToUpdateReleaseEffectivity": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.genericServerError}}",
+            "messageTextParams": [
+                "{{data.ServiceData.partialErrors[0].errorValues[0].message}}"
+            ]
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

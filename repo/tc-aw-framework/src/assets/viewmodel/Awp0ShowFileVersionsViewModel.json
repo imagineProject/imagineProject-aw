@@ -1,0 +1,125 @@
+{
+    "actions": {
+        "downloadFile": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/command.service",
+            "method": "executeCommand",
+            "inputData": {
+                "0": "Awp0ShowObjectCellDataset",
+                "1": "",
+                "2": "",
+                "3": {
+                    "vmo": "{{data.selectionData.selected[0]}}"
+                },
+                "4": "{{parameters.commandActionExecutor.runActionWithViewModel}}"
+            }
+        },
+        "restoreVersionHandler": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "restoreVersion"
+            }, {
+                "action": "notifyVmoChange"
+            } ]
+        },
+        "restoreVersion": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/fileVersion.service",
+            "method": "restoreFileVersion",
+            "inputData": {
+                "0": {
+                    "target": "{{data.datasetVMO}}",
+                    "parent": "{{subPanelContext.selectionData.pselected}}",
+                    "version": "{{data.selectionData.selected[0]}}"
+                }
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "restoreFailureMessage"
+                } ]
+            }
+        },
+        "updateDatasetVMO": {
+            "actionType": "JSFunction",
+            "method": "setDatasetVMOFromSelection",
+            "deps": "js/fileVersion.service",
+            "inputData": {
+                "selectionData": "{{subPanelContext.selectionData}}",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "outputData": {
+                "datasetVMO": ""
+            }
+        },
+        "notifyVmoChange": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "datasetVersionsToRenderUpdate",
+                    "excludeLocalDataCtx": true,
+                    "eventData": {}
+                } ]
+            }
+        },
+        "resetFileUploadState":{
+            "actionType": "JSFunction",
+            "method": "resetFileUploadState",
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "data": {
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "DatasetHistoryWithSummary",
+                "context": {}
+            },
+            "meta": {}
+        }
+    },
+    "i18n": {
+        "DownloadVersionButton": [
+            "FileVersionsMessages"
+        ],
+        "RestoreVersionButton": [
+            "FileVersionsMessages"
+        ],
+        "FileVersionsPanelHeader": [
+            "FileVersionsMessages"
+        ],
+        "RestoreFailureMessage": [
+            "FileVersionsMessages"
+        ],
+        "BACK_BUTTON_TITLE": [
+            "BaseMessages"
+        ]
+    },
+    "lifecycleHooks": {
+        "onMount": "resetFileUploadState",
+        "onUpdate": {
+            "action": "updateDatasetVMO",
+            "observers": [ "props.subPanelContext.selectionData.selected", "props.subPanelContext.selectionData.selected[0].props.revision_number.dbValue" ]
+        }
+    },
+    "onEvent": [],
+    "messages": {
+        "restoreFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.RestoreFailureMessage}}",
+            "messageTextParams": []
+        }
+    },
+    "conditions": {
+        "isPanelObjectModifiable": {
+            "expression": "!data.datasetVMO.props.checked_out_user.dbValue || data.datasetVMO.props.checked_out_user.dbValue === ctx.user.uid"
+        },
+        "isOlderRevisionSelected": {
+            "expression": "data.selectionData.selected[0] && data.selectionData.selected[0].props.revision_number.dbValue !== data.datasetVMO.props.revision_number.dbValue"
+        }
+    },
+    "schemaVersion": "1.0.0"
+}

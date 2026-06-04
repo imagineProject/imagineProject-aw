@@ -1,0 +1,51 @@
+<aw-command-panel caption="i18n.compareTitle" context="subPanelContext">
+    <aw-panel-body>
+        <aw-widget prop="data.compareOption"></aw-widget>
+        <aw-break> </aw-break>
+        <aw-panel-section name="options" caption="i18n.CompareOptions" collapsed="{{subPanelContext.compareContext.isInCompareMode && !(data.isSourcePanelCollapsed && data.isTargetPanelCollapsed)}}">
+            <aw-label prop="data.displayOptionsTitle"></aw-label>
+            <aw-checkbox class="aw-comparesplitviewjs-checkboxLegend aw-comparesplitviewjs-matched" prop="data.FULL_MATCH" action="updateFullMatch" ></aw-checkbox>
+            <aw-checkbox class="aw-comparesplitviewjs-checkboxLegend aw-comparesplitviewjs-different" prop="data.PARTIAL_MATCH" action="updatePartialMatch" ></aw-checkbox>
+            <aw-checkbox class="aw-comparesplitviewjs-checkboxLegend aw-comparesplitviewjs-multipleMatch" prop="data.MULTIPLE_MATCH" action="updateMultipleMatch" visible-when="!conditions.isPartitionSchemeApplied" ></aw-checkbox>
+            <aw-checkbox class="aw-comparesplitviewjs-checkboxLegend aw-comparesplitviewjs-uniqueInSource" prop="data.MISSING_TARGET" action="updateMissingTarget" ></aw-checkbox>
+            <aw-checkbox class="aw-comparesplitviewjs-checkboxLegend aw-comparesplitviewjs-uniqueInTarget" prop="data.MISSING_SOURCE" action="updateMissingSource" ></aw-checkbox>
+
+            <aw-label prop="data.equivalenceTitle" visible-when="conditions.isEquivalenceSectionVisible"></aw-label>
+            <aw-checkbox prop="data.AC_DYNAMIC_IDIC" action="updateDynamicIDIC" visible-when="conditions.isEquivalenceSectionVisible"></aw-checkbox>
+        </aw-panel-section>
+        <aw-widget prop="data.actionLabel" modifiable="false" exist-when="subPanelContext.compareContext.isCompareRequestInProgress && !subPanelContext.compareContext.isComparePaginationInProgress" labeldisplay="Headless"></aw-widget>
+        <aw-label prop="data.resultsLabel" exist-when="(subPanelContext.compareContext.isInCompareMode || subPanelContext.compareContext.isInMultiLevelCompare)"></aw-label>
+        <aw-label prop="data.timestampLabel" exist-when="subPanelContext.compareContext.timestampOfStoredResults !== '' && (subPanelContext.compareContext.isInCompareMode || subPanelContext.compareContext.isInMultiLevelCompare) && !conditions.isPartitionSchemeApplied"></aw-label>
+        <aw-panel-section class="sw-constrained aw-compareResults-source" name="source" exist-when="(subPanelContext.compareContext.isInCompareMode || subPanelContext.compareContext.isInMultiLevelCompare)" caption="{{data.sourceTitle}}" collapsed="{{data.isSourcePanelCollapsed}}">
+            <div class="aw-widgets-propertyContainer" exist-when="subPanelContext.occContext.supportedFeatures.Awb0DisplayRevisionRuleCompareFeature === true && ctx.occmgmtContext.productContextInfo.props.awb0CurrentRevRule.dbValues[0] != ctx.occmgmtContext2.productContextInfo.props.awb0CurrentRevRule.dbValues[0]">
+                <label class="aw-widgets-propertyLabelTop aw-base-small">{{i18n.RevisionRule}}:</label>
+                <label class="aw-comparesplitviewjs-revrule aw-widgets-propertyValContainer aw-base-small">{{subPanelContext.occContext.productContextInfo.props.awb0CurrentRevRule.uiValues[0]}}</label>
+            </div>
+            <aw-list show-decorators="true" dataprovider="data.dataProviders.getSourceDiffResults">
+                <aw-default-cell vmo="item"></aw-default-cell>
+            </aw-list>
+            <label class="aw-noResult-section" exist-when="subPanelContext.compareContext.sourceDifferences.length === 0">{{i18n.emptyCompareResults}}</label>
+        </aw-panel-section>
+        <aw-panel-section class="sw-constrained aw-compareResults-target" name="target" exist-when="subPanelContext.compareContext.isInCompareMode || subPanelContext.compareContext.isInMultiLevelCompare" caption="{{data.targetTitle}}" collapsed="{{data.isTargetPanelCollapsed}}">
+            <div class="aw-widgets-propertyContainer" exist-when="subPanelContext.occContext.supportedFeatures.Awb0DisplayRevisionRuleCompareFeature === true && ctx.occmgmtContext.productContextInfo.props.awb0CurrentRevRule.dbValues[0] != ctx.occmgmtContext2.productContextInfo.props.awb0CurrentRevRule.dbValues[0]">
+                <label class="aw-widgets-propertyLabelTop aw-base-small">{{i18n.RevisionRule}}:</label>
+                <label class="aw-comparesplitviewjs-revrule aw-widgets-propertyValContainer aw-base-small">{{ctx.occmgmtContext2.productContextInfo.props.awb0CurrentRevRule.uiValues[0]}}</label>
+            </div>
+            <aw-list show-decorators="true" dataprovider="data.dataProviders.getTargetDiffResults">
+                <aw-default-cell vmo="item"></aw-default-cell>
+            </aw-list>
+            <label class="aw-noResult-section" exist-when="subPanelContext.compareContext.targetDifferences.length === 0">{{i18n.emptyCompareResults}}</label>
+        </aw-panel-section>
+    </aw-panel-body>
+    <aw-panel-footer>
+        <div class="sw-flex-row" enable-when="!conditions.isPartitionSchemeApplied">
+            <aw-checkbox prop="data.generateReport"></aw-checkbox>
+        </div>
+        <div class="sw-flex-row">
+            <aw-checkbox prop="data.backgroundOption" exist-when="conditions.isClientDispatcherInstalled && ( data.compareOption.dbValue < 0 || data.compareOption.dbValue == 2 )"></aw-checkbox>
+        </div>
+        <aw-button size="auto" action="performCompare" visible-when=true enable-when="conditions.isCompareButtonEnable">
+            <aw-i18n>i18n.compareButtonTitle</aw-i18n>
+        </aw-button>
+    </aw-panel-footer>
+</aw-command-panel>

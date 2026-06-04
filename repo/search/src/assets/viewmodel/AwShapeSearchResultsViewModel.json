@@ -1,0 +1,135 @@
+{
+    "schemaVersion" : "1.0.0",
+    "lifecycleHooks": {
+        "onMount": "initializeShapeSearch",
+        "onUpdate": {
+            "action": "openCloseFilterPanelAction",
+            "observers": [
+                "viewModel.searchState.categories"
+            ]
+        }
+    },
+    "data":{
+        "_provider": {
+            "breadcrumbConfig": {
+                "type" : "search",
+                "vm" : "AwShapeSearchBreadcrumb",
+                "noUpdate": true,
+                "popuplist": "/html/defaultbreadcrumblist.html" ,
+                "overflowIndex": 0
+            },
+            "clientScopeURI": "Awp0ShapeSearchResults",
+            "nameToken": "com.siemens.splm.client.search:ShapeSearchResultsSubLocation",
+            "context": {
+                "search": {
+                    "provider": "SS1ShapeSearchDataProvider",
+                    "chartTitle": {
+                        "source": "/i18n/SearchMessages",
+                        "key": "SearchResultsChartTitle"
+                    },
+                    "criteria": {
+                        "forceThreshold": "false",
+                        "searchFromLocation": "global",
+                        "dcpSortByDataProvider": "true"
+                    },
+                    "showLoadingText": true,
+                    "showChartColorBars": true,
+                    "selectFirstObjectPreference": "AWC_select_firstobject_inSearchLocation",
+                    "showNoCriteriaMessage": true,
+                    "skipFiltersForClearAll": [ "SS1partShapeFilter", "SS1shapeBeginFilter", "SS1shapeEndFilter" ]
+                }
+            },
+            "viewBase": "AwShapeSearchResults"
+        },
+        "searchState": {
+            "initialValues": {
+                "pwaSelection": []
+            },
+            "meta": {
+                "categories": [ {
+                    "filterValues": [ {
+                        "selected": {
+                            "field": "true",
+                            "type": "ViewModelProperty"
+                        }
+                    } ]
+                } ]
+            }
+        }
+
+    },
+    "actions":
+    {
+        "activateShapesAction": {
+            "actionType": "JSFunctionAsync",
+            "method": "activateShapeSearchAction",
+            "inputData": {
+                "searchState": "{{fields.searchState}}",
+                "subPanelContext":"{{subPanelContext}}",
+                "searchResultDialogAction": "{{actions.ShapeSearchResultDialogAction}}"
+            },
+            "deps": "js/Awp0ShapeSearchService"
+
+        },
+        "ShapeSearchResultDialogAction": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view":"SS1ShapeSearchInShapeLocation",
+                    "placement": "left",
+                    "push": true,
+                    "parent": ".aw-layout-workarea",
+                    "width": "SMALL",
+                    "height": "FULL",
+                    "isCloseVisible": false
+                }
+            }
+        },
+        "initializeShapeSearch":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "validateCriteriaAndInitiateSearch"
+                },
+                {
+                    "action": "activateShapesAction",
+                    "condition": "!data.autoOpenFilterPanel"
+                }
+            ]
+        },
+        "validateCriteriaAndInitiateSearch":{
+            "actionType": "JSFunction",
+            "method": "validateCriteriaAndInitiateSearch",
+            "inputData": {
+            },
+            "outputData": {
+                "autoOpenFilterPanel": ""
+            },
+            "deps": "js/Awp0ShapeSearchService"
+        },
+        "openCloseFilterPanelAction": {
+            "actionType": "JSFunction",
+            "method": "openCloseFilterPanelAction",
+            "inputData": {
+                "searchState": "{{data.searchState}}",
+                "searchResultDialogAction": "{{actions.searchResultDialogAction}}"
+            },
+            "deps": "js/awSearchLocationFilterPanelService"
+        },
+        "searchResultDialogAction": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view":"Awp0SearchFilter",
+                    "placement": "left",
+                    "push": true,
+                    "parent": ".aw-layout-workarea",
+                    "width": "SMALL",
+                    "height": "FULL",
+                    "isCloseVisible": false
+                }
+            }
+        }
+    },
+    "conditions": {}
+}

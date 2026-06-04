@@ -1,0 +1,1225 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports":
+    [
+        "js/aw-panel-body.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-widget.directive",
+        "js/aw-i18n.directive",
+        "js/visible-when.directive",
+        "js/exist-when.directive",
+        "js/aw-password.directive",
+        "js/aw-checkbox.directive",
+        "js/aw-break.directive",
+        "js/aw-numeric.directive",
+        "js/aw-command-panel-section.directive",
+        "js/aw-list.directive",
+        "js/aw-radiobutton.directive",
+        "js/aw-include.directive",
+        "js/enable-when.directive",
+        "js/aw-guidance-message.directive"
+    ],
+
+    "actions":
+    {
+        "initPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setTCSSOEnabled"
+                },
+                {
+                    "action": "registerPerformPanelProps"
+                },
+                {
+                    "action": "initializeDataProvider"
+                },
+                {
+                    "action": "populateTaskSubPanel"
+                },
+                {
+                    "action": "initDigitalSignature"
+                }
+            ]
+        },
+        "initializeDataProvider": {
+           "actionType": "dataProvider",
+           "methods": ["reviewProfileSignoffProvider", "reviewAdhocSignoffProvider"]
+        },
+        "initDigitalSignature": {
+            "actionType": "JSFunctionAsync",
+            "method": "initDigitalSignature",
+            "inputData": {
+                "selection": "{{props.subPanelContext.taskToPerform}}"
+            },
+            "outputData": {
+                "isDSConfigured": ""
+            },
+            "deps": "js/Awp0PerformTask"
+        },
+        "setTCSSOEnabled": {
+            "actionType": "JSFunctionAsync",
+            "method": "setTCSSOEnabled",
+            "outputData":
+            {
+                "isTCSSOEnabled": ""
+            },
+            "deps": "js/Awp0PerformTask"
+        },
+        "populateTaskSubPanel": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2018-05-Workflow",
+            "method": "getWorkflowTaskViewModel",
+            "inputData": {
+                "input":
+                [
+                    {
+                        "selection": "{{props.subPanelContext.taskToPerform}}",
+                        "typeToPropertiesMap":
+                        {
+                            "Signoff":
+                            [
+                                "REF(group_member,GroupMember).group",
+                                "REF(group_member,GroupMember).role",
+                                "REF(group_member,GroupMember).user",
+                                "REF(resource_pool,ResourcePool).group",
+                                "REF(resource_pool,ResourcePool).role",
+                                "fnd0DecisionRequired",
+                                "resource_pool"
+                            ],
+
+                            "EPMSignoffProfile":
+                            [
+                                "REF(group,Group).object_full_name",
+                                "REF(role,Role).role_name",
+                                "number_of_signoffs",
+                                "allow_subgroups"
+                            ],
+
+                            "EPMTask":
+                            [
+                                "comments",
+                                "wait_for_all_reviewers",
+                                "signoff_quorum",
+                                "parent_task"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "outputData": {
+                "taskRelatedData": "output",
+                "reviewProfiles": "output[0].taskJSONStrings.EPMReviewTask_profiles",
+                "profileSignoffs": "output[0].taskJSONStrings.EPMReviewTask_profile_signoffs",
+                "adhocSignoffs": "output[0].taskJSONStrings.EPMReviewTask_adhoc_signoffs",
+                "ackReviewProfiles": "output[0].taskJSONStrings.EPMAcknowledgeTask_profiles",
+                "ackProfileSignoffs": "output[0].taskJSONStrings.EPMAcknowledgeTask_profile_signoffs",
+                "ackAdhocSignoffs": "output[0].taskJSONStrings.EPMAcknowledgeTask_adhoc_signoffs",
+                "is_allow_complete": "output[0].additionalData.is_allow_complete[0]",
+                "taskErrors": "taskErrors"
+            },
+            "policy":
+            {
+                "types":
+                [
+                    {
+                        "name": "EPMSelectSignoffTask",
+                        "properties":
+                        [
+                            {
+                                "name": "secure_task"
+                            },
+                            {
+                                "name": "comments"
+                            },
+                            {
+                                "name": "wait_for_all_reviewers"
+                            },
+                            {
+                                "name": "signoff_quorum"
+                            },
+                            {
+                                "name": "parent_task"
+                            },
+                            {
+                                "name": "object_desc"
+                            },
+                            {
+                                "name": "fnd0Instructions"
+                            },
+                            {
+                                "name": "has_failure_paths"
+                            },
+                            {
+                                "name": "fnd0ObjectsToDigitallySign",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "fnd0IsPKIAuthRequired",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "fnd0RequireCompleteConfirm"
+                            },
+                            {
+                                "name": "parent_process",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "fnd0TaskExecutionErrors"
+                            },
+                            {
+                                "name": "fnd0TaskExecutionStatus"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Job",
+                        "properties":
+                        [
+                            {
+                                "name": "object_desc"
+                            }
+
+                        ]
+                    },
+                    {
+                        "name": "EPMSignoffProfile",
+                        "properties":
+                        [
+                            {
+                                "name": "number_of_signoffs"
+                            },
+                            {
+                                "name": "allow_subgroups"
+                            },
+                            {
+                                "name": "group",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "role",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Group",
+                        "properties":
+                        [
+                            {
+                                "name": "object_full_name"
+                            },
+                            {
+                                "name": "object_string"
+                            },
+                            {
+                                "name": "name"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Role",
+                        "properties": [ {
+                            "name": "role_name"
+                        } ]
+                    },
+                    {
+                        "name": "Signoff",
+                        "properties":
+                        [
+                            {
+                                "name": "fnd0DecisionRequired"
+                            },
+                            {
+                                "name": "group_member",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "resource_pool",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "fnd0Assignee",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "epmTask.taskPropertiesLoaded"
+                    }
+                ]
+            },
+
+            "deps": "js/Awp0EPMSSTTaskPerform"
+        },
+
+        "populatePanelData": {
+            "actionType": "JSFunction",
+            "method": "populatePanelData",
+            "inputData": {
+                "data": "{{data}}",
+                "selection": "{{props.subPanelContext.taskToPerform}}",
+                "state": "",
+                "fields": "{{fields}}"
+            },
+            "outputData": {
+                "selectedObject": "selectedObject",
+                "taskName": "taskName",
+                "description": "description",
+                "workflowDescription": "workflowDescription",
+                "comments": "comments",
+                "password": "password",
+                "waitForReviewers": "waitForReviewers",
+                "isSecureTask": "isSecureTask",
+                "reviewProfileSignoffs": "reviewProfileSignoffs",
+                "reviewAdhocSignoffs": "reviewAdhocSignoffs",
+                "taskErrors": "taskErrors",
+                "isWarning": "isWarning"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "checkForSSOReauthEvent"
+                    }
+                ]
+            },
+            "deps": "js/Awp0EPMSSTTaskPerform"
+        },
+        "populatePanelDataInfoUpdate": {
+            "actionType": "JSFunction",
+            "method": "populatePanelData",
+            "inputData": {
+                "data": "{{data}}",
+                "selection": "{{props.subPanelContext.taskToPerform}}",
+                "state": "{{data.eventMap['editHandlerStateChange'].state}}",
+                "fields": "{{fields}}"
+            },
+            "outputData": {
+                "selectedObject": "selectedObject",
+                "taskName": "taskName",
+                "description": "description",
+                "workflowDescription": "workflowDescription",
+                "comments": "comments",
+                "password": "password",
+                "waitForReviewers": "waitForReviewers",
+                "isSecureTask": "isSecureTask",
+                "reviewProfileSignoffs": "reviewProfileSignoffs",
+                "reviewAdhocSignoffs": "reviewAdhocSignoffs"
+            },
+            "deps": "js/Awp0EPMSSTTaskPerform"
+        },
+        "addReviewers": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getSelectedReviewers",
+                    "condition": "conditions.isSubPanelAddUserCase"
+                },
+                {
+                    "action": "navigateToMainPage",
+                    "condition": "conditions.isSubPanelAddUserCase"
+                },
+                {
+                    "action": "addSignoffs",
+                    "condition": "conditions.isSubPanelAddUserCase"
+                }
+            ]
+        },
+        "getSelectedReviewers": {
+            "actionType": "JSFunctionAsync",
+            "method": "getValidObjectsToAdd",
+            "inputData": {
+                "propName": "{{props.addUserPanelState.criteria}}",
+                "selectedUsers": "{{props.addUserPanelState.selectedUsers}}",
+                "baseActiveFiltersStructure": "{{props.addUserPanelState.baseActiveFiltersStructure}}"
+            },
+            "outputData": {
+                "reviewers": ""
+            },
+            "deps": "js/Awp0WorkflowAssignmentUtils"
+        },
+        "navigateToMainPage": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.subPanelContext.activeState}}",
+                "destPanelId": "Awp0EPMSSTTaskPerformSecondary"
+            }
+        },
+
+        "addSignoffs": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2008-06-Workflow",
+            "method": "addSignoffs",
+            "inputData": {
+                "signoffs": [ {
+                    "task": "{{props.subPanelContext.taskToPerform}}",
+                    "signoffInfo": "{{function:getsignoffInfo}}"
+
+                } ]
+            },
+            "policy":
+            {
+                "types":
+                [
+                    {
+                        "name": "Signoff",
+                        "properties":
+                        [
+                            {
+                                "name": "fnd0DecisionRequired"
+                            },
+
+                            {
+                                "name": "group_member",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            },
+
+                            {
+                                "name": "resource_pool",
+                                "modifiers":
+                                [
+                                    {
+                                        "name": "withProperties",
+                                        "Value": "true"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "createdSignoffUids": "created"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name":"workflow.updateAssigneeOrigin",
+                        "eventData": {
+                            "createdSignoffUids": "{{data.createdSignoffUids}}",
+                            "selectedObjects": "{{data.reviewers}}"
+                        },
+                        "condition": "data.createdSignoffUids && data.createdSignoffUids.length > 0"
+                    },
+                    {
+                        "name": "epmTask.updateSubPanel"
+                    }
+                ],
+                "failure":
+                [
+                    {
+                        "name":"workflow.updateAssigneeOrigin",
+                        "eventData": {
+                            "createdSignoffUids": "{{data.createdSignoffUids}}",
+                            "selectedObjects": "{{data.reviewers}}"
+                        },
+                        "condition": "data.createdSignoffUids && data.createdSignoffUids.length > 0"
+                    },
+                    {
+                        "name": "epmTask.updateSubPanel"
+                    }
+                ]
+            },
+            "actionMessages":{
+                "failure":[
+                    {
+                        "message":"serverError"
+                    }
+                ]
+            },
+            "deps": "js/Awp0InboxUtils"
+        },
+
+        "updateAssigneeOrigin": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2014-06-Workflow",
+            "method": "performAction3",
+            "inputData": {
+                "input": "{{function:getAssigeeOriginUpdateData}}"
+            },
+            "deps": "js/Awp0InboxUtils"
+        },
+
+        "removeProfileSignoffObjects": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2008-06-Workflow",
+            "method": "removeSignoffs",
+            "inputData": {
+                "signoffs": "{{function:getRemoveProfileSignoffsInputData}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "epmTask.updateSubPanel"
+                    }
+                ]
+            },
+
+            "deps": "js/Awp0InboxUtils"
+        },
+
+        "removeAdhocSignoffObjects": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2008-06-Workflow",
+            "method": "removeSignoffs",
+            "inputData": {
+                "signoffs": "{{function:getRemoveAdhocSignoffsInputData}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "epmTask.updateSubPanel"
+                    }
+                ]
+            },
+
+            "deps": "js/Awp0InboxUtils"
+        },
+
+        "openPeoplePickerPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "openAddReviewerUserPanel",
+                    "condition": "props.subPanelContext.isToolAndInfoAreaPanel"
+                },
+                {
+                    "action": "openAddSignoffPanel",
+                    "condition": "data.eventData.signoffAction && !props.subPanelContext.isToolAndInfoAreaPanel"
+                },
+                {
+                    "action": "navigateToPeoplePickerPanel",
+                    "condition": "props.subPanelContext.isToolAndInfoAreaPanel"
+                }
+            ]
+        },
+        "openPeoplePickerPanelFromCellCommand":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "openAddReviewerUserPanel",
+                    "condition": "props.subPanelContext.isToolAndInfoAreaPanel"
+                },
+                {
+                    "action": "openAddSignoffPanelCellCommand",
+                    "condition": "data.eventData.signoffAction && !props.subPanelContext.isToolAndInfoAreaPanel"
+                },
+                {
+                    "action": "navigateToPeoplePickerPanel",
+                    "condition": "props.subPanelContext.isToolAndInfoAreaPanel"
+                }
+            ]
+        },
+        "openAddSignoffPanelCellCommand": {
+            "actionType": "JSFunction",
+            "method": "openSignoffProfileCellCommandPanel",
+            "inputData": {
+                "input": {
+                    "commandContext": "{{data.eventData.commandContext}}",
+                    "subPanelContext": "{{props.subPanelContext}}",
+                    "data": "{{data}}"
+                }
+            },
+            "deps": "js/Awp0EPMSSTTaskPerform"
+        },
+        "openAddReviewerUserPanel": {
+            "actionType": "JSFunction",
+            "method": "openAddReviewerUserPanel",
+            "inputData": {
+                "selectedProfile": "{{data.eventData.selectedProfile}}",
+                "eventData": "{{data.eventData}}",
+                "taskToPerform": "{{props.subPanelContext.taskToPerform}}",
+                "isPanelCase": "{{props.subPanelContext.isToolAndInfoAreaPanel}}",
+                "addUserPanelState": "{{props.addUserPanelState}}",
+                "defaultcriteria": {
+                    "providerContentType": "User,GroupMember,ResourcePool",
+                    "searchString": "*",
+                    "selectedObject": "{{props.subPanelContext.taskToPerform.uid}}",
+                    "searchSubGroup": "true"
+                }
+            },
+            "deps": "js/Awp0InboxUtils"
+        },
+        "openAddSignoffPanel": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view": "Awp0AddSignoff",
+                    "parent": ".aw-layout-workareaMain",
+                    "placement": "right",
+                    "width": "STANDARD",
+                    "height": "FULL",
+                    "push": false,
+                    "isCloseVisible": false,
+                    "isPinUnpinEnabled": true,
+                    "subPanelContext": {
+                        "originType": "{{data.eventData.originType}}",
+                        "profileObject": "{{data.eventData.selectedProfile}}",
+                        "signoffAction": "{{data.eventData.signoffAction}}",
+                        "selectionModelMode": "multiple",
+                        "taskToPerform": "{{subPanelContext.taskToPerform}}"
+                    }
+                }
+            }
+        },
+        "navigateToPeoplePickerPanel": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.activeState}}",
+                "value": {
+                    "activeView": "AwPeoplePicker"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+
+        "evaluateProfileSelections": {
+            "actionType": "JSFunction",
+            "method": "evaluateSelections",
+            "inputData": {
+                "selection": "{{dataProviders.reviewProfileSignoffProvider.selectedObjects}}",
+                "selectionCriteria": "isProfileRemoveVisible",
+                "signoffSelectionData": "{{data.signoffSelectionData}}"
+            },
+            "outputData": {
+                "signoffSelectionData": ""
+            },
+
+            "deps": "js/Awp0InboxUtils"
+        },
+
+        "evaluateAdhocReviewerSelections": {
+            "actionType": "JSFunction",
+            "method": "evaluateSelections",
+            "inputData": {
+                "selection": "{{dataProviders.reviewAdhocSignoffProvider.selectedObjects}}",
+                "selectionCriteria": "isReviewAdhocRemoveVisible",
+                "signoffSelectionData": "{{data.signoffSelectionData}}"
+            },
+            "outputData": {
+                "signoffSelectionData": ""
+            },
+
+            "deps": "js/Awp0InboxUtils"
+        },
+
+        "saveTaskAndComplete": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-09-DataManagement",
+            "method": "setProperties",
+            "inputData": {
+                "info":
+                [
+                    {
+                        "object": "{{props.subPanelContext.taskToPerform}}",
+                        "timestamp": "",
+                        "vecNameVal": "{{function:getPropertiesToSave}}"
+                    }
+                ]
+            },
+            "outputData": {
+                "setPropertiesResponse": "",
+                "errorMessage": "{{function:processPartialErrors}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "condition": "!data.isDSConfigured",
+                        "name": "completeEvent"
+                    },
+                    {
+                        "condition": "data.isDSConfigured",
+                        "name": "completeDSEvent"
+                    }
+                ]
+            },
+            "actionMessages":
+            {
+                "failure":
+                [
+                    {
+                        "condition": "data.errorMessage && data.errorMessage.length > 0",
+                        "message": "displayError"
+                    }
+                ]
+            },
+
+            "deps": "js/Awp0EPMSSTTaskPerform"
+        },
+
+
+        "completeDS": {
+            "actionType": "JSFunction",
+            "method": "performTaskDS",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "actionableObject": "{{props.subPanelContext.taskToPerform}}",
+                "action": "SOA_EPM_complete_action",
+                "supportingValue": "SOA_EPM_completed",
+                "supportingObject": ""
+            },
+
+            "deps": "js/Awp0PerformTask"
+        },
+        "complete": {
+            "actionType": "JSFunction",
+            "method": "performTask",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "actionableObject": "{{props.subPanelContext.taskToPerform}}",
+                "action": "SOA_EPM_complete_action",
+                "supportingValue": "SOA_EPM_completed",
+                "supportingObject": ""
+            },
+            "deps": "js/Awp0PerformTask"
+        },
+
+        "verifySaveTaskAndComplete": {
+            "actionType": "JSFunction",
+            "method": "getSelectedPath",
+            "inputData": {
+                "taskResult": "{{i18n.complete}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "taskResultSelected": ""
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "checkRequireConfirmationEvent",
+                        "condition": "subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm && subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] === '1'"
+                    },
+                    {
+                        "name": "saveTaskAndCompleteEvent",
+                        "condition": "subPanelContext.taskToPerform.props.fnd0RequireCompleteConfirm.dbValues[0] !== '1'"
+                    }
+                ]
+            },
+            "deps": "js/Awp0EPMTaskPerform"
+        },
+         "registerPerformPanelProps": {
+            "actionType": "JSFunction",
+            "method": "registerPerformPanelProps",
+            "deps": "js/Awp0PerformTask"
+        },
+        "unregisterPerformPanelProp": {
+            "actionType": "JSFunction",
+            "method": "unregisterPerformPanelProp",
+            "deps": "js/Awp0PerformTask"
+        },
+        "dialogActionForSignoffCellCommand": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+
+                }
+            }
+        },
+        "checkForSSOReauthAction": {
+            "actionType": "JSFunction",
+            "method": "checkForReauthentication",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "deps": "js/Awp0PerformTask"
+        }
+    },
+
+    "data":
+    {
+        "taskName": {
+            "displayName": "{{i18n.taskName}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "dbValue": "{{props.subPanelContext.taskToPerform.props.object_string.dbValues[0]}}",
+            "uiValue": "{{props.subPanelContext.taskToPerform.props.object_string.uiValues[0]}}",
+            "renderingHint":"label"
+        },
+
+        "description": {
+            "displayName": "{{i18n.object_desc}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "isRequired": "false",
+            "uiValue": "",
+            "dbValue": "",
+            "renderingHint":"label"
+        },
+
+        "comments": {
+            "displayName": "{{i18n.comments}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "numberOfLines": 3,
+            "maxLength": 4000,
+            "dbValue": "",
+            "uiValue": "",
+            "renderingHint":"textarea"
+        },
+
+        "password": {
+            "displayName": "{{i18n.passwordDisplayName}}",
+            "type": "STRING",
+            "isEditable": "true",
+            "isRequired": "true",
+            "dispValue": "",
+            "dbValue": ""
+        },
+
+        "waitForReviewers": {
+            "displayName": "{{i18n.requireFullParticipation}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+
+        "percentQuorumValue": {
+            "displayName": "",
+            "type": "INTEGER",
+            "dbValue": ""
+        },
+
+        "numericQuorumValue": {
+            "displayName": "",
+            "type": "INTEGER",
+            "dbValue": ""
+        },
+
+        "quorumOptions": {
+            "type": "BOOLEAN",
+            "isRequired": "true",
+            "propertyRadioFalseText": "{{i18n.numeric}}",
+            "propertyRadioTrueText": "{{i18n.percent}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": true
+        },
+
+        "reviewersCommands": {
+            "isArray": "false",
+            "dbValue":
+            [
+                {
+                    "iconName": "Add",
+                    "tooltip": "{{i18n.addCommandTitle}}",
+                    "commandType": "Add",
+                    "destPanelId": "Users",
+                    "supportGoBack": true
+                }
+            ]
+        },
+
+        "workflowDescription": {
+            "displayName": "{{i18n.workflowDescription}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "isRequired": "false",
+            "uiValue":"",
+            "dbValue":"",
+            "renderingHint":"label"
+        },
+
+        "sectionCommands": "aw_taskAdhocSignoffCommand",
+        "profileCommands": "aw_taskProfileSignoffCommand",
+        "signoffSelectionData": {
+            "initialValues": {
+                "isProfileRemoveVisible": false,
+                "isReviewAdhocRemoveVisible": false
+            },
+            "meta": {}
+        },
+        "is_allow_complete": "false",
+        "taskErrors": {
+            "type": "STRING",
+            "isEditable": "true",
+            "isRequired": "true",
+            "dispValue":"",
+            "dbValue":""
+        }
+    },
+
+    "dataProviders":
+    {
+        "reviewAdhocSignoffProvider":
+        {
+            "response": "{{data.reviewAdhocSignoffs}}",
+            "totalFound": "{{data.reviewAdhocSignoffs.length}}",
+            "totalLoaded": "{{data.reviewAdhocSignoffs.length}}",
+            "selectionModelMode": "multiple",
+            "commandsAnchor": "aw_taskAdhocCellCommand"
+        },
+
+        "reviewProfileSignoffProvider":
+        {
+            "response": "{{data.reviewProfileSignoffs}}",
+            "totalFound": "{{data.reviewProfileSignoffs.length}}",
+            "totalLoaded": "{{data.reviewProfileSignoffs.length}}",
+            "selectionModelMode": "multiple",
+            "commandsAnchor": "aw_taskProfileCellCommand"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "initPanel",
+        "onUnmount": "unregisterPerformPanelProp",
+        "onUpdate": [
+            {
+                "action": "addReviewers",
+                "observers": [ "props.addUserPanelState.selectedUsers" ]
+            }
+        ]
+    },
+    "ctx": {
+        "preferences": null
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "epmTask.taskPropertiesLoaded",
+            "action": "populatePanelData"
+        },
+        {
+            "eventId": "epmTask.updateSubPanel",
+            "action": "populateTaskSubPanel"
+        },
+        {
+            "eventId": "reviewProfileSignoffProvider.selectionChangeEvent",
+            "action": "evaluateProfileSelections"
+        },
+        {
+            "eventId": "reviewAdhocSignoffProvider.selectionChangeEvent",
+            "action": "evaluateAdhocReviewerSelections"
+        },
+        {
+            "eventId": "Awp0AddSignoff.addSignoffData",
+            "action": "openPeoplePickerPanel",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Awp0ReviewProfileSignoff.removeSignoffData",
+            "action": "removeProfileSignoffObjects"
+        },
+        {
+            "eventId": "Awp0ReviewAdhocSignoff.removeSignoffData",
+            "action": "removeAdhocSignoffObjects"
+        },
+        {
+            "eventId": "completeEvent",
+            "action": "complete"
+        },
+        {
+            "eventId": "completeDSEvent",
+            "action": "completeDS"
+        },
+        {
+            "eventId": "checkRequireConfirmationEvent",
+            "message": "checkRequireConfirmationMessage"
+        },
+        {
+            "eventId": "saveTaskAndCompleteEvent",
+            "action": "saveTaskAndComplete"
+        },
+        {
+            "eventId": "workflow.updateAssigneeOrigin",
+            "cacheEventData": true,
+            "action":  "updateAssigneeOrigin"
+        },
+        {
+            "eventId": "editHandlerStateChange",
+            "cacheEventData": true,
+            "action": "populatePanelDataInfoUpdate"
+        },
+        {
+            "eventId": "Awp0AddSignoffCellCommand.addSignoffData",
+            "action":"openPeoplePickerPanelFromCellCommand",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "checkForSSOReauthEvent",
+            "action": "checkForSSOReauthAction"
+        }
+    ],
+
+    "functions":
+    {
+        "getComments": {
+            "functionName": "getComments",
+            "parameters":
+            [
+                "{{data}}"
+            ]
+        },
+        "getRemoveProfileSignoffsInputData": {
+            "functionName": "getRemoveSignoffsInputData",
+            "parameters":
+            [
+                "{{props.subPanelContext.taskToPerform}}",
+                "{{dataProviders.reviewProfileSignoffProvider.selectedObjects}}"
+            ]
+        },
+        "getRemoveAdhocSignoffsInputData": {
+            "functionName": "getRemoveSignoffsInputData",
+            "parameters":
+            [
+                "{{props.subPanelContext.taskToPerform}}",
+                "{{dataProviders.reviewAdhocSignoffProvider.selectedObjects}}"
+            ]
+        },
+        "getPropertiesToSave": {
+            "functionName": "getPropertiesToSave",
+            "parameters":
+            [
+                "{{data}}"
+            ]
+        },
+        "processPartialErrors": {
+            "functionName": "processPartialErrors",
+            "parameters":
+            [
+                "{{setPropertiesResponse}}"
+            ]
+        },
+        "getsignoffInfo": {
+            "functionName": "getsignoffInfo",
+            "parameters": [
+                "{{props.subPanelContext.addUserPanelState}}",
+                "{{data.reviewers}}"
+            ]
+        },
+        "getAssigeeOriginUpdateData": {
+            "functionName": "getAssigeeOriginUpdateData",
+            "parameters":
+            [
+                "{{data.eventMap['workflow.updateAssigneeOrigin'].createdSignoffUids}}",
+                "{{data.eventMap['workflow.updateAssigneeOrigin'].selectedObjects}}"
+            ]
+        }
+    },
+
+    "messages":
+    {
+        "serverError":{
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "displayError":
+        {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.displayError}}",
+            "messageTextParams":
+            [
+                "{{data.taskName.uiValue}}",
+                "{{data.errorMessage}}"
+            ]
+        },
+        "checkRequireConfirmationMessage":
+        {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.requireConfirmationSetTaskResult}}",
+            "messageTextParams": [
+                "{{data.taskName.uiValue}}",
+                "{{data.taskResultSelected}}"
+            ],
+            "navigationOptions":
+            [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}",
+                    "action": "cancelAction"
+                },
+                {
+                    "option": "Complete",
+                    "text": "{{i18n.complete}}",
+                    "action": "saveTaskAndComplete"
+                }
+
+            ]
+        },
+        "testMessageError": {
+            "messageType": "ERROR",
+            "messageText": "{{data.taskErrors.uiValue}}"
+        },
+        "testMessageWarning": {
+            "messageType": "WARNING",
+            "messageText": "{{data.taskErrors.uiValue}}"
+        }
+    },
+
+
+    "conditions":
+    {
+
+        "isSecureTask": {
+            "expression": "data.isSecureTask"
+        },
+
+        "showInstructions": {
+            "expression": "data.description.dbValue && data.description.dbValue.length>0"
+        },
+
+        "isValidToComplete": {
+            "expression": "((conditions.isSecureTask && data.password.dbValue && data.password.dbValue.length>0 && data.is_allow_complete == 'true' ) || (!conditions.isSecureTask && data.is_allow_complete == 'true' ))"
+        },
+
+        "isDSConfigured": {
+            "expression": "data.isDSConfigured"
+        },
+
+        "isNumericQuorum": {
+            "expression": "data.quorumOptions.dbValue== false"
+        },
+
+        "isProfileObject": {
+            "expression": "commandContext.vmo.type == 'EPMSignoffProfile'"
+        },
+
+        "isProfileExistOnTask": {
+            "expression": "data.reviewProfileSignoffs && data.reviewProfileSignoffs.length > 0"
+        },
+
+        "percentQuorumValidation": {
+            "expression": "(data.percentQuorum.dbValue!='' && data.percentQuorum.dbValue<=0)"
+        },
+        "isPercentQuorum": {
+            "expression": "data.quorumOptions.dbValue ==true"
+        },
+        "showCheckBox": {
+            "expression": "ctx.preferences.WRKFLW_allow_wait_for_undecided_override[0] !== 'false'"
+        },
+         "hideCheckBox": {
+            "expression": "ctx.preferences.WRKFLW_allow_wait_for_undecided_override[0] === 'false'"
+        },
+        "enableQuorumEditBox": {
+            "expression": "ctx.preferences.WRKFLW_allow_quorum_override[0] !== 'false'"
+        },
+        "showWorkflowDescription": {
+            "expression": "data.workflowDescription.dbValue && data.workflowDescription.dbValue.length>0"
+        },
+        "isSubPanelAddUserCase": {
+            "expression": "props.subPanelContext.isToolAndInfoAreaPanel && props.subPanelContext.addUserPanelState.selectedUsers && props.subPanelContext.addUserPanelState.selectedUsers.length > 0"
+        },
+        "isToolAndInfoAreaPanel": {
+            "expression": "subPanelContext.isToolAndInfoAreaPanel===true"
+        },
+        "isChildTaskError": {
+            "expression": "data.taskErrors.uiValue"
+        },
+        "isWarning":
+        {
+            "expression": "data.isWarning"
+        }
+    },
+
+    "i18n":
+    {
+        "taskName": [ "InboxMessages" ],
+        "taskInstructions": [ "InboxMessages" ],
+        "comments": [ "InboxMessages" ],
+        "complete": [ "InboxMessages" ],
+        "unableToComplete": [ "InboxMessages" ],
+        "passwordDisplayName": [ "InboxMessages" ],
+        "displayError": [ "InboxMessages" ],
+        "object_desc": [ "InboxMessages" ],
+        "minimumParticipation": [ "InboxMessages" ],
+        "requireFullParticipation": [ "InboxMessages" ],
+        "approve": [ "InboxMessages" ],
+        "reviewers": [ "InboxMessages" ],
+        "additionalReviewers": [ "InboxMessages" ],
+        "addCommandTitle": [ "InboxMessages" ],
+        "requiredLabel": [ "InboxMessages" ],
+        "numeric": [ "InboxMessages" ],
+        "percent": [ "InboxMessages" ],
+        "required": [ "InboxMessages" ],
+        "decisionRequired": [ "InboxMessages" ],
+        "confirm": [ "InboxMessages" ],
+        "cancel": [ "InboxMessages" ],
+        "requireConfirmationSetTaskResult": [ "InboxMessages" ],
+        "any": [ "WorkflowCommandPanelsMessages" ],
+        "workflowDescription": [ "InboxMessages" ],
+        "addReviewer": [ "InboxMessages" ]
+    }
+
+
+}

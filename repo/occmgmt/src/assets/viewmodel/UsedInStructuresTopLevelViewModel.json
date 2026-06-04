@@ -1,0 +1,472 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/exist-when.directive",
+        "js/visible-when.directive"
+    ],
+    "conditions": {
+        "isTableEmpty": {
+            "expression": "data.isDataLoadDone && dataProviders.usedInStructuresTopLevelDataProvider.viewModelCollection.loadedVMObjects.length === 0"
+        },
+        "isTableEmpty2": {
+            "expression": "data.isDataLoadDone && dataProviders.usedInStructuresTopLevelDataProvider2.viewModelCollection.loadedVMObjects.length === 0"
+        },
+        "isLeftView": {
+            "expression": "!conditions.isRightView"
+        },
+        "isRightView": {
+            "expression": "props.subPanelContext.context.contextKey && props.subPanelContext.context.customEditContext==='rightXRTEditContext'"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "setViewConfig",
+        "onUpdate": [
+            {
+                "action": "handleFocusChange",
+                "observers": [ "props.subPanelContext.focusComponent" ]
+            },
+            {
+                "action": "handleSelectionChange",
+                "observers": [ "viewModel.atomicData.selectionData" ]
+            }
+        ]
+    },
+    "data": {
+        "revisionRuleLabel": {
+            "displayName": "{{i18n.revisionRuleLabel}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "dbValue": "RevisionRuleLabel",
+            "dispValue": "{{ctx.userSession.props.awp0RevRule.uiValue}}"
+        },
+        "notUsedInAnyStructure": {
+            "dispValue": "{{i18n.selectionNotUsedInAnyIndexedStructure}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "configureStructureTopLevel": {
+            "type": "BOOLEAN",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "isEditable": "true",
+            "dbValue": true,
+            "displayName": "{{i18n.toggleOn}}"
+        },
+        "configureStructureTopLevel2": {
+            "type": "BOOLEAN",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "isEditable": "true",
+            "dbValue": true,
+            "displayName": "{{i18n.toggleOn}}"
+        },
+        "configureStructureView": {
+            "type": "BOOLEAN",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "isEditable": "true",
+            "dbValue": true,
+            "displayName": "{{i18n.toggleOn}}"
+        },
+        "gridId": "usedInStructuresTopLevelGrid",
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "actions": {
+        "handleSelectionChange": {
+            "actionType": "JSFunction",
+            "method": "handleHtmlPanelSelectionChange",
+            "inputData": {
+                "localSelectionData": "{{data.selectionData}}",
+                "parentSelectionData": "{{props.subPanelContext.selectionData}}",
+                "selectionModel": "{{dataProviders.usedInStructuresTopLevelDataProvider.selectionModel}}"
+            },
+            "outputData": {},
+            "deps": "js/xrtUtilities"
+        },
+        "handleFocusChange": {
+            "actionType": "JSFunction",
+            "method": "handleHtmlPanelFocusChange",
+            "inputData": {
+                "localSelectionData": "{{data.selectionData}}",
+                "focusComponent": "{{props.subPanelContext.focusComponent}}",
+                "selectionModel": "{{dataProviders.usedInStructuresTopLevelDataProvider.selectionModel}}"
+            },
+            "deps":"js/xrtUtilities"
+        },
+        "setViewConfig": {
+            "actionType": "JSFunction",
+            "method": "setViewConfig",
+            "inputData": {
+                "subPanelContext": "{{props.subPanelContext}}",
+                "data": "{{data}}",
+                "topLevel": true
+            },
+            "outputData":{
+                "gridId": "result.gridId",
+                "contextKey": "result.contextKey",
+                "configureStructureView": "result.configureStructureView"
+            },
+            "deps": "js/usedInStructuresService"
+        },
+        "loadWhereUsed": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadWhereUsedTree",
+            "inputData": {
+                "treeLoadInput": "request.treeLoadInput",
+                "subPanelContext": "{{props.subPanelContext}}",
+                "configureParent": "{{data.data.configureStructureView.dbValue}}",
+                "level": "TOP_LEVEL_PARENTS"
+            },
+            "outputData": {
+                "response": "tableSummaries",
+                "isDataLoadDone": true,
+                "dataProviders.usedInStructuresTopLevelDataProvider.columnConfig": "result.treeLoadResult.columnConfig",
+                "clientScopeURI": "result.clientScopeURI",
+                "dataProviders.usedInStructuresTopLevelDataProvider.objectSetUri": "result.objectSetUri"
+            },
+            "deps": "js/usedInStructuresService"
+        },
+        "loadWhereUsed2": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadWhereUsedTree",
+            "inputData": {
+                "treeLoadInput": "request.treeLoadInput",
+                "subPanelContext": "{{props.subPanelContext}}",
+                "configureParent": "{{data.data.configureStructureView.dbValue}}",
+                "level": "TOP_LEVEL_PARENTS"
+            },
+            "outputData": {
+                "response": "tableSummaries",
+                "isDataLoadDone": true,
+                "dataProviders.usedInStructuresTopLevelDataProvider2.columnConfig": "result.treeLoadResult.columnConfig",
+                "clientScopeURI": "result.clientScopeURI",
+                "dataProviders.usedInStructuresTopLevelDataProvider2.objectSetUri": "result.objectSetUri"
+            },
+            "deps": "js/usedInStructuresService"
+        },
+        "loadNextWhereUsed": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadNextWhereUsedTree",
+            "inputData": {
+                "treeLoadInput": "request.treeLoadInput",
+                "subPanelContext": "{{props.subPanelContext}}",
+                "configureParent": "{{data.data.configureStructureView.dbValue}}",
+                "level": "TOP_LEVEL_PARENTS"
+            },
+            "outputData": {},
+            "deps": "js/usedInStructuresService"
+        },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [
+                        {
+                            "clientScopeURI": "{{data.clientScopeURI}}",
+                            "columnConfigId": "{{data.dataProviders.usedInStructuresTopLevelDataProvider.columnConfig.columnConfigId}}",
+                            "columns": "{{data.dataProviders.usedInStructuresTopLevelDataProvider.newColumns}}",
+                            "scope": "LoginUser",
+                            "scopeName": ""
+                        }
+                    ]
+                }
+            },
+            "outputData": {}
+        },
+        "saveColumnConfigLoadData2": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [
+                        {
+                            "clientScopeURI": "{{data.clientScopeURI}}",
+                            "columnConfigId": "{{data.dataProviders.usedInStructuresTopLevelDataProvider2.columnConfig.columnConfigId}}",
+                            "columns": "{{data.dataProviders.usedInStructuresTopLevelDataProvider2.newColumns}}",
+                            "scope": "LoginUser",
+                            "scopeName": ""
+                        }
+                    ]
+                }
+            },
+            "outputData": {}
+        },
+        "resetColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [
+                        {
+                            "scope": "LoginUser",
+                            "scopeName": "",
+                            "clientName": "AWClient",
+                            "resetColumnConfig": true,
+                            "columnConfigQueryInfos": [
+                                {
+                                    "clientScopeURI": "{{data.clientScopeURI}}",
+                                    "operationType": "configured",
+                                    "columnsToExclude": []
+                                }
+                            ],
+                            "businessObjects": [
+                                {}
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "dataProviders.usedInStructuresTopLevelDataProvider.columnConfig": "columnConfigurations[0].columnConfigurations[0]"
+            }
+        },
+        "resetColumnConfig2": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [
+                        {
+                            "scope": "LoginUser",
+                            "scopeName": "",
+                            "clientName": "AWClient",
+                            "resetColumnConfig": true,
+                            "columnConfigQueryInfos": [
+                                {
+                                    "clientScopeURI": "{{data.clientScopeURI}}",
+                                    "operationType": "configured",
+                                    "columnsToExclude": []
+                                }
+                            ],
+                            "businessObjects": [
+                                {}
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "dataProviders.usedInStructuresTopLevelDataProvider2.columnConfig": "columnConfigurations[0].columnConfigurations[0]"
+            }
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "updateTopLevelToggleLabel": {
+            "actionType": "JSFunctionAsync",
+            "method": "updateToggleLabel",
+            "inputData": {
+                "configureParent": "{{data.configureStructureView.dbValue}}"
+            },
+            "outputData": {
+                "configureStructureView.propertyDisplayName": ""
+            },
+            "deps": "js/usedInStructuresService"
+        },
+        "resetUsedInStructuresTopLevelTreeData": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "resetUsedInStructuresTopLevelData"
+                },
+                {
+                    "action": "reloadUsedInStructuresTopLevelGrid",
+                    "condition":"conditions.isLeftView"
+                },
+                {
+                    "action": "updateTopLevelToggleLabel"
+                }
+            ]
+        },
+        "resetUsedInStructuresTopLevelTreeData2": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "resetUsedInStructuresTopLevelData"
+                },
+                {
+                    "action": "reloadUsedInStructuresTopLevelGrid2",
+                    "condition":"conditions.isRightView"
+                },
+                {
+                    "action": "updateTopLevelToggleLabel"
+                }
+            ]
+        },
+        "resetUsedInStructuresTopLevelData": {
+            "actionType": "JSFunction",
+            "method": "resetUsedInStructuresData",
+            "inputData": {},
+            "outputData": {
+                "isDataLoadDone": false,
+                "configureStructureView.dbValue": true,
+                "configureStructureView.propertyDisplayName": "{{i18n.toggleOn}}",
+                "revisionRuleLabel.uiValue": "result.revisionRuleLabelValue"
+            },
+            "deps": "js/usedInStructuresService"
+        },
+        "updateToggleLableAndReloadUsedInStructuresTopLevelGrid": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "reloadUsedInStructuresTopLevelGrid",
+                    "condition": "conditions.isLeftView"
+                },
+                {
+                    "action": "updateTopLevelToggleLabel"
+                },
+                {
+                    "action": "reloadUsedInStructuresTopLevelGrid2",
+                    "condition":"conditions.isRightView"
+                }
+            ]
+        },
+        "reloadUsedInStructuresTopLevelGrid": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "usedInStructuresTopLevelGrid.plTable.reload"
+                    }
+                ]
+            }
+        },
+        "reloadUsedInStructuresTopLevelGrid2": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "usedInStructuresTopLevelGrid2.plTable.reload"
+                    }
+                ]
+            }
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent"
+        },
+        {
+            "eventId": "updateTopLevelToggleLabel",
+            "action": "updateTopLevelToggleLabel"
+        },
+        {
+            "eventId": "aw.revisionRuleChangeEvent",
+            "action": "resetUsedInStructuresTopLevelTreeData"
+        },
+        {
+            "eventId": "aw.revisionRuleChangeEvent",
+            "action": "resetUsedInStructuresTopLevelTreeData2"
+        }
+    ],
+    "columnProviders": {
+        "usedInStructuresTopLevelColumnProvider": {
+            "columns": [
+                {}
+            ],
+            "saveColumnAndLoadAction": "saveColumnConfigLoadData",
+            "resetColumnAction": "resetColumnConfig",
+            "sortCriteria": []
+        },
+        "usedInStructuresTopLevelColumnProvider2": {
+            "columns": [
+                {}
+            ],
+            "saveColumnAndLoadAction": "saveColumnConfigLoadData2",
+            "resetColumnAction": "resetColumnConfig2",
+            "sortCriteria": []
+        }
+
+    },
+    "dataProviders": {
+        "usedInStructuresTopLevelDataProvider": {
+            "initializeAction": "loadWhereUsed",
+            "nextAction": "loadNextWhereUsed",
+            "previousAction": "loadWhereUsed",
+            "cacheCollapse": false,
+            "treeLoadResult": "action.result.treeLoadResult",
+            "editContext": "TABLE_CONTEXT",
+            "inputData": {
+                "accessMode": "tree",
+                "selectionData": "{{fields.selectionData}}"
+            },
+            "response": "data.response",
+            "selectionModelMode": "multiple",
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands",
+            "contextMenuCommandsAnchor": "aw_contextMenuWhereUsed"
+        },
+        "usedInStructuresTopLevelDataProvider2": {
+            "initializeAction": "loadWhereUsed2",
+            "nextAction": "loadNextWhereUsed",
+            "previousAction": "loadWhereUsed2",
+            "cacheCollapse": false,
+            "treeLoadResult": "action.result.treeLoadResult",
+            "editContext": "TABLE_CONTEXT",
+            "inputData": {
+                "accessMode": "tree",
+                "selectionData": "{{fields.selectionData}}"
+            },
+            "response": "data.response",
+            "selectionModelMode": "multiple",
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands",
+            "contextMenuCommandsAnchor": "aw_contextMenuWhereUsed"
+        }
+    },
+    "grids": {
+        "usedInStructuresTopLevelGrid": {
+            "dataProvider": "usedInStructuresTopLevelDataProvider",
+            "columnProvider": "usedInStructuresTopLevelColumnProvider",
+            "enableArrangeMenu": true,
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableSorting": false,
+                "useStaticFirstCol": false,
+                "enableExpansionStateCaching": false,
+                "enableExpandAndPaginationInEdit": true,
+                "maxRowsToShow": 10
+            },
+            "deps": "js/usedInStructuresService"
+        },
+        "usedInStructuresTopLevelGrid2": {
+            "dataProvider": "usedInStructuresTopLevelDataProvider2",
+            "columnProvider": "usedInStructuresTopLevelColumnProvider2",
+            "enableArrangeMenu": true,
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableSorting": false,
+                "useStaticFirstCol": false,
+                "enableExpansionStateCaching": false,
+                "enableExpandAndPaginationInEdit": true,
+                "maxRowsToShow": 10
+            },
+            "deps": "js/usedInStructuresService"
+        }
+    },
+    "i18n": {
+        "revisionRuleLabel": [
+            "OccurrenceManagementConstants"
+        ],
+        "selectionNotUsedInAnyIndexedStructure": [
+            "OccurrenceManagementConstants"
+        ],
+        "toggleOn": [
+            "OccurrenceManagementConstants"
+        ]
+    }
+}

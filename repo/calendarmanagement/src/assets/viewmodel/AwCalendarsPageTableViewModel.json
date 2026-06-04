@@ -1,0 +1,195 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {},
+    "actions": {
+        "initSearch": {
+            "actionType": "JSFunction",
+            "method": "initSearch",
+            "inputData": {
+                "data": "{{data.actions}}",
+                "actionName": "doGridDataProvider",
+                "tableLoaded": "{{data.tableLoaded}}"
+            },
+            "deps": "js/awSearchService"
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "resetColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [ {
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos": [ {
+                            "clientScopeURI": "Awp0TCCalendar",
+                            "operationType": "configured",
+                            "typeNames": [ "WorkspaceObject" ],
+                            "columnsToExclude": []
+                        } ],
+                        "businessObjects": [ {} ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "dataProviders.gridDataProvider.columnConfig": "columnConfigurations[0].columnConfigurations[0]"
+            }
+        },
+        "doGridDataProvider": {
+            "actionType": "dataProvider",
+            "method": "gridDataProvider"
+        },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "operationType": "as_arranged",
+                        "clientScopeURI": "Awp0TCCalendar"
+                    },
+                    "saveColumnConfigData": {
+                        "clientScopeURI": "Awp0TCCalendar",
+                        "columnConfigId": "{{data.dataProviders.gridDataProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.gridDataProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "attributesToInflate": "{{subPanelContext.searchState.tableViewProperties}}",
+                        "maxToLoad": "{{subPanelContext.searchState.maxToLoad}}",
+                        "maxToReturn": "{{subPanelContext.searchState.maxToReturn}}",
+                        "providerName": "{{subPanelContext.searchState.provider}}",
+                        "searchCriteria": "{{subPanelContext.searchState.criteria}}",
+                        "searchFilterFieldSortType": "{{subPanelContext.searchState.sortType}}",
+                        "searchFilterMap6": "{{subPanelContext.searchState.activeFilterMap}}",
+                        "searchSortCriteria": "{{data.columnProviders.clientScopeUI.sortCriteria}}",
+                        "startIndex": "{{data.dataProviders.gridDataProvider.startIndex}}",
+                        "columnFilters": "{{data.columnProviders.clientScopeUI.columnFilters}}"
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "tableLoaded": true,
+                "searchResults": "{{json:searchResultsJSON}}",
+                "dataProviders.gridDataProvider.columnConfig": "columnConfig",
+                "output": "{{function:processOutput}}"
+            }
+        },
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Awp0TCCalendar"
+                    },
+                    "searchInput": {
+                        "attributesToInflate": "{{subPanelContext.searchState.tableViewProperties}}",
+                        "maxToLoad": "{{subPanelContext.searchState.maxToLoad}}",
+                        "maxToReturn": "{{subPanelContext.searchState.maxToReturn}}",
+                        "providerName": "{{subPanelContext.searchState.provider}}",
+                        "searchCriteria": "{{subPanelContext.searchState.criteria}}",
+                        "searchFilterFieldSortType": "{{subPanelContext.searchState.sortType}}",
+                        "searchFilterMap6": "{{subPanelContext.searchState.activeFilterMap}}",
+                        "searchSortCriteria": "{{data.columnProviders.clientScopeUI.sortCriteria}}",
+                        "startIndex": "{{data.dataProviders.gridDataProvider.startIndex}}",
+                        "columnFilters": "{{data.columnProviders.clientScopeUI.columnFilters}}"
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "tableLoaded": true,
+                "searchResults": "{{json:searchResultsJSON}}",
+                "dataProviders.gridDataProvider.columnConfig": "columnConfig",
+                "output": "{{function:processOutput}}"
+            }
+        },
+        "setCalendarSelection": {
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.gridDataProvider.selectionModel}}",
+                "newSelection": "{{props.subPanelContext.searchState.newAddedCalendar}}"
+            },
+            "deps": "js/selectionModelFactory"
+        }
+    },
+    "dataProviders": {
+        "gridDataProvider": {
+            "action": "loadData",
+            "editContext": "TABLE_CONTEXT",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            }
+        }
+    },
+    "columnProviders": {
+        "clientScopeUI": {
+            "saveColumnAndLoadAction": "saveColumnConfigLoadData",
+            "resetColumnAction": "resetColumnConfig",
+            "sortCriteria": []
+        }
+    },
+    "grids": {
+        "gridView": {
+            "dataProvider": "gridDataProvider",
+            "columnProvider": "clientScopeUI",
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "enableGridMenu": true,
+                "enableSorting": false
+            }
+        }
+    },
+    "functions": {
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.searchState}}"
+            ],
+            "deps": "js/awSearchService"
+        }
+    },
+    "onEvent": [ {
+        "eventId": "columnArrange",
+        "cacheEventData": true,
+        "action": "doArrangeEvent"
+    } ],
+    "lifecycleHooks": {
+        "onUpdate": [ {
+            "action": "initSearch",
+            "observers": [
+                "props.subPanelContext.searchState.criteria.searchString",
+                "props.subPanelContext.searchState.filterString",
+                "props.subPanelContext.searchState.newAddedCalendar"
+            ]
+        },
+        {
+            "action": "setCalendarSelection",
+            "observers": [ "props.subPanelContext.searchState.newAddedCalendar" ]
+        } ]
+    }
+}

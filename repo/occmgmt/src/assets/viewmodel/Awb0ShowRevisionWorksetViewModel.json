@@ -1,0 +1,199 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {
+        "onMount": "initializePanel"
+    },
+    "actions": {
+        "initializePanel": {
+            "actionType": "batchJob",
+            "steps": [{
+                "action": "initializeTabs"
+            }, {
+                "action": "loadUserProjects"
+            }]
+        },
+        "initializeTabs": {
+            "actionType": "JSFunction",
+            "method": "loadPanelTabs",
+            "inputData": {
+                "customVisibleTabs": "",
+                "panelContext": "{{subPanelContext}}",
+                "reviseTitle": "{{i18n.revision}}",
+                "newTitle": "{{i18n.newTabTitle}}"
+            },
+            "outputData": {
+                "tabModels": "visibleTabs",
+                "tabApiCallback": "api"
+            },
+            "deps": "js/Awp0ShowSaveAsService"
+        },
+        "loadUserProjects": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadObjects",
+            "inputData": {
+                "data": [
+                    "{{ctx.userSession.props.project.dbValues[0]}}"
+                ]
+            },
+            "events": {
+                "success": [ {
+                    "name": "getOwningProj.event"
+                } ]
+            },
+            "deps": "soa/dataManagementService"
+        },
+        "handleTabChange": {
+            "actionType": "JSFunction",
+            "method": "handleTabChange",
+            "inputData": {
+                "tabs": "{{data.tabModels}}",
+                "pageId": "{{parameters.pageId}}",
+                "tabTitle": "{{parameters.tabTitle}}"
+            },
+            "outputData": {
+                "activeTab": "activeTab"
+            },
+            "deps": "js/Awp0ShowSaveAsService"
+        },
+        "navigateToReviseTabPage": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "awPanel.navigate",
+                    "eventData": {
+                        "destPanelId": "Awb0SaveAsRevisionWorkset"
+                    }
+                } ]
+            }
+        },
+        "setActiveView": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "activeView": ""
+            },
+            "deps": "js/Awp0ShowSaveAsService"
+        },
+        "updateActiveView":{
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "Awb0ShowRevisionWorkset"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "dataParseDefinitions": {
+        "convertRevisedObject": {
+            "outputFormatType": "ViewModelObject",
+            "dataInput": "reviseTrees[0].objectCopy.uid",
+            "operationType": "CREATE"
+        },
+        "convertSavedAsObject": {
+            "outputFormatType": "ViewModelObject",
+            "dataInput": "saveAsTrees[0].objectCopy.uid",
+            "operationType": "CREATE"
+        }
+    },
+    "data": {
+        "widgetProjectSectionCommands": "uiwidget_projectSectionCommands",
+        "activeState": {
+            "initialValues": {
+                "activeView": "Awb0ShowRevisionWorkset",
+                "context": {}
+            },
+            "meta": {
+                "activeView": {
+                    "field": "true",
+                    "type": "STRING"
+                },
+                "context": {
+                    "field": "true",
+                    "type": "OBJECT"
+                }
+            }
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {
+                "selectedProjects": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "triggerAssign": {
+                    "field": "true",
+                    "type": "BOOLEAN"
+                }
+            }
+        }
+    },
+    "props": {
+        "sub-panel-context":{
+            "type":"object"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "userProjects.assignProjects",
+            "action": "getAssignedProjectsProvider"
+        },
+        {
+            "eventId": "userProjects.assignProjects",
+            "condition": "data.activeTab.panelId === 'Awb0SaveAsRevisionWorkset'",
+            "action": "navigateToReviseTabPage"
+        },
+        {
+            "eventId": "getOwningProj.event",
+            "action": "getOwningProjectsProvider"
+        },
+        {
+            "eventId": "awTab.selected",
+            "action": "setActiveView"
+        },
+        {
+            "eventId": "saveAsObject.tabChange",
+            "action": "handleTabChange",
+            "inputArgs": {
+                "pageId": "{{eventData.pageId}}",
+                "tabTitle": "{{eventData.tabTitle}}"
+            }
+        }
+    ],
+    "i18n": {
+        "saveas": [
+            "TCUICommandPanelsMessages"
+        ],
+        "revise": [
+            "TCUICommandPanelsMessages"
+        ],
+        "reviseOperationFailed": [
+            "TCUICommandPanelsMessages"
+        ],
+        "revision": [
+            "TCUICommandPanelsMessages"
+        ],
+        "newTabTitle": [
+            "awAddDirectiveMessages"
+        ],
+        "projectsSectionTitle": [
+            "awAddDirectiveMessages"
+        ],
+        "ownProjectSectionTitle": [
+            "awAddDirectiveMessages"
+        ],
+        "BACK_BUTTON_TITLE": [
+            "BaseMessages"
+        ]
+    }
+}

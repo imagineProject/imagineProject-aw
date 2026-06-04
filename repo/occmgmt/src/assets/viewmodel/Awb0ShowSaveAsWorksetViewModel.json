@@ -1,0 +1,147 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {
+        "onMount": "loadUserProjects"
+    },
+    "actions": {
+        "handleTabChange": {
+            "actionType": "JSFunction",
+            "method": "handleTabChange",
+            "inputData": {
+                "tabs": "{{data.tabModels}}",
+                "pageId": "{{data.eventData.pageId}}",
+                "tabTitle": "{{data.eventData.tabTitle}}"
+            },
+            "outputData": {
+                "activeTab": "activeTab"
+            },
+            "deps": "js/Awp0ShowSaveAsService"
+        },
+        "navigateToSaveAsNewTabPage": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "awPanel.navigate",
+                    "eventData": {
+                        "destPanelId": "Awb0SaveAsWorkset"
+                    }
+                } ]
+            }
+        },
+        "loadUserProjects": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadObjects",
+            "inputData": {
+                "data": [
+                    "{{ctx.userSession.props.project.dbValues[0]}}"
+                ]
+            },
+            "events": {
+                "success": [ {
+                    "name": "getOwningProj.event"
+                } ]
+            },
+            "deps": "soa/dataManagementService"
+        },
+        "setActiveView": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/Awp0ShowSaveAsService"
+        },
+        "updateActiveView":{
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "Awb0ShowSaveAsWorkset"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "dataParseDefinitions": {
+        "convertRevisedObject": {
+            "outputFormatType": "ViewModelObject",
+            "dataInput": "reviseTrees[0].objectCopy.uid",
+            "operationType": "CREATE"
+        },
+        "convertSavedAsObject": {
+            "outputFormatType": "ViewModelObject",
+            "dataInput": "saveAsTrees[0].objectCopy.uid",
+            "operationType": "CREATE"
+        }
+    },
+    "data": {
+        "widgetProjectSectionCommands": "uiwidget_projectSectionCommands",
+        "activeState": {
+            "initialValues": {
+                "activeView": "Awb0ShowSaveAsWorkset",
+                "context": {}
+            },
+            "meta": {
+                "activeView": {
+                    "field": "true",
+                    "type": "STRING"
+                },
+                "context": {
+                    "field": "true",
+                    "type": "OBJECT"
+                }
+            }
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {
+                "selectedProjects": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "triggerAssign": {
+                    "field": "true",
+                    "type": "BOOLEAN"
+                }
+            }
+        }
+    },
+    "props": {
+        "sub-panel-context":{
+            "type":"object"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "userProjects.assignProjects",
+            "condition": "data.activeTab.panelId === 'Awb0SaveAsWorkset'",
+            "action": "navigateToSaveAsNewTabPage"
+        },
+        {
+            "eventId": "awTab.selected",
+            "action": "setActiveView"
+        },
+        {
+            "eventId": "saveAsObject.tabChange",
+            "action": "handleTabChange",
+            "cacheEventData": true
+        }
+    ],
+    "i18n": {
+        "saveas": [
+            "TCUICommandPanelsMessages"
+        ],
+        "newTabTitle": [
+            "awAddDirectiveMessages"
+        ],
+        "BACK_BUTTON_TITLE": [
+            "BaseMessages"
+        ]
+    }
+}

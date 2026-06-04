@@ -1,0 +1,183 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "shift": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagementAw-2020-05-ScheduleManagementAw",
+            "method": "shiftSchedules",
+            "inputData": {
+                "scheduleUIDs": "{{function:getScheduleUIDs}}",
+                "shiftByDays": "{{function:getDaysToShift}}",
+                "shiftByDate": "{{function:getDateString_startDate}}",
+                "runInBackground": "{{data.isRunAsync.dbValue}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+            },
+            "actionMessages":
+            {
+                "failure":
+                [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/Saw1ShiftScheduleService"
+        },
+        "getDaysToShift": {
+            "actionType": "JSFunction",
+            "method": "getDaysToShift",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/Saw1ShiftScheduleService"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "functions": {
+        "getDateString_startDate": {
+            "functionName": "getDateString_startDate",
+            "parameters": [
+                "{{data}}",
+                "{{data.startDate.dateApi.dateObject}}"
+            ]
+        },
+        "getScheduleUIDs": {
+            "functionName": "getScheduleUIDs",
+            "parameters": [
+                "{{ctx}}"
+            ]
+        },
+        "getDaysToShift": {
+            "functionName": "getDaysToShift",
+            "parameters": [
+                "{{data}}"
+            ]
+        }
+    },
+    "data": {
+        "startDate": {
+            "displayName": "{{i18n.shiftDate}}",
+            "dbValue": "",
+            "type": "DATE",
+            "isRequired": "true"
+        },
+        "shiftScheduleByDays": {
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": true,
+            "displayName": "{{i18n.saw1ShiftBy}}",
+            "horizontal": true,
+            "labelPosition": "PROPERTY_LABEL_AT_LEFT",
+            "propertyRadioFalseText": "{{i18n.saw1ShiftByDate}}",
+            "propertyRadioTrueText": "{{i18n.saw1ShiftByDays}}"
+        },
+        "shiftDirection": {
+            "displayName": "{{i18n.saw1ShiftDirection}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_LEFT"
+        },
+        "shiftDirectionValues": {
+            "labelPosition": "PROPERTY_LABEL_AT_LEFT",
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.saw1MoveScheduleForward}}",
+                    "propInternalValue": "Forward"
+                },
+                {
+                    "propDisplayValue": "{{i18n.saw1MoveScheduleBackward}}",
+                    "propInternalValue": "Backward"
+                }
+            ]
+        },
+        "shiftScheduleDays": {
+            "displayName": "{{i18n.saw1ShiftScheduleDays}}",
+            "type": "INTEGER",
+            "isRequired": "true",
+            "isEditable": "true",
+            "dbValue": "",
+            "validationCriteria": [{
+                "condition": "!(conditions.isValidToShift)",
+                "value": "{{i18n.saw1ShiftDaysErrorMsg}}"
+              }]
+        },
+        "isRunAsync": {
+            "displayName": "{{i18n.isRunAsync}}",
+            "dbValue": false,
+            "type": "BOOLEAN",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+    "conditions": {
+        "isValidToShift": {
+            "expression": "(data.shiftScheduleByDays.dbValue && data.shiftScheduleDays.dbValue > 0) || (!data.shiftScheduleByDays.dbValue && data.startDate.dbValue > 0 && data.startDate.dbValue!='DD-MMM-YYYY')"
+        }
+    },
+    "onEvent": [
+    {
+        "eventId": "closeDialog",
+        "action": "closePanelDialog"
+    }
+    ],
+    "messages": {
+        "soaFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n": {
+        "shiftScheduleCommandTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "ShiftText": [
+            "ScheduleManagerMessages"
+        ],
+        "shiftDate": [
+            "ScheduleManagerMessages"
+        ],
+        "isRunAsync": [
+            "ScheduleManagerMessages"
+        ],
+        "saw1ShiftByDate": [
+            "ScheduleManagerMessages"
+        ],
+        "saw1ShiftByDays": [
+            "ScheduleManagerMessages"
+        ],
+        "saw1MoveScheduleBackward": [
+            "ScheduleManagerMessages"
+        ],
+        "saw1MoveScheduleForward": [
+            "ScheduleManagerMessages"
+        ],
+        "saw1ShiftDirection":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1ShiftScheduleDays":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1ShiftBy":[
+            "ScheduleManagerMessages"
+        ],
+        "saw1ShiftDaysErrorMsg":[
+            "ScheduleManagerMessages"
+        ]
+    }
+}

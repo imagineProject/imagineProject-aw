@@ -1,0 +1,295 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Saw1SchTaskDeliverables",
+                        "operationType": "as_arranged"
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0ObjectSetRowProvider",
+                        "searchCriteria": {
+                            "objectSet": "sch_task_deliverable_list.SchTaskDeliverable",
+                            "parentUid": "{{function:getParentTaskUid}}"
+                        },
+                        "startIndex": "{{data.dataProviders.TaskDeliverablesDataProvider.startIndex}}"
+                    },
+                    "inflateProperties": true,
+                    "noServiceData": false
+                }
+            },
+            "outputData": {
+                "deliverablesTotalFound": "totalFound",
+                "schTaskDeliverablesSearchResults": "{{function:processSchTaskDeliverableObjects}}",
+                "dataProviders.TaskDeliverablesDataProvider.columnConfig": "{{function:setNonModifiablePropForTaskDeliverables}}"
+
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            }
+        },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "operationType": "as_arranged",
+                        "clientScopeURI": "Saw1SchTaskDeliverables"
+                    },
+                    "saveColumnConfigData": {
+                        "clientScopeURI": "Saw1SchTaskDeliverables",
+                        "columnConfigId": "{{data.dataProviders.TaskDeliverablesDataProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.TaskDeliverablesDataProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "{{data.dataProviders.TaskDeliverablesDataProvider}}",
+                        "searchCriteria": "{{ctx.search.criteria}}",
+                        "searchFilterFieldSortType": "{{ctx.search.sortType}}",
+                        "searchFilterMap6": "{{ctx.search.activeFilterMap}}",
+                        "searchSortCriteria": "{{data.columnProviders.clientScopeUI.sortCriteria}}"
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "totalLoaded": "totalLoaded",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "dataProviders.TaskDeliverablesDataProvider.columnConfig": "columnConfig",
+                "ctx.search.totalFound": "totalFound",
+                "ctx.search.totalLoaded": "totalLoaded",
+                "ctx.search.filterMap": "searchFilterMap",
+                "ctx.search.filterCategories": "searchFilterCategories",
+                "ctx.search.objectsGroupedByProperty": "objectsGroupedByProperty",
+                "ctx.searchResponseInfo.searchFilterCategories": "searchFilterCategories",
+                "ctx.searchResponseInfo.searchFilterMap": "searchFilterMap",
+                "ctx.searchResponseInfo.objectsGroupedByProperty": "objectsGroupedByProperty",
+                "ctx.searchResponseInfo.columnConfig": "columnConfig"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            }
+        },
+        "resetColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [ {
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos": [ {
+                            "clientScopeURI": "Saw1SchTaskDeliverables",
+                            "operationType": "configured",
+                            "typeNames": [ "WorkspaceObject" ],
+                            "columnsToExclude": []
+                        } ],
+                        "businessObjects": [ {} ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "dataProviders.TaskDeliverablesDataProvider.columnConfig": "columnConfigurations[0].columnConfigurations[0]"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            }
+        },
+        "plTableClientRefresh": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "gridView.plTable.reload"
+                } ]
+            }
+        },
+        "whetherToClosePanelAction": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "ctx": "{{ctx}}"
+            },
+            "events": {
+                "success": [ {
+                    "condition": "( ctx.mselected.length !== 1 || (ctx.mselected[0].modelType.typeHierarchyArray.indexOf('ScheduleTask') === -1  && ctx.mselected[0].modelType.typeHierarchyArray.indexOf('Fnd0ProxyTask') === -1) )",
+                    "name": "closeDeliverablesPanel"
+                },
+                {
+                    "condition": "ctx.mselected.length === 1 && (ctx.mselected[0].modelType.typeHierarchyArray.indexOf('ScheduleTask') > -1 || ctx.mselected[0].modelType.typeHierarchyArray.indexOf('Fnd0ProxyTask') > -1)",
+                    "name": "updateDeliverablesCountCtxEvent"
+                }
+                ]
+            }
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "complete",
+                    "eventData": {
+                        "source": "toolAndInfoPanel"
+                    }
+                } ]
+            }
+        },
+        "setIsDeliverablesCountCtx": {
+            "actionType": "JSFunction",
+            "method": "setIsDeliverablesCountCtx",
+            "inputData": {
+                "ctx": "{{ctx}}"
+            },
+            "deps": "js/SchGanttUtils"
+        },
+        "updateDeliverablesCountCtxAction": {
+            "actionType": "JSFunction",
+            "method": "setIsDeliverablesCountCtx",
+            "inputData": {
+                "ctx": "{{ctx}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "plTableClientRefreshAction"
+                } ]
+            },
+            "deps": "js/SchGanttUtils"
+        }
+    },
+
+    "onEvent": [ {
+            "eventId": "appCtx.register",
+            "criteria": {
+                "name": "mselected"
+            },
+            "cacheEventData": true,
+            "action": "whetherToClosePanelAction"
+        },
+        {
+            "eventId": "closeDeliverablesPanel",
+            "cacheEventData": true,
+            "action": "closePanel"
+        },
+        {
+            "eventId": "plTableClientRefreshAction",
+            "cacheEventData": true,
+            "action": "plTableClientRefresh"
+        },
+        {
+            "eventId": "updateDeliverablesCountCtxEvent",
+            "cacheEventData": true,
+            "action": "updateDeliverablesCountCtxAction"
+        }
+    ],
+    "functions": {
+        "processSchTaskDeliverableObjects": {
+            "functionName": "processSchTaskDeliverableObjects",
+            "parameters": [],
+            "deps": "js/SchGanttUtils"
+        },
+        "setNonModifiablePropForTaskDeliverables": {
+            "functionName": "setNonModifiablePropForTaskDeliverables",
+            "parameters": [],
+            "deps": "js/SchGanttUtils"
+        },
+        "getParentTaskUid": {
+            "functionName": "getParentTaskUid",
+            "parameters": [
+                "{{ctx}}"
+            ],
+            "deps": "js/SchGanttUtils"
+        }
+    },
+    "dataProviders": {
+        "TaskDeliverablesDataProvider": {
+            "action": "loadData",
+            "editContext": "TABLE_CONTEXT",
+            "response": "{{data.schTaskDeliverablesSearchResults}}",
+            "totalFound": "{{data.deliverablesTotalFound}}",
+            "selectionModelMode": "single",
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+    "columnProviders": {
+        "clientScopeUI": {
+            "frozenColumnIndex": 1,
+            "saveColumnAndLoadAction": "saveColumnConfigLoadData",
+            "resetColumnAction": "resetColumnConfig",
+            "sortCriteria": []
+        }
+    },
+    "grids": {
+        "gridView": {
+            "dataProvider": "TaskDeliverablesDataProvider",
+            "columnProvider": "clientScopeUI",
+            "enableArrangeMenu": false,
+
+            "addIconColumn": true,
+            "gridOptions": {
+                "enableGridMenu": true,
+                "enableSorting": false,
+                "maxRowsToShow": 20
+            }
+        }
+    },
+    "messages":{
+        "noDeliverablesMessageInfo": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.noDeliverablesMessageInfo}}",
+            "messageTextLinks": [
+            ]
+        },
+        "soaFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "setIsDeliverablesCountCtx"
+    },
+    "conditions":
+    {
+        "isDeliverablesExist":
+        {
+          "expression":"ctx.mselected[0].props.saw1DeliverablesCount.dbValues[0] > 0"
+        }
+    },
+    "i18n": {
+        "showSchTaskDeliverables": [
+            "ScheduleManagerMessages"
+        ],
+        "noDeliverablesMessageInfo": [
+            "ScheduleManagerMessages"
+        ]
+    }
+}

@@ -1,0 +1,207 @@
+{
+    "schemaVersion" : "1.0.0",
+
+    "actions":
+    {
+        "loadReleaseEvents":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData":
+            {
+                "searchInput":
+                {
+                    "maxToLoad": 500,
+                    "maxToReturn": 500,
+                    "providerName": "Fnd0ReleaseEventProvider",
+                    "searchCriteria": {
+                        "productItemRevUid": "{{props.subPanelContext.occContext.openedElement.props.awb0UnderlyingObject.dbValues[0]}}",
+                        "eventName": "{{function:getSearchStringValueForEvent}}"
+                    },
+                    "searchFilterFieldSortType": "Alphabetical",
+                    "searchFilterMap": {},
+                    "searchSortCriteria": [],
+                    "attributesToInflate": [],
+                    "internalPropertyName": "",
+                    "startIndex": 0
+                }
+            },
+            "outputData":
+            {
+                "releaseEventsListResponse": "{{function:getPagedReleaseEventsList}}",
+                "totalEvents": "totalFound",
+                "totalLoaded": "totalLoaded"
+            },
+            "deps": "js/addReleaseEventClauseProperty"
+        },
+        "validateEventEntry": {
+            "actionType": "JSFunction",
+            "method": "validateEventWidgetValue",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "outputData":{
+                "validEvent":"valid",
+                "message":"message"
+            },
+            "deps": "js/addReleaseEventClauseProperty"
+        },
+        "updateEventWidgetText":{
+            "actionType": "JSFunction",
+            "method": "updateWidgetTextForReleaseEventClauseProperty",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "outputData":{
+                "release_event":""
+            },
+            "deps": "js/addReleaseEventClauseProperty"
+        },
+        "eventListSelectionChanged":
+        {
+            "actionType": "JSFunction",
+            "method": "eventListSelectionChanged",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "deps": "js/addReleaseEventClauseProperty"
+        },
+        "eventClausePropertyValueInitialized":
+        {
+            "actionType": "JSFunction",
+            "method": "eventClausePropertyValueInitialized",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "outputData":
+            {
+                "release_event": ""
+            },
+            "deps": "js/addReleaseEventClauseProperty"
+        },
+        "initializeClauseProperties":
+        {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadReleaseEvents"
+                },
+                {
+                    "action": "eventClausePropertyValueInitialized",
+                    "condition": "subPanelContext && subPanelContext.activeView && subPanelContext.activeView === 'RevisionRuleAdminPanel'"
+                }
+        ]
+        }
+    },
+
+    "data" : {
+        "release_event":
+        {
+            "type": "STRING",
+            "dataProvider": "eventsListProvider",
+            "dbValue": "",
+            "uiValue": "",
+            "isRequired": "true",
+            "displayName": "{{i18n.releaseEventName}}",
+            "emptyLOVEntry": false
+        },
+        "currentEvent":
+        {
+            "displayName": "{{i18n.currentEvent}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "dbValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "moreValuesExist": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        }
+    },
+    "dataProviders":
+    {
+        "eventsListProvider":
+        {
+            "initializeAction": "loadReleaseEvents",
+            "nextAction": "loadReleaseEvents",
+            "response": "{{data.releaseEventsListResponse.releaseEventsList}}",
+            "totalFound": "{{data.totalEvents}}",
+            "selectionModelMode": "single",
+            "moreValuesExist": "{{data.releaseEventsListResponse.moreValuesExist}}",
+            "validateAction": "validateEventEntry",
+            "valid": "{{data.validEvent}}",
+            "message": "{{data.messageForEventEntry}}"
+        }
+    },
+    "functions":
+    {
+        "getSearchStringValueForEvent":
+        {
+            "functionName": "getSearchStringValueForEvent",
+            "parameters":
+            [
+                "{{data}}"
+            ]
+        },
+        "getPagedReleaseEventsList":
+        {
+            "functionName": "processReleaseEventSearchResults",
+            "parameters":
+            [
+                "{{data}}"
+            ]
+        }
+    },
+
+    "onEvent":
+    [
+        {
+            "eventId": "condition.expressionValueChanged",
+            "action": "updateEventWidgetText",
+            "criteria": {
+                "condition": "conditions.isCurrentEventChanged"
+            },
+            "cacheEventData": true
+        },
+        {
+            "eventId": "RevisionRuleAdminEventClause.eventClausePropertyValueInitialized",
+            "action": "eventClausePropertyValueInitialized",
+            "cacheEventData": true
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "initializeClauseProperties",
+        "onUpdate": [
+            {
+                "action": "eventListSelectionChanged",
+                "observers": [
+                    "viewModel.data.release_event.dbValue"
+                ]
+            }]
+    },
+    "conditions":
+    {
+        "isCurrentEventChanged":
+        {
+            "expression": "!data.currentEvent.dbValue",
+            "trackValues": true
+        }
+    },
+
+    "i18n":
+    {
+        "currentEvent":
+        [
+            "RevisionRuleAdminConstants"
+        ],
+        "releaseEventName":
+        [
+            "RevisionRuleAdminConstants"
+        ]
+    }
+}

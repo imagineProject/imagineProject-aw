@@ -1,0 +1,386 @@
+{
+    "schemaVersion":"1.0.0",
+    "imports":
+    [
+        "js/aw-command-panel.directive",
+        "js/aw-label.directive",
+        "js/aw-file-upload.directive",
+        "js/aw-panel-section.directive",
+        "js/visible-when.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-i18n.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-checkbox.directive"
+    ],
+
+    "actions":
+    {
+        "importTemplate": {
+            "actionType": "JSFunction",
+            "method": "populateImportTemplateData",
+            "deps": "js/Awp0TemplateImportExportService",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "context": "context",
+                "sessionOptions": "sessionOptions"
+            },
+            "events": {
+                "success": [ {
+                    "name": "importTemplate.getFMSTicket"
+                } ]
+            }
+        },
+        "fileChangeAction": {
+            "actionType": "JSFunction",
+            "method": "setFileParameters",
+            "inputData": {
+                "fileName": "{{parameters.fileName}}",
+                "validFile": "{{parameters.validFile}}",
+                "fileNameNoExt": "{{parameters.fileNameNoExt}}",
+                "fileExt": "{{parameters.fileExt}}",
+                "formData": "{{parameters.formData}}"
+            },
+            "outputData": {
+                "fileName": "fileName",
+                "validFile": "validFile",
+                "fileNameNoExt": "fileNameNoExt",
+                "fileExt": "fileExt",
+                "formData": "formData"
+            },
+            "deps": "js/fileUploadUtils"
+        },
+        "updateImportOptions": {
+            "actionType": "JSFunction",
+            "method": "updateImportOptions",
+            "deps": "js/Awp0TemplateImportExportService",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "ignoreOriginIdCheck": "ignoreOriginIdCheck",
+                "applyChangesToActiveProcesses": "applyChangesToActiveProcesses",
+                "updateInBackground": "updateInBackground"
+            }
+        },
+        "getFMSFileTciket": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-01-FileManagement",
+            "method": "getTransientFileTicketsForUpload",
+            "inputData": {
+                "transientFileInfos": [ {
+                    "fileName": "{{data.fileName}}",
+                    "isBinary": true,
+                    "deleteFlag": true
+                } ]
+            },
+            "outputData": {
+                "fmsTicket": "transientFileTicketInfos[0].ticket"
+            },
+
+            "events": {
+                "success": [ {
+                    "name": "fmsTicket.update"
+                } ]
+            }
+        },
+        "updateFormData": {
+            "actionType": "JSFunction",
+            "method": "updateFormData",
+            "deps": "js/fileUploadUtils",
+            "inputData": {
+                "formData": "{{data.formData}}",
+                "key": "fmsTicket",
+                "value": "{{data.fmsTicket}}"
+            },
+            "events": {
+                "success": [{
+                    "name": "importTemplate.gotTransientFileTicket"
+                }]
+            }
+        },
+        "uploadFile": {
+            "actionType": "RESTService",
+            "serviceName": "",
+            "method": "POST",
+            "inputData": {
+                "request": {
+                    "method": "POST",
+                    "url": "{{Constants.fmsUrl}}",
+                    "headers": {
+                        "Content-type": "undefined"
+                    },
+
+                    "data": "{{data.formData}}"
+                }
+            },
+            "events": {
+                "success": [ {
+                    "name": "fmsTicket.ImportWorkflowTemplate"
+                } ]
+            }
+        },
+        "getTemplateTransferMode": {
+            "actionType": "TcSoaService",
+            "serviceName": "GlobalMultiSite-2007-06-ImportExport",
+            "method": "getTransferModes",
+            "inputData": {
+                "inputs":  {
+                    "scope": "IMPORT",
+                    "schemaFormat": "PLMXML"
+                }
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "TransferMode",
+                        "properties": [
+                            {
+                                "name": "object_name"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "transferModeObjects": "transferModeObjects"
+            },
+            "events": {
+                "success": [ {
+                    "name": "transferMode.ImportWorkflowTemplate"
+                } ]
+            }
+        },
+        "importWorkflowTemplateInternal": {
+            "actionType": "TcSoaService",
+            "serviceName": "GlobalMultiSite-2010-04-ImportExport",
+            "method": "importObjectsFromPLMXML",
+            "inputData": {
+                "xmlFileTicket": "{{data.fmsTicket}}",
+                "transfermode" : "{{function:getImportTransferModeUid}}",
+                "sessionOptions": "{{data.sessionOptions}}"
+            },
+            "outputData": {
+                "transferModeObjects": "transferModeObjects",
+                "logFileTicket": "logFileTicket.ticket"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "importTemplate.openLogFile"
+                    }
+                ],
+                "failure":
+                [
+                    {
+                        "name": "importTemplate.openLogFile"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "successImportWorkflowTemplate"
+                } ],
+                "failure": [
+                    {
+                        "message": "errorImportWorkflowTemplate"
+                    }
+                ]
+            },
+            "deps": "js/Awp0TemplateImportExportService"
+        },
+        "openLogFile":
+        {
+            "actionType": "JSFunction",
+            "method": "openFile",
+            "inputData":
+            {
+                "data": "{{data.logFileTicket}}"
+            },
+
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "primaryWorkarea.reset"
+                    },
+                    {
+
+                        "name": "closeDialog"
+                    }
+                ]
+            },
+
+            "deps": "js/fmsUtils"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+
+    "data":
+    {
+        "selectFile": {
+            "displayName": "{{i18n.selectFile}}",
+            "type": "STRING"
+        },
+        "continueOnError":{
+            "displayName": "{{i18n.continueOnError}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "propertyLabelDisplay": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": false
+        },
+        "overwriteDuplicateTemplates":{
+            "displayName": "{{i18n.overwriteDuplicateTemplates}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "propertyLabelDisplay": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": false
+        },
+        "ignoreOriginIdCheck":{
+            "displayName": "{{i18n.ignoreOriginIdCheck}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "propertyLabelDisplay": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": false
+        },
+        "applyChangesToActiveProcesses":{
+            "displayName": "{{i18n.applyChangesToActiveProcesses}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "propertyLabelDisplay": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": false
+        },
+        "updateInBackground":{
+            "displayName": "{{i18n.updateInBackground}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "propertyLabelDisplay": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": false
+        }
+    },
+    "ctx":{
+        "preferences": null
+    },
+    "messages":
+    {
+        "successImportWorkflowTemplate":
+        {
+            "messageType": "INFO",
+            "messageText": "{{i18n.successImportWorkflowTemplate}}"
+        },
+        "errorImportWorkflowTemplate":
+        {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+
+    "functions":
+    {
+        "getImportWorkflowTemplateInputData":
+        {
+            "functionName": "getImportWorkflowTemplateInputData",
+            "parameters":
+            [
+                "{{data}}"
+            ]
+        },
+        "getImportTransferModeUid":
+        {
+            "functionName": "getTransferModeUid",
+            "parameters":
+            [
+                "{{data}}"
+            ]
+        }
+    },
+    "preferences":
+    [
+        "EPM_enable_apply_template_changes"
+    ],
+    "onEvent":
+    [
+        {
+            "eventId": "fmsTicket.update",
+            "action": "updateFormData"
+        },
+        {
+            "eventId": "importTemplate.gotTransientFileTicket",
+            "action": "uploadFile"
+        },
+        {
+            "eventId": "fmsTicket.ImportWorkflowTemplate",
+            "action": "getTemplateTransferMode"
+        },
+        {
+            "eventId": "transferMode.ImportWorkflowTemplate",
+            "action": "importWorkflowTemplateInternal"
+        },
+        {
+            "eventId": "importTemplate.getFMSTicket",
+            "action": "getFMSFileTciket"
+        },
+        {
+            "eventId": "importTemplate.openLogFile",
+            "action": "openLogFile"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+
+    "conditions":
+    {
+        "isValidToImport":
+        {
+            "expression": "data.fileName !== null && data.fileName !== '' && data.validFile === true"
+        },
+        "enableOriginIdCheck":
+        {
+            "expression": "data.overwriteDuplicateTemplates.dbValue && !data.applyChangesToActiveProcesses.dbValue"
+        },
+        "visibleApplyTemplateChanges":
+        {
+            "expression": "ctx.preferences.EPM_enable_apply_template_changes && ctx.preferences.EPM_enable_apply_template_changes[0] === 'OPTIONAL' && data.overwriteDuplicateTemplates.dbValue && !data.ignoreOriginIdCheck.dbValue"
+        },
+        "enableApplyTemplateChanges":
+        {
+            "expression": "data.overwriteDuplicateTemplates.dbValue && !data.ignoreOriginIdCheck.dbValue"
+        },
+        "visibleUpdateInBackground":
+        {
+            "expression": "conditions.visibleApplyTemplateChanges && !data.ignoreOriginIdCheck.dbValue && data.applyChangesToActiveProcesses.dbValue"
+        }
+    },
+
+    "i18n":
+    {
+        "importWorkflowTemplate": [ "WorkflowDesignerMessages" ],
+        "selectFile": [ "WorkflowDesignerMessages" ],
+        "import": [ "WorkflowDesignerMessages" ],
+        "continueOnError": [ "WorkflowDesignerMessages" ],
+        "overwriteDuplicateTemplates": [ "WorkflowDesignerMessages" ],
+        "ignoreOriginIdCheck": [ "WorkflowDesignerMessages" ],
+        "options": [ "WorkflowDesignerMessages" ],
+        "applyChangesToActiveProcesses": [ "WorkflowDesignerMessages" ],
+        "updateInBackground": [ "WorkflowDesignerMessages" ],
+        "successImportWorkflowTemplate": [ "WorkflowDesignerMessages" ],
+        "viewLogFile": [ "WorkflowDesignerMessages" ]
+    }
+}

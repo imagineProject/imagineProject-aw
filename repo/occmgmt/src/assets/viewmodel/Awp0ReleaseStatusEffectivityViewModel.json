@@ -1,0 +1,185 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "actions":
+    {
+        "closePanel":
+        {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "backAction":
+        {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "inputData":
+            {
+                "destinationPanelId":"DisplayAndRemoveEffectivitiesForRelStatus",
+                "data": "{{data}}",
+                "subPanelContext": "{{props.subPanelContext}}",
+                "i18n": "{{data.i18n}}"
+
+            },
+            "outputData": {
+                "sharedData":""
+            },
+            "deps": "js/aceEffectivityService"
+        },
+        "backToPrevious":
+        {
+            "actionType": "JSFunction",
+            "method": "setActiveViewFromEndItem",
+            "inputData":
+            {
+                "destinationPanelId":"{{data.sharedData.previousView}}",
+                "sharedData": "{{data.sharedData}}"
+            },
+            "outputData": {
+                "sharedData":""
+            },
+            "deps": "js/aceEffectivityService"
+        },
+        "closePanelBatchAction":
+        {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "closePanel",
+                    "condition": "conditions.isSelectedItemWithNoReleaseStatusOrMultipleItemSelectedForHome || data.previousSelectedUid !== null && data.previousSelectedUid !== props.subPanelContext.selectionData.selected[0].uid"
+            }]
+        },
+        "setPreviousSelectedUidAndLength":{
+            "actionType": "JSFunction",
+            "method": "updatePreviousSelectedUid",
+            "inputData": {
+                    "currentSelectedUid": "{{ctx.selected.uid}}",
+                    "data":"{{data}}",
+                    "subPanelContext":"{{props.subPanelContext}}"
+            },
+            "deps": "js/aceEffectivityService"
+        }
+    },
+
+    "i18n": {
+        "effectivityTitle": ["OccurrenceManagementConstants"],
+        "endItemMessage":[ "OccurrenceManagementConstants"],
+        "addEffectivity":[ "OccurrenceEffectivityConstants"],
+        "addDateEffectivity":[ "OccurrenceEffectivityConstants"],
+        "addUnitEffectivity":[ "OccurrenceEffectivityConstants"],
+        "editEffectivity":[ "OccurrenceEffectivityConstants"],
+        "editDateEffectivity":[ "OccurrenceEffectivityConstants"],
+        "editUnitEffectivity":[ "OccurrenceEffectivityConstants"],
+        "dateEffectivity": [ "OccurrenceManagementConstants"]
+    },
+
+    "lifecycleHooks": {
+        "onMount": "setPreviousSelectedUidAndLength",
+        "onUpdate": [ {
+            "action": "closePanelBatchAction",
+            "observers": [ "props.subPanelContext.selectionData.selected" ]
+        }]
+    },
+
+    "data": {
+        "sharedData": {
+            "initialValues": {
+                "activeView": "DisplayAndRemoveEffectivitiesForRelStatus",
+                "previousView": "",
+                "dateOrUnitEffectivityTypeRadioButton":{
+                    "type": "BOOLEAN",
+                    "dbValue": true
+                },
+                "dateEffectivityEnable":{
+                    "type":"BOOLEAN",
+                    "dbValue":false
+                },
+                "unitEffectivityEnable":{
+                    "type":"BOOLEAN",
+                    "dbValue":false
+                },
+                "endItemVal":{
+                    "dbValue": null,
+                    "uiValue": null
+                },
+                "endItemValForDate": {
+                    "dbValue": null,
+                    "uiValue": null,
+                    "endItem":{
+                        "uid": null,
+                        "type": null
+                    }
+                },
+                "releaseStatus":{
+                    "uid": null,
+                    "type": null,
+                    "uiValue": null,
+                    "dbValue": null
+                },
+                "nameBox" : {
+                    "dbValue": null
+                },
+                "nameBoxForUnit" : {
+                    "dbValue": null
+                },
+                "unitRangeText": {
+                    "dbValue": null
+                },
+                "isShared": {
+                    "type": "BOOLEAN",
+                    "dbValue": false
+                },
+                "isSharedForUnit": {
+                    "type": "BOOLEAN",
+                    "dbValue": false
+                },
+                "startDate": {
+                    "type": "DATETIME",
+                    "dbValue": null
+                },
+                "endDate": {
+                    "type": "DATETIME",
+                    "dbValue": null
+                },
+                "endDateOptions": {
+                    "dbValue": "Date",
+                    "uiValue": "{{i18n.dateEffectivity}}"
+                },
+                "isProtected": {
+                    "type": "BOOLEAN",
+                    "dbValue": false
+                },
+                "selectedCell": {
+                    "uid": null,
+                    "type": null
+                },
+                "isTimeEnabled": {
+                    "type": "BOOLEAN",
+                    "value": false
+                },
+                "isUnitUpdated": {
+                    "type": "BOOLEAN",
+                    "dbValue": false
+                }
+            },
+            "meta": { }
+        },
+        "previousSelectedUid": null,
+        "previousSelectionLength": []
+    },
+
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+
+    "conditions": {
+        "isSelectedItemWithNoReleaseStatusOrMultipleItemSelectedForHome": {
+            "expression": "props.subPanelContext.selectionData.selected.length > 1 || props.subPanelContext.selectionData.selected[0].props.date_released.dbValues[0] === null || data.sharedData.activeView === 'EditEffectivities' "
+        }
+    }
+}

@@ -1,0 +1,96 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "callDataProvider": {
+            "actionType": "dataProvider",
+            "methods": [
+                "listDataProvider"
+            ]
+        },
+        "loadData": {
+            "actionType": "JSFunction",
+            "method": "getLimitedObjectsFromUids",
+            "inputData": {
+                "uids": "{{props.subPanelContext.stackedUids}}",
+                "selectedObjectUid": "{{props.subPanelContext.selectedObjectUid}}"
+            },
+            "outputData": {
+                "searchResults": ""
+            },
+            "deps": "js/AwGanttStackedPopupService"
+        },
+        "selectObjectOnGantt": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "AWGanttChart.selectObjectOnGantt",
+                    "eventData": {
+                        "objectUidToSelect": "{{dataProviders.listDataProvider.selectedObjects[0].uid}}"
+                    }
+                } ]
+            }
+        },
+        "openStackedObjectsPanel": {
+            "actionType": "JSFunction",
+            "method": "activateCommandPanel",
+            "deps": "js/commandPanel.service",
+            "inputData": {
+                "commandId": "AwGanttStackedPanel",
+                "location": "aw_toolsAndInfo",
+                "context": {
+                    "stackedUids": "{{props.subPanelContext.stackedUids}}"
+                },
+                "push": false
+            },
+            "events": {
+                "success": [ {
+                    "name": "closeStackPopup"
+                } ]
+            }
+        },
+        "hideGoToOptionsPopup": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "deps": "js/popupService"
+        }
+    },
+    "dataProviders": {
+        "listDataProvider": {
+            "action": "loadData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.searchResults.length}}",
+            "selectionModelMode": "{{props.subPanelContext.selectionMode}}",
+            "commandsAnchor": "stackedEventOpenCommand"
+        }
+    },
+    "data": {
+        "moreLink": {
+            "displayName": "{{i18n.ganttInterfaceMoreLink}}",
+            "type": "STRING",
+            "isRequired": "false"
+        }
+    },
+    "conditions": {
+        "whetherToShowLink": {
+            "expression": "props.subPanelContext.stackedUids.length > 3"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "callDataProvider"
+    },
+    "onEvent": [ {
+            "eventId": "listDataProvider.selectionChangeEvent",
+            "action": "selectObjectOnGantt"
+        },
+        {
+            "eventId": "closeStackPopup",
+            "action": "hideGoToOptionsPopup"
+        }
+    ],
+    "i18n": {
+        "ganttInterfaceMoreLink": [
+            "GanttInterfaceConstants"
+        ]
+    }
+}

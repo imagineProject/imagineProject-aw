@@ -1,0 +1,534 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "reveal": {
+            "actionType": "dataProvider",
+            "methods": [
+                "assignedUserList"
+            ]
+        },
+        "getAssignedResources": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": "{{ctx.mselected}}",
+                "attributes": [
+                    "ResourceAssignment"
+                ]
+            },
+            "policy": {
+                "types": [ {
+                    "name": "ScheduleTask",
+                    "properties": [ {
+                        "name": "ResourceAssignment",
+                        "modifiers": [ {
+                            "name": "withProperties",
+                            "Value": "true"
+                        } ]
+                    } ]
+                } ]
+            },
+            "outputData": {
+                "Users": "{{function:getAssignedUsers}}"
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "soaFailureMessage"
+                } ]
+            },
+            "deps": "js/Saw1TaskAssignmentService"
+        },
+        "openPeoplePickerPanel": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "setSelectedObjectForPeoplePicker"
+                },
+                {
+                    "action": "launchPeoplePickerPanel"
+                }
+            ]
+        },
+        "setSelectedObjectForPeoplePicker": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.addUserPanelState}}",
+                "value" : {
+                    "criteria": {
+                        "providerContentType": "User,ResourcePool,Discipline,ScheduleMember,Supplier,GroupMember",
+                        "searchString": "*",
+                        "selectedObject": "{{ctx.selected.uid}}",
+                        "searchSubGroup": "true",
+                        "group": "",
+                        "role": "",
+                        "participantType": ""
+                    }
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "launchPeoplePickerPanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "AwPeoplePicker"
+            }
+        },
+        "openResourceLoadPanel": {
+            "actionType": "JSFunction",
+            "method": "openResourceGraphPanel",
+            "deps": "js/Saw1TaskAssignmentService",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "Saw1ResourceGraphParams",
+                "previousPanelId": "{{data.eventData.previousPanelId}}",
+                "selectedResourcesProp": "{{props.selectedResource}}",
+                "selectedResources": "{{data.eventData.selectedResources}}"
+            }
+        },
+        "addSelectedUsersNarrowMode": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "addSelectedUsersInternal",
+                    "condition": "conditions.isAddUsersNarrowMode"
+                },
+                {
+                    "action": "navigateToMainPanel",
+                    "condition": "conditions.isAddUsersNarrowMode"
+                },
+                {
+                    "action": "resentUserPanelContextData",
+                    "condition": "conditions.isAddUsersNarrowMode"
+                }
+            ]
+        },
+        "addSelectedUsersWideMode": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "addSelectedUsersInternal"
+            } ]
+        },
+        "addSelectedUsersInternal": {
+            "actionType": "JSFunction",
+            "method": "addSelectedUsers",
+            "inputData": {
+                "selectedUsers": "{{props.addUserPanelState.selectedUsers}}",
+                "dataProvider": "{{data.dataProviders.assignedUserList}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "activateSaveButton"
+                    }
+                ]
+            },
+            "deps": "js/Saw1PeoplePickerUtils"
+        },
+        "activateSaveButton": {
+            "actionType": "JSFunction",
+            "method": "activateSaveButton",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "visibleSaveBtn": ""
+            },
+            "deps": "js/Saw1TaskAssignmentService",
+            "actionMessages": {
+                "failure": [
+                    {
+                        "condition": "errorCode=='diffScheduleErrorMsg'",
+                        "message": "diffScheduleErrorMsg"
+                    }
+                ]
+            }
+        },
+        "resentUserPanelContextData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.addUserPanelState}}",
+                "value": {
+                    "propName": null,
+                    "selectedUsers": []
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "navigateToMainPanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "Saw1TaskAssignment"
+            }
+        },
+        "assignResource": {
+            "actionType": "JSFunction",
+            "method": "assignUnassignResourceAction",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "unassignUsersFlag": "unassignmentFlag",
+                "assignUsersFlag": "assignmentFlag"
+            },
+            "events": {
+                "success": [ {
+                        "condition": "data.unassignUsersFlag === true || data.assignUsersFlag === true",
+                        "name": "unAssignUserMsg"
+                    },
+                    {
+                        "condition": "data.unassignUsersFlag === false && data.assignUsersFlag === false && data.Users.length === data.dataProviders.assignedUserList.viewModelCollection.loadedVMObjects.length",
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                        "condition": "errorCode=='diffScheduleErrorMsg'",
+                        "message": "diffScheduleErrorMsg"
+                    },
+                    {
+                        "condition": "errorCode=='assignmentUserError'",
+                        "message": "assignmentUserError"
+                    }
+                ]
+            },
+            "deps": "js/Saw1TaskAssignmentService"
+        },
+        "unAssignMsgValidation": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                        "name": "unassign.showMessage",
+                        "condition": "conditions.showMessageforMultipleSelection"
+                    },
+                    {
+                        "name": "unassign.doNotShowMessage",
+                        "condition": "conditions.showMessageforMultipleSelection === false"
+                    }
+                ]
+            }
+        },
+        "assignAndUnassignResourceSoaCall": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                        "name": "getResourceAssignmentsForUser",
+                        "condition": "data.unassignUsersFlag === true"
+                    },
+                    {
+                        "name": "assignResources.callSoa",
+                        "condition": "data.assignUsersFlag === true"
+                    }
+                ]
+            }
+        },
+        "assignResources": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2015-07-ScheduleManagement",
+            "method": "assignResources",
+            "inputData": {
+                "schedule": "{{function:getScheduleUidFromCtx}}",
+                "createAssignments": "{{function:getAssignmentForSOAInput}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{function:getUIDToRefresh}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "closeDialog",
+                        "condition": "data.unassignUsersFlag !== true"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "soaFailureMessage"
+                } ]
+            },
+            "deps": "js/Saw1TaskAssignmentService"
+        },
+        "getResourceAssignmentsForUser": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-09-DataManagement",
+            "method": "expandGRMRelationsForPrimary",
+            "inputData": {
+                "primaryObjects": "{{ctx.mselected}}",
+                "pref": {
+                    "expItemRev": false,
+                    "returnRelations": true,
+                    "info": [ {
+                        "relationTypeName": "ResourceAssignment"
+                    } ]
+                }
+            },
+            "policy": {
+                "types": [ {
+                    "name": "ResourceAssignment",
+                    "properties": [ {
+                            "name": "primary_object"
+                        },
+                        {
+                            "name": "discipline"
+                        }
+                    ]
+                } ]
+            },
+            "outputData": {
+                "response": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "unAssignResources"
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "soaFailureMessage"
+                } ]
+            }
+        },
+        "unAssignResources": {
+            "actionType": "JSFunction",
+            "method": "unAssignResourcesfromTask",
+            "deps": "js/Saw1TaskAssignmentService",
+            "inputData": {
+                "data": "{{data.Users}}",
+                "dataProvider": "{{data.dataProviders.assignedUserList.viewModelCollection.loadedVMObjects}}",
+                "schedule": "{{function:getScheduleUidFromCtx}}",
+                "response": "{{data.response.output}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{function:getUIDToRefresh}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "soaFailureMessage"
+                } ]
+            }
+        },
+        "removeUser": {
+            "actionType": "JSFunction",
+            "method": "removeUser",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "activateSaveButton"
+                    }
+                ]
+            },
+            "deps": "js/Saw1RemoveUserCommandHandler"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "data": {
+        "Saw1TaskAssigneeSection": "saw1_taskAssigneeSection",
+        "visibleSaveBtn": false,
+        "unassignUsersFlag": false,
+        "assignUsersFlag": false,
+        "eventData": {}
+    },
+    "ctx": {},
+    "functions": {
+        "getAssignedUsers": {
+            "functionName": "getAssignedUsers",
+            "parameters": [
+                "{{ctx}}",
+                "{{data}}"
+            ]
+        },
+        "getAssignmentForSOAInput": {
+            "functionName": "getAssignmentForSOAInput",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getScheduleUidFromCtx": {
+            "functionName": "getScheduleUidFromCtx",
+            "parameters": [
+                "{{ctx}}"
+            ]
+        },
+        "getUIDToRefresh": {
+            "functionName": "getUIDToRefresh",
+            "parameters": [
+                "{{ctx}}"
+            ]
+        }
+    },
+    "dataProviders": {
+        "assignedUserList": {
+            "action": "getAssignedResources",
+            "response": "{{data.Users}}",
+            "commandsAnchor": "aw_removeUserCellCommand",
+            "selectionModelMode": "multiple"
+        }
+    },
+    "props": {},
+    "lifecycleHooks": {
+        "onMount": "reveal",
+        "onUpdate": [ {
+            "action": "addSelectedUsersNarrowMode",
+            "observers": [
+                "props.subPanelContext.addUserPanelState.value.selectedUsers"
+            ]
+        } ]
+    },
+    "conditions": {
+        "isValidToAdd": {
+            "expression": "props.subPanelContext.addUserPanelState.selectedUsers.length > 0"
+        },
+        "isAddUsersNarrowMode": {
+            "expression": "props.subPanelContext.sidenavMode === 'mobile' && props.subPanelContext.addUserPanelState.selectedUsers && props.subPanelContext.addUserPanelState.selectedUsers.length > 0"
+        },
+        "showMessageforMultipleSelection": {
+            "expression": "ctx.mselected.length > 1  && data.unassignUsersFlag === true"
+        }
+    },
+    "messages": {
+        "removeUserConfirmationMessage": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.confirmUnassignUserMsg}}",
+            "messageTextParams": [],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.CancelText}}",
+                    "action": ""
+                },
+                {
+                    "option": "Remove",
+                    "text": "{{i18n.saw1remove}}",
+                    "action": "assignAndUnassignResourceSoaCall"
+                }
+            ]
+        },
+        "soaFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "diffScheduleErrorMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.errorMsgForDiffSch}}",
+            "messageTextParams": []
+        },
+        "assignmentUserError": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.assignmentUserError}}",
+            "messageTextParams": []
+        }
+    },
+    "onEvent": [ {
+            "eventId": "taskAssignment.openUserPickerPanel",
+            "action": "openPeoplePickerPanel",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "taskAssignment.openResourceLoadPanel",
+            "action": "openResourceLoadPanel",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "saw1.addTaskAssignment",
+            "action": "addSelectedUsersWideMode",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "unAssignUserMsg",
+            "action": "unAssignMsgValidation"
+        },
+        {
+            "eventId": "unassign.showMessage",
+            "message": "removeUserConfirmationMessage"
+        },
+        {
+            "eventId": "unassign.doNotShowMessage",
+            "action": "assignAndUnassignResourceSoaCall"
+        },
+        {
+            "eventId": "getResourceAssignmentsForUser",
+            "action": "getResourceAssignmentsForUser"
+        },
+        {
+            "eventId": "assignResources.callSoa",
+            "action": "assignResources"
+        },
+        {
+            "eventId": "unAssignResources",
+            "action": "unAssignResources"
+        },
+        {
+            "eventId": "Saw1RemoveUserCommand.removeUser",
+            "action": "removeUser"
+        },
+        {
+            "eventId": "activateSaveButton",
+            "action": "activateSaveButton"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+    "i18n": {
+        "saveBtnTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "AssignOrUnassignResource": [
+            "ScheduleManagerMessages"
+        ],
+        "addedLabel": [
+            "ScheduleManagerMessages"
+        ],
+        "confirmUnassignUserMsg": [
+            "ScheduleManagerMessages"
+        ],
+        "CancelText": [
+            "ScheduleManagerMessages"
+        ],
+        "saw1remove": [
+            "ScheduleManagerMessages"
+        ],
+        "errorMsgForDiffSch": [
+            "ScheduleManagerMessages"
+        ],
+        "assignmentUserError": [
+            "ScheduleManagerMessages"
+        ]
+    }
+}

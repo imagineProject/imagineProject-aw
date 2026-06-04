@@ -1,0 +1,152 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "columnProviders": {
+        "scheduleTaskRelatedObjectsColumnProvider": {
+            "soaEnabled": false,
+            "sortCriteria": [],
+            "columns": [
+                {
+                    "name": "object_string",
+                    "displayName": "{{i18n.Object}}",
+                    "minWidth": 100,
+                    "width": 150,
+                    "pinnedLeft": false,
+                    "isTableCommand":false,
+                    "enableColumnHiding": false
+                },
+                {
+                    "name": "object_type",
+                    "displayName": "{{i18n.Type}}",
+                    "width": 150,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100,
+                    "enableColumnHiding": false
+                },
+                {
+                    "name": "awp0RelationTypeDisplayName",
+                    "displayName": "{{i18n.Relation}}",
+                    "width": 150,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100,
+                    "enableColumnHiding": false
+                },
+                {
+                    "name": "owning_user",
+                    "displayName": "{{i18n.Owner}}",
+                    "width": 180,
+                    "isTreeNavigation": false,
+                    "isTableCommand" : false,
+                    "minWidth" : 100,
+                    "enableColumnHiding": false
+                }
+            ]
+        }
+    },
+    "dataProviders":{
+        "scheduleTaskRelatedObjectsDataProvider":
+        {
+            "action": "loadObjects",
+            "response": "{{data.searchResults.loadResult.searchResults}}",
+            "totalFound": "{{data.searchResults.loadResult.totalFound}}",
+            "selectionModelMode": "single",
+            "inputData": {
+                "selectionData":"{{subPanelContext.selectionData}}"
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+
+    },
+    "grids": {
+            "scheduleTaskRelatedObjectsTable": {
+            "dataProvider": "scheduleTaskRelatedObjectsDataProvider",
+            "columnProvider": "scheduleTaskRelatedObjectsColumnProvider",
+            "addIconColumn": true,
+            "enableArrangeMenu": false,
+            "gridOptions": {
+                "enablePinning": true,
+                "maxRowsToShow": 10,
+                "enableSorting": true,
+                "isFilteringEnabled": true
+            }
+        }
+    },
+    "actions":
+    {
+        "callToDataProvider":{
+            "actionType": "dataProvider",
+            "method": "scheduleTaskRelatedObjectsDataProvider"
+        },
+        "loadObjects": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {},
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0ObjectSetRowProvider",
+                        "searchCriteria": {
+                            "objectSet":"CMHasImpactedItem.WorkspaceObject,CMHasProblemItem.WorkspaceObject,CMHasSolutionItem.WorkspaceObject,CMReferences.WorkspaceObject",
+                            "parentUid": "{{props.taskObject.selected[0].uid}}"
+                        },
+                        "searchFilterFieldSortType": "Alphabetical",
+                        "startIndex": "{{data.dataProviders.scheduleTaskRelatedObjectsDataProvider.startIndex}}",
+                        "searchSortCriteria": "{{data.columnProviders.scheduleTaskRelatedObjectsColumnProvider.sortCriteria}}",
+                        "columnFilters": "{{data.columnProviders.scheduleTaskRelatedObjectsColumnProvider.columnFilters}}"
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{function:processRelatedObjects}}"
+            }
+        }
+    },
+    "functions": {
+        "processRelatedObjects": {
+            "functionName": "processRelatedObjects",
+            "parameters": [],
+            "deps": "js/Csi1PropagateOrRollupService"
+        }
+    },
+    "props": {
+        "sub-panel-context":{
+            "type":"object"
+        },
+        "task-object":{
+            "type":"object"
+        }
+    },
+    "i18n":{
+        "objectsPropagatedToSchTask": [
+            "ChangeContentMessages"
+        ],
+        "Object":[
+            "ChangeContentMessages"
+        ],
+        "Type":[
+            "ChangeContentMessages"
+        ],
+        "Relation":[
+            "ChangeContentMessages"
+        ],
+        "Owner":[
+            "ChangeContentMessages"
+        ]
+    },
+
+    "lifecycleHooks": {
+        "onUpdate": [ {
+            "action": "callToDataProvider",
+            "observers": [
+                "props.taskObject"
+            ]
+        } ]
+    }
+}

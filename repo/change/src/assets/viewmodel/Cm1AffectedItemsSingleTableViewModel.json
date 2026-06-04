@@ -1,0 +1,510 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "affectedItemsTableLabel": {
+            "dispValue": "{{i18n.affectedItemsTableLabel}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "exportPanelContext": {
+            "initialValues": {
+                "searchCriteria": {
+                    "objectSet": "",
+                    "parentUid": ""
+                },
+                "dataProvider": {},
+                "columnProvider": {},
+                "providerName": "Awp0ObjectSetRowProvider"
+            },
+            "meta": {}
+        },
+        "affectedItemsSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "actions": {
+        "initTable": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [ {
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos": [ {
+                            "clientScopeURI": "CMAffectedItemsTable",
+                            "operationType": "as_configured",
+                            "typeNames": [
+                                "WorkspaceObject"
+                            ],
+                            "columnsToExclude": []
+                        } ],
+                        "businessObjects": [ {} ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "affectedCols":"{{function:processUIColumns}}"
+            }
+        },
+        "loadObjects": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "{{function:generateColumnConfigURI}}",
+                        "operationType": "as_configured"
+                    },
+                    "saveColumnConfigData": {
+                        "clientScopeURI": "{{data.clientScopeURI}}",
+                        "columnConfigId": "{{data.clientScopeURI}}",
+                        "columns": "{{function:getAffectedItemsCols}}",
+                        "scope": "LoginUser"
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0ObjectSetRowProvider",
+                        "columnFilters": "{{data.columnProviders.affectedItemsColumnProvider.columnFilters}}",
+                        "searchCriteria": {
+                            "objectSet": "{{function:getObjectSetSource}}",
+                            "parentUid": "{{ctx.xrtSummaryContextObject.uid}}"
+                        },
+                        "searchSortCriteria": "{{data.columnProviders.affectedItemsColumnProvider.sortCriteria}}",
+                        "searchFilterFieldSortType": "Alphabetical"
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "dataProviders.affectedItemsDataProvider.columnConfig": "{{function:processColumnConfigResponse}}",
+                "commandContext.dataProvider.columnConfig": "{{function:processColumnConfigResponse}}",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "totalFound": "totalFound"
+            },
+            "events": {
+                "success": [ {
+                    "name": "cm1AffectedItemsSingleTable.updateExportContext"
+                }]
+            }
+        },
+        "updateExportPanelContext":{
+            "actionType": "JSFunction",
+            "method": "updateExportPanelContext",
+            "inputData": {
+                "dataCtxNode": "{{data}}",
+                "context": "{{fields.exportPanelContext}}"
+            },
+            "deps": "js/changeMgmtUtils"
+        },
+        "getFilterFacets": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2019-12-Finder",
+            "method": "getFilterValues",
+            "inputData": {
+                "filterFacetInput": {
+                    "columnFilters": "{{filterFacetInput.columnFilters}}",
+                    "columnName": "{{filterFacetInput.column.field}}",
+                    "maxToReturn": "{{filterFacetInput.maxToReturn}}",
+                    "providerName":"Awp0ObjectSetRowProvider",
+                    "searchCriteria": {
+                        "parentUid": "{{ctx.xrtSummaryContextObject.uid}}",
+                        "objectSet": "{{function:getObjectSetSource}}"
+                    },
+                    "searchFilterMap":  "{{ctx.search.activeFilterMap}}",
+                    "startIndex": "{{filterFacetInput.startIndex}}"
+                }
+            },
+            "outputData": {
+                "filterFacetResults": "{{json:facetValues}}"
+            },
+            "deps": "js/changeMgmtUtils"
+        },
+        "refreshAffectedItemsTable": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name":"affectedItemsTable.plTable.reload"
+                    }
+                ]
+            }
+        },
+        "batchJobForSolutionItems": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getRelationForSolutionItems"
+                },
+                {
+                    "action": "solutionItemRegisterAddPanelContext"
+                },
+                {
+                    "action": "addSolutionItemsDialog"
+                }
+            ]
+        },
+        "getRelationForSolutionItems": {
+            "actionType": "JSFunction",
+            "method": "getModelTypeRelationListMap",
+            "deps": "js/changeMgmtUtils",
+            "inputData": {
+                "relation": "CMHasSolutionItem",
+                "preference": "{{ctx.preferences.CM_affected_items_table_source}}"
+            },
+            "outputData": {
+                "relationMap": ""
+            }
+        },
+        "saveColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI": "CMAffectedItemsTable",
+                        "columnConfigId": "CMAffectedItemsTableColConfig",
+                        "columns": "{{data.dataProviders.affectedItemsDataProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "outputData": {}
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "solutionItemRegisterAddPanelContext": {
+            "actionType": "JSFunctionAsync",
+            "method": "populateAddObjectContext",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "0": {
+                    "target": "{{commandContext.vmo}}",
+                    "relationMap": "{{data.relationMap}}",
+                    "panelActive": "{{ctx.activeToolsAndInfoCommand.commandId === 'Awp0ShowCreateObject'}}",
+                    "visibleTabs": "new,palette,search,classification"
+                }
+            },
+            "outputData": {
+                "addObjectContext": ""
+            }
+        },
+        "addSolutionItemsDialog": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view": "Awp0ShowCreateObject",
+                    "parent": ".aw-layout-workarea",
+                    "placement": "right",
+                    "width": "SMALL",
+                    "height": "FULL",
+                    "isCloseVisible": false,
+                    "push": false,
+                    "visibleTabs": "new,palette,search,classification",
+                    "subPanelContext": "{{function:updateAddPanelContext}}",
+                    "isPinUnpinEnabled": true
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "batchJobForProblemItems": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getRelationForProblemItems"
+                },
+                {
+                    "action": "affectedItemPanelContext"
+                },
+                {
+                    "action": "openAffectedItemsDialog"
+                }
+            ]
+        },
+        "getRelationForProblemItems": {
+            "actionType": "JSFunction",
+            "method": "getModelTypeRelationListMap",
+            "deps": "js/changeMgmtUtils",
+            "inputData": {
+                "relations": "CMHasProblemItem",
+                "preference": "{{ctx.preferences.CM_affected_items_table_source}}"
+            },
+            "outputData": {
+                "relationMap": ""
+            }
+        },
+        "affectedItemPanelContext": {
+            "actionType": "JSFunctionAsync",
+            "method": "populateAddObjectContext",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "0": {
+                    "target": "{{commandContext.vmo}}",
+                    "relationMap": "{{data.relationMap}}",
+                    "panelActive": "{{ctx.activeToolsAndInfoCommand.commandId === 'Awp0ShowCreateObject'}}",
+                    "visibleTabs": "palette,search"
+                }
+            },
+            "outputData": {
+                "addObjectContext": ""
+            }
+        },
+        "openAffectedItemsDialog": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view": "Awp0ShowCreateObject",
+                    "parent": ".aw-layout-workarea",
+                    "placement": "right",
+                    "width": "SMALL",
+                    "height": "FULL",
+                    "isCloseVisible": false,
+                    "push": false,
+                    "visibleTabs": "palette,search",
+                    "subPanelContext": "{{function:updateAddPanelContext}}",
+                    "isPinUnpinEnabled": true
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "batchJobForImpactedItems": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getRelationForImpactedItems"
+                },
+                {
+                    "action": "affectedItemPanelContext"
+                },
+                {
+                    "action": "openAffectedItemsDialog",
+                    "condition": "!conditions.isShowConflictingChangeWarning"
+                },
+                {
+                    "action": "addImpactedItemsDialog",
+                    "condition": "conditions.isShowConflictingChangeWarning"
+                }
+            ]
+        },
+        "addImpactedItemsDialog": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view": "Cm1AddImpactedItems",
+                    "parent": ".aw-layout-workarea",
+                    "placement": "right",
+                    "width": "SMALL",
+                    "height": "FULL",
+                    "isCloseVisible": false,
+                    "push": false,
+                    "visibleTabs": "palette,search",
+                    "subPanelContext": "{{function:updateAddPanelContext}}",
+                    "isPinUnpinEnabled": true
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "getRelationForImpactedItems": {
+            "actionType": "JSFunction",
+            "method": "getModelTypeRelationListMap",
+            "deps": "js/changeMgmtUtils",
+            "inputData": {
+                "relations": "CMHasImpactedItem",
+                "preference": "{{ctx.preferences.CM_affected_items_table_source}}"
+            },
+            "outputData": {
+                "relationMap": ""
+            }
+        },
+        "affItemStartEdit": {
+            "actionType": "JSFunction",
+            "method": "affecteditemCellStartEdit",
+            "deps": "js/changeMgmtUtils",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.affectedItemsDataProvider}}"
+            }
+        },
+        "affItemSaveEdit": {
+            "actionType": "JSFunction",
+            "method": "affecteditemCellSaveEdit",
+            "deps": "js/changeMgmtUtils",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.affectedItemsDataProvider}}"
+            }
+        },
+        "handleSelectionChange": {
+            "actionType": "JSFunction",
+            "method": "handleSelectionChange",
+            "inputData": {
+                "localSelectionData": "{{data.affectedItemsSelectionData}}",
+                "parentSelectionData": "{{subPanelContext.selectionData}}",
+                "focusComponent": "{{subPanelContext.focusComponent}}"
+            },
+            "deps": "js/changeMgmtUtils"
+        },
+        "handleFocusChange": {
+            "actionType": "JSFunction",
+            "method": "handleFocusChange",
+            "inputData": {
+                "localSelectionData": "{{data.affectedItemsSelectionData}}",
+                "focusComponent": "{{subPanelContext.focusComponent}}",
+                "selectionModel": "{{selectionModels.affectedItemsSelectionModel}}"
+            },
+            "deps": "js/changeMgmtUtils"
+        }
+    },
+    "functions": {
+        "processUIColumns": {
+            "functionName": "processUIColumns",
+            "parameters": [],
+            "deps": "js/changeMgmtUtils"
+        },
+        "generateColumnConfigURI": {
+            "functionName": "generateColumnConfigURI",
+            "parameters": ["{{data}}"],
+            "deps": "js/changeMgmtUtils"
+        },
+        "updateAddPanelContext": {
+            "functionName": "updateAddPanelContext",
+            "parameters": [
+                "{{data.addObjectContext}}",
+                "{{commandContext}}"
+            ]
+        },
+        "getObjectSetSource": {
+            "functionName": "getObjectSetSource",
+             "deps": "js/changeMgmtUtils"
+        },
+        "getAffectedItemsCols": {
+            "functionName": "getAffectedItemsCols",
+            "parameters": [
+                "{{data.affectedCols}}",
+                "{{data.dataProviders.affectedItemsDataProvider}}"
+            ],
+            "deps": "js/changeMgmtUtils"
+        },
+        "processColumnConfigResponse": {
+            "functionName": "processColumnConfigResponse",
+            "parameters":[],
+            "deps": "js/changeMgmtUtils"
+        }
+    },
+    "selectionModels": {
+        "affectedItemsSelectionModel": {
+            "selectionMode": "multiple",
+            "selectionTracker": ["alternateID"]
+        }
+    },
+    "dataProviders": {
+        "affectedItemsDataProvider": {
+            "action": "loadObjects",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "filterFacetAction": "getFilterFacets",
+            "filterFacetResults": "{{data.filterFacetResults}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionModel": "{{data.selectionModels.affectedItemsSelectionModel}}",
+                "selectionData": "{{fields.affectedItemsSelectionData}}"
+            },
+            "editConfig": {
+                "startEditAction": "affItemStartEdit",
+                "saveEditAction": "affItemSaveEdit",
+                "identifier": "uid"
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+    "columnProviders": {
+        "affectedItemsColumnProvider": {
+            "saveColumnAndLoadAction": "loadObjects",
+            "resetColumnAction": "resetColumnConfig",
+            "saveColumnAction": "saveColumnConfig"
+        }
+    },
+    "grids": {
+        "affectedItemsTable": {
+            "dataProvider": "affectedItemsDataProvider",
+            "columnProvider": "affectedItemsColumnProvider",
+            "addIconColumn": true,
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "enablePinning": true,
+                "enableSorting": true,
+                "isFilteringEnabled": true
+            }
+        }
+    },
+    "conditions": {
+        "affectedColsNotEmpty": {
+            "expression": "data.affectedCols && data.affectedCols.length > 0"
+        },
+        "isShowConflictingChangeWarning": {
+            "expression": "ctx.preferences.CM_show_concurrent_change_warning[0].toLowerCase() === 'true'"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initTable",
+        "onUpdate": [ 
+            {
+                "action": "handleSelectionChange",
+                "observers": [ "viewModel.atomicData.affectedItemsSelectionData" ]
+            },
+            {
+                "action": "handleFocusChange",
+                "observers": [ "props.subPanelContext.focusComponent" ]
+            }
+        ]
+    },
+    "onEvent": [
+        {
+            "eventId": "cdm.relatedModified",
+            "action": "refreshAffectedItemsTable"
+        },
+        {
+            "eventId": "affectedItemsTable.refreshTable",
+            "action": "refreshAffectedItemsTable"
+        },
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent"
+        },
+        {
+            "eventId": "addSolutionItemEvent",
+            "action": "batchJobForSolutionItems"
+        },
+        {
+            "eventId":"addProblemItemEvent",
+            "action": "batchJobForProblemItems"
+        },
+        {
+            "eventId": "addImpactedItemEvent",
+            "action": "batchJobForImpactedItems"
+        },
+        {
+            "eventId": "cm1AffectedItemsSingleTable.updateExportContext",
+            "action": "updateExportPanelContext"
+        }
+    ],
+    "i18n": {
+        "affectedItemsTableLabel": [
+            "ChangeMessages"
+        ]
+    }
+}

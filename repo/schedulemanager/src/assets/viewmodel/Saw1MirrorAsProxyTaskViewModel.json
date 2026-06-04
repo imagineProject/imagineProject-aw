@@ -1,0 +1,177 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "add": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData": {
+                "searchInput": {
+                    "maxToLoad": -1,
+                    "maxToReturn": -1,
+                    "providerName": "Saw1ScheduleSearchProvider",
+                    "searchCriteria": {
+                        "searchContentType": "SubSchedules",
+                        "masterSchedule": "{{ctx.selected.props.schedule_tag.dbValues[0]}}",
+                        "fetchAllLevelSubschedules": "{{data.fetchAllLevelSubschedules.dbValue}}",
+                        "ignoreUpdatePreventedSchedules": "true"
+                    },
+                    "startIndex": 0
+                }
+            },
+            "outputData": {
+                "searchResults": "searchResults",
+                "totalFound": "totalFound",
+                "totalLoaded": "totalLoaded",
+                "noResultsFound" : "{{i18n.noResultsFound}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "callCreateProxyTasksEvent"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            }
+        },
+        "convertToString": {
+            "actionType":"JSFunction",
+            "method":"getStringFromBoolean",
+            "inputData":{
+                "data": "{{data}}"
+             },
+         "deps":"js/Saw1MirrorAsProxyService"
+        },
+        "callCreateProxyTasksAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2011-06-ScheduleManagement",
+            "method": "createProxyTasks",
+            "inputData": {
+               "newProxyTasks": "{{function:createProxyTaskContainer}}"
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "Fnd0ProxyTask",
+                        "properties": [
+                            {
+                                "name": "fnd0WhatIfMode"
+                            },
+                            {
+                                "name": "fnd0WhatIfData"
+                            },
+                            {
+                                "name":"fnd0schedule_tag"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events": {
+              "success": [
+                {
+                  "name": "cdm.relatedModified",
+                  "eventData": {
+                    "refreshLocationFlag": false,
+                    "relatedModified": ["{{ctx.pselected}}"]
+                  }
+                },
+                {
+                    "name": "closeDialog"
+                }
+              ]
+            },
+            "actionMessages":
+             {
+                 "failure":
+                 [
+                     {
+                        "message": "soaFailureMessage"
+                     }
+                 ]
+             },
+            "deps": "js/Saw1MirrorAsProxyService"
+        },
+        "closePanelDialog":{
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "callCreateProxyTasksEvent",
+            "action": "callCreateProxyTasksAction"
+        },
+        {
+            "eventId":"closeDialog",
+            "action":"closePanelDialog"
+        }
+    ],
+    "functions": {
+        "createProxyTaskContainer":
+        {
+            "functionName": "getCreateProxyTaskContainer",
+            "parameters":
+            [
+                "{{ctx.selected}}",
+                "{{data}}"
+            ]
+        }
+    },
+    "messages": {
+        "soaFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "createSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.mirrorAsProxyConfirmation}}"
+        }
+    },
+    "data": {
+        "fetchAllLevelSubschedules": {
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "true",
+            "displayName": "{{i18n.saw1MirrorInSubSchedules}}",
+            "vertical": true,
+            "labelPosition": "PROPERTY_LABEL_AT_TOP",
+            "propertyRadioFalseText": "{{i18n.saw1FirstLevelOfSubSchedules}}",
+            "propertyRadioTrueText": "{{i18n.saw1AllSubSchedules}}"
+        }
+    },
+    "conditions": {
+    },
+    "i18n": {
+        "mirrorAsProxyCommandTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "saw1_add": [
+            "ScheduleManagerMessages"
+        ],
+        "saw1MirrorInSubSchedules": [
+            "ScheduleManagerMessages"
+        ],
+        "saw1FirstLevelOfSubSchedules": [
+            "ScheduleManagerMessages"
+        ],
+        "saw1AllSubSchedules": [
+            "ScheduleManagerMessages"
+        ],
+        "mirrorAsProxyConfirmation": [
+            "ScheduleManagerMessages"
+        ]
+    }
+}

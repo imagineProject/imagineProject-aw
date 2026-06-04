@@ -1,0 +1,233 @@
+{
+  "schemaVersion": "1.0.0",
+  "pasteHandlers": {
+    "pasteHandlerForFolderSchDeliverable": {
+      "action": "actionForSchDeliverableSchTaskDeliverable",
+      "activeWhen": {
+        "condition": "conditions.isPasteHandlerActiveForFolderSchDeliverable"
+      }
+    },
+    "pasteHandlerForTaskGantt": {
+      "action": "validateScheduleTaskPaste",
+      "activeWhen": {
+        "condition": "conditions.isPasteHandlerActiveForTaskGantt"
+      }
+    }
+  },
+  "actions": {
+    "actionForSchDeliverableSchTaskDeliverable": {
+      "actionType": "JSFunction",
+      "method": "deliverablePasteHandler",
+      "deps": "js/Saw1CommandHelper",
+      "inputData": {
+        "targetObject": "{{pasteContext.targetObject}}",
+        "sourceObject": "{{pasteContext.sourceObject}}",
+        "relationType": "{{pasteContext.relationType}}"
+      },
+      "events": {
+        "success": [
+          {
+            "name": "dragDrop.success",
+            "condition": "pasteContext.isDragDropIntent",
+            "eventData": {
+              "sourceObjects": "{{pasteContext.sourceObject}}",
+              "targetObject": "{{pasteContext.targetObject}}"
+            }
+          }
+        ]
+      },
+      "actionMessages": {
+        "failure": [
+          {
+            "message": "displayError"
+          }
+        ]
+      }
+    },
+    "validateScheduleTaskPaste": {
+      "actionType": "JSFunctionAsync",
+      "method": "checkScheduleTask",
+      "deps": "js/Saw1CommandHelper",
+      "inputData": {
+        "ctx": "{{ctx}}"
+      },
+      "outputData": {
+        "isScheduleTask": ""
+      },
+      "events": {
+        "success": [
+          {
+            "name": "cdm.relatedModified",
+            "eventData": {
+              "relatedModified": [
+                "{{ctx.pselected}}"
+              ]
+            }
+          }
+        ]
+      },
+      "actionMessages": {
+        "failure": [
+          {
+            "condition": "errorCode=='errMsgForScheduleTask'",
+            "message": "scheduleTaskErrorMessage"
+          },
+          {
+            "condition": "errorCode=='errMsgForPasteOperation'",
+            "message": "errMsgForPasteOperation"
+          },
+          {
+            "condition": "errorCode=='errMsgForSchSummaryTask'",
+            "message": "errMsgForSchSummaryTask"
+          },
+          {
+            "condition": "errorCode!='errMsgForPasteOperation' && errorCode!='errMsgForSchSummaryTask' ",
+            "message": "schSoaErrorFailureMsg"
+          }
+        ]
+      }
+    },
+    "pasteTaskOperation": {
+      "actionType": "TcSoaService",
+      "serviceName": "Internal-ProjectManagement-2014-10-ScheduleManagement",
+      "method": "pasteTasks",
+      "inputData": {
+        "inputs": "{{function:pasteScheduleTasks}}"
+      },
+      "events": {
+        "success": [
+          {
+            "name": "cdm.relatedModified",
+            "eventData": {
+              "relatedModified": [
+                "{{ctx.pselected}}"
+              ]
+            }
+          }
+        ]
+      },
+      "actionMessages": {
+        "failure": [
+          {
+            "condition": "errorCode=='errMsgForPasteOperation'",
+            "message": "errMsgForPasteOperation"
+          },
+          {
+            "condition": "errorCode=='errMsgForSchSummaryTask'",
+            "message": "errMsgForSchSummaryTask"
+          },
+          {
+            "condition": "errorCode!='errMsgForPasteOperation' && errorCode!='errMsgForSchSummaryTask' ",
+            "message": "schSoaErrorFailureMsg"
+          }
+        ]
+      },
+      "deps": "js/userListService"
+    }
+  },
+  "conditions": {
+    "isPasteHandlerActiveForFolderSchDeliverable": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Folder"
+            }
+          },
+          {
+            "$or": [
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "SchDeliverable"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "SchTaskDeliverable"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "isPasteHandlerActiveForTaskGantt": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "ScheduleTask"
+            }
+          },
+          {
+            "$source": "pasteContext.sourceObject",
+            "$query": {
+              "$typeOf": "ScheduleTask"
+            }
+          },
+          {
+            "$or": [
+              {
+                "$source": "ctx.locationContext['ActiveWorkspace:SubLocation']",
+                "$query": {
+                  "$eq": "com.siemens.splm.client.schmgt:ScheduleNavigationSubLocation"
+                }
+              },
+              {
+                "$source": "pasteContext.pageContext.secondaryActiveTabId",
+                "$query": {
+                  "$eq": "tc_xrt_Tasks"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "messages": {
+    "displayError": {
+      "messageType": "ERROR",
+      "messageText": "{{errorCode}}"
+    },
+    "errMsgForPasteOperation": {
+      "messageType": "ERROR",
+      "messageText": "{{i18n.errMsgForPasteOperation}}"
+    },
+    "schSoaErrorFailureMsg": {
+      "messageType": "ERROR",
+      "messageText": "{{errorCode}}"
+    },
+    "errMsgForSchSummaryTask": {
+      "messageType": "ERROR",
+      "messageText": "{{i18n.errMsgForSchSummaryTask}}"
+    },
+    "scheduleTaskErrorMessage": {
+      "messageType": "ERROR",
+      "messageText": "{{i18n.scheduleTaskErrorMsg}}"
+    }
+  },
+  "functions": {
+    "pasteScheduleTasks": {
+      "functionName": "pasteScheduleTasks",
+      "parameters": [
+        "{{ctx}}"
+      ]
+    }
+  },
+  "i18n": {
+    "errMsgForSchSummaryTask": [
+      "ScheduleManagerMessages"
+    ],
+    "scheduleTaskErrorMsg": [
+      "ScheduleManagerMessages"
+    ],
+    "errMsgForPasteOperation": [
+      "ScheduleManagerMessages"
+    ]
+  }
+}

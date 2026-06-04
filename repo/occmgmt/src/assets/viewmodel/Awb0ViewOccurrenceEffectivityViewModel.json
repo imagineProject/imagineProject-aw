@@ -1,0 +1,125 @@
+{
+    "schemaVersion" : "1.0.0",
+    "i18n":
+    {
+        "elementEffectivityTitle": ["OccurrenceManagementConstants"],
+        "elementEffectivities": ["OccurrenceManagementConstants"]
+    },
+    "data":
+    {
+       "commandDisplayEffectivity":"awb0_commandDisplayAndRemoveEffectivity",
+       "previousSelectedUid": null,
+       "previousSelectionLength": []
+    },
+
+    "dataProviders":
+    {
+        "getAppliedEffectivities":
+        {
+            "action": "searchAppliedEffectivities",
+            "response": "{{data.effectivitiesFound}}",
+            "totalFound": "{{data.effectivitiesTotalFound}}",
+            "selectionModelMode": "single"
+        }
+    },
+
+    "actions":
+    {
+        "getAppliedEffectivitiesAction":
+        {
+            "actionType": "dataProvider",
+            "method": "getAppliedEffectivities"
+        },
+
+        "searchAppliedEffectivities":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData":
+            {
+                "searchInput":
+                {
+                    "maxToLoad": 20,
+                    "maxToReturn": 20,
+                    "providerName": "Awb0EffectivityProvider",
+                    "searchFilterFieldSortType": "Alphabetical",
+                    "startIndex": "{{data.dataProviders.getAppliedEffectivities.startIndex}}",
+                    "searchCriteria":
+                    {
+                        "elementUid": "{{props.subPanelContext.occContext.pwaSelection[0].uid}}",
+                        "productContextUid": "{{props.subPanelContext.occContext.productContextInfo.uid}}"
+                    },
+
+                    "searchFilterMap":
+                    {
+                    },
+                    "searchSortCriteria":
+                    [
+                    ],
+                    "attributesToInflate":
+                    [
+                    ],
+                    "internalPropertyName": ""
+                }
+            },
+            "outputData":
+            {
+                "effectivitiesFound": "searchResults",
+                "effectivitiesTotalFound": "totalFound"
+            },
+
+            "deps": "js/sharedEffectivityService"
+        },
+        "closePanel":
+        {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "viewBatchJobAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getAppliedEffectivitiesAction",
+                    "condition": "props.subPanelContext.occContext.pwaSelection[0].props.awb0Parent.dbValues[0] !== null"
+                },
+                {
+                    "action": "closePanel",
+                    "condition": "props.subPanelContext.occContext.pwaSelection[0].props.awb0Parent.dbValues[0] === null || conditions.isSelectionChanged || conditions.isSelectionChangedfromOnetoMultiple"
+                }
+            ]
+        },
+        "setPreviousSelectedUidAndLength":{
+            "actionType": "JSFunction",
+            "method": "updatePreviousSelectedUid",
+            "inputData": {
+                    "currentSelectedUid": "{{ctx.selected.uid}}",
+                    "data":"{{data}}",
+                    "subPanelContext":"{{props.subPanelContext}}"
+            },
+            "deps": "js/aceEffectivityService"
+        }
+    },
+    "conditions": {
+        "isSelectionChangedfromOnetoMultiple": {
+            "expression": "data.previousSelectionLength === 1 && props.subPanelContext.occContext.pwaSelection.length > 1"
+        },
+        "isSelectionChanged": {
+            "expression": "data.previousSelectionLength === 1 && data.previousSelectedUid !== props.subPanelContext.occContext.pwaSelection[0].uid"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "setPreviousSelectedUidAndLength",
+        "onUpdate": [
+            {
+                "action": "viewBatchJobAction",
+                "observers": [ "props.subPanelContext.occContext.pwaSelection" ]
+            }
+        ]
+    }
+}

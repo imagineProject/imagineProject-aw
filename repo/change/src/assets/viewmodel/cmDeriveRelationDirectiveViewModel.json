@@ -1,0 +1,187 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports":
+    [
+        "js/aw-repeat.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-default-cell.directive",
+        "js/aw-icon-button.directive",
+        "js/aw-list.directive"
+    ],
+
+    "actions":
+    {
+        "init":
+        {
+            "actionType": "dataProvider",
+            "method": "getPropagateRelationProvider"
+        },
+        "loadRelationObjects":
+        {
+            "actionType": "JSFunction",
+            "method": "getRelationsObjects",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "relation":  "{{data.subPanelContext}}"
+            },
+            "outputData":
+            {
+                "relatedObjects":"relatedObjects",
+                "displayedType":"displayedType",
+                "countLabel":"countLabel"
+            },
+            "deps": "js/cmDeriveRelationDirective"
+        },
+        "selectLoadedObjects":
+        {
+            "actionType": "JSFunction",
+            "method": "selectLoadedObjects",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "deps": "js/cmDeriveRelationDirective"
+        },
+        "selectAll":
+        {
+            "actionType": "JSFunction",
+            "method": "selectCells",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "selectionMode": "selectAll"
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "selectNone":
+        {
+            "actionType": "JSFunction",
+            "method": "selectCells",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "selectionMode": "selectNone"
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "handleSelectionModel":
+        {
+            "actionType": "JSFunction",
+            "method": "handleSelectionModel",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "outputData":{
+               "canSelectAll":"canSelectAll",
+               "canDeselectAll":"canDeselectAll",
+               "countLabel":"countLabel"
+            },
+            "deps": "js/Cm1CreateChangeService"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "init"
+    },
+    "conditions":
+    {
+        "canSelectAll":
+        {
+            "expression": "data.canSelectAll.dbValue"
+        },
+        "canDeselectAll":
+        {
+            "expression": "data.canDeselectAll.dbValue"
+        }
+    },
+    "data":
+    {
+        "displayedType":
+        {
+            "displayName": "",
+            "type": "STRING"
+        },
+        "canSelectAll":
+        {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        },
+        "canDeselectAll":
+        {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        },
+        "showList":
+        {
+            "dbValue": true,
+            "type": "BOOLEAN"
+        },
+        "selectAllCommand":{
+         
+                "iconName": "Checkmark",
+                "tooltip": "{{i18n.selectAll}}",
+                "action": "selectAll"
+         
+      },
+      "deSelectAllCommand":{
+         
+                "iconName": "Checkmark",
+                "tooltip": "{{i18n.clearSelections}}",
+                "action": "selectNone"
+           
+      },
+      "countLabel":
+        {
+            "displayName": "{{i18n.countLabel}}",
+            "type": "STRING",
+            "isRequired": "false"
+        }
+    },
+    
+    "onEvent":
+     [
+
+        {
+            "eventId": "getPropagateRelationProvider.selectionChangeEvent",
+            "action": "handleSelectionModel"
+        },
+        {
+            "eventId": "getPropagateRelationProvider.modelObjectsUpdated",
+            "cacheEventData": true,
+            "action": "selectLoadedObjects"
+        }
+
+    ],
+
+    "dataProviders":
+    {
+        "getPropagateRelationProvider":
+        {
+            "action": "loadRelationObjects",
+            "response": "{{data.relatedObjects}}",
+            "totalFound": "{{data.relatedObjects.length}}",
+            "commands":
+            {
+                "Awp0ShowObjectCell":
+                {
+                    "id": "cmdOpen",
+                    "title": "Open",
+                    "areas": [ "com.siemens.splm.clientfx.ui.modelObjectListActionCommands" ],
+                    "priorities": [ 300 ],
+                    "dependencies": [ "js/showObjectCommandHandler" ],
+                    "displayOption": "ON_HOVER_AND_SELECTION",
+                    "position": "TOP_RIGHT"
+                }
+            },
+            "selectionModelMode": "multiple"
+        }
+    },
+    "i18n":
+    {
+        "countLabel": ["ChangeMessages"],
+        "selectAll": ["ChangeMessages"],
+        "clearSelections": ["ChangeMessages"]
+    }
+
+}

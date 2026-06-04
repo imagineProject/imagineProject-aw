@@ -1,0 +1,153 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "data": {
+        "icon": {
+            "dbValue": "graEmptyReportFaded128"
+        },
+        "dashboardLocation": ["Reports"]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "actions": {
+        "loadPanel": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "loadDashboardTabs",
+                "condition": "!ctx.dashboardObjects"
+            },{
+                "action": "openSearchDataDialog",
+                "condition": "!conditions.nullSearchCriteria && conditions.summaryReport"
+            },{
+                "action": "openSearchItemDialog",
+                "condition": "!conditions.nullSearchCriteria && !conditions.summaryReport"
+            } ]
+        },
+        "openSearchDataDialog": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/command.service",
+            "method": "executeCommandIfVisibleAndEnabled",
+            "inputData": {
+                "commandId": "Rb0ConfigureSearch",
+                "commandContext": {
+                    "reportsState": "{{subPanelContext.provider.reportsState}}"
+                },
+                "runActionWithViewModel": "{{parameters.commandActionExecutor.runActionWithViewModel}}"
+            }
+        },
+        "openSearchItemDialog": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/command.service",
+            "method": "executeCommandIfVisibleAndEnabled",
+            "inputData": {
+                "commandId": "Rb0ConfigureItemSearch",
+                "commandContext": {
+                    "reportsState": "{{subPanelContext.provider.reportsState}}"
+                },
+                "runActionWithViewModel": "{{parameters.commandActionExecutor.runActionWithViewModel}}"
+            }
+        },
+        "loadDashboardTabs":{
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "attributesToInflate": ["owning_user", "Fnd0Applicable_Assignment"],
+                        "maxToLoad": -1,
+                        "maxToReturn": -1,
+                        "providerName": "Rb0ReportsDataProvider",
+                        "searchCriteria": {
+                            "isFilterMapRequired": "False",
+                            "sourceObject": "",
+                            "relationsPath": "{{function:getRelationsPathForDashboardTabsLoading}}"
+                        },
+                        "searchFilterFieldSortType": "",
+                        "startIndex": "",
+                        "searchFilterMap6": "",
+                        "searchSortCriteria": ""
+                    },
+                    "inflateProperties": true,
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Awp0ReportBuilder"
+                    }
+                },
+                "1": {
+                    "types": [ {
+                        "name": "Rb0ReportsDashboard",
+                        "properties": [
+                            {
+                                "name": "rb0DashboardName"
+                            },
+                            {
+                                "name": "rb0SourceDashboard"
+                            },
+                            {
+                                "name": "rb0DashboardDescription"
+                            },
+                            {
+                                "name": "rb0DashboardLocation"
+                            },
+                            {
+                                "name": "rb0DashboardId"
+                            },
+                            {
+                                "name": "rb0DashboardTemplatesList"
+                            },
+                            {
+                                "name": "owning_user"
+                            },
+                            {
+                                "name": "Fnd0Applicable_Assignment"
+                            }
+                        ]
+                    } ]
+                }
+            },
+            "outputData":{
+                "ctx.dashboardObjects": "{{json:searchResultsJSON}}"
+            }
+        }
+    },
+    "functions": {
+        "getRelationsPathForDashboardTabsLoading":{
+            "functionName": "getRelationsPathForDashboardTabsLoading",
+            "parameters": ["{{data.dashboardLocation}}"],
+            "deps": "js/showMyDashboardService"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "loadPanel"
+    },
+    "conditions": {
+        "nullSearchCriteria":{
+            "expression": "ctx.state.params.additionalSearchCriteria || ctx.state.params.searchCriteria || ctx.state.params.reportId"
+        },
+        "summaryReport":{
+            "expression": "ctx.state.params.reportType==='0'"
+        }
+    },
+    "i18n": {
+        "noChartData": [ "ReportChartMessages" ],
+        "dataTabName": [
+            "ReportChartMessages"
+        ],
+        "searchItemContext":[
+            "ReportChartMessages"
+        ],
+        "searchItem":[
+            "ReportChartMessages"
+        ],
+        "searchDataContext":[
+            "ReportChartMessages"
+        ],
+        "noItemAvailable":[
+            "ReportChartMessages"
+        ]
+    }
+}

@@ -1,0 +1,227 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports": [],
+    "actions": {
+        "getDefaultValuesBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getQueryProperties"
+                },
+                {
+                    "action": "getSaveAsQueryName"
+                },
+                {
+                    "action": "getSaveAsQueryDesc"
+                }
+            ]
+        },
+        "getQueryProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": [
+                    {
+                        "uid": "{{props.subPanelContext.selection[0].uid}}",
+                        "type": "ImanQuery"
+                    }
+                ],
+                "attributes": [
+                    "query_name",
+                    "query_desc",
+                    "query_class",
+                    "query_clauses"
+                ]
+            },
+            "outputData": {
+                "queryInfo": "{{function:getQueryInfo}}"
+            },
+            "deps": "js/AwSearchQueryBuilderService"
+        },
+        "createQuery": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "createQueryObject"
+                },
+                {
+                    "action": "updatesearchStateWithSavedQuery"
+                },
+                {
+                    "action": "closeDialogPanel"
+                }
+
+            ]
+        },
+        "createQueryObject": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Search-2024-12-SavedQuery",
+            "method": "createOrModifySavedQuery",
+            "inputData": {
+                "input" : {
+                    "queryName": "{{data.createQueryName.dbValue}}",
+                    "queryDescription": "{{data.createQueryProperty1.dbValue}}",
+                    "searchType": "{{data.queryInfo.queryClass}}",
+                    "isICSType": false,
+                    "queryClauses": "{{function:getClausesForSave}}",
+                    "revisionRuleName": "{{data.queryInfo.revRule}}",
+                    "sorter" : "{{data.queryInfo.querySorter}}"
+                }
+            },
+            "outputData": {
+                "savedquery": "savedquery"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "SOAFailureMsg"
+                    }
+                ]
+            },
+            "deps": "js/AwSavedQueryCriteriaTableService"
+        },
+        "updatesearchStateWithSavedQuery" : {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.searchState}}",
+                "value": {
+                    "saveAsUid": "{{data.savedquery.uid}}"
+                }
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "primaryWorkarea.reset"
+                    }
+                 ]
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "closeDialogPanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "getSaveAsQueryName": {
+            "actionType": "JSFunction",
+            "method": "getSaveAsQueryName",
+            "inputData": {
+                "copyMsg": "{{i18n.copyMsg}}",
+                "replaceText":"{{data.queryInfo.queryName}}",
+                "reportName": "{{data.createQueryName}}"
+            },
+            "outputData": {
+                "createQueryName": ""
+            },
+            "deps": "js/Awp0SaveSearchUtils"
+        },
+        "getSaveAsQueryDesc": {
+            "actionType": "JSFunction",
+            "method": "getSaveAsQueryDesc",
+            "inputData": {
+                "queryDesc":"{{data.queryInfo.queryDesc}}",
+                "reportDesc": "{{data.createQueryProperty1}}"
+            },
+            "outputData": {
+                "createQueryProperty1": ""
+            },
+            "deps": "js/Awp0SaveSearchUtils"
+        }
+    },
+    "data":
+    {
+        "createQueryName":
+        {
+            "displayName": "{{i18n.Name}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "isEditable": "true",
+            "maxLength": 128,
+            "autofocus": true,
+            "dbValue": ""
+        },
+
+        "createQueryProperty1":
+        {
+            "displayName": "{{i18n.Description}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "maxLength": 128,
+            "dbValue": ""
+        },
+
+         "createQueryProperty2":
+        {
+            "displayName": "{{i18n.queryType}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "maxLength": 128
+        },
+
+         "createQueryDefaultValue":
+        {
+            "displayName": "{{i18n.DefaultValue}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "maxLength": 128
+        }
+
+    },
+
+    "functions":
+    {
+        "getNewReportId":{
+            "functionName": "getNewReportId",
+            "parameters": ["{{data.reportId}}"]
+        },
+        "getClausesForSave":{
+            "functionName": "getClausesForSave",
+            "parameters": ["{{props.subPanelContext.searchState.initialClauseVMOs}}"]
+        },
+        "getQueryInfo": {
+            "functionName": "getQueryInfo",
+            "parameters": []
+        }
+    },
+
+    "messages": {
+        "SOAFailureMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+
+    "conditions":
+    {
+        "isValidToCreateQuery":
+        {
+            "expression": "data.createQueryName.dbValue"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "getDefaultValuesBatchJob"
+    },
+    "i18n":
+    {
+        "Name":[ "SearchMessages"],
+        "Description":[ "SearchMessages"],
+        "queryType": ["SearchMessages"],
+        "DefaultValue": ["SearchMessages"],
+        "Create" : ["SearchMessages"],
+        "saveAsNewQuery" :["SearchMessages"],
+        "saveButtonText": ["SearchMessages"],
+        "properties": ["SearchMessages"],
+        "copyMsg": ["SearchMessages"]
+    }
+
+}

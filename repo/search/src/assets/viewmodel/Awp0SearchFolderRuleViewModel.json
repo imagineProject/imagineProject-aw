@@ -1,0 +1,257 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "searchFolder": {
+            "initialValues": {
+                "pwaSelection": [],
+                "autoApplyFilters": true,
+                "selectFirstObjectPreference": false,
+                "awp0SearchType": "Unknown"
+            },
+            "meta": {
+                "categories": [ {
+                    "filterValues": [ {
+                        "selected": {
+                            "field": "true",
+                            "type": "ViewModelProperty"
+                        }
+                    } ]
+                } ]
+            }
+        },
+        "searchFolderName":
+        {
+            "displayName": "{{i18n.Name}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "maxLength": 128,
+            "isEditable": "false",
+            "dbValue": "{{data.searchFolder.props.object_name.dbValues[0]}}",
+            "dispValue": "{{data.searchFolder.props.object_name.uiValues[0]}}"
+        },
+        "searchFolderDesp":
+        {
+            "displayName": "{{i18n.Description}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "maxLength": 128,
+            "isEditable": "false",
+            "dbValue": "{{data.searchFolder.props.object_desc.dbValues[0]}}",
+            "dispValue": "{{data.searchFolder.props.object_desc.uiValues[0]}}"
+        },
+        "resultsText": "{{i18n.resultsText}}",
+        "searchText": "{{i18n.searchFolderSearch}}"
+    },
+    "actions":
+    {
+        "updateResultsCaptionConditionally": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateResultsCaptionForFullTextSearch",
+                    "condition": "data.searchFolder.awp0SearchType === 'Awp0FullTextSearchProvider'"
+                },
+                {
+                    "action": "updateResultsCaptionForAdvancedSearch",
+                    "condition": "data.searchFolder.awp0SearchType === 'Awp0SavedQuerySearchProvider'"
+                }
+            ]
+        },
+        "updateResultsCaptionForFullTextSearch": {
+            "actionType": "JSFunction",
+            "method": "updateResultsCaption",
+            "inputData": {
+                "resultsText": "{{i18n.resultsText}}",
+                "searchState": "{{fields.searchFolder}}"
+            },
+            "outputData": {
+                "resultsText": "resultsText"
+            },
+            "deps": "js/advancedSearchService"
+        },
+        "updateResultsCaptionForAdvancedSearch": {
+            "actionType": "JSFunction",
+            "method": "updateResultsCaption",
+            "inputData": {
+                "resultsText": "{{i18n.resultsText}}",
+                "searchState": "{{fields.searchFolder}}",
+                "customResultsCount": "{{fields.searchFolder.WSOMFindSetSearchLimit}}"
+            },
+            "outputData": {
+                "resultsText": "resultsText"
+            },
+            "deps": "js/advancedSearchService"
+        },
+        "initialize": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setEditingValueOnmount"
+                },
+                {
+                    "action": "setInitialEditMode"
+                },
+                {
+                    "action": "updateState"
+                }
+            ]
+        },
+        "setInitialEditMode":
+        {
+            "actionType": "JSFunction",
+            "method": "setInitialEditMode",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "searchFolder": "{{subPanelContext.selected}}"
+            },
+            "outputData":
+            {
+                "searchFolderSelected": ""
+            },
+            "deps": "js/searchFolderService"
+        },
+        "updateState":
+        {
+            "actionType": "JSFunction",
+            "method": "updateState",
+            "inputData":
+            {
+                "searchFolderSelected": "{{data.searchFolderSelected}}",
+                "searchFolder": "{{data.searchFolder}}"
+            },
+            "outputData": {
+                "searchFolder": ""
+            },
+            "deps": "js/searchFolderService"
+        },
+        "actionCallForEditSaveCancelEditRule":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "searchFolderRuleTriggered",
+                    "condition":"props.subPanelContext.context.searchState.editing === true"
+                },
+                {
+                    "action":"searchFolderRuleTriggeredSaved",
+                    "condition":"props.subPanelContext.context.searchState.editing === 'save'"
+                },
+                {
+                    "action":"Awp0CancelEditSearchFolderRuleCommandActionBatchJob",
+                    "condition":"props.subPanelContext.context.searchState.editing === 'cancel'"
+                }
+            ]
+        },
+        "searchFolderRuleTriggered": {
+            "actionType": "JSFunction",
+            "method": "editSearchFolderRule",
+            "deps": "js/searchFolderService",
+            "inputData": {
+                "searchFolderCtx": "{{fields.searchFolder}}"
+            }
+        },
+        "searchFolderRuleTriggeredSaved": {
+            "actionType": "JSFunction",
+            "method": "editActiveFolder",
+            "deps": "js/searchFolderService",
+            "inputData": {
+                "parentFolderUID": "",
+                "searchFolder": "{{fields.searchFolder}}",
+                "reportDefinitionUID": "{{function:getReportDefinitionUID}}",
+                "searchCriteria":"{{function:getReportDefinitionCriteriaForSave}}"
+            }
+        },
+        "Awp0CancelEditSearchFolderRuleCommandActionBatchJob":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action":"Awp0CancelEditSearchFolderRuleCommandAction"
+                },
+                {
+                    "action":"updateResultsCaptionConditionally"
+                }
+            ]
+        },
+        "Awp0CancelEditSearchFolderRuleCommandAction": {
+            "actionType": "JSFunctionAsync",
+            "method": "cancelEditSearchFolderRule",
+            "deps": "js/searchFolderService",
+            "inputData": {
+                "searchFolderCtx": "{{data.searchFolder}}"
+            },
+            "outputData": {
+                "searchFolder": ""
+            }
+        },
+        "setEditingValueOnmount": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.context.searchState}}",
+                "value": {
+                    "editing": null
+                }
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "functions": {
+        "getReportDefinitionUID": {
+            "functionName": "getReportDefinitionUID",
+            "parameters":
+            [
+                "{{data.searchFolder.props.awp0SearchDefinition.dbValue}}"
+            ]
+        },
+        "getReportDefinitionCriteriaForSave":
+        {
+            "functionName": "getReportDefinitionCriteriaForSave",
+            "parameters":
+            [
+                "{{fields.searchFolder}}",
+                 "{{data}}"
+            ]
+        }
+    },
+    "conditions": {
+        "fullTextSearchNonEditModeSOACallCondition": {
+            "expression": "data.searchFolder.awp0SearchType === 'Awp0FullTextSearchProvider' && data.searchFolder.getSearchSettingsSOACallFinished && !(data.searchFolder.isEditMode === true)"
+        },
+        "fullTextSearchEditModeSOACallCondition": {
+            "expression": "data.searchFolder.awp0SearchType === 'Awp0FullTextSearchProvider' && data.searchFolder.isEditMode === true"
+        },
+        "isSavedQueryProvider": {
+            "expression": "data.searchFolder.awp0SearchType === 'Awp0SavedQuerySearchProvider'"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initialize",
+        "onUpdate": [
+            {
+                "action": "updateResultsCaptionConditionally",
+                "observers": [ "viewModel.searchFolder.totalFound" ]
+            },
+            {
+                "action": "actionCallForEditSaveCancelEditRule",
+                "observers": ["props.subPanelContext.context.searchState.editing"]
+            }
+        ]
+    },
+    "onEvent": [
+    ],
+    "i18n":
+    {
+        "Name":[ "SearchMessages"],
+        "Description":[ "SearchMessages"],
+        "searchFolderProperties":[ "SearchMessages"],
+        "searchFolderResults":[ "SearchMessages"],
+        "searchFolderSearch":[ "SearchMessages"],
+        "savedSearch": [ "SearchMessages" ],
+        "Awp0SearchTitle": ["SearchMessages"],
+        "searchBtn": [ "SearchMessages" ],
+        "keyword": [ "SearchMessages" ],
+        "advancedText": [ "SearchMessages" ],
+        "searchesText": [ "SearchMessages" ],
+        "resultsText": [ "SearchMessages" ]
+    }
+}

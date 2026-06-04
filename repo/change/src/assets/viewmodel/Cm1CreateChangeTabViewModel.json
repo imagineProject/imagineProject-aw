@@ -1,0 +1,1951 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {
+        "onMount": "initPanel",
+        "onUnmount": "updateChangeCtxVariableFalse",
+        "onUpdate": [
+            {
+                "action": "performPostProcessingAfterXRTLoaded",
+                "observers": [ "viewModel.atomicData.xrtState.xrtTypeLoaded" ]
+            },
+            {
+                "action": "assignUserProjectsJob",
+                "observers": [ "viewModel.subPanelContext.projectState.triggerAssign" ]
+            },
+            {
+                "action": "removeUserProjectsJob",
+                "observers": [ "viewModel.subPanelContext.projectState.triggerRemove" ]
+            },
+            {
+                "action": "updateAttachmentsJob",
+                "observers": [ "viewModel.subPanelContext.attachmentsState.updateAttachmentsSection" ]
+            },
+            {
+                "action": "assignResponsibleUserJob",
+                "observers": [
+                    "props.subPanelContext.addUserPanelState.value.selectedUsers"
+                ]
+
+
+
+
+            }
+        ]
+
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions": {
+        "initPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getTypeSelectedInformation"
+                },
+                {
+                    "action": "loadChangePanel"
+                },
+                {
+                    "action": "PopulateCopyOptions"
+                },
+                {
+                    "action": "loadUserProjects"
+                },
+                {
+                    "action": "updateAssignedProjectsFromPreviousObj"
+                },
+                {
+                    "action": "initializeSymptomDefectProvider",
+                    "condition": "ctx.CreateChangePanel.isDerive"
+                }
+            ]
+        },
+        "updateAssignedProjectsFromPreviousObj": {
+            "actionType": "JSFunctionAsync",
+            "method": "updateAssignedProjectsProvider",
+            "inputData": {
+                "projectState": "{{subPanelContext.projectState}}"
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "initializeSymptomDefectProvider": {
+            "actionType": "JSFunction",
+            "method": "updateSymptomDefectProvider",
+            "inputData": {
+                "selectedObjects": "{{ctx.mselected}}",
+                "symptomDefectProvider": "{{data.dataProviders.getSymptomDefectProvider}}"
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "getTypeSelectedInformation": {
+            "actionType": "JSFunctionAsync",
+            "method": "getTypeSelectedInformation",
+            "inputData": {
+                "data": "{{data}}",
+                "selectedTypeObject": "{{props.subPanelContext.selectedTypeObject}}"
+            },
+            "outputData": {
+                "boTypeConst":"boTypeConst",
+                "getTypeConstInput":"getTypeConstInput",
+                "selectedType": "selectedType",
+                "displayedType":"displayedType",
+                "openNewChange" : "openNewChange",
+                "setActiveChange": "setActiveChange",
+                "isSimpleChangeObjectCreation": "isSimpleChangeObjectCreation",
+                "processTemplatePropName": "processTemplatePropName"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "changeGetTypeFromBOConstant"
+                    }
+                ]
+            },
+
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "changeGetTypeFromBOConstant": {
+            "actionType": "TcSoaService",
+            "serviceName": "BusinessModeler-2007-06-Constants",
+            "method": "getTypeConstantValues",
+            "inputData": {
+                "keys": "{{data.getTypeConstInput}}"
+            },
+            "outputData": {
+                "boTypeConst":"{{function:outputForBOTypeConstant}}"
+            },
+            "deps": "js/changeMgmtUtils"
+        },
+        "submitToHostAction": {
+            "actionType": "JSFunction",
+            "method": "sendEventToHost",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/changeMgmtUtils"
+        },
+        "updateChangeCtxVariable": {
+            "actionType": "JSFunction",
+            "method": "registerObjectProcessing",
+            "inputData": {
+                "subPanelContext":"{{props.subPanelContext}}"
+
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "createChangeObjectWarn":{
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-09-DataManagement",
+            "method": "expandGRMRelationsForPrimary",
+            "inputData": {
+                "primaryObjects": "{{ctx.mselected}}",
+                "pref": {
+                    "expItemRev": false,
+                    "returnRelations": true,
+                    "info": [
+                        {
+                            "relationTypeName": "CMHasImpactedItem",
+                            "otherSideObjectTypes": ""
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "relatedImpactedObjects": "{{function:processPrimaryObjectsOutput}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "condition": "(data.relatedImpactedObjects.length >0)",
+                        "name": "Cm1CreateChange.warningDeriveCreateEvent"
+                    },
+                    {
+                        "condition": "!(data.relatedImpactedObjects.length >0)",
+                        "name": "createChangeObjectEvent"
+                    }
+                ]
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "warningDeriveCreateAction":{
+            "actionType": "TcSoaService",
+            "serviceName": "ChangeManagement-2025-06-ChangeManagement",
+            "method": "getConcurrentChanges",
+            "deps": "js/Cm1CreateChangeService",
+            "inputData": {
+                "inputObjs": "{{data.relatedImpactedObjects}}",
+                "typeFilters": [ "GnChangeNoticeRevision" ]
+            },
+            "outputData": {
+                "openEcns": "{{function:getListOfItemAndassociatedECNs}}",
+                "warningMessage": "{{function:processWarningMessages}}",
+                "response":"output"
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "condition": "(data.openEcns.length === 1)",
+                        "message": "showSingleSelectionCreateChangeWarning"
+                    },
+                    {
+                        "condition": "(data.openEcns.length > 1)",
+                        "message": "showMultiSelectionCreateChangeWarning"
+                    }
+                ]
+            }
+        },
+        "createChangeObject": {
+            "actionType": "JSFunctionAsync",
+            "method": "getCreateInput",
+            "inputData": {
+                "data": "{{data}}",
+                "isSubmit": false,
+                "editHandler": "{{editHandlers.addPanelEditHandler}}",
+                "participantInfo": "{{props.participantInfo}}",
+                "derivedFromObjects": "{{subPanelContext.derivedFromObjects}}"
+            },
+            "outputData": {
+                "createChangeInput": "",
+                "isSubmitAction": false
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "updateChangeCtxVariable"
+                    },
+                    {
+                        "condition": "conditions.isValidNewSOAForDerive",
+                        "name": "createChange.callNewDeriveSoa"
+                    },
+                    {
+                        "condition": "(data.selectedType.dbValue ==='C2Capa' || data.parent_types.dbValue.indexOf( 'TYPE::C2Capa::C2Capa::ProblemReport' ) > -1) && ctx.CreateChangePanel.isDerive",
+                        "name": "createChange.callNewDeriveCAPASoa"
+                    },
+                    {
+                        "condition": "!ctx.CreateChangePanel.isDerive",
+                        "name": "createChange.callNewSoa"
+                    }
+                ]
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "submitChangeObjectWarn":{
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-09-DataManagement",
+            "method": "expandGRMRelationsForPrimary",
+            "inputData": {
+                "primaryObjects": "{{ctx.mselected}}",
+                "pref": {
+                    "expItemRev": false,
+                    "returnRelations": true,
+                    "info": [
+                        {
+                            "relationTypeName": "CMHasImpactedItem",
+                            "otherSideObjectTypes": ""
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "relatedImpactedObjects": "{{function:processPrimaryObjectsOutput}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "condition": "(data.relatedImpactedObjects.length >0)",
+                        "name": "Cm1CreateChange.warningDeriveSubmitEvent"
+                    },
+                    {
+                        "condition": "!(data.relatedImpactedObjects.length >0)",
+                        "name": "submitChangeObjectEvent"
+                    }
+                ]
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "warningDeriveSubmitAction":{
+            "actionType": "TcSoaService",
+            "serviceName": "ChangeManagement-2025-06-ChangeManagement",
+            "method": "getConcurrentChanges",
+            "deps": "js/Cm1CreateChangeService",
+            "inputData": {
+                "inputObjs": "{{data.relatedImpactedObjects}}",
+                "typeFilters": [ "GnChangeNoticeRevision" ]
+            },
+            "outputData": {
+                "openEcns": "{{function:getListOfItemAndassociatedECNs}}",
+                "warningMessage": "{{function:processWarningMessages}}",
+                "response":"output"
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "condition": "(data.openEcns.length === 1)",
+                        "message": "showSingleSelectionSubmitChangeWarning"
+                    },
+                    {
+                        "condition": "(data.openEcns.length > 1)",
+                        "message": "showMultiSelectionSubmitChangeWarning"
+                    }
+                ]
+            }
+        },
+        "submitChangeObject": {
+            "actionType": "JSFunctionAsync",
+            "method": "getCreateInput",
+            "inputData": {
+                "data": "{{data}}",
+                "isSubmit": true,
+                "editHandler": "{{editHandlers.addPanelEditHandler}}",
+                "participantInfo": "{{props.participantInfo}}",
+                "derivedFromObjects": "{{subPanelContext.derivedFromObjects}}"
+            },
+            "outputData": {
+                "submitChangeInput": "",
+                "isSubmitAction": true
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "updateChangeCtxVariable"
+                    },
+                    {
+                        "condition": "conditions.isValidNewSOAForDerive",
+                        "name": "submitChange.callNewDeriveSoa"
+                    },
+                    {
+                        "condition": "(data.selectedType.dbValue ==='C2Capa'|| data.parent_types.dbValue.indexOf( 'TYPE::C2Capa::C2Capa::ProblemReport' ) > -1) && ctx.CreateChangePanel.isDerive",
+                        "name": "submitChange.callNewDeriveCAPASoa"
+                    },
+                    {
+                        "condition": "!ctx.CreateChangePanel.isDerive",
+                        "name": "submitChange.callNewSoa"
+                    }
+                ]
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "clearSelectedType": {
+            "actionType": "JSFunction",
+            "method": "updateChangeAtomicData",
+            "inputData": {
+                "AtomicObj": "{{subPanelContext.selectedTypeObject}}",
+                "value" : {}
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "openNewObjectInEditMode": {
+            "actionType": "JSFunction",
+            "method": "openNewObjectInEditMode",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "removeAttachement": {
+            "actionType": "JSFunction",
+            "method": "removeAttachementJs",
+            "inputData": {
+                "selectedAttachToRemove": "{{data.dataProviders.getAttachments.selectedObjects}}"
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "updateChangeCtxVariableFalse": {
+            "actionType": "JSFunction",
+            "method": "unRegisterObjectProcessing",
+            "inputData": {
+                "subPanelContext":"{{props.subPanelContext}}"
+
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "createChangeObjectSoa": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Core-2012-10-DataManagement",
+            "method": "createRelateAndSubmitObjects",
+            "inputData": {
+                "inputs": "{{data.createChangeInput}}"
+            },
+            "outputData": {
+                "createdChangeObject": "output[0].objects[2]",
+                "isCreatePinEvent": "true",
+                "changeResponse":"output"
+            },
+            "events": {
+                "success": [
+                {
+                    "name": "updateChangeCtxVariableFalse"
+                },
+                {
+                    "name": "createchangePanel.fireEventsAfterCreateOperation",
+                    "eventData": {
+                        "createChangeData": "{{data.createdChangeObject}}"
+                    }
+                }
+                ],
+                "failure": [
+                    {
+                        "name": "updateChangeCtxVariableFalse"
+                    },
+                    {
+                        "name": "visualizationChange.passFailResponse",
+                        "condition": "ctx.CreateChangePanel.exactTypeToCreate !== ''"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "createObjectSuccess",
+                    "condition": "conditions.isPanelPinned || data.openNewChange.dbValue === false"
+                } ],
+                "failure": [ {
+                    "message": "failureMessageFromSOA"
+                } ]
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "createChangeObjectNewSoa": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ChangeManagement-2022-12-ChangeManagement",
+            "method": "createAndSubmitChangeObjects",
+            "inputData": {
+                "input": "{{data.createChangeInput}}"
+            },
+            "outputData": {
+                "createdChangeObject": "output[0].objects[2]",
+                "isCreatePinEvent": "true",
+                "changeResponse":"output"
+            },
+            "events": {
+                "success": [
+                {
+                    "name": "updateChangeCtxVariableFalse"
+                },
+                {
+                    "name": "createchangePanel.fireEventsAfterCreateOperation",
+                    "eventData": {
+                        "createChangeData": "{{data.createdChangeObject}}"
+                    }
+                } ],
+                "failure": [
+                    {
+                        "name": "updateChangeCtxVariableFalse"
+                    },
+                    {
+                        "name": "visualizationChange.passFailResponse",
+                        "condition": "ctx.CreateChangePanel.exactTypeToCreate !== ''"
+                    },
+                    {
+                        "name": "createchangePanel.fireEventsAfterCreateOperation",
+                        "condition": "conditions.isChangeObjectCreated",
+                        "eventData": {
+                            "createChangeData": "{{data.createdChangeObject}}"
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "createObjectSuccess",
+                    "condition": "conditions.isPanelPinned || data.openNewChange.dbValue === false"
+                } ],
+                "failure": [ {
+                    "message": "failureMessageFromSOA"
+                } ]
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "submitChangeObjectSoa": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Core-2012-10-DataManagement",
+            "method": "createRelateAndSubmitObjects",
+            "inputData": {
+                "inputs": "{{data.submitChangeInput}}"
+            },
+            "outputData": {
+                "createdChangeObject": "output[0].objects[2]",
+                "isCreatePinEvent": "true",
+                "changeResponse":"output"
+            },
+            "events": {
+                "success": [
+                {
+                    "name": "updateChangeCtxVariableFalse"
+                },
+                {
+                    "name": "createchangePanel.fireEventsAfterCreateOperation",
+                    "eventData": {
+                        "createChangeData": "{{data.createdChangeObject}}"
+                    }
+                } ],
+                "failure": [
+                    {
+                        "name": "updateChangeCtxVariableFalse"
+                    },
+                    {
+                        "name": "visualizationChange.passFailResponse",
+                        "condition": "ctx.CreateChangePanel.exactTypeToCreate !== ''"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "submitToWorkflowSuccess"
+                } ],
+                "failure": [ {
+                    "message": "failureMessageFromSOA"
+                } ]
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "submitChangeObjectNewSoa": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ChangeManagement-2022-12-ChangeManagement",
+            "method": "createAndSubmitChangeObjects",
+            "inputData": {
+                "input": "{{data.submitChangeInput}}"
+            },
+            "outputData": {
+                "createdChangeObject": "output[0].objects[2]",
+                "isCreatePinEvent": "true",
+                "changeResponse":"output"
+            },
+
+            "events": {
+                "success": [
+                {
+                    "name": "updateChangeCtxVariableFalse"
+                },
+                {
+                    "name": "createchangePanel.fireEventsAfterCreateOperation",
+                    "eventData": {
+                        "createChangeData": "{{data.createdChangeObject}}"
+                    }
+                } ],
+                "failure": [
+                    {
+                        "name": "updateChangeCtxVariableFalse"
+                    },
+                    {
+                        "name": "visualizationChange.passFailResponse",
+                        "condition": "ctx.CreateChangePanel.exactTypeToCreate !== ''"
+                    },
+                    {
+                        "name": "createchangePanel.fireEventsAfterCreateOperation",
+                        "condition": "conditions.isChangeObjectCreated",
+                        "eventData": {
+                            "createChangeData": "{{data.createdChangeObject}}"
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "submitToWorkflowSuccess"
+                } ],
+                "failure": [ {
+                    "message": "failureMessageFromSOA"
+                } ]
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "deriveChangeObjectSoa": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getObjCreateEditableProperties"
+                },
+                {
+                    "action": "deriveChangeObjectCallSoa"
+                }
+            ]
+        },
+        "deriveChangeObjectCallSoa": {
+            "actionType": "TcSoaService",
+            "serviceName": "ChangeManagement-2020-01-ChangeManagement",
+            "method": "deriveChangeItems",
+            "inputData": {
+                "deriveInput": "{{data.createChangeInput}}"
+            },
+            "outputData": {
+                "derivedObjectUid": "created[1]",
+                "changeResponse":"modelObjects",
+                "changeObjectString": "{{function:getObjectString}}"
+            },
+
+            "events": {
+                "success": [
+                    {
+                        "name": "updateChangeCtxVariableFalse"
+                    },
+                    {
+                        "name": "createVisRelations",
+                        "condition": "ctx.CreateChangePanel.isDerive && ctx.CreateChangePanel.exactTypeToCreate !== '' && ctx.CreateChangePanel.hasExtraAttachements=== true"
+                    },
+                    {
+                        "name": "createchangePanel.fireEventsAfterCreateOperation",
+                        "condition": "ctx.CreateChangePanel.hasExtraAttachements=== false "
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "updateChangeCtxVariableFalse"
+                    },
+                    {
+                        "name": "visualizationChange.passFailResponse",
+                        "condition": "ctx.CreateChangePanel.exactTypeToCreate !== ''"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "deriveObjectSuccess"
+                } ],
+                "failure": [ {
+                    "message": "failureMessageFromSOA"
+                } ]
+            },
+
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "deriveChangeCAPAObjectCallSoa": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Capaonawc-2020-12-QualityIssueManagement",
+            "method": "deriveProblemSolvingItems",
+            "inputData": {
+                "deriveInput": "{{data.createChangeInput}}",
+                "deriveOptions": "{{function:getDeriveOptions}}"
+            },
+            "outputData": {
+                "derivedObjectUid": "created[1]",
+                "changeObjectString": "{{function:getObjectString}}"
+            },
+
+            "events": {
+                "success": [
+                {
+                    "name": "updateChangeCtxVariableFalse"
+                },
+                {
+                    "name": "createchangePanel.fireEventsAfterCreateOperation"
+                } ],
+                "failure": [
+                {
+                    "name": "updateChangeCtxVariableFalse"
+                }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "deriveObjectSuccess"
+                } ],
+                "failure": [ {
+                    "message": "failureMessageFromSOA"
+                } ]
+            },
+
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "submitDeriveChangeObjectSoa": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getObjCreateEditableProperties"
+                },
+                {
+                    "action": "submitDeriveChangeObjectCallSoa"
+                }
+            ]
+        },
+        "submitDeriveChangeObjectCallSoa":{
+            "actionType": "TcSoaService",
+            "serviceName": "ChangeManagement-2020-01-ChangeManagement",
+            "method": "deriveChangeItems",
+            "inputData": {
+                "deriveInput": "{{data.submitChangeInput}}"
+            },
+            "outputData": {
+                "derivedObjectUid": "created[1]",
+                "changeResponse":"modelObjects",
+                "changeObjectString": "{{function:getObjectString}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "updateChangeCtxVariableFalse"
+                    },
+                    {
+                        "name": "createVisRelations",
+                        "condition": "ctx.CreateChangePanel.isDerive && ctx.CreateChangePanel.exactTypeToCreate !== '' && ctx.CreateChangePanel.hasExtraAttachements=== true"
+                    },
+                    {
+                        "name": "createchangePanel.fireEventsAfterCreateOperation",
+                        "condition": "ctx.CreateChangePanel.hasExtraAttachements=== false "
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "updateChangeCtxVariableFalse"
+                    },
+                    {
+                        "name": "visualizationChange.passFailResponse",
+                        "condition": "ctx.CreateChangePanel.exactTypeToCreate !== ''"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "submitDeriveToWorkflowSuccess"
+                } ],
+                "failure": [ {
+                    "message": "failureMessageFromSOA"
+                } ]
+            },
+
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "submitDeriveChangeCAPAObjectCallSoa": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Capaonawc-2020-12-QualityIssueManagement",
+            "method": "deriveProblemSolvingItems",
+            "inputData": {
+                "deriveInput": "{{data.submitChangeInput}}",
+                "deriveOptions": "{{function:getDeriveOptions}}"
+            },
+
+            "outputData": {
+                "derivedObjectUid": "created[1]",
+                "changeObjectString": "{{function:getObjectString}}"
+            },
+
+            "events": {
+                "success": [
+                {
+                    "name": "updateChangeCtxVariableFalse"
+                },
+                {
+                    "name": "createchangePanel.fireEventsAfterCreateOperation"
+                } ],
+                "failure": [
+                {
+                    "name": "updateChangeCtxVariableFalse"
+                }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "submitDeriveToWorkflowSuccess"
+                } ],
+                "failure": [ {
+                    "message": "failureMessageFromSOA"
+                } ]
+            },
+
+            "deps": "js/Cm1CreateChangeService"
+        },
+
+        "navigateToCreateChangePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "awPanel.navigate",
+                    "eventData": {
+                        "destPanelId": "Cm1CreateChangeSub",
+                        "eventData": "{{data.eventData}}"
+                    }
+                } ]
+            }
+        },
+        "navigateToMainPanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "Cm1CreateChangeSub"
+            }
+        },
+        "hostedModeCreateNewIssueReport": {
+            "actionType": "JSFunctionAsync",
+            "method": "handleHostedModeIssueTypeCreation",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "populateCreatePanelPropertiesOnDerive": {
+            "actionType": "JSFunctionAsync",
+            "method": "populateCreatePanelPropertiesOnDerive",
+            "inputData": {
+                "data": "{{data}}",
+                "editHandler": "{{editHandlers.addPanelEditHandler}}",
+                "selectedChangeRevision": "{{data.selectedChangeRevision}}",
+                "propToLoad": "{{data.propToLoad}}"
+            },
+            "deps": "js/changeMgmtUtils"
+        },
+        "autoAssignProperty": {
+            "actionType": "JSFunction",
+            "method": "autoAssignProperty",
+            "inputData": {
+                "prop": "{{data.eventData.prop}}",
+                "operationType": "CREATE",
+                "pattern": "{{data.eventData.newPattern}}",
+                "selectedObj": "{{}}",
+                "createType": "{{data.selectedType.dbValue}}",
+                "editHandler": "{{editHandlers.addPanelEditHandler}}"
+            },
+            "deps": "js/autoAssignService"
+        },
+        "getCmOwningProjectsAct": {
+            "actionType": "JSFunction",
+            "method": "createViewModelObjectById",
+            "inputData": {
+                "uid": "{{ctx.userSession.props.project.dbValues[0]}}",
+                "operationName": "CREATE"
+            },
+
+            "outputData": {
+                "owningProjects": ""
+            },
+            "deps": "js/tcViewModelObjectService"
+        },
+        "loadChangePanel": {
+            "actionType": "JSFunction",
+            "method": "initializeCreateChangePanel",
+            "inputData": {
+                "data": "{{data}}",
+                "derivedFromObjects": "{{subPanelContext.derivedFromObjects}}"
+            },
+            "outputData": {
+                "attachments": "attachments",
+                "attachmentsUids":"attachmentsUids",
+                "showCopyOptions": "showCopyOptions"
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "loadUserProjects": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadObjects",
+            "inputData": {
+                "data": [ "{{ctx.userSession.props.project.dbValues[0]}}" ]
+            },
+            "events": {
+                "success": [ {
+                    "condition": "ctx.userSession.props.project.dbValues[0] !== ''",
+                    "name": "init.assignedChProjectsProvider"
+                } ]
+            },
+            "deps": "soa/dataManagementService"
+        },
+        "assignProjectsToCreatedObject": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-09-ProjectLevelSecurity",
+            "method": "assignOrRemoveObjects",
+            "inputData": {
+                "assignedOrRemovedobjects": [ {
+                    "projects": "{{data.dataProviders.getAssignedProjectsProvider.viewModelCollection.loadedVMObjects}}",
+                    "objectToAssign": "{{function:getInputForAssignAndRemoveObjectsSOA}}",
+                    "objectToRemove": []
+                } ]
+            },
+            "events": {
+                "success": [ {
+                    "name": "closeCreatePanelOpenChangeObjectEvent"
+                } ]
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "enableResponsibleUserDataProvider": {
+            "actionType": "JSFunction",
+            "method": "updateResponsibleUserDataProvider",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.getAssignedResponsibleUser}}",
+                "selecedResources": "{{props.addUserPanelState.selectedUsers}}"
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "generateNextValues": {
+            "actionType": "JSFunction",
+            "method": "autoAssignAllProperties",
+            "inputData": {
+                "data": "{{data}}",
+                "operationType": "CREATE",
+                "createType": "{{data.selectedType.dbValue}}",
+                "editHandler": "{{editHandlers.addPanelEditHandler}}"
+            },
+
+            "deps": "js/autoAssignService"
+        },
+        "closePanelAction":
+        {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData":
+            {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "closeCreateChangeCommandPanelAction":{
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "complete",
+                    "eventData": {
+                        "source": "toolAndInfoPanel"
+                    }
+                }]
+            }
+        },
+        "setConditionToPin": {
+            "actionType": "JSFunction",
+            "method": "setConditionToPin",
+            "inputData": {
+                "data": "{{data}}",
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "panelUnpinClose": {
+            "actionType": "JSFunction",
+            "method": "panelUnpinClose",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "fireEventsAfterCreateOperation": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "primaryWorkarea.reset",
+                        "condition":"conditions.isCreateChangeInChangeSublocation && ((!conditions.isPanelPinned && data.openNewChange.dbValue === false) || conditions.isPanelPinned)"
+                    },
+                    {
+                        "name": "submissionSuccessful",
+                        "eventData": {
+                            "createChangeData": "{{data}}"
+                        }
+                    },
+                    {
+                        "name": "assignProjects",
+                        "condition": "data.dataProviders.getAssignedProjectsProvider.viewModelCollection.loadedVMObjects.length>0 && ctx.CreateChangePanel.isDerive && ctx.preferences.CM_do_not_assign_projects_on_create_derive[0].toLowerCase() === 'false'"
+                    },
+                    {
+                        "name": "closeCreatePanelOpenChangeObjectEvent"
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "condition":"!conditions.isCreateChangeInChangeSublocation && ctx.mselected.length === 1 && ctx.xrtSummaryContextObject",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{ctx.xrtSummaryContextObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "condition":"!conditions.isCreateChangeInChangeSublocation && ctx.mselected.length === 1 && !ctx.xrtSummaryContextObject",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{ctx.mselected[0]}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "condition": "( ctx.selected.modelType.typeHierarchyArray.indexOf( 'C2IssueRevision' ) > -1 && (ctx.pselected.modelType.typeHierarchyArray.indexOf( 'Prg0AbsPlan' ) > -1 || ctx.pselected.modelType.typeHierarchyArray.indexOf( 'Prg0AbsEvent' ) > -1 || ctx.pselected.modelType.typeHierarchyArray.indexOf( 'Psi0AbsChecklist' ) > -1 ))",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{ctx.pselected}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "setConditionToPin",
+                        "condition": "conditions.isPanelPinned"
+                    },
+                    {
+                        "name": "awPanel.loadNextValues",
+                        "condition": "conditions.isPanelPinned"
+                    }
+                ]
+            }
+        },
+        "closeCreatePanelOpenChangeObject": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "condition": "!conditions.isPanelPinned && data.openNewChange.dbValue === true && !conditions.isIssueFromVisualization",
+                        "name": "Cm1CreateChange.openInEditMode"
+                    },
+                    {
+                       "condition":"conditions.isIssueFromVisualization && conditions.openIssueInEditMode",
+                       "name": "Cm1CreateChange.openInEditMode"
+                    },
+                    {
+                        "name": "closePanelEvent",
+                        "condition": "conditions.panelCloseCondition && !conditions.isPanelPinned && data.createRelationForChange !== true"
+                    },
+                    {
+                        "name": "closeCreateChangeCommandPanel",
+                        "condition": "conditions.isCreateChangeCommandPanel"
+                    },
+                    {
+                        "name": "createChangePanelClosed",
+                        "eventData": {
+                            "createChangeResponse":  "{{data.changeResponse}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "removeSymptomDefect": {
+            "actionType": "JSFunction",
+            "method": "removeSymptomDefect",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "PopulateCopyOptions": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadDeepCopyData",
+                    "condition": "conditions.isValidCopyOption"
+                },
+                {
+                    "action": "loadRelations",
+                    "condition": "conditions.isValidCopyOption"
+                }
+            ]
+        },
+        "loadDeepCopyData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2014-10-DataManagement",
+            "method": "getDeepCopyData",
+            "inputData": {
+                "deepCopyDataInput": [{
+                    "operation": "cm0DeriveChange",
+                    "businessObject": "{{ctx.selected}}"
+                }]
+            },
+            "outputData": {
+                "deepCopyInfoMap": "deepCopyInfoMap"
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "loadRelations": {
+            "actionType": "JSFunction",
+            "method": "getDeriveRelations",
+            "inputData": {
+                "data": "{{data}}",
+                "deepCopyInfoMap": "{{data.deepCopyInfoMap}}"
+            },
+            "outputData": {
+                "relationNames": "relationNames",
+                "showCopyOptions":"showCopyOptions"
+            },
+            "deps": "js/cmDeriveRelationDirective"
+        },
+
+        "clearVisCtx":
+        {
+            "actionType": "JSFunctionAsync",
+            "method": "clearVisCtx",
+            "inputData":{},
+            "deps": "js/Cm1ChangeCommandService"
+        },
+
+        "callCreateRelationForVis":{
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "createRelations",
+            "inputData": {
+                "input": "{{function:getVisAttachmentData}}"
+            },
+            "outputData": {
+                "relation": "visRelations",
+                "serviceData": "IServiceData"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "createchangePanel.fireEventsAfterCreateOperation"
+                    }
+                ]
+            },
+            "deps": "js/changeMgmtUtils"
+        },
+        "passVisFailResponse": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "createChangePanelClosed",
+                        "eventData": {
+                            "createChangeResponse":  "{{data.changeResponse}}"
+                        }
+                }]
+            }
+        },
+        "performPostProcessingAfterXRTLoaded": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getDerivedFromProperties",
+                    "condition": "conditions.isXRTTypeLoaded && ctx.CreateChangePanel.isDerive"
+                },
+                {
+                    "action": "loadDeriveProperties",
+                    "condition": "conditions.isXRTTypeLoaded && ctx.CreateChangePanel.isDerive && data.propToLoad.length && data.propToLoad.length > 0"
+                },
+                {
+                    "action": "populateCreatePanelPropertiesOnDerive",
+                    "condition": "conditions.isXRTTypeLoaded && ctx.CreateChangePanel.isDerive && data.propToLoad.length && data.propToLoad.length > 0"
+                }
+            ]
+        },
+        "getDerivedFromProperties": {
+            "actionType": "JSFunction",
+            "method": "getDerivedFromProperties",
+            "inputData": {
+                "data": "{{data}}",
+                "editHandler": "{{editHandlers.addPanelEditHandler}}",
+                "derivedFromObjects": "{{subPanelContext.derivedFromObjects}}"
+            },
+            "outputData": {
+                "propToLoad": "propToLoad",
+                "selectedChange": "selectedChange",
+                "selectedChangeRevision": "selectedChangeRevision"
+            },
+            "deps": "js/changeMgmtUtils"
+        },
+        "loadDeriveProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": [
+                    "{{data.selectedChange}}",
+                    "{{data.selectedChangeRevision}}"
+                ],
+                "attributes": "{{function:getDerivePropertiesNames}}"
+            },
+            "deps": "js/changeMgmtUtils"
+        },
+        "getObjCreateEditableProperties": {
+            "actionType": "JSFunction",
+            "method": "getObjCreateEditableProperties",
+            "inputData": {
+                "objectType": "{{data.selectedType.dbValue}}",
+                "type": "CREATE",
+                "propertyNames": [ "object_name" ],
+                "editHandler": "{{editHandlers.addPanelEditHandler}}"
+            },
+            "outputData":{
+                "object_name": "object_name"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "deriveChangeCAPAObjectSoa": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getObjCreateEditableProperties"
+                },
+                {
+                    "action": "deriveChangeCAPAObjectCallSoa"
+                }
+            ]
+        },
+        "submitDeriveChangeCAPAObjectSoa": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getObjCreateEditableProperties"
+                },
+                {
+                    "action": "submitDeriveChangeCAPAObjectCallSoa"
+                }
+            ]
+        },
+        "assignUserProjectsJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "navigateToShowSaveAsPage",
+                    "condition": "conditions.isAssignUserProject"
+                },
+                {
+                    "action": "updateAssignedProjectsProvider",
+                    "condition": "conditions.isAssignUserProject"
+                },
+                {
+                    "action": "updateAssignTrigger",
+                    "condition": "conditions.isAssignUserProject"
+                }
+            ]
+        },
+        "updateAssignTrigger": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{subPanelContext.projectState}}",
+                "value" : {
+                    "triggerAssign": false
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "navigateToShowSaveAsPage": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{subPanelContext.activeState}}",
+                "value" : {
+                    "activeView": "Cm1CreateChangeSub"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateAssignedProjectsProvider": {
+            "actionType": "JSFunction",
+            "method": "updateAssignedProjectsProvider",
+            "inputData": {
+                "data": "{{data}}",
+                "selectedObjects": "{{subPanelContext.projectState.value.selectedProjects}}",
+                "removeOnly": "{{subPanelContext.projectState.value.triggerRemove}}"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "removeUserProjectsJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateAssignedProjectsProvider",
+                    "condition": "conditions.isRemoveUserProject"
+                },
+                {
+                    "action": "updateRemoveTrigger",
+                    "condition": "conditions.isRemoveUserProject"
+                }
+            ]
+        },
+        "updateRemoveTrigger": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{subPanelContext.projectState}}",
+                "value" : {
+                    "triggerRemove": false
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateAttachmentsJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateAttachmentsProvider",
+                    "condition": "conditions.isAttachmentsSectionUpdateNeeded"
+                },
+                {
+                    "action": "resetAttachmentsContextData",
+                    "condition": "conditions.isAttachmentsSectionUpdateNeeded"
+                }
+            ]
+        },
+        "updateAttachmentsProvider": {
+            "actionType": "JSFunction",
+            "method": "updateAttachmentsProvider",
+            "inputData": {
+                "data": "{{data}}",
+                "newAttachments": "{{subPanelContext.attachmentsState.value.addAttachments}}"
+            },
+            "deps": "js/Cm1CreateChangeService"
+        },
+        "resetAttachmentsContextData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{subPanelContext.attachmentsState}}",
+                "value" : {
+                    "addAttachments": [],
+                    "updateAttachmentsSection": false
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "assignResponsibleUserJob": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "enableResponsibleUserDataProvider",
+                    "condition": "conditions.isResponsibleUserInPeoplePicker"
+                },
+                {
+                    "action": "navigateToMainPanel",
+                    "condition": "conditions.isResponsibleUserInPeoplePicker"
+                }
+            ]
+        },
+        "setCurrentUserAsAnalyst": {
+            "actionType": "JSFunctionAsync",
+            "method": "setCurrentUserAsAnalyst",
+            "inputData": {
+                "participantInfo": "{{props.participantInfo}}",
+                "isActiveChangeSet": "{{data.setActiveChange.dbValue}}"
+            },
+            "deps": "js/Cm1CreateParticipantsService"
+        }
+    },
+    "onEvent": [
+
+        {
+            "eventId": "updateChangeCtxVariableFalse",
+            "action": "updateChangeCtxVariableFalse"
+        },
+        {
+            "eventId": "updateChangeCtxVariable",
+            "action": "updateChangeCtxVariable"
+        },
+        {
+            "eventId": "changeGetTypeFromBOConstant",
+            "action": "changeGetTypeFromBOConstant"
+        },
+        {
+            "eventId": "submissionSuccessful",
+            "action": "submitToHostAction"
+        },
+        {
+            "eventId": "setConditionToPin",
+            "action": "setConditionToPin"
+        },
+        {
+            "eventId": "Cm1CreateChange.openInEditMode",
+            "action": "openNewObjectInEditMode"
+        },
+        {
+            "eventId": "createChange.callSoa",
+            "action": "createChangeObjectSoa"
+        },
+        {
+            "eventId": "createChange.callNewSoa",
+            "action": "createChangeObjectNewSoa"
+        },
+        {
+            "eventId": "createChange.callNewDeriveSoa",
+            "action": "deriveChangeObjectSoa"
+        },
+        {
+            "eventId": "createChange.callNewDeriveCAPASoa",
+            "action": "deriveChangeCAPAObjectSoa"
+        },
+        {
+            "eventId": "submitChange.callSoa",
+            "action": "submitChangeObjectSoa"
+        },
+        {
+            "eventId": "submitChange.callNewSoa",
+            "action": "submitChangeObjectNewSoa"
+        },
+        {
+            "eventId": "submitChange.callNewDeriveSoa",
+            "action": "submitDeriveChangeObjectSoa"
+        },
+        {
+            "eventId": "submitChange.callNewDeriveCAPASoa",
+            "action": "submitDeriveChangeCAPAObjectSoa"
+        },
+        {
+            "eventId": "hostedModeCreateChange.IssueReport",
+            "action": "hostedModeCreateNewIssueReport"
+        },
+        {
+            "eventId": "Cm1RemoveAttachementCmdEvent",
+            "action": "removeAttachement"
+        },
+        {
+            "eventId": "awPattern.newPatternSelected",
+            "cacheEventData": true,
+            "action": "autoAssignProperty"
+        },
+        {
+            "eventId": "cm1userProjects.assignProjects",
+            "action": "getAssignedProjectsProvider"
+        },
+        {
+            "eventId": "cm1userProjects.assignProjects",
+            "action": "navigateToCreateChangePanel"
+        },
+        {
+            "eventId": "caw0addSymptomDefect",
+            "action": "getSymptomDefectProvider"
+        },
+        {
+            "eventId": "init.assignedChProjectsProvider",
+            "action": "getCmOwningProjectsProvider"
+        },
+        {
+            "eventId": "assignProjects",
+            "action": "assignProjectsToCreatedObject"
+        },
+        {
+            "eventId": "closeCreatePanelOpenChangeObjectEvent",
+            "action": "closeCreatePanelOpenChangeObject"
+        },
+        {
+            "eventId": "addSelectionToMainPanel",
+            "cacheEventData": true,
+            "action": "navigateToCreateChangePanel"
+        },
+        {
+            "eventId": "addSelectionToMainPanel",
+            "cacheEventData": true,
+            "action": "enableResponsibleUserDataProvider"
+        },
+        {
+            "eventId": "awPanel.loadNextValues",
+            "action": "generateNextValues"
+        },
+        {
+
+
+
+
+
+            "eventId": "change.complete",
+            "action": "closePanelAction",
+            "condition": "conditions.panelCloseCondition"
+        },
+        {
+            "eventId": "createchangePanel.fireEventsAfterCreateOperation",
+            "action": "fireEventsAfterCreateOperation"
+        },
+        {
+            "eventId": "Caw0RemoveSymptomDefectCommand.removeSymptomDefect",
+            "action": "removeSymptomDefect"
+        },
+        {
+            "eventId": "Cm1ShowCreateChangeInContext.contentUnloaded",
+            "action": "clearVisCtx"
+        },
+        {
+            "eventId": "Cm1ShowCreateChange.contentUnloaded",
+            "action": "clearVisCtx"
+        },
+        {
+            "eventId": "Cm1ShowDeriveChange.contentUnloaded",
+            "action": "clearVisCtx"
+        },
+        {
+            "eventId": "createVisRelations",
+            "action": "callCreateRelationForVis"
+        },
+        {
+            "eventId": "visualizationChange.passFailResponse",
+            "action": "passVisFailResponse"
+        },
+        {
+            "eventId": "closePanelEvent",
+            "action": "closePanelAction"
+        },
+        {
+            "eventId": "closeCreateChangeCommandPanel",
+            "action": "closeCreateChangeCommandPanelAction"
+        },
+        {
+            "eventId": "Cm1CreateChange.warningDeriveCreateEvent",
+            "action": "warningDeriveCreateAction"
+        },
+        {
+            "eventId": "Cm1CreateChange.warningDeriveSubmitEvent",
+            "action": "warningDeriveSubmitAction"
+        },
+        {
+            "eventId":"submitChangeObjectEvent",
+            "action":"submitChangeObject"
+        },
+        {
+            "eventId":"createChangeObjectEvent",
+            "action":"createChangeObject"
+        }
+    ],
+    "data": {
+        "typeName": {
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "selectedType": {
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "boTypeConst": {
+            "showSubmitButton": {
+                "dbValue": false,
+                "type": "BOOLEAN"
+            },
+            "showCreateButton": {
+                "dbValue": false,
+                "type": "BOOLEAN"
+            },
+            "isEnableAssignProjects":{
+                "dbValue": true,
+                "type": "BOOLEAN"
+            },
+            "showActiveChangeCheckBox": {
+                "dbValue": true,
+                "type": "BOOLEAN"
+            }
+        },
+        "selectedTypeDisplayName": {
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "typeDisplayName": {
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "displayedType": {
+            "displayName": "",
+            "type": "STRING"
+        },
+        "showCopyOptions": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        },
+        "addObjectCommands": "cm1_addObjectCommands",
+        "projectSectionCommands": "cm1_projectSectionCommands",
+        "addResponsibleUserCommand": "cm1_addRespUserCommands",
+        "addSymptomDefectCommand": "caw0_addSymptomDefectCommand",
+        "cm1PinCommands": "cm1_oneStepPinCommands",
+        "createRelationForChange": "{{ctx.PaletteAndSearchData.showPaletteAndSearch}}",
+        "isCreatePinEvent": {
+            "type": "BOOLEAN",
+            "dbValue": false
+        },
+        "openNewChange": {
+            "displayName": "{{i18n.openNewChange}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": false,
+            "uiValue": false,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "setActiveChange": {
+            "displayName": "{{i18n.setActiveChange}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "xrtState": {
+            "initialValues": {
+                "xrtTypeLoaded": ""
+            },
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "qa0FindingGuideline": {
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "parent_types": {
+            "type": "OBJECTARRAY",
+            "dbValue": []
+        }
+    },
+    "functions": {
+        "getObjectString": {
+            "functionName": "getObjectString",
+            "parameters":
+            [
+                "{{data}}"
+            ]
+        },
+        "getCreateInput": {
+            "functionName": "getCreateInput",
+            "parameters": [
+                "{{data}}",
+                "false"
+            ]
+        },
+        "getInputForAssignAndRemoveObjectsSOA": {
+            "functionName": "getInputForAssignAndRemoveObjectsSOA",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getCreateInputForSubmit": {
+            "functionName": "getCreateInput",
+            "parameters": [
+                "{{data}}",
+                "true"
+            ]
+        },
+        "getDeriveInput": {
+            "functionName": "getDeriveInput",
+            "parameters": [
+                "{{data}}",
+                "false"
+            ]
+        },
+        "getDeriveInputForSubmit": {
+            "functionName": "getDeriveInput",
+            "parameters": [
+                "{{data}}",
+                "true"
+            ]
+        },
+        "getDeriveOptions": {
+            "functionName": "getDeriveOptions",
+            "parameters": [
+                "{{data}}",
+                "true"
+            ]
+        },
+        "outputForBOTypeConstant": {
+            "functionName": "outputForBOTypeConstant",
+            "parameters": ["{{data}}"]
+        },
+        "getVisAttachmentData":{
+            "functionName": "getVisAttachmentData",
+            "parameters": ["{{data}}"]
+        },
+        "getDerivePropertiesNames": {
+            "functionName": "getDerivePropertiesNames",
+            "parameters": [
+                "{{data.propToLoad}}"
+            ]
+        },
+        "processPrimaryObjectsOutput":{
+            "functionName":"processPrimaryObjectsOutput"
+        }
+    },
+
+    "messages": {
+        "submitToWorkflowSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.submitToWorkflowSuccess}}",
+            "messageTextParams": [
+                "{{data.createdChangeObject.props.object_string.uiValues}}"
+            ]
+        },
+        "submitDeriveToWorkflowSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.submitToWorkflowSuccess}}",
+            "messageTextParams": [
+                "{{data.changeObjectString}}"
+            ]
+        },
+        "createObjectSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.changeObjectAdded}}",
+            "messageTextParams": [
+                "{{data.createdChangeObject.props.object_string.uiValues}}"
+            ]
+        },
+        "deriveObjectSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.changeObjectAdded}}",
+            "messageTextParams": [
+                "{{data.changeObjectString}}"
+            ]
+        },
+        "failureMessageFromSOA": {
+                "messageType": "ERROR",
+                "messageText": "{{errorCode}}"
+        },
+        "showSingleSelectionSubmitChangeWarning":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.showMultiSelectionChangeWarnEmptyMsg}}",
+            "messageTextParams": [
+              "{{data.warningMessage}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancelText}}",
+                    "action": "closePanelAction"
+                },
+                {
+                    "option": "Continue",
+                    "text": "{{i18n.continueButtonTxt}}",
+                    "action": "submitChangeObject"
+                }
+            ]
+        },
+        "showMultiSelectionSubmitChangeWarning":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.showMultiSelectionChangeWarnEmptyMsg}}",
+            "messageTextParams": [
+             "{{data.warningMessage}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancelText}}",
+                    "action": "closePanelAction"
+                },
+                {
+                    "option": "Continue",
+                    "text": "{{i18n.continueButtonTxt}}",
+                    "action": "submitChangeObject"
+                }
+            ]
+        },
+        "showSingleSelectionCreateChangeWarning":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.showMultiSelectionChangeWarnEmptyMsg}}",
+            "messageTextParams": [
+              "{{data.warningMessage}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancelText}}",
+                    "action": "closePanelAction"
+                },
+                {
+                    "option": "Continue",
+                    "text": "{{i18n.continueButtonTxt}}",
+                    "action": "createChangeObject"
+                }
+            ]
+        },
+        "showMultiSelectionCreateChangeWarning":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.showMultiSelectionChangeWarnEmptyMsg}}",
+            "messageTextParams": [
+             "{{data.warningMessage}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancelText}}",
+                    "action": "closePanelAction"
+                },
+                {
+                    "option": "Continue",
+                    "text": "{{i18n.continueButtonTxt}}",
+                    "action": "createChangeObject"
+                }
+            ]
+        }
+    },
+
+    "i18n": {
+        "CreateChange": [ "CreateChangeMessages" ],
+        "CreateButtonTitle": [ "CreateChangeMessages" ],
+        "CreateSubmitButtonTitle": [ "CreateChangeMessages" ],
+        "DeriveButtonTitle": [ "CreateChangeMessages" ],
+        "DeriveSubmitButtonTitle": [ "CreateChangeMessages" ],
+        "submitToWorkflowSuccess": [ "CreateChangeMessages" ],
+        "addattachments": [ "CreateChangeMessages" ],
+        "removeattachments": [ "CreateChangeMessages" ],
+        "attachmentsText": [ "CreateChangeMessages" ],
+        "implementsText": [ "CreateChangeMessages" ],
+        "ownProjectSectionTitle": [ "awAddDirectiveMessages" ],
+        "projectsSectionTitle": [ "awAddDirectiveMessages" ],
+        "responsibleUser": [ "PlantDataManagementConstants" ],
+        "changeObjectAdded": [ "CreateChangeMessages" ],
+        "openNewChange": [ "CreateChangeMessages" ],
+        "symptomDefect": [ "CreateChangeMessages" ],
+        "copyOptionsText": [ "ChangeMessages" ],
+        "setActiveChange": [ "ChangeMessages" ],
+        "cancelText":["ChangeMessages"],
+        "continueButtonTxt":["ChangeMessages"],
+        "showMultiSelectionChangeWarnEmptyMsg":["ChangeMessages"]
+    },
+
+    "preferences": [
+        "WRKFLW_user_panel_content_display"
+    ],
+
+    "conditions": {
+        "isPanelPinned": {
+            "expression": "subPanelContext.panelPinned === true"
+        },
+        "isEnableAssignProjects":
+        {
+            "expression": "data.boTypeConst.isEnableAssignProjects.dbValue"
+        },
+        "isAttachementSelected": {
+            "expression": "data.dataProviders.getAttachments.selectedObjects.length > 0"
+        },
+        "showCopyOptions": {
+            "expression": "showCopyOptions.dbValue"
+        },
+        "showSubmitButton": {
+            "expression": "data.boTypeConst.showSubmitButton.dbValue"
+        },
+        "isTemplateSelected": {
+            "expression": "!(!data.xrtState.xrtVMO.props.awp0ProcessTemplates || data.xrtState.xrtVMO.props.awp0ProcessTemplates.dbValue === null || data.xrtState.xrtVMO.props.awp0ProcessTemplates.dbValue === '')"
+        },
+        "showCreateButton": {
+            "expression": "data.boTypeConst.showCreateButton.dbValue"
+        },
+        "disableCreateButtonWhileProcessing": {
+            "expression": "!props.subPanelContext.createChangeObjectProcessing.dbValue"
+        },
+        "isPlantPRTypeSelected": {
+            "expression": "data.selectedType.dbValue =='Pdm1ProblemItem' "
+        },
+        "callNewSOAForDerive": {
+            "expression": "true"
+        },
+        "isHostedComponent": {
+            "expression": "ctx.aw_hosting_state.currentHostedComponentId === 'com.siemens.splm.client.change.CreateChangeComponent'"
+        },
+        "panelCloseCondition": {
+            "expression": "(ctx.CreateChangePanel.selectedObjects.length !== selectionData.mselected.length || ctx.CreateChangePanel.selectedObjects[0].uid !== selectionData.mselected[0].uid)"
+        },
+        "isCreateChangeCommandPanel":{
+            "expression": "ctx.CreateChangePanel.isCommandPanel"
+        },
+        "isCapaDerivingFromIssue": {
+            "expression": "(data.selectedType.dbValue =='C2Capa' || data.parent_types.dbValue.indexOf( 'TYPE::C2Capa::C2Capa::ProblemReport' ) > -1) && (ctx.selected.modelType.typeHierarchyArray.indexOf( 'C2IssueRevision' ) > -1 || ctx.selected.modelType.typeHierarchyArray.indexOf('C2CapaRevision') > -1 || ctx.selected.modelType.typeHierarchyArray.indexOf('CAW0Defect') > -1)"
+        },
+        "isValidNewSOAForDerive": {
+            "expression": "((data.selectedType.dbValue !=='C2Capa' && data.parent_types.dbValue.indexOf( 'TYPE::C2Capa::C2Capa::ProblemReport' ) === -1)) && ctx.CreateChangePanel.isDerive"
+        },
+        "isValidCopyOption": {
+            "expression": "ctx.CreateChangePanel.isDerive && ctx.mselected.length === 1"
+        },
+        "isSimpleChangeObjectCreation": {
+            "expression": "data.isSimpleChangeObjectCreation"
+        },
+        "openIssueInEditMode": {
+            "expression": "!ctx.CreateChangePanel || ctx.CreateChangePanel.openNewIssueInEditMode == true"
+        },
+        "isIssueFromVisualization":{
+            "expression":"ctx.CreateIssueHostedMode"
+        },
+        "isXRTTypeLoaded": {
+            "expression": "xrtState.xrtTypeLoaded"
+        },
+        "isCreateChangeInChangeSublocation":{
+            "expression":"ctx.search.provider === 'Cm1MyChangesProvider' && ctx.sublocation.clientScopeURI==='fnd0Change'"
+        },
+        "isAssignUserProject": {
+            "expression": "subPanelContext.projectState.value.triggerAssign == true"
+        },
+        "isRemoveUserProject": {
+            "expression": "subPanelContext.projectState.value.triggerRemove == true"
+        },
+        "isAttachmentsSectionUpdateNeeded": {
+            "expression": "subPanelContext.attachmentsState.value.updateAttachmentsSection === true"
+        },
+        "isAuditFindingSelected": {
+            "expression": "data.xrtState.xrtVMO.props[ 'REF(revision,C2IssueRevisionCreI).c2Category' ].dbValue =='Audit'"
+        },
+        "isResponsibleUserInPeoplePicker": {
+            "expression": "props.subPanelContext.addUserPanelState.selectedUsers && props.subPanelContext.addUserPanelState.selectedUsers.length > 0 && props.subPanelContext.addUserPanelState.criteria.participantType === ''"
+        },
+        "isActiveChangeCheckboxVisible": {
+            "expression": "!ctx.CreateChangePanel.isDerive && subPanelContext.selectedTypeObject.props.parent_types.dbValues.indexOf('TYPE::GnChangeNotice::GnChangeNotice::ChangeItem') > -1 && data.boTypeConst.showActiveChangeCheckBox.dbValue"
+        },
+        "isChangeObjectCreated": {
+            "expression": "data.createdChangeObject && data.createdChangeObject.modelType.typeHierarchyArray.indexOf( 'ChangeItemRevision' ) > -1"
+        }
+    },
+    "dataProviders": {
+        "getAttachments": {
+            "response": "",
+            "totalFound": "",
+            "selectionModelMode": "multiple",
+            "commands": {
+                "Awp0ShowObjectCell": {
+                    "id": "cmdOpen",
+                    "title": "Open",
+                    "areas": [ "com.siemens.splm.clientfx.ui.modelObjectListActionCommands" ],
+                    "priorities": [ 300 ],
+                    "dependencies": [ "js/showObjectCommandHandler" ],
+                    "displayOption": "ON_HOVER_AND_SELECTION",
+                    "position": "TOP_RIGHT"
+                }
+            }
+        },
+        "getImplements":{
+            "selectionModelMode": "multiple",
+            "commands": {
+                "Awp0ShowObjectCell": {
+                    "id": "cmdOpen",
+                    "title": "Open",
+                    "areas": [ "com.siemens.splm.clientfx.ui.modelObjectListActionCommands" ],
+                    "priorities": [ 300 ],
+                    "dependencies": [ "js/showObjectCommandHandler" ],
+                    "displayOption": "ON_HOVER_AND_SELECTION",
+                    "position": "TOP_RIGHT"
+                }
+            }
+
+        },
+        "getAssignedProjectsProvider": {
+            "response": "{{subPanelContext.projectState.selectedProjects}}",
+            "totalFound": "{{subPanelContext.projectState.selectedProjects.length}}",
+            "preSelection": false,
+            "selectionModelMode": "single",
+            "commandsAnchor": "aw_removeProjectCellCommandAction"
+        },
+        "getCmOwningProjectsProvider": {
+            "action": "getCmOwningProjectsAct",
+            "response": [ "{{data.owningProjects}}" ],
+            "totalFound": "{{data.owningProjects.length}}",
+            "preSelection": false,
+            "selectionModelMode": "single",
+            "commands": {
+                "Awp0ShowObjectCell": {
+                    "id": "cmdOpen",
+                    "areas": [
+                        "com.siemens.splm.clientfx.ui.modelObjectListActionCommands"
+                    ],
+
+                    "priorities": [
+                        300
+                    ],
+
+                    "dependencies": [
+                        "js/showObjectCommandHandler"
+                    ],
+
+                    "displayOption": "ON_HOVER_AND_SELECTION",
+                    "position": "TOP_RIGHT"
+                }
+            }
+        },
+        "getAssignedResponsibleUser": {
+            "response": "{{data.dataProviders.getAssignedResponsibleUser.viewModelCollection.loadedVMObjects}}",
+            "totalFound": "1",
+            "selectionModelMode": "single",
+            "outputData": {
+                "searchResults": "{{data.dataProviders.getAssignedResponsibleUser.viewModelCollection.loadedVMObjects}}",
+                "totalFound": "1",
+                "totalLoaded": "1"
+            }
+        },
+        "getSymptomDefectProvider": {
+            "response": "{{data.subPanelContext.sharedData.selectedObjects.selection}}",
+            "totalFound": "{{data.subPanelContext.sharedData.selectedObjects.selection.length}}",
+            "selectionModelMode": "single",
+            "commandsAnchor": "aw_removeSymptomDefectCellCommand"
+        }
+    }
+}

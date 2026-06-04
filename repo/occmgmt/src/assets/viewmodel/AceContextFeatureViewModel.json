@@ -1,0 +1,93 @@
+{
+    "schemaVersion": "1.0.0",
+    "data":
+    {
+        "elementToPCIMapCount": {
+            "dbValue": 0,
+            "type": "NUMBER"
+        }
+    },
+    "actions": {
+        "getCurrentContexts": {
+            "actionType": "JSFunction",
+            "method": "getCurrentContexts",
+            "inputData": {
+                "occContext":"{{props.subPanelContext.occContext}}"
+            },
+            "outputData": {
+                "currentContexts": ""
+            },
+            "deps": "js/aceContextConfigurationService"
+        },
+        "updateElementToPCIMapCount":{
+            "actionType": "JSFunction",
+            "method": "getElementToPCIMapCount",
+            "inputData": {
+                "occContext":"{{props.subPanelContext.occContext.elementToPCIMap}}"
+            },
+            "outputData": {
+                "elementToPCIMapCount.dbValue":""
+            },
+            "deps": "js/aceContextConfigurationService"
+        },
+        "launchContextPopup": {
+            "actionType": "JSFunction",
+            "method": "show",
+            "inputData": {
+                "data": {
+                    "subPanelContext": "{{props.subPanelContext}}",
+                    "options": {
+                        "reference": ".awb0ContextAnchor",
+                        "view": "AceContextPopupContent",
+                        "draggable": false
+                    }
+                }
+            },
+            "outputData": {
+                "popupId": "AceContextPopupContentId"
+            },
+            "deps": "js/popupService"
+        },
+        "getCurrentContextDataAction": {
+            "actionType": "dataProvider",
+            "method": "getCurrentContextData"
+        }
+    },
+    "dataProviders": {
+        "getCurrentContextData": {
+            "action": "getCurrentContexts",
+            "response": "{{data.currentContexts}}",
+            "uidInResponse": "dbValues[0]",
+            "selectionModelMode": "single"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "getCurrentContextDataAction",
+        "onUpdate":[
+            {
+                "action": "updateElementToPCIMapCount",
+                "observers": [ "props.subPanelContext.occContext.elementToPCIMap" ]
+            }
+        ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "productContextChangedEvent",
+            "action": "getCurrentContextData"
+        },
+        {
+            "eventId": "getCurrentContextData.selectionChangeEvent",
+            "condition": "subPanelContext.occContext.isOpenedUnderAContext && data.elementToPCIMapCount.dbValue > 1 && dataProvider.selectedObjects.length === 1",
+            "action": "launchContextPopup"
+        }
+    ],
+
+    "i18n": {
+        "contextTitle": [ "OccurrenceManagementConstants" ]
+    }
+}

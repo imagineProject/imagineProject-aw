@@ -1,0 +1,79 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-popup2.directive",
+        "js/aw-scrollpanel.directive",
+        "js/aw-default-cell.directive",
+        "js/aw-list.directive"
+    ],
+    "actions": {
+        "initDataProvider": {
+            "actionType": "dataProvider",
+            "method": "subProcessList"
+        },
+        "populateSubProcessData": {
+            "actionType": "JSFunction",
+            "method": "populateSubProcessData",
+            "inputData": {
+                "node": "{{ctx.graph.commandContextItem}}"
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "searchResults"
+            },
+            "deps": "js/Awp0WorkflowViewerGraphService"
+        },
+        "openSubProcessInViewer": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "openSubProcessInFixedLayout"
+                },
+                {
+                    "action": "closePopupWindow"
+                }
+            ]
+        },
+        "closePopupWindow": {
+            "actionType": "JSFunction",
+            "method": "close",
+            "inputData": {
+                "popupId": "{{data.popupId}}"
+            },
+            "deps": "js/popupService"
+        },
+        "openSubProcessInFixedLayout": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "workflowViewer.openProcess",
+                        "eventData": {
+                            "nodeObject": "{{data.dataProviders.subProcessList.selectedObjects[0]}}"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "data": {},
+    "lifecycleHooks": {
+        "onMount": "initDataProvider"
+    },
+    "dataProviders": {
+        "subProcessList": {
+            "action": "populateSubProcessData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "subProcessList.selectionChangeEvent",
+            "action": "openSubProcessInViewer"
+        }
+    ],
+    "i18n": {}
+}

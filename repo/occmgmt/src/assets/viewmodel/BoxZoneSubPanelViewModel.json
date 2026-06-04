@@ -1,0 +1,243 @@
+{
+    "data": {
+        "selectedBoxZoneUids" : [],
+        "searchOption": {
+            "displayName": "{{i18n.type}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "isEditable": "true",
+            "dbValue": "",
+            "hasLov": "true"
+        },
+        "boxZoneViewModelProperties":{
+            "type": "STRING"
+        },
+        "searchOptionTrueShapeOn":[
+            {
+                "propDisplayValue": "{{i18n.InsideOrIntersecting}}",
+                "propInternalValue": "Inside Or Intersects"
+            },
+            {
+                "propDisplayValue": "{{i18n.OutsideOrIntersecting}}",
+                "propInternalValue": "Outside Or Intersects"
+            },
+            {
+                "propDisplayValue": "{{i18n.InsideOnly}}",
+                "propInternalValue": "Within"
+            },
+            {
+                "propDisplayValue": "{{i18n.OutsideOnly}}",
+                "propInternalValue": "Outside"
+            }
+        ],
+        "searchOptionTrueShapeOff":[
+            {
+                "propDisplayValue": "{{i18n.InsideOrIntersecting}}",
+                "propInternalValue": "Inside Or Intersects"
+            },
+            {
+                "propDisplayValue": "{{i18n.OutsideOrIntersecting}}",
+                "propInternalValue": "Outside Or Intersects"
+            }
+        ],
+        "boxZoneFilter": {
+            "displayName": "",
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "filterBox":{
+            "displayName": "",
+            "type": "STRING",
+            "dbValue": "",
+            "isEditable": "true",
+            "requiredText": "Filter"
+        }
+    },
+    "actions": {
+        "getTopOrSubsetBomLineOverride": {
+            "actionType": "JSFunctionAsync",
+            "method": "getTopOrSubsetBomLine",
+            "inputData": {
+                "occContext": "{{props.subPanelContext.occContext}}",
+                "currentTopBomLime": "{{data.topOrSubsetBomLineUid}}",
+                "override": true
+            },
+            "outputData":{
+                "topOrSubsetBomLineUid": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "boxZonePanel.searchBoxZone"
+                } ]
+            },
+            "deps": "js/zoneFilterService"
+        },
+        "getTopOrSubsetBomLineCurrent": {
+            "actionType": "JSFunctionAsync",
+            "method": "getTopOrSubsetBomLine",
+            "inputData": {
+                "occContext": "{{props.subPanelContext.occContext}}",
+                "currentTopBomLime": "{{data.topOrSubsetBomLineUid}}",
+                "override": false
+            },
+            "outputData":{
+                "topOrSubsetBomLineUid": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "boxZonePanel.searchBoxZone"
+                } ]
+            },
+            "deps": "js/zoneFilterService"
+        },
+        "searchBoxZone": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData":
+            {
+                "searchInput":
+                {
+                    "maxToLoad": 50,
+                    "maxToReturn": 50,
+                    "providerName": "{{function:getProviderName}}",
+                    "searchCriteria":
+                    {
+                        "uid": "{{data.topOrSubsetBomLineUid}}",
+                        "searchString": "{{data.filterBox.dbValue}}",
+                        "zoneType": "RDVBoxZoneFormType"
+                    },
+                    "searchFilterFieldSortType": "Priority",
+                    "startIndex": "{{data.dataProviders.loadBoxZonesUsingAction.startIndex}}"
+                }
+            },
+            "outputData": {
+                "boxZoneResult": "searchResults",
+                "totalFound": "totalFound",
+                "totalLoaded": "totalLoaded",
+                "boxZoneViewModelProperties" :"{{function:createCheckBoxViewModelPropertiesForBoxZones}}",
+                "selectedBoxZoneCount" : "{{function:getSelectedZoneCount}}"
+            },
+            "deps": "js/zoneFilterService"
+        },
+        "addButtonAction":
+        {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "setActiveGroupIndexToZero",
+                "condition": "!conditions.isAdvFilterEnabled"
+            },
+            {
+                "action": "applyZoneFilter"
+            }]
+        },
+        "setActiveGroupIndexToZero":{
+            "actionType": "JSFunction",
+            "method": "setActiveGroupIndexToZero",
+            "inputData": {
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "subPanelNavigateBack": true
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "applyZoneFilter":
+        {
+            "actionType": "JSFunction",
+            "method": "applyZoneFilter",
+            "inputData":
+            {
+                "selectedZoneUids" : "{{data.selectedBoxZoneUids}}",
+                "selectedSearchOption" : "{{data.searchOption}}",
+                "zoneType"  :"BoxZone",
+                "loadedObjects" : "{{data.boxZoneViewModelProperties}}",
+                "sharedData": "{{props.subPanelContext.sharedData}}",
+                "activeViewSharedData": "{{props.subPanelContext.activeViewSharedData}}"
+            },
+            "deps": "js/zoneFilterService"
+        },
+       "updateSelectedBoxZoneList": {
+            "actionType": "JSFunction",
+            "method": "updateSelectedZoneList",
+            "inputData":
+            {
+                "selectedBoxZoneUids" : "{{data.selectedBoxZoneUids}}",
+                "selectedInputs" : "{{data.boxZoneViewModelProperties}}"
+            },
+            "outputData":
+            {
+                "selectedBoxZoneUids":"",
+                "selectedBoxZoneCount" : "length"
+            },
+            "deps": "js/zoneFilterService"
+        }
+    },
+    "dataProviders": {
+        "loadBoxZonesUsingAction": {
+            "action": "searchBoxZone",
+            "response": "{{data.boxZoneViewModelProperties}}",
+            "totalFound":  "{{data.totalFound}}",
+            "totalLoaded":  "{{data.totalLoaded}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+    "i18n":
+    {
+          "InsideOnly" : ["OccurrenceManagementSubsetConstants"],
+          "OutsideOnly": [ "OccurrenceManagementSubsetConstants" ],
+          "InsideOrIntersecting" : [ "OccurrenceManagementSubsetConstants" ],
+          "OutsideOrIntersecting" : [ "OccurrenceManagementSubsetConstants" ],
+          "Add": [ "OccurrenceManagementSubsetConstants" ],
+          "type" : ["OccurrenceManagementSubsetConstants"]
+    },
+    "functions":
+    {
+        "createCheckBoxViewModelPropertiesForBoxZones":
+        {
+            "functionName": "createCheckBoxViewModelPropertiesForZones",
+            "parameters": [
+                "{{data.selectedBoxZoneUids}}", "{{response}}"
+            ]
+        },
+        "getSelectedZoneCount": {
+            "functionName": "getSelectedZoneCount",
+            "parameters": [
+                "{{data.selectedBoxZoneUids}}", "{{response}}"
+            ]
+        },
+        "getProviderName": {
+            "functionName": "getProviderName",
+            "parameters": [
+                "ZoneProvider"
+            ]
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "conditions": {
+        "isAdvFilterEnabled": {
+            "expression": "ctx.preferences.AW_Discovery_Advanced_Filter[0] === 'true'"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "getTopOrSubsetBomLineCurrent",
+                "observers": [ "viewModel.data.filterBox.dbValue" ]
+            }
+        ]
+    },
+    "onEvent": [
+        {
+            "eventId": "productContextChangedEvent",
+            "action": "getTopOrSubsetBomLineOverride",
+            "condition": "dataProviderActionType === 'productChangedOnSelectionChange'"
+        },
+        {
+            "eventId": "boxZonePanel.searchBoxZone",
+            "action": "searchBoxZone"
+        }
+    ]
+}

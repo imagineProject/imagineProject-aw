@@ -1,0 +1,279 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions":
+    {
+        "resetDataProvider": {
+            "actionType": "JSFunction",
+            "method": "getInitialValuesWrapper",
+            "inputData": {
+                "filterStr": "",
+                "lovPageSize":10000,
+                "viewModelObj": "{{ctx.userSession}}",
+                "viewProp": "{{ctx.userSession.props.awp0RevRule}}",
+                "operationName": "FakeOperation"
+            },
+            "outputData": {
+                "lovDataInfo" : ""
+            },
+            "deps": "js/awSearchService"
+        },
+        "loadTypeList": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2016-03-Finder",
+            "method": "performSearch",
+            "inputData": {
+                "searchInput": {
+                    "attributesToInflate": [ "parent_types", "type_name" ],
+                    "internalPropertyName": "",
+                    "maxToLoad": 25,
+                    "maxToReturn": 25,
+                    "providerName": "Awp0TypeSearchProvider",
+                    "searchCriteria": {
+                        "searchString": "{{data.typeListProp.filterString}}",
+                        "listOfIncludeObjectTypes": "BusinessObject",
+                        "loadAllSubTypes": "true",
+                        "defaultType": "{{data.typeListProp.filterString}}"
+                    },
+                    "searchFilterFieldSortType": "Alphabetical",
+                    "searchFilterMap": {},
+                    "searchSortCriteria": [],
+                    "startIndex": "{{data.dataProviders.getTypeListProvider.startIndex}}"
+                }
+            },
+            "outputData": {
+                "typeListTotalFound": "totalFound",
+                "typeList": "{{function:convertTypesToLovEntries}}"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "isHighestPossibleParentOfSelectedTypeItemRevision": {
+            "actionType": "JSFunction",
+            "method": "isHighestPossibleParentOfSelectedTypeItemRevision",
+            "inputData": {
+                "typeListProp": "{{data.typeListProp.dbValue}}"
+            },
+            "outputData": {
+                "isHighestPossibleParentItemRevision" : ""
+            },
+            "deps": "js/AwSearchQueryBuilderService"
+        },
+        "getQueryProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "objects": [
+                    {
+                        "uid": "{{props.subPanelContext.selected.uid}}",
+                        "type": "ImanQuery"
+                    }
+                ],
+                "attributes": [
+                    "query_name",
+                    "query_desc",
+                    "query_class",
+                    "query_clauses"
+                ]
+            },
+            "outputData": {
+                "queryInfo": "{{function:getQueryInfo}}"
+            },
+            "deps": "js/AwSearchQueryBuilderService"
+        },
+        "setDefaultValuesForSearchTypeAndRevRule": {
+            "actionType": "JSFunction",
+            "method": "setDefaultValuesForSearchTypeAndRevRule",
+            "inputData": {
+                "typeListProp": "{{data.typeListProp}}",
+                "revisionRuleProp": "{{data.revisionRuleProp}}",
+                "queryInfo": "{{data.queryInfo}}",
+                "typeDisplayName": "{{data.typeDisplayName}}"
+            },
+            "outputData": {
+                "typeListProp" : "typeListProp",
+                "revisionRuleProp": "revisionRuleProp",
+                "isHighestPossibleParentItemRevision": "isHighestPossibleParentItemRevision"
+            },
+            "deps": "js/AwSearchQueryBuilderService"
+        },
+        "getTypeDescriptions": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2015-10-Session",
+            "method": "getTypeDescriptions2",
+            "inputData": {
+                "typeNames": ["{{data.queryInfo.queryClass}}"],
+                "options": {}
+            },
+            "outputData": {
+                "typeDisplayName": ""
+            }
+        },
+        "loadDefaultValues": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getQueryProperties"
+                },
+                {
+                    "action": "getTypeDescriptions"
+                },
+                {
+                    "action": "setDefaultValuesForSearchTypeAndRevRule"
+                }
+            ]
+        },
+        "updateSearchTypeBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "isHighestPossibleParentOfSelectedTypeItemRevision"
+                },
+                {
+                    "action": "updateSearchTypeInState"
+                }
+            ]
+        },
+        "updateSearchTypeInState": {
+            "actionType": "JSFunction",
+            "method": "updateSearchTypeInState",
+            "inputData": {
+                "typeListProp": "{{data.typeListProp}}",
+                "queryState": "{{props.subPanelContext.queryState}}"
+            },
+            "deps": "js/AwSearchQueryBuilderService"
+        },
+        "resetSearchType": {
+            "actionType": "JSFunction",
+            "method": "resetSearchType",
+            "inputData": {
+                "typeListProp": "{{data.typeListProp}}",
+                "queryState": "{{props.subPanelContext.queryState}}",
+                "queryInfo": "{{data.queryInfo}}"
+            },
+            "outputData": {
+                "typeListProp": "typeListProp"
+            },
+            "deps": "js/AwSearchQueryBuilderService"
+        },
+        "updateRevisionRuleState": {
+            "actionType": "JSFunction",
+            "method": "updateRevisionRuleState",
+            "inputData": {
+                "queryState": "{{props.subPanelContext.queryState}}",
+                "revisionRuleProp": "{{data.revisionRuleProp}}"
+            },
+            "deps": "js/AwSearchQueryBuilderService"
+        },
+        "resetSearchTypeBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setIsEditableValueForLOVs"
+                },
+                {
+                    "action": "resetSearchType",
+                    "condition": "props.subPanelContext.context.searchState.editing === 'cancel'"
+                },
+                {
+                    "action": "getTypeDescriptions",
+                    "condition": "props.subPanelContext.context.searchState.editing === 'cancel'"
+                },
+                {
+                    "action": "setDefaultValuesForSearchTypeAndRevRule",
+                    "condition": "props.subPanelContext.context.searchState.editing === 'cancel'"
+                }
+            ]
+        },
+        "setIsEditableValueForLOVs": {
+            "actionType": "JSFunction",
+            "method": "setIsEditableValueForLOVs",
+            "inputData": {
+                "state": "{{props.subPanelContext.context.searchState.editing}}",
+                "typeListProp": "{{data.typeListProp}}",
+                "revisionRuleProp": "{{data.revisionRuleProp}}"
+            },
+            "deps": "js/AwSearchQueryBuilderService"
+        }
+    },
+    "data": {
+        "typeListProp": {
+            "displayName": "{{i18n.SearchType}}",
+            "type": "STRING",
+            "hasLov": true,
+            "isEditable": false,
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE",
+            "dataProvider": "getTypeListProvider"
+        },
+        "revisionRuleProp": {
+            "displayName": "{{i18n.RevisionRule}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": false,
+            "dataProvider": "revisionLink",
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE",
+            "dbValue": "",
+            "dispValue": "",
+            "hasLov": true
+        },
+        "isHighestPossibleParentItemRevision": false
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "dataProviders":
+    {
+        "revisionLink":
+        {
+            "action":"resetDataProvider",
+            "response": "{{data.lovDataInfo.lovEntries}}",
+            "totalFound": "{{data.totalFound}}"
+        },
+        "getTypeListProvider": {
+            "action": "loadTypeList",
+            "response": "{{data.typeList}}",
+            "totalFound": "{{data.typeListTotalFound}}"
+        }
+    },
+    "conditions": {
+        "revisionRuleVisibility": {
+            "expression": "data.isHighestPossibleParentItemRevision"
+        },
+        "inEditMode": {
+            "expression": "props.subPanelContext.context.searchState.editing === 'startEdit'"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "loadDefaultValues",
+        "onUpdate": [
+            {
+                "action": "updateSearchTypeBatchJob",
+                "observers": [ "viewModel.dataProviders.getTypeListProvider.selectedObjects[0].propInternalValue" ]
+            },
+            {
+                "action": "resetSearchTypeBatchJob",
+                "observers": [ "props.subPanelContext.context.searchState.editing" ]
+            },
+            {
+                "action": "updateRevisionRuleState",
+                "observers": [ "viewModel.data.revisionRuleProp.dbValue" ]
+            }
+        ]
+    },
+    "functions": {
+        "getQueryInfo": {
+            "functionName": "getQueryInfo",
+            "parameters": []
+        }
+    },
+    "i18n":
+    {
+        "SearchType": [
+            "SearchMessages"
+        ],
+        "RevisionRule": [
+            "SearchMessages"
+        ]
+    }
+}

@@ -1,0 +1,403 @@
+{
+    "schemaVersion" : "1.0.0",
+    "data": {
+        "productIDSingle": {
+            "displayName": "{{i18n.parentId}}",
+            "name": "productIDSingle",
+            "type": "STRING",
+            "dataProvider": "getRelevantProductsSingleSelect",
+            "isSelectOnly": true
+        },
+        "productIDLOV":{
+            "type": "STRINGARRAY",
+            "isArray": true,
+            "dataProvider": "getRelevantProducts",
+            "isSelectOnly": true
+        },
+        "revRule": {
+            "displayName":"{{ctx.userSession.props.awp0RevRule.uiValue}}",
+            "type": "STRING",
+            "dbValue": "{{ctx.userSession.props.awp0RevRule.dbValue}}",
+            "uiValue":"{{ctx.userSession.props.awp0RevRule.uiValue}}"
+        },
+        "effectivity": {
+            "displayName": "{{i18n.effectivity}}",
+            "name": "effectivity",
+            "type": "STRING",
+            "dataProvider": "getChangeEffectivitiesSingleSelect",
+            "isSelectOnly": true
+        },
+        "effListBox": {
+            "displayName":"{{i18n.effectivity}}",
+            "type": "STRINGARRAY",
+            "isArray": true,
+            "dataProvider": "getChangeEffectivities"
+        },
+        "disabledButtonChk": {
+            "displayName": "",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": false
+        },
+        "selectedRevRule": {
+            "displayName": "{{i18n.revRule}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "{{subPanelContext.configState.displayValues.revRule}}",
+            "displayValue": "{{subPanelContext.configState.displayValues.revRule}}"
+        }
+    },
+    "dataProviders": {
+        "getRelevantProducts":{
+            "action": "getRelevantProductsAction",
+            "response": "{{data.searchResults}}"
+        },
+        "getRelevantProductsSingleSelect":{
+            "action": "getRelevantProductsSingleSelectAction",
+            "response": "{{data.searchResultsSingleSelect}}"
+        },
+        "revisionRules": {
+            "action": "getRevisionRules",
+            "response": "{{data.lovDataInfo.lovEntries}}",
+            "totalFound": "{{data.totalFound}}"
+        },
+        "getChangeEffectivities":{
+            "action": "getReleaseStatusListFromEcn",
+            "response": "{{data.releaseStatusList}}"
+        },
+        "getChangeEffectivitiesSingleSelect":{
+            "action": "getReleaseStatusListFromEcnSingleSelect",
+            "response": "{{data.releaseStatusListSingleSelect}}"
+        }
+    },
+    "actions":{
+        "closePanel":
+        {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData":
+            {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "updateConfigStateAndReloadImpactedCandidates":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateConfigurationState"
+                },
+                {
+                    "action": "reloadImpactedCandidates"
+                },
+                {
+                    "action": "closePanel",
+                    "condition": "!conditions.isPanelPinned"
+                }
+            ]
+        },
+        "reloadImpactedCandidates":{
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "probableImpactedGrid.plTable.reload"
+                    }
+                ]
+            }
+        },
+        "getRelevantProductsAction":{
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Structure-2020-12-WhereUsed",
+            "method": "getWhereUsedInfo",
+            "inputData": {
+                "whereUsedInput": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "awb0Structure"
+                    },
+                    "inputObject": {
+                        "type":"{{props.subPanelContext.configurationState.selectedProblemItem.type}}",
+                        "uid":"{{props.subPanelContext.configurationState.selectedProblemItem.uid}}"
+                    },
+                    "revisionRule":{
+                        "type":"RevisionRule",
+                        "uid":"{{data.revRule.dbValue}}"
+                    },
+                    "additionalInfo": {
+                        "configureParentAndChild":["false"],
+                        "level": ["TOP_LEVEL_PARENTS"]
+                    },
+                    "pageSize":100,
+                    "cursorInfo":{}
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{function:relevantProducts}}"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "getRelevantProductsSingleSelectAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Structure-2020-12-WhereUsed",
+            "method": "getWhereUsedInfo",
+            "inputData": {
+                "whereUsedInput": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "awb0Structure"
+                    },
+                    "inputObject": {
+                        "type":"{{props.subPanelContext.configurationState.selectedProblemItem.type}}",
+                        "uid":"{{props.subPanelContext.configurationState.selectedProblemItem.uid}}"
+                    },
+                    "revisionRule":{
+                        "type":"RevisionRule",
+                        "uid":"{{data.revRule.dbValue}}"
+                    },
+                    "additionalInfo": {
+                        "configureParentAndChild":["false"],
+                        "level": ["TOP_LEVEL_PARENTS"]
+                    },
+                    "pageSize":100,
+                    "cursorInfo":{}
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResultsSingleSelect": "{{function:relevantProducts}}"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "getReleaseStatusListFromEcn": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "attributes": [
+                    "effectivities"
+                ],
+                "objects": [
+                    {
+                        "uid" : "{{ctx.xrtSummaryContextObject.props.release_status_list.dbValue[0]}}",
+                        "type":"ReleaseStatus"
+                    }
+                ]
+            },
+            "outputData": {
+                "releaseStatusList": "{{function:getReleaseStatusList}}"
+            }
+        },
+        "getReleaseStatusListFromEcnSingleSelect": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "attributes": [
+                    "effectivities"
+                ],
+                "objects": [
+                    {
+                        "uid" : "{{ctx.xrtSummaryContextObject.props.release_status_list.dbValue[0]}}",
+                        "type":"ReleaseStatus"
+                    }
+                ]
+            },
+            "outputData": {
+                "releaseStatusListSingleSelect": "{{function:getReleaseStatusList}}"
+            }
+        },
+        "updateConfigurationState":{
+            "actionType": "JSFunction",
+            "method": "updateConfigState",
+            "inputData": {
+                "configurationState": "{{props.subPanelContext.configurationState}}",
+                "data":"{{data}}",
+                "selectedProblemItem":null
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "doUpdateEffectivityListBox1": {
+            "actionType": "JSFunction",
+            "method": "updateEffectivityListBox",
+            "inputData": {
+               "provider": "{{data.dataProviders.getChangeEffectivities}}",
+               "selected": "{{data.effListBox.dbValue}}"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "doUpdateProductIDListBox1": {
+            "actionType": "JSFunction",
+            "method": "updateProductIDListBox",
+            "inputData": {
+               "provider": "{{data.dataProviders.getRelevantProducts}}",
+               "selected": "{{data.productIDLOV.dbValue}}"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "doRevisionRuleSelectionAction": {
+            "actionType": "JSFunction",
+            "method": "setRevisionRuleFilter",
+            "inputData": {
+                "eventData": "{{parameters.eventData}}",
+                "selectedRevRule": "{{data.revRule}}"
+            },
+            "outputData": {
+                "revRule": ""
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "doProductIdLovSelectionChangeEvent": {
+            "actionType": "JSFunction",
+            "method": "retainSelectionInSingleSelectWidget",
+            "inputData": {
+                "effectivity": "{{data.effectivity}}",
+                "effListBox": "{{data.effListBox}}"
+            },
+            "outputData": {
+                "effectivity": ""
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "doEffListBoxSelectionChangeEvent": {
+            "actionType": "JSFunction",
+            "method": "retainSelectionInSingleSelectWidget",
+            "inputData": {
+                "productIDSingle": "{{data.productIDSingle}}",
+                "productIDLOV": "{{data.productIDLOV}}"
+            },
+            "outputData": {
+                "productIDSingle": ""
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "doClearEffListBoxVMProps": {
+            "actionType": "JSFunction",
+            "method": "clearMultiSelectWidgetVMProps",
+            "inputData": {
+                "effListBox": "{{data.effListBox}}",
+                "productIDLOV": "{{data.productIDLOV}}"
+            },
+            "outputData": {
+                "effListBox": ""
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "doClearProductIDLOVVMProps": {
+            "actionType": "JSFunction",
+            "method": "clearMultiSelectWidgetVMProps",
+            "inputData": {
+                "productIDLOV": "{{data.productIDLOV}}",
+                "effListBox": "{{data.effListBox}}"
+            },
+            "outputData": {
+                "productIDLOV": ""
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        }
+    },
+    "conditions": {
+        "isPanelPinned": {
+            "expression": "subPanelContext.panelPinned === true"
+        },
+        "isSmartDiscoveryEnabled": {
+            "expression": "ctx.preferences.QSEARCH_filter_queries_by_product_path[0] === 'true'"
+        },
+        "doesEffectivitySingleSelectExist": {
+            "expression": "data.productIDLOV.dbValues.length > 1"
+        },
+        "doesEffectivityMultiSelectExist": {
+            "expression": "!conditions.doesEffectivitySingleSelectExist"
+        },
+        "doesProdIDSingleSelectExist": {
+            "expression": "data.effListBox.dbValues.length > 1"
+        },
+        "doesProdIDMultiSelectExist": {
+            "expression": "!conditions.doesProdIDSingleSelectExist"
+        }
+    },
+    "functions": {
+        "relevantProducts":{
+            "functionName": "relevantProducts",
+            "parameters": [
+                "{{data.productIDLOV}}"
+            ],
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "getReleaseStatusList": {
+            "functionName": "getReleaseStatusList",
+            "parameters": [
+                "{{data.effListBox}}"
+            ],
+            "deps": "js/Cm1ImpactedWidgetService"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "revisionRules.selectionChangeEvent",
+            "action": "doRevisionRuleSelectionAction",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "getRelevantProducts.selectionChangeEvent",
+            "action": "doProductIdLovSelectionChangeEvent",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "getChangeEffectivities.selectionChangeEvent",
+            "action": "doEffListBoxSelectionChangeEvent",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+    ],
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "doClearEffListBoxVMProps",
+                "observers": [
+                    "viewModel.data.productIDLOV.dbValues.length"
+                ]
+            },
+            {
+                "action": "doClearProductIDLOVVMProps",
+                "observers": [
+                    "viewModel.data.effListBox.dbValues.length"
+                ]
+            }
+        ]
+    },
+    "i18n": {
+        "Configuration":[
+            "ChangeMessages"
+        ],
+        "revRule":[
+            "ChangeMessages"
+        ],
+        "effectivity":[
+            "ChangeMessages"
+        ],
+        "noAuthoringChangeTitle":[
+            "ChangeMessages"
+        ],
+        "parentId":[
+            "ChangeMessages"
+        ],
+        "Configure":[
+            "ChangeMessages"
+        ],
+        "Cm1ConfigurePanelNote":[
+            "ChangeMessages"
+        ]
+    }
+}
+

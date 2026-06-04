@@ -1,0 +1,661 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "reveal": {
+            "actionType": "dataProvider",
+            "methods": [
+                "activeChangeDataProvider",
+                "myChangesDataProvider"
+            ]
+        },
+        "getGlobalChange": {
+            "actionType": "JSFunction",
+            "method": "activeChangeObject",
+            "inputData": {
+                "uid": "{{ctx.userSession.props.cm0GlobalChangeContext.dbValue}}",
+                "dataProvider": "{{data.dataProviders.activeChangeDataProvider}}"
+            },
+            "outputData": {
+                "setGlobalChange": "setGlobalChange"
+            },
+            "deps": "js/Cm1AddToMyChangesService"
+        },
+        "setInitialDisplayValues": {
+            "actionType": "JSFunction",
+            "method": "setInitialDisplayValues",
+            "inputData": {
+                "relNames": "{{data.eventData.relNames}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "relationListValues": "relationListValues"
+            },
+            "deps": "js/Cm1AddToMyChangesService"
+        },
+        "selectionChange": {
+            "actionType": "JSFunction",
+            "method": "updateRelationLabel",
+            "inputData": {
+                "relationList": "{{data.relationList}}",
+                "object": "{{data.selectedRelationLabel}}",
+                "property": "uiValue",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "selectedRelationLabel": "selectedRelationLabel",
+                "selectedChange": "selectedChange",
+                "isRevised": "isRevised",
+                "selectedItems": "selectedItems"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "addToMyChanges.getRevisionListProperties",
+                        "condition":"data.relationList.newValue === 'CMHasSolutionItem'"
+                    }
+                ]
+            },
+            "deps": "js/Cm1AddToMyChangesService"
+        },
+
+        "getRevisionListProperties": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "getProperties",
+            "inputData": {
+                "attributes": [
+                    "revision_list"
+                ],
+                "objects": "{{function:getSelectedItems}}"
+            },
+
+            "outputData": {
+                "isRevised": "{{function:getRevisionData}}"
+
+            },
+
+            "deps": "js/Cm1AddToMyChangesService"
+        },
+        "closePanel":
+        {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData":
+            {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+
+        "searchMyChanges": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData": {
+                "searchInput": {
+                    "maxToLoad": 50,
+                    "maxToReturn": 50,
+                    "providerName": "Cm1MyChangesProvider",
+
+                    "searchCriteria": {
+                        "changesProviderContentType": "All",
+                        "searchString": "{{data.filterMyChanges.dbValue}}",
+                        "typeToDisplay" : "{{function:getChangeTypeToDisplay}}"
+                    },
+                    "searchFilterFieldSortType": "Alphabetical",
+                    "startIndex": "{{data.dataProviders.myChangesDataProvider.startIndex}}"
+                }
+            },
+
+            "outputData": {
+                "response": "searchResults",
+                "totalFound": "totalFound",
+                "totalLoaded": "totalLoaded"
+            },
+
+            "deps": "js/Cm1AddToMyChangesService"
+        },
+
+        "selectGlobalChangeObject": {
+            "actionType": "JSFunction",
+            "method": "selectGlobalChangeObject",
+            "inputData": {
+                "dataProviders": "{{data.dataProviders}}",
+                "dataProviderId": "activeChangeDataProvider",
+                "context": "{{data.dataProviders.activeChangeDataProvider.selectedObjects}}",
+                "data": "{{data}}",
+                "ctx": "{{ctx}}"
+
+            },
+
+            "deps": "js/Cm1AddToMyChangesService"
+        },
+
+        "selectSearchChangeObject": {
+            "actionType": "JSFunction",
+            "method": "selectSearchChangeObject",
+            "inputData": {
+                "dataProviders": "{{data.dataProviders}}",
+                "dataProviderId": "myChangesDataProvider",
+                "context": "{{data.dataProviders.myChangesDataProvider.selectedObjects}}",
+                "data": "{{data}}",
+                "ctx": "{{ctx}}"
+            },
+
+            "deps": "js/Cm1AddToMyChangesService"
+        },
+        "showRedlineChangesAction": {
+            "actionType": "JSFunction",
+            "method": "updateCtxWithShowChangeValue",
+            "deps": "js/changeMgmtUtils",
+            "inputData": {
+                "value": "{{!ctx.occmgmtContext.isChangeEnabled}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "addToMyChanges.refreshSelectedObjectInPWA"
+                    }
+                ]
+            }
+        },
+        "refreshSelectedObjectInPWA": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "deps": "js/occmgmtUtils",
+            "inputData": {
+                "path": "",
+                "value": {
+                    "configContext": {
+                        "startFreshNavigation": true
+                    },
+                    "transientRequestPref": {
+                        "showChange":true,
+                        "jitterFreePropLoad": true,
+                        "useProductIndex": false
+                    }
+                },
+                "target": "{{props.subPanelContext.occContext}}"
+
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "closePanelEvent"
+                    }
+                ]
+            }
+
+        },
+        "addChangeBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "Cm1IsObjOnDiffChange",
+                    "condition":"conditions.isImpactedRelationInECNAndPrefTrue"
+                },
+                {
+                    "action": "generateStructureEditOrAddToSolution",
+                    "condition":"!conditions.isImpactedRelationInECNAndPrefTrue || (data.openEcns.length === 0)"
+                }
+            ]
+        },
+        "generateStructureEditOrAddToSolution": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events":
+                [
+                    {
+                        "name": "addToMyChanges.getECNsAssociatedWithSelectedItems",
+                        "condition": "data.relationList.newValue === 'CMHasSolutionItem' && data.isRevised === true"
+                    },
+                    {
+                        "name": "addToMyChanges.changePasteService",
+                        "condition": "data.isRevised !== true"
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{ctx.xrtSummaryContextObject}}"
+                            ]
+                        },
+                        "condition": "(subPanelContext.pageContext.primaryActiveTabId === 'tc_xrt_Changes') || ((subPanelContext.pageContext.secondaryActiveTabId === 'tc_xrt_Changes') && ((subPanelContext.pageContext.primaryActiveTabId !== 'tc_xrt_Content') || (subPanelContext.pageContext.primaryActiveTabId !== 'tc_xrt_Navigate')))"
+                    }
+                ]
+            }
+        },
+        "generateStructureEdit": {
+            "actionType": "TcSoaService",
+            "serviceName": "CmAws-2020-05-Changes",
+            "method": "generateStructureEdit",
+            "inputData": {
+                "generateStructureEditInput": {
+                    "inputData": "{{function:getInputDataForGenerateStructureEdit}}",
+                    "changeItemRevision": {
+                        "uid":"{{data.selectedChange.uid}}",
+                        "type":"ChangeNoticeRevision"
+                    },
+                    "isGenerateStructureEdit": true
+                },
+                "processingMode": "{{function:getProcessingMode}}"
+            },
+            "events": {
+                "success":
+                [
+                    {
+                        "name": "addToMyChanges.showRedlineChangesEvent",
+                        "condition": "ctx.aceActiveContext && ctx.aceActiveContext.context && data.enableRedlining && data.enableRedlining === true"
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{data.selectedItems}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "closePanelEvent",
+                        "condition": "!data.enableRedlining || data.enableRedlining === false"
+                    }
+                ],
+                "failure":
+                [
+                    {
+                        "name": "closePanelEvent"
+                    }
+                ]
+            },
+            "outputData":{
+                "enableRedlining":"{{function:isRedLiningEnabled}}"
+
+            },
+            "deps": "js/Cm1AddToMyChangesService",
+            "actionMessages": {
+                "success": [
+                    {
+                        "condition": "data.isRunAsync.dbValue === false",
+                        "message": "itemAddToMyChangesMsg"
+                    }
+                ]
+            }
+        },
+        "Cm1IsObjOnDiffChange": {
+            "actionType": "TcSoaService",
+            "serviceName": "ChangeManagement-2025-06-ChangeManagement",
+            "method": "getConcurrentChanges",
+            "deps": "js/Cm1CreateChangeService",
+            "inputData": {
+                "inputObjs": "{{function:processSecondaryObjectsInput}}",
+                "typeFilters": [ "GnChangeNoticeRevision" ]
+            },
+            "outputData": {
+                "openEcns": "{{function:getListOfItemAndassociatedECNs}}",
+                "warningMessage": "{{function:processWarningMessages}}",
+                "response":"output"
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "condition": "(data.openEcns.length === 1)",
+                        "message": "showSingleSelectionChangeWarning"
+                    },
+                    {
+                        "condition": "(data.openEcns.length > 1)",
+                        "message": "showMultiSelectionChangeWarning"
+                    }
+                ]
+            }
+        },
+        "changePasteService": {
+            "actionType": "JSFunction",
+            "method": "execute",
+            "deps": "js/pasteService",
+            "inputData": {
+                "targetObject": "{{data.selectedChange}}",
+                "sourceObjects":"{{data.selectedItems}}",
+                "relationType": "{{data.relationList.newValue}}"
+            },
+            "events": {
+                "success":
+                [
+                    {
+                        "name": "cdm.relatedModified",
+                        "condition": "data.selectedItems && data.selectedItems.length === 1",
+                        "eventData": {
+                            "relatedModified": [
+                                "{{ctx.xrtSummaryContextObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "closePanelEvent"
+                    },
+                    {
+                        "name": "occTreeTable.plTable.reload"
+                    }
+                ],
+                "failure":
+                [
+                    {
+                        "name": "closePanelEvent"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "condition": "data.isRunAsync.dbValue === false",
+                        "message": "itemAddToMyChangesMsg"
+                    }
+                ]
+            }
+
+        },
+        "getECNsAssociatedWithSelectedItems": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-09-DataManagement",
+            "method": "expandGRMRelationsForSecondary",
+            "inputData":{
+                "secondaryObjects": "{{function:prepareExpandGRMRelationInput}}",
+                "pref": {
+                   "expItemRev":false,
+                   "returnRelations":true,
+                   "info":[
+                      {
+                          "relationTypeName":"CMHasSolutionItem",
+                          "otherSideObjectTypes":
+                          [
+                              "ChangeNoticeRevision"
+                          ]
+                      }
+                   ]
+                }
+             },
+
+            "outputData":
+            {
+                "selectedItemsAndChangeNoticeList": "{{function:getListOfItemAndECNs}}"
+            },
+            "deps": "js/Cm1AddToMyChangesService"
+        },
+        "unregisterAddToMyChangeInput": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "inputData": {
+                "name": "appAddToMyChangesPanel"
+            },
+            "deps": "js/appCtxService"
+        }
+    },
+    "props": {
+
+        "sub-panel-context":{
+            "type":"object"
+        }
+    },
+    "functions": {
+        "getChangeTypeToDisplay": {
+            "functionName": "getChangeTypeToDisplay"
+        },
+        "getInputDataForGenerateStructureEdit": {
+            "functionName": "getInputDataForGenerateStructureEdit",
+            "parameters": [
+                "{{data}}",
+                "{{data.selectedItems}}",
+                "{{data.relationList.newValue}}"
+            ]
+        },
+        "isRedLiningEnabled":{
+            "functionName": "isRedLiningEnabled",
+            "parameters": [
+                "{{data.selectedItems}}"
+            ]
+        },
+        "getProcessingMode":{
+            "functionName": "getProcessingMode",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getListOfItemAndECNs": {
+            "functionName": "getListOfItemAndECNs",
+            "parameters": ["{{data}}"]
+        },
+        "getRevisionData": {
+            "functionName": "getRevisionData",
+            "parameters": ["{{data}}"]
+        },
+        "prepareExpandGRMRelationInput": {
+            "functionName": "prepareExpandGRMRelationInput"
+        },
+        "getSelectedItems":{
+            "functionName": "getSelectedItems"
+        },
+        "getSelectedChangeObj" : {
+            "functionName": "getSelectedChangeObj",
+            "parameters": [
+                "{{data.dataProviders.activeChangeDataProvider.selectedObjects[0]}}",
+                "{{data.dataProviders.myChangesDataProvider.selectedObjects[0]}}"
+            ]
+        },
+        "processSecondaryObjectsInput": {
+            "functionName": "processSecondaryObjectsInput",
+            "parameters": [
+                "{{false}}",
+                "{{false}}",
+                "{{data.selectedChange.uid}}"
+            ]
+        },
+        "getListOfItemAndassociatedECNs": {
+            "functionName": "getListOfItemAndassociatedECNs"
+        },
+        "processWarningMessages": {
+            "functionName": "processWarningMessages"
+        }
+    },
+
+    "data": {
+        "setGlobalChange": {
+            "type": "OBJECT",
+            "dbValue": ""
+        },
+
+        "filterMyChanges": {
+            "displayName": "",
+            "type": "STRING",
+            "dbValue": ""
+        },
+        "relationList": {
+            "displayName": "{{i18n.selectedRelation}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": "true"
+        },
+        "relationListValues": {
+            "type": "STRING",
+            "dbValue": []
+        },
+        "selectedRelationLabel": {
+            "displayName": "{{i18n.selectedRelation}}",
+            "isRequired": "false",
+            "isEditable": "true"
+        },
+        "isRunAsync":
+        {
+            "displayName": "{{i18n.isRunAsync}}",
+            "type": "BOOLEAN",
+            "isEditable": "true",
+            "dbValue" : false,
+            "labelPosition" : "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "isRevised": {
+            "type": "BOOLEAN",
+            "dbValue": false
+        }
+    },
+
+    "dataProviders": {
+        "myChangesDataProvider": {
+            "action": "searchMyChanges",
+            "response": "{{data.response}}",
+            "totalFound": "{{data.totalFound}}",
+            "totalLoaded": "{{data.totalLoaded}}",
+            "selectionModelMode": "single"
+
+        },
+
+        "activeChangeDataProvider": {
+            "action": "getGlobalChange",
+            "response": "{{data.dataProviders.activeChangeDataProvider.viewModelCollection.loadedVMObjects}}"
+        }
+    },
+    "messages": {
+        "itemAddToMyChangesMsg": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.itemAddToMyChangesMsg}}",
+            "messageTextParams": [
+                "{{data.selectedItems}}",
+                "{{data.selectedChange.props.object_string.dbValues[0]}}",
+                "{{data.relationList.uiValue}}"
+            ]
+        },
+        "showSingleSelectionChangeWarning":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.showMultiSelectionChangeWarnEmptyMsg}}",
+            "messageTextParams": [
+              "{{data.warningMessage}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancelText}}",
+                    "action": "closePanel"
+                },
+                {
+                    "option": "Add",
+                    "text": "{{i18n.addButtonTitle}}",
+                    "action": "generateStructureEditOrAddToSolution"
+                }
+            ]
+        },
+        "showMultiSelectionChangeWarning":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.showMultiSelectionChangeWarnEmptyMsg}}",
+            "messageTextParams": [
+             "{{data.warningMessage}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancelText}}",
+                    "action": "closePanel"
+                },
+                {
+                    "option": "Add",
+                    "text": "{{i18n.addButtonTitle}}",
+                    "action": "generateStructureEditOrAddToSolution"
+                }
+            ]
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "gwt.SubLocationContentSelectionChangeEvent",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "activeChangeDataProvider.selectionChangeEvent",
+            "action": "selectGlobalChangeObject"
+        },
+        {
+            "eventId": "myChangesDataProvider.selectionChangeEvent",
+            "action": "selectSearchChangeObject"
+        },
+        {
+            "eventId": "selectGlobalChangeObjectPanel.selectionChangeEvent",
+            "action": "selectGlobalChangeObject"
+        },
+        {
+            "eventId": "selectSearchChangeObjectPanel.selectionChangeEvent",
+            "action": "selectSearchChangeObject"
+        },
+        {
+            "eventId": "addToMyChanges.showRedlineChangesEvent",
+            "action": "showRedlineChangesAction"
+        },
+        {
+            "eventId": "addToMyChanges.refreshSelectedObjectInPWA",
+            "action": "refreshSelectedObjectInPWA"
+        },
+        {
+            "eventId": "addToMyChanges.generateStructureEdit",
+            "action": "generateStructureEdit"
+        },
+        {
+            "eventId": "addToMyChanges.changePasteService",
+            "action": "changePasteService"
+        },
+        {
+            "eventId": "addToMyChanges.getRevisionListProperties",
+            "action": "getRevisionListProperties"
+        },
+        {
+            "eventId": "addToMyChanges.setInitialDisplayValues",
+            "cacheEventData": true,
+            "action": "setInitialDisplayValues"
+        },
+        {
+            "eventId": "addToMyChanges.listSelectionChange",
+            "action": "selectionChange"
+        },
+
+        {
+            "eventId": "addToMyChanges.getECNsAssociatedWithSelectedItems",
+            "action": "getECNsAssociatedWithSelectedItems",
+            "cacheEventData": true
+
+        },
+        {
+            "eventId": "primaryWorkArea.selectionChangeEvent",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "closePanelEvent",
+            "action": "closePanel"
+        }
+    ],
+    "conditions": {
+
+        "isRelationSelectedVisible": {
+            "expression": "data.dataProviders.myChangesDataProvider.selectedObjects.length === 1 ||  data.dataProviders.activeChangeDataProvider.selectedObjects.length === 1"
+        },
+        "isSolutionRelation": {
+            "expression": "data.relationList.dbValue === 'CMHasSolutionItem' && data.isRevised === true"
+        },
+        "isImpactedRelationInECNAndPrefTrue":{
+            "expression": "ctx.preferences.CM_show_concurrent_change_warning[0].toLowerCase()==='true' && data.relationList.dbValue === 'CMHasImpactedItem' && data.selectedChange && data.selectedChange.modelType.typeHierarchyArray.indexOf( 'GnChangeNoticeRevision' ) > -1"
+        }
+    },
+    "lifecycleHooks": {
+        "onUnmount": "unregisterAddToMyChangeInput"
+    },
+    "i18n": {
+        "addToMyChangesTitle": [ "ChangeMessages" ],
+        "addButtonTitle": [ "ChangeMessages" ],
+        "itemAddToMyChangesMsg": [ "ChangeMessages" ],
+        "globalChangeTitle": [ "ChangeMessages" ],
+        "myChangeSearchTitle": [ "ChangeMessages" ],
+        "selectedRelation": [ "ChangeMessages" ],
+        "isRunAsync": [ "ChangeMessages" ],
+        "cancelText": [ "ChangeMessages" ],
+        "proceedText": [ "ChangeMessages" ],
+        "numberOfSelectionsAddedToChange": ["ChangeMessages"],
+        "alreadyAssociatedToChange": ["ChangeMessages"],
+        "noSelectionsCanBeAddedToChange": ["ChangeMessages"],
+        "showMultiSelectionChangeWarnEmptyMsg":["ChangeMessages"],
+        "continueButtonTxt":["ChangeMessages"]
+    }
+
+}

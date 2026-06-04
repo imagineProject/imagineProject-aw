@@ -1,0 +1,94 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports":
+    [
+        "js/aw-command-panel.directive",
+        "js/aw-add.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-i18n.directive"
+    ],
+    "data": {
+        "addPanelState": {
+            "initialValues": {
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {
+                "sourceObjects": {
+                    "field": "true",
+                    "type": "OBJECTARRAY"
+                },
+                "selectedTab": {
+                    "field": "true",
+                    "type": "OBJECT"
+                }
+            }
+        }
+    },
+    "actions":
+    {
+        "updateRefProperty": {
+            "actionType": "JSFunction",
+
+            "method": "updateRefProperty",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "sourceObjects": "{{addPanelState.sourceObjects}}",
+                "subPanelContext": "{{subPanelContext}}"
+            }
+        },
+        "setTypeReference": {
+            "actionType": "batchJob",
+            "steps": [ {
+
+                    "action": "updateRefProperty"
+                },
+                {
+                    "action": "closePanelDialog"
+
+                }
+            ]
+
+        },
+        "closePanelDialog":
+        {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+
+            "deps": "js/dialogService"
+        },
+        "registerPanelContext": {
+            "actionType": "JSFunction",
+            "method": "registerCtx",
+            "inputData": {
+                "name": "panelContext",
+                "value": "{{subPanelContext}}"
+            },
+            "deps": "js/appCtxService"
+        },
+        "unRegisterPanelContext": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "inputData": {
+                "name": "panelContext"
+            },
+            "deps": "js/appCtxService"
+        }
+    },
+    "i18n": {
+
+        "SET_PANEL_CAPTION": [ "BaseMessages" ]
+
+
+
+    },
+    "lifecycleHooks": {
+        "onMount": "registerPanelContext",
+        "onUnmount": "unRegisterPanelContext"
+    }
+}

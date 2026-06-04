@@ -1,0 +1,549 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+
+        "setContextObj": {
+            "actionType": "JSFunction",
+            "method": "setDropTargetOnPersistedImpactedTable",
+            "inputData": {
+                "inContextData": "{{data}}",
+                "props":"{{props}}"
+            },
+            "outputData":{
+                "vmo":""
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+
+        },
+
+        "updatePersistedDataProviderInParentState":{
+            "actionType": "JSFunction",
+            "method":"updateDPInParentStateOnModelUpdate",
+            "inputData":{
+                "dataProvider":"{{data.dataProviders.persistedImpactedDataProvider}}",
+                "props":"{{props.cm1ImpactWidgetState}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "calculateColorIndicatorForProbableImpacted",
+                        "eventData": {
+                            "parentState": "{{props.cm1ImpactWidgetState}}"
+                        }
+                    },
+                    {
+                        "name": "calculateColorIndicatorForRelObjectImpacted",
+                        "eventData": {
+                            "parentState": "{{props.cm1ImpactWidgetState}}"
+                        },
+                        "condition": "conditions.relatedObjectsTableHasSelection"
+                    }
+                ]
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "loadPersistedImpacted": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "CMImpactedTable",
+                        "operationType": "as_configured"
+                    },
+                    "searchInput": {
+                        "startIndex": "{{data.dataProviders.persistedImpactedDataProvider.startIndex}}",
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Cm1LineageImpactedProvider",
+                        "columnFilters": "{{data.columnProviders.persistedImpactedColumnProvider.columnFilters}}",
+                        "searchCriteria": {
+                            "parentUid": "{{props.changeObject.uid}}",
+                            "returnAllImpacted": "true"
+                        },
+                        "searchSortCriteria": "{{data.columnProviders.persistedImpactedColumnProvider.sortCriteria}}",
+                        "searchFilterFieldSortType": "Alphabetical"
+                    },
+                    "inflateProperties": true
+                },
+                "1": {
+                    "types": [
+                        {
+                            "name": "Cm0ProposedImpactedObject",
+                            "properties": [
+                                {
+                                    "name": "cm0IsAlreadyImpacted"
+                                },
+                                {
+                                    "name": "cm0SourceObject"
+                                },
+                                {
+                                    "name": "cm0Relation"
+                                },
+                                {
+                                    "name": "cm0ProposedImpactedObject",
+                                    "modifiers": [
+                                        {
+                                            "name": "withProperties",
+                                            "Value": "true"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "cm0ProposedImpactedType"
+                                },
+                                {
+                                    "name": "awp0CellProperties"
+                                },
+                                {
+                                    "name": "cm0HasChildren"
+                                },
+                                {
+                                    "name": "cm0Children"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "totalFoundImpacted": "totalFound",
+                "searchResultsImpacted": "{{json:searchResultsJSON}}",
+                "persistedObjectsTableResults": "{{function:processPersistedObjectsJSONResponse}}",
+                "dataProviders.persistedImpactedDataProvider.columnConfig": "columnConfig"
+            }
+        },
+        "resetPersistedImpactedTable": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "persistedImpactedGrid.plTable.reload"
+                    }
+                ]
+            }
+        },
+        "processPersistedImpactedTableSelection": {
+            "actionType": "JSFunction",
+            "method": "processPersistedImpactedTableSelection",
+            "inputData": {
+                "data": "{{data}}",
+                "props":"{{props}}"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "impactAnalysisTableRefreshTable": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "condition": "commandContext.name === persistedImpactedDataProvider",
+                        "name": "persistedImpactedGrid.plTable.clientRefresh"
+                    }
+                ]
+            }
+        },
+        "setProbableImpactedTableSelection": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "setProbableImpactedTableSelection"
+                    }
+                ]
+            }
+        },
+        "deSelectRelationBrowserGraph": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "deSelectRelationBrowserGraph"
+                    }
+                ]
+            }
+        },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "CMImpactedTable",
+                        "operationType": "as_configured"
+                    },
+                    "saveColumnConfigData": {
+                        "clientScopeURI": "CMImpactedTable",
+                        "columnConfigId": "CMImpactedTableColConfig",
+                        "columns": "{{function:getPersistedImpactedTableColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "startIndex": "{{data.dataProviders.persistedImpactedDataProvider.startIndex}}",
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Cm1LineageImpactedProvider",
+                        "columnFilters": "{{data.columnProviders.persistedImpactedColumnProvider.columnFilters}}",
+                        "searchCriteria": {
+                            "parentUid": "{{ctx.selected.uid}}",
+                            "returnAllImpacted": "true"
+                        },
+                        "searchSortCriteria": "{{data.columnProviders.persistedImpactedColumnProvider.sortCriteria}}",
+                        "searchFilterFieldSortType": "Alphabetical"
+                    },
+                    "inflateProperties": true
+                },
+                "1": {
+                    "types": [
+                        {
+                            "name": "Cm0ProposedImpactedObject",
+                            "properties": [
+                                {
+                                    "name": "cm0IsAlreadyImpacted"
+                                },
+                                {
+                                    "name": "cm0SourceObject"
+                                },
+                                {
+                                    "name": "cm0Relation"
+                                },
+                                {
+                                    "name": "cm0ProposedImpactedObject",
+                                    "modifiers": [
+                                        {
+                                            "name": "withProperties",
+                                            "Value": "true"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "cm0ProposedImpactedType"
+                                },
+                                {
+                                    "name": "awp0CellProperties"
+                                },
+                                {
+                                    "name": "cm0HasChildren"
+                                },
+                                {
+                                    "name": "cm0Children"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "totalFoundImpacted": "totalFound",
+                "searchResultsImpacted": "{{json:searchResultsJSON}}",
+                "dataProviders.persistedImpactedDataProvider.columnConfig": "columnConfig"
+            }
+        },
+        "resetColumnConfig" : {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [{
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos":
+                            [{
+                                "clientScopeURI": "CMImpactedTable",
+                                "operationType": "configured",
+                                "columnsToExclude": []
+                            }],
+                        "businessObjects": [{}]
+                    }]
+                }
+            },
+            "outputData": {
+                "dataProviders.persistedImpactedDataProvider.columnConfig": "columnConfigurations[0].columnConfigurations[0]"
+            }
+        },
+        "saveColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI": "CMImpactedTable",
+                        "columnConfigId": "CMImpactedTableColConfig",
+                        "columns": "{{function:getPersistedImpactedTableColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "outputData": {}
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "updateParentState":{
+            "actionType": "JSFunction",
+            "method": "updateParentState",
+            "inputData": {
+                "selectedObjects": "{{data.dataProviders.persistedImpactedDataProvider.selectedObjects}}",
+                "dataProviderName":"{{data.dataProviders.persistedImpactedDataProvider}}",
+                "cm1ImpactWidgetState": "{{props.cm1ImpactWidgetState}}"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "getFilterFacets": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2019-12-Finder",
+            "method": "getFilterValues",
+            "inputData": {
+                "filterFacetInput": {
+                    "columnFilters": "{{filterFacetInput.columnFilters}}",
+                    "columnName": "{{filterFacetInput.column.field}}",
+                    "maxToReturn": "{{filterFacetInput.maxToReturn}}",
+                    "providerName":"Awp0ObjectSetRowProvider",
+                    "searchCriteria": {
+                        "parentUid": "{{props.changeObject.uid}}",
+                        "objectSet": "CMHasImpactedItem.WorkspaceObject"
+                    },
+                    "searchFilterMap":  "{{ctx.search.activeFilterMap}}",
+                    "startIndex": "{{filterFacetInput.startIndex}}"
+                }
+            },
+            "outputData": {
+                "filterFacetResults": "{{json:facetValues}}"
+            }
+        },
+        "Cm1ImpactAnalysisCutDelegateAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2014-10-DataManagement",
+            "method": "removeChildren",
+            "inputData":{
+                "inputData": [{
+                    "clientId": "",
+                    "parentObj": "{{props.changeObject}}",
+                    "childrenObj": "{{props.cm1ImpactWidgetState.selectedObjects}}",
+                    "propertyName": "CMHasImpactedItem"
+                }]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "persistedImpactedGrid.plTable.reload"
+                    },
+                    {
+                        "name": "relationProbableImpactedGrid.plTable.reload"
+                    },
+                    {
+                        "name": "cutToAwClipboard"
+                    },
+                    {
+                        "name": "deSelectRelationBrowserGraph"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "condition": "(ctx.mselected && ctx.mselected.length === 1)",
+                        "message": "cutSingleImpactedSuccessful"
+                    },
+                    {
+                        "condition": "(ctx.mselected && ctx.mselected.length > 1)",
+                        "message": "cutMultipleImpactedSuccessful"
+                    }
+                ]
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "ChangeItemRevision",
+                        "properties": [
+                            {
+                                "name": "Cm0HasNonImpactedItem"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    "lifecycleHooks":{
+       "onMount":"setContextObj"
+    },
+    "functions": {
+        "getPersistedImpactedTableColumns": {
+            "functionName": "removeDuplicateEntriesForColumns",
+            "parameters": [
+                "{{data.dataProviders.persistedImpactedDataProvider.newColumns}}"
+            ],
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "getCreateInputToCreteImpactedRelation": {
+            "functionName": "getCreateInputToCreteImpactedRelation",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "processPersistedObjectsJSONResponse": {
+            "functionName": "processPersistedObjectsJSONResponse",
+            "parameters": [
+                "{{props.cm1ImpactWidgetState}}"
+            ],
+            "deps": "js/Cm1ImpactedWidgetService"
+        }
+    },
+    "messages": {
+        "cutSingleImpactedSuccessful": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.cutSingleImpactedSuccessful}}",
+            "messageTextParams": [
+                "{{ctx.mselected[0].props.object_string.uiValues[0]}}",
+                "{{ctx.pselected}}"
+            ]
+        },
+        "cutMultipleImpactedSuccessful": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.cutMultipleImpactedSuccessful}}",
+            "messageTextParams": [
+                "{{ctx.mselected.length}}",
+                "{{props.changeObject.props.object_string.uiValues[0]}}"
+            ]
+        },
+        "cutSingleSuccessful": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.cutSingleSuccessful}}",
+            "messageTextParams": [
+                "{{ctx.mselected[0].props.object_string.uiValues[0]}}",
+                "{{props.changeObject.props.object_string.uiValues[0]}}"
+            ]
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "persistedImpactedDataProvider.modelObjectsUpdated",
+            "action": "updatePersistedDataProviderInParentState"
+        },
+        {
+            "eventId": "persistedImpactedDataProvider.selectionChangeEvent",
+            "action": "updateParentState"
+        },
+        {
+            "eventId": "persistedImpactedDataProvider.selectionChangeEvent",
+            "action": "processPersistedImpactedTableSelection"
+        },
+        {
+            "eventId": "resetPersistedImpactedTable.refreshTable",
+            "action": "resetPersistedImpactedTable"
+        },
+        {
+            "eventId": "cutRelationForPersistedSelection",
+            "action": "processPersistedImpactedTableSelection"
+        },
+        {
+            "eventId": "cutImpactedItems",
+            "action": "Cm1ImpactAnalysisCutDelegateAction"
+        },
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent"
+        }
+    ],
+    "conditions": {
+        "relatedObjectsTableHasSelection": {
+            "expression": "props.cm1ImpactWidgetState.selectedObjects.length !== 0 && props.cm1ImpactWidgetState.dataProviderName === 'relationImpactedDataProvider'"
+        },
+        "isEmptyPersistedVMOs":{
+            "expression": "props.cm1ImpactWidgetState.dataProvidersLoadedVMOs.loadedPersistedVMOs.length === 0"
+        }
+    },
+    "data": {},
+    "columnProviders": {
+        "persistedImpactedColumnProvider": {
+            "columns": [{}],
+            "saveColumnAndLoadAction" : "saveColumnConfigLoadData",
+            "resetColumnAction" : "resetColumnConfig",
+            "saveColumnAction": "saveColumnConfig"
+        }
+    },
+    "dataProviders": {
+        "persistedImpactedDataProvider": {
+            "action": "loadPersistedImpacted",
+            "response": "{{data.persistedObjectsTableResults}}",
+            "totalFound": "{{data.totalFoundImpacted}}",
+            "selectionModelMode": "multiple",
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands",
+            "filterFacetAction": "getFilterFacets",
+            "filterFacetResults": "{{data.filterFacetResults}}",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "selectionData":"{{subPanelContext.selectionData}}"
+            }
+        }
+    },
+    "grids": {
+        "persistedImpactedGrid": {
+            "dataProvider": "persistedImpactedDataProvider",
+            "columnProvider": "persistedImpactedColumnProvider",
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "enablePinning": true,
+                "maxRowsToShow": 17,
+                "enableSorting": false,
+                "isFilteringEnabled": true
+            }
+        }
+    },
+    "props": {
+        "cm1-impact-widget-state":{
+            "type":"object"
+        },
+        "change-object":{
+            "type":"object"
+        },
+        "sub-panel-context":{
+            "type":"object"
+        }
+    },
+    "i18n": {
+        "TwistieTooltipCollapsed": [
+            "ChangeMessages"
+        ],
+        "TwistieTooltipExpanded": [
+            "ChangeMessages"
+        ],
+        "persistedImpactesTitle": [
+            "ChangeMessages"
+        ],
+        "cutSingleImpactedSuccessful": [
+            "ChangeMessages"
+        ],
+        "cutMultipleImpactedSuccessful": [
+            "ChangeMessages"
+        ],
+        "noImpactedItemAddedImgTitle":[
+            "ChangeMessages"
+        ],
+        "noImpactedItemAddedImgHintTitle":[
+            "ChangeMessages"
+        ]
+    }
+}

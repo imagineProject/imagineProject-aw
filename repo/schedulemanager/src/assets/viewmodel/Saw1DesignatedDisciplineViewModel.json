@@ -1,0 +1,108 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-command-panel.directive",
+        "js/aw-command-sub-panel.directive",
+        "js/aw-init.directive",
+        "js/visible-when.directive"
+    ],
+    "actions": {
+        "setActiveView": {
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "Saw1DesignatedSub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "cacheInitialSelection",
+                    "condition": "!data.initialSelection"
+                },
+                {
+                    "action": "closePanel",
+                    "condition": "data.initialSelection !== props.subPanelContext.selectionData.selected[0].uid"
+                }
+            ]
+        },
+        "cacheInitialSelection": {
+            "actionType": "JSFunction",
+            "method": "cacheSelection",
+            "inputData": {
+                "selectedUid": "{{props.subPanelContext.selectionData.selected[0].uid}}"
+            },
+            "outputData": {
+                "initialSelection": ""
+            },
+            "deps": "js/Saw1TaskAssignmentService"
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "complete",
+                    "condition": "!data.isDestroyed()",
+                    "eventData": {
+                        "source": "toolAndInfoPanel"
+                    }
+                } ]
+            }
+        }
+    },
+    "i18n": {
+        "DesignateDiscipline": [
+            "ScheduleManagerMessages"
+        ],
+        "discipline": [
+            "ScheduleManagerMessages"
+        ]
+    },
+    "lifecycleHooks": {
+        "onUpdate": [ 
+            {
+                "action": "closePanelOnSelectionChange",
+                "observers": [ "props.subPanelContext.selectionData.selected" ]
+            }
+        ]
+    },
+    "data": {
+        "activeState": {
+            "initialValues": {
+                "activeView": "Saw1DesignatedSub",
+                "prePanelId": "Saw1DesignatedSub",
+                "context": {}
+            },
+            "meta": {
+                "activeView": {
+                    "field": "true",
+                    "type": "STRING"
+                },
+                "prePanelId": {
+                    "field": "true",
+                    "type": "STRING"
+                },
+                "context": {
+                    "field": "true",
+                    "type": "OBJECT"
+                }
+            }
+        },
+        "selectedDiscipline": {
+            "initialValues": {
+                "vmo": {}
+            },
+            "meta": {
+                "vmo": {
+                    "type": "OBJECT"
+                }
+            }
+        }
+    }
+}

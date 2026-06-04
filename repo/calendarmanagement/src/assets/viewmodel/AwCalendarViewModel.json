@@ -1,0 +1,618 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "revealAction": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getCurrentDate"
+                },
+                {
+                    "action": "createDayDetailsProp"
+                },
+                {
+                    "action": "resetIsDirty"
+                }
+            ]
+        },
+        "getCurrentDate": {
+            "actionType": "JSFunction",
+            "method": "getCurrentDate",
+            "deps": "js/AwCalendarService",
+            "inputData": {
+                "datePickerInfo": "{{data.datePickerInfo}}"
+            },
+            "outputData": {
+                "todayDate.dbValue": "todayDate",
+                "datePickerInfo":"datePickerInfo"
+            }
+        },
+        "getNonWorkingDays": {
+            "actionType": "JSFunction",
+            "method": "getNonWorkingDays",
+            "deps": "js/AwCalendarService",
+            "inputData": {
+                "updatedDefaultRanges": "{{data.updatedDefaultRanges.newUpdatedRanges}}"
+            },
+            "outputData": {
+                "nonWorkingDays": ""
+            }
+        },
+        "createDayDetailsProp": {
+            "actionType": "JSFunction",
+            "method": "createDayDetailsProp",
+            "deps": "js/AwCalendarService",
+            "inputData": {
+                "selectedCalendar": "{{props.tcCalendar.props}}",
+                "i18n": "{{i18n}}",
+                "updatedDefaultRanges": "{{data.updatedDefaultRanges}}",
+                "calendarName": "{{data.calendarName}}",
+                "calendarTimeZone": "{{data.calendarTimeZone}}",
+                "baseCalendar": "{{data.baseCalendar}}",
+                "previousCalendarName": "{{props.tcCalendar.props.object_string}}",
+                "previousTimeZone": "{{props.tcCalendar.props.time_zone}}",
+                "previousBaseCalendar": "{{props.tcCalendar.props.base_calendar_tag}}"
+            },
+            "outputData": {
+                "dayData": "dayData",
+                "nonWorkingDays": "nonWorkingDays",
+                "updatedDefaultRanges": "updatedDefaultRanges",
+                "calendarName": "calendarName",
+                "calendarTimeZone": "calendarTimeZone",
+                "baseCalendar": "baseCalendar"
+            }
+        },
+        "updateMonthOrYear": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "getEvents",
+                    "condition": "data.datePickerInfo.fromDate !== '' && data.datePickerInfo.toDate !== '' "
+                }
+            ]
+        },
+        "getTimezoneLov": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-LOV",
+            "method": "getInitialLOVValues",
+            "inputData": {
+                "initialData": {
+                    "lovInput": {
+                        "boName": "TCCalendar",
+                        "operationName": "Search"
+                    },
+                    "propertyName": "time_zone"
+                }
+            },
+            "outputData": {
+                "timezoneList": "{{function:getTimezoneList}}",
+                "moreValuesExist": "moreValuesExist"
+            },
+            "deps": "js/AwCalendarService"
+        },
+        "resetIsDirty": {
+            "actionType": "JSFunction",
+            "method": "resetIsDirty",
+            "deps": "js/AwCalendarService",
+            "inputData":{
+                "awCalendarAtomicData": "{{data.awCalendarAtomicData}}",
+                "updatedEventRanges": "{{data.updatedEventRanges}}"
+            },
+            "outputData": {
+                "awCalendarAtomicData": "awCalendarAtomicData",
+                "updatedEventRanges": "updatedEventRanges"
+            }
+        },
+        "confirmUpdateCalendar": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                    "name": "confirmSaveCalendar",
+                    "condition": "props.tcCalendar.props.tccal_type.dbValues[0] !== '2'"
+                },
+                {
+                    "name": "saveScheduleCalendar",
+                    "condition": "props.tcCalendar.props.tccal_type.dbValues[0] === '2'"
+                }
+             ]
+            }
+        },
+        "saveCalendar": {
+            "actionType": "TcSoaService",
+            "serviceName": "CalendarManagement-2008-06-CalendarManagement",
+            "method": "updateCalendars",
+            "deps": "js/AwCalendarService",
+            "inputData": {
+                "tccalendarUpdates": "{{function:getUpdateCalendarInput}}"
+            },
+            "outputData": {
+                "updatedCalendarResponse": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "updateCalendarViewEvent"
+                } ]
+            }
+        },
+        "updateCalendarViewAction": {
+            "actionType": "JSFunction",
+            "method": "updateCalendarView",
+            "deps": "js/AwCalendarService",
+            "inputData": {
+                "dayData": "{{data.dayData}}",
+                "updatedDefaultRanges": "{{data.updatedDefaultRanges}}",
+                "awCalendarAtomicData": "{{data.awCalendarAtomicData}}",
+                "calendarName": "{{data.calendarName}}",
+                "calendarTimeZone": "{{data.calendarTimeZone}}",
+                "baseCalendar": "{{data.baseCalendar}}",
+                "updatedEventRanges": "{{data.updatedEventRanges}}"
+            },
+            "outputData": {
+                "dayData": "dayData",
+                "updatedDefaultRanges": "updatedDefaultRanges",
+                "awCalendarAtomicData": "awCalendarAtomicData",
+                "calendarName": "calendarName",
+                "calendarTimeZone": "calendarTimeZone",
+                "baseCalendar": "baseCalendar",
+                "updatedEventRanges":"updatedEventRanges"
+            },
+            "events": {
+                "success": [ {
+                        "name": "getSelectedDateDetails"
+                    },
+                    {
+                        "name": "WorkingDaysTable.plTable.reload"
+                    }
+                ]
+            }
+        },
+        "getEvents": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData": {
+                "searchInput": {
+                    "maxToLoad": 50,
+                    "maxToReturn": 50,
+                    "providerName": "Awp0CalendarDataProvider",
+                    "searchCriteria": "{{function:getCalendarEventsInput}}"
+                }
+            },
+            "policy": {
+                "types": [ {
+                    "name": "TCCalendarEvent",
+                    "properties": [ {
+                            "name": "first_recur_start"
+                        },
+                        {
+                            "name": "event_range",
+                            "modifiers": [ {
+                                "name": "withProperties",
+                                "Value": "true"
+                            } ]
+                        },
+                        {
+                            "name": "tccalendar_tag"
+                        }
+                    ]
+                },
+                {
+                    "name": "Range",
+                    "properties": [ {
+                            "name": "range_end"
+                        },
+                        {
+                            "name": "range_start"
+                        }
+                    ]
+                } ]
+            },
+            "outputData": {
+                "newDatePickerInfo": "{{function:processEventResponseObjects}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "updateDatePickerInfoEvent"
+                    }
+                ]
+            },
+          "deps": "js/AwCalendarService"
+        },
+        "getBaseCalendarLov":{
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0CalendarDataProvider",
+                        "searchCriteria": {
+                            "searchContentType": "baseCalendars",
+                            "tccal_type": "1"
+                        }
+                    }
+                }
+            },
+            "outputData": {
+                "baseCalendarList": "{{function:getBaseCalendarsList}}",
+                "moreValuesExist":"moreValuesExist"
+            }
+        },
+        "displayResetPopup": {
+            "actionType": "popup",
+            "inputData": {
+                "options": {
+                    "view": "AwResetCalendarPopup",
+                    "caption": "{{i18n.resetScheduleCalendar}}",
+                    "clickOutsideToClose": false,
+                    "width": 400,
+                    "height": 265,
+                    "draggable": true,
+                    "anchor": "awClosePopupAnchor",
+                    "subPanelContext": {
+                        "scheduleTCCalendarUid": "{{props.tcCalendar.uid}}"
+                    }
+                }
+            }
+        },
+        "resetCalendarAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "revealAction"
+                },
+                {
+                    "action": "getEvents"
+                }
+            ]
+        },
+        "recalculateSchedule": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "recalculateScheduleAction",
+                    "condition": "props.tcCalendar.props.tccal_type.dbValues[0] === '2'"
+                }
+            ]
+        },
+        "recalculateScheduleAction": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "recalculateScheduleEvent"
+                } ]
+            }
+        },
+        "hideAddRowPopup": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "deps": "js/popupService"
+        },
+        "updateEditModeAction": {
+            "actionType": "JSFunction",
+            "method": "updateEditMode",
+            "deps": "js/AwCalendarService",
+            "inputData": {
+                "calendarTimeZone": "{{data.calendarTimeZone}}",
+                "baseCalendar": "{{data.baseCalendar}}",
+                "editMode": "{{props.editMode}}"
+            },
+            "outputData": {
+                "calendarTimeZone": "calendarTimeZone",
+                "baseCalendar": "baseCalendar"
+            }
+        },
+        "updateDatePickerInfoAction": {
+            "actionType": "JSFunction",
+            "method": "updateDatePickerInfoAction",
+            "deps": "js/AwCalendarService",
+            "inputData": {
+                "newDatePickerInfo": "{{data.newDatePickerInfo}}"
+            },
+            "outputData": {
+                "datePickerInfo.eventDateToRangeMap": "result.eventDateToRangeMap",
+                "datePickerInfo.exceptionBucket": "result.exceptionBucket",
+                "datePickerInfo.inheritedBucket": "result.inheritedBucket"
+            }
+        }
+    },
+    "functions": {
+        "getUpdateCalendarInput": {
+            "functionName": "getUpdateCalendarInput",
+            "parameters": [
+                "{{data.dayData}}",
+                "{{props.tcCalendar}}",
+                "{{data.updatedDefaultRanges}}",
+                "{{data.calendarName}}",
+                "{{data.calendarTimeZone}}",
+                "{{data.baseCalendar}}",
+                "{{data.updatedEventRanges}}",
+                "{{data.datePickerInfo}}"
+            ]
+        },
+        "getCalendarEventsInput": {
+            "functionName": "getCalendarEventsInput",
+            "parameters": [
+                "{{data.datePickerInfo}}",
+                "{{props.tcCalendar}}"
+            ]
+        },
+        "processEventResponseObjects": {
+            "functionName": "processEventResponseObjects",
+            "parameters": [
+                "{{props.tcCalendar.uid}}"
+            ]
+        },
+        "getBaseCalendarsList": {
+            "functionName": "getBaseCalendarsList",
+            "parameters": [],
+            "deps": "js/AwCalendarService"
+        }
+    },
+    "data": {
+        "datePickerInfo": {
+            "initialValues": {
+                "currentMonth": "",
+                "currentYear": "",
+                "selectedDate": "",
+                "fromDate":"",
+                "toDate":"",
+                "exceptionBucket":[],
+                "inheritedBucket":[],
+                "eventDateToRangeMap": {}
+            },
+            "meta": {}
+        },
+        "updatedEventRanges": {
+            "initialValues": {
+                "dailyEventDateToRangeMap": {}
+            },
+            "meta": {}
+        },
+        "awCalendarAtomicData": {
+            "initialValues": {
+                "isDirty": false
+            },
+            "meta": {}
+        },
+        "calendarName": {
+            "displayName": "{{i18n.name}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "isEditable": "{{props.isNameEditable}}",
+            "dbValue": "{{props.tcCalendar.props.object_string.dbValue}}",
+            "dispValue": "{{props.tcCalendar.props.object_string.uiValue}}"
+        },
+        "calendarTimeZone": {
+            "displayName": "{{i18n.calendarTimeZone}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "{{props.editMode}}",
+            "labelPosition:": "PROPERTY_LABEL_AT_TOP",
+            "hasLov": true,
+            "dbValue": "{{props.tcCalendar.props.time_zone.dbValue}}",
+            "dispValue": "{{props.tcCalendar.props.time_zone.displayValues[0]}}",
+            "dataProvider": "CalendarTimezoneProvider"
+        },
+        "baseCalendar": {
+            "displayName": "{{i18n.baseCalendar}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "isEditable": "{{props.editMode}}",
+            "labelPosition:": "PROPERTY_LABEL_AT_TOP",
+            "hasLov":true,
+            "dbValue": "{{props.tcCalendar.props.base_calendar_tag.dbValues[0]}}",
+            "dispValue": "{{props.tcCalendar.props.base_calendar_tag.uiValues[0]}}",
+            "dataProvider":"BaseCalendarsProvider"
+        },
+        "weekStart": {
+            "displayName": "{{i18n.weekStart}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "{{i18n.awDay_Sunday}}",
+            "displayValue": "{{i18n.awDay_Sunday}}"
+        },
+        "todayDate": {
+            "displayName": "{{i18n.date}}",
+            "type": "DATE",
+            "dbValue": ""
+        },
+        "dateLabel": {
+            "displayName": "{{i18n.date}}",
+            "type": "STRING",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP"
+        },
+        "updatedDefaultRanges": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "props": {
+        "edit-mode": {
+            "type": "boolean"
+        },
+        "tc-calendar": {
+            "type": "object"
+        },
+        "is-name-editable": {
+            "type": "boolean"
+        }
+    },
+    "dataProviders": {
+        "CalendarTimezoneProvider": {
+            "dataProviderType": "Action",
+            "action": "getTimezoneLov",
+            "response": "{{data.timezoneList}}",
+            "moreValuesExist": "{{data.moreValuesExist}}"
+        },
+        "BaseCalendarsProvider": {
+            "dataProviderType": "Action",
+            "action": "getBaseCalendarLov",
+            "response": "{{data.baseCalendarList}}",
+            "moreValuesExist": "{{data.moreValuesExist}}"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "confirmSaveCalendar",
+            "message": "confirmSaveCalendarMessage"
+        },
+        {
+            "eventId": "saveScheduleCalendar",
+            "message": "saveScheduleCalendarMessage"
+        },
+        {
+            "eventId": "updateCalendarViewEvent",
+            "action": "updateCalendarViewAction"
+        },
+        {
+            "eventId": "resetCalendarEvent",
+            "action": "resetCalendarAction"
+        },
+        {
+            "eventId": "hideAddRowPopup",
+            "action": "hideAddRowPopup"
+        },
+        {
+            "eventId": "updateDatePickerInfoEvent",
+            "action": "updateDatePickerInfoAction"
+        }
+    ],
+    "messages": {
+        "confirmSaveCalendarMessage": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.confirmSaveCalendarMessage}}",
+            "messageTextParams": [
+                "{{props.tcCalendar.props.object_string.dbValues[0]}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "cancel",
+                    "text": "{{i18n.cancelButton}}",
+                    "action": ""
+                },
+                {
+                    "option": "continue",
+                    "text": "{{i18n.continueButton}}",
+                    "action": "saveCalendar"
+                }
+            ]
+        },
+        "saveScheduleCalendarMessage": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.saveScheduleCalendarMessage}}",
+            "messageTextParams": [
+                "{{props.tcCalendar.props.object_string.dbValues[0]}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "cancel",
+                    "text": "{{i18n.cancelButton}}",
+                    "action": ""
+                },
+                {
+                    "option": "continue",
+                    "text": "{{i18n.continueButton}}",
+                    "action": "saveCalendar"
+                }
+            ]
+        }
+    },
+    "conditions":
+    {
+        "isCalendarPropertyModified": {
+            "expression": "(data.calendarName.prevDisplayValues[0] !== data.calendarName.displayValues[0]) || (data.calendarTimeZone.prevDisplayValues[0] !== data.calendarTimeZone.displayValues[0]) || (data.baseCalendar.prevDisplayValues[0] !== data.baseCalendar.displayValues[0])"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "revealAction",
+        "onUpdate": [
+            {
+                "action": "getNonWorkingDays",
+                "observers": [ "viewModel.atomicData.updatedDefaultRanges.newUpdatedRanges" ]
+            },
+            {
+                "action": "updateMonthOrYear",
+                "observers": [
+                    "viewModel.atomicData.datePickerInfo.currentMonth" ,
+                    "viewModel.atomicData.datePickerInfo.currentYear"
+                ]
+            },
+            {
+                "action": "getEvents",
+                "observers": [ "viewModel.data.updatedCalendarResponse" ]
+            },
+            {
+                "action": "recalculateSchedule",
+                "observers": [ "viewModel.data.updatedCalendarResponse" ]
+            },
+            {
+                "action": "updateEditModeAction",
+                "observers": [ "props.editMode" ]
+            }
+        ]
+    },
+    "i18n": {
+        "name": [
+            "CalendarManagementMessages"
+        ],
+        "calendarTimeZone": [
+            "CalendarManagementMessages"
+        ],
+        "weekStart": [
+            "CalendarManagementMessages"
+        ],
+        "awDay_Sunday": [
+            "CalendarManagementMessages"
+        ],
+        "awDay_Monday": [
+            "CalendarManagementMessages"
+        ],
+        "awDay_Tuesday": [
+            "CalendarManagementMessages"
+        ],
+        "awDay_Wednesday": [
+            "CalendarManagementMessages"
+        ],
+        "awDay_Thursday": [
+            "CalendarManagementMessages"
+        ],
+        "awDay_Friday": [
+            "CalendarManagementMessages"
+        ],
+        "awDay_Saturday": [
+            "CalendarManagementMessages"
+        ],
+        "cancelButton": [
+            "CalendarManagementMessages"
+        ],
+        "saveButton": [
+            "CalendarManagementMessages"
+        ],
+        "calendarPreview": [
+            "CalendarManagementMessages"
+        ],
+        "date": [
+            "CalendarManagementMessages"
+        ],
+        "confirmSaveCalendarMessage": [
+            "CalendarManagementMessages"
+        ],
+        "saveScheduleCalendarMessage": [
+            "CalendarManagementMessages"
+        ],
+        "continueButton": [
+            "CalendarManagementMessages"
+        ],
+        "baseCalendar": [
+            "CalendarManagementMessages"
+        ],
+        "resetButton": [
+            "CalendarManagementMessages"
+        ],
+        "resetScheduleCalendar": [
+            "CalendarManagementMessages"
+        ]
+    }
+}

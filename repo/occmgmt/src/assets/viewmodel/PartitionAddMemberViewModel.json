@@ -1,0 +1,99 @@
+{
+    "schemaVersion" : "1.0.0",
+    "lifecycleHooks": {
+        "onMount": "initialize",
+        "onUpdate":{
+            "action": "closePanelOnSelectionChange",
+            "observers": [ "props.subPanelContext.occContext.pwaSelection" ]
+        }
+    },
+    "data" : {
+        "addElementState":{
+            "initialValues":{
+                "AddOccurrencePropertiesOnCreate" : false,
+                "parentElements"                  : [],
+                "parentToLoadAllowedTypes"        : null,
+                "siblingElements"                 : [],
+                "elementCreateInput"              : null,
+                "fetchPagedOccurrences"           : null,
+                "previousSelectionUid"            : "",
+                "Awb0ElementCreateSubView"        : false,
+                "numberOfElements"                : 1,
+                "sourceParent"                    : "",
+                "createInputs"                    : null,
+                "occurrenceTypeName"              : "PSOccurrence",
+                "additionalComponentName"         : "AceItemRevisionFilterList",
+                "filterListTitle"                 : "",
+                "hideSeperator"                   : true,
+                "typeToBeSearched"                : "Fnd0CoordSystem"
+            },
+            "meta": {
+            }
+        }
+    },
+    "actions" : {
+        "initialize":
+        {
+            "actionType": "JSFunction",
+            "method"    : "setStateAddElementInputParentElementToSelectedElement",
+            "inputData" :
+            {
+                "selectedObjects":"{{subPanelContext.occContext.pwaSelection}}",
+                "addElementState": "{{data.addElementState}}",
+                "parentToLoadAllowedTypes" :"{{subPanelContext.occContext.currentState.c_uid}}",
+                "filterListTitle": "{{i18n.filterListTitle}}"
+            },
+            "outputData": {
+                "addElementState" : ""
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "closeDialogPanel",
+                    "condition": "conditions.isPwaSelectionChanged"
+                }
+            ]
+        },
+        "closeDialogPanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "CREATE_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "conditions" :{
+        "isParentValid" : {
+            "expression" : "addElementState.parentElements.length>0"
+        },
+        "isPwaSelectionChanged": {
+            "expression": "(subPanelContext.occContext.pwaSelection !== undefined && addElementState.previousSelectionUid !== '' && addElementState.previousSelectionUid !== subPanelContext.occContext.pwaSelection[0].uid) || subPanelContext.occContext.pwaSelection.length > 1"
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "ace.activateWindow",
+            "action": "closeDialogPanel",
+            "condition": "!subPanelContext.panelPinned"
+        },
+        {
+            "eventId": "addElement.closePanel",
+            "action": "closeDialogPanel",
+            "condition": "!subPanelContext.panelPinned"
+        }
+    ],
+    "i18n": {
+        "addChildTitle": [
+            "OccurrenceManagementConstants"
+        ],
+        "filterListTitle": [
+            "OccmgmtPartitionMessages"
+        ]
+    }
+}

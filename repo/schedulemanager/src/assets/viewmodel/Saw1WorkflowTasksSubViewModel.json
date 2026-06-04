@@ -1,0 +1,355 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "reveal": {
+            "actionType": "JSFunction",
+            "method": "populatePanelData",
+            "inputData": {
+                "data": "{{data}}",
+                "targetObjects": [
+                    ""
+                ],
+                "ctx": "{{ctx}}"
+
+            },
+            "deps": "js/Saw1WorkflowTasks"
+        },
+        "getworkflowTemplates": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-LOV",
+            "method": "getInitialLOVValues",
+            "inputData": {
+                "initialData": {
+                    "lov": "",
+                    "lovInput": {
+                        "owningObject": {
+                            "uid": "AAAAAAAAAAAAAA",
+                            "type": "unknownType"
+                        },
+                        "boName": "ScheduleTask",
+                        "operationName": "Search"
+                    },
+                    "propertyName": "saw1WorkflowTemplate",
+                    "filterData": {
+                        "filterString": "{{data.workflowTemplates.filterString}}",
+                        "maxResults": 0,
+                        "numberToReturn": 3000,
+                        "sortPropertyName": "",
+                        "order": 1
+                    }
+                }
+            },
+            "outputData": {
+                "getworkflowTemplates": "{{function:workflowTemplateList}}",
+                "moreValuesExist": "moreValuesExist"
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "soaFailureMessage"
+                } ]
+            },
+            "deps": "js/Saw1WorkflowTasks"
+        },
+        "getworkflowTriggerList": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-LOV",
+            "method": "getInitialLOVValues",
+            "inputData": {
+                "initialData": {
+                    "propertyName": "saw1WorkflowTriggerType",
+                    "lovInput": {
+                        "owningObject": null,
+                        "boName": "ScheduleTask",
+                        "operationName": "Search"
+                    }
+                }
+            },
+            "outputData": {
+                "getworkflowTriggerList": "{{function:processList}}",
+                "moreValuesExist": "moreValuesExist"
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "soaFailureMessage"
+                } ]
+            },
+            "deps": "js/Saw1WorkflowTasks"
+        },
+        "save": {
+            "actionType": "JSFunction",
+            "method": "updateTasks",
+            "inputData": {
+
+                "schedule": "{{ctx.pselected}}",
+                "ctx": "{{ctx}}",
+                "data": "{{data}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "closeDialog"
+                    }
+
+                ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "soaFailureMessage"
+                } ]
+            },
+            "deps": "js/Saw1WorkflowTasks"
+        },
+        "openfromUserSection": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "AwPeoplePickerPrivUser"
+            }
+        },
+        "openfromWorkflowSection": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "AwPeoplePickerWorkfloOwner"
+            }
+        },
+        "removePrivilegedUser": {
+            "actionType": "JSFunction",
+            "method": "removePrivilegedUser",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/removePrivilegedUserCommandHandler"
+        },
+        "assignPrivilegedUser": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "assignPrivilegedUserInternal",
+                    "condition": "conditions.isPrivUserSelectedInPeoplePicker"
+                },
+                {
+                    "action": "navigateToMainPanel",
+                    "condition": "conditions.isPrivUserSelectedInPeoplePicker"
+                },
+                {
+                    "action": "resetPrevUserPanelContextData",
+                    "condition": "conditions.isPrivUserSelectedInPeoplePicker"
+                }
+            ]
+        },
+        "assignWorkflowOwner": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "assignWorkflowOwnerInternal",
+                    "condition": "conditions.isWorkflowOwnerSelectedInPeoplePicker"
+                },
+                {
+                    "action": "navigateToMainPanel",
+                    "condition": "conditions.isWorkflowOwnerSelectedInPeoplePicker"
+                },
+                {
+                    "action": "resetPWorkflowOwnerPanelContextData",
+                    "condition": "conditions.isWorkflowOwnerSelectedInPeoplePicker"
+                }
+            ]
+        },
+        "assignPrivilegedUserInternal": {
+            "actionType": "JSFunction",
+            "method": "addResourceToDataProvider",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.getAssignedPrivilegedUser}}",
+                "selecedResources": "{{props.addUserPanelStatePrivUser.selectedUsers}}"
+            },
+            "deps": "js/Saw1WorkflowTasks"
+        },
+        "assignWorkflowOwnerInternal": {
+            "actionType": "JSFunction",
+            "method": "addResourceToDataProvider",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.getAssignedWorkflowOwner}}",
+                "selecedResources": "{{props.addUserPanelStateWorkflowOwner.selectedUsers}}"
+            },
+            "deps": "js/Saw1WorkflowTasks"
+        },
+        "navigateToMainPanel": {
+            "actionType": "JSFunction",
+            "method": "setActiveView",
+            "deps": "js/addObjectUtils",
+            "inputData": {
+                "activeViewState": "{{props.activeState}}",
+                "destPanelId": "Saw1WorkflowTasksSub"
+            }
+        },
+        "resetPrevUserPanelContextData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.addUserPanelStatePrivUser}}",
+                "value": {
+                    "propName": null,
+                    "selectedUsers": []
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "resetPWorkflowOwnerPanelContextData": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.addUserPanelStateWorkflowOwner}}",
+                "value": {
+                    "propName": null,
+                    "selectedUsers": []
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "closePanelDialog":{
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "data": {
+        "WorkflowTrigger": {
+            "displayName": "{{i18n.WorkflowTrigger}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "hasLov": true,
+            "dataProvider": "getworkflowTriggerList"
+        },
+        "workflowTemplates": {
+            "displayName": "{{i18n.WorkflowTemplate}}",
+            "type": "STRING",
+            "hasLov": true,
+            "dataProvider": "getworkflowTemplates"
+        },
+        "userSectionCommands": "saw1_userSectionCommands",
+        "ownerSectionCommands": "saw1_ownerSectionCommands"
+    },
+    "dataProviders": {
+        "getAssignedWorkflowOwner": {
+            "response": "{{data.dataProviders.getAssignedWorkflowOwner.viewModelCollection.loadedVMObjects}}",
+            "totalFound": "1",
+            "selectionModelMode": "single",
+            "commandsAnchor": "saw1_RemoveWorkflowOwnerCellCommand",
+            "outputData": {
+                "searchResults": "{{data.dataProviders.getAssignedWorkflowOwner.viewModelCollection.loadedVMObjects}}",
+                "totalFound": "1",
+                "totalLoaded": "1"
+            }
+        },
+        "getAssignedPrivilegedUser": {
+            "response": "{{data.dataProviders.getAssignedPrivilegedUser.viewModelCollection.loadedVMObjects}}",
+            "totalFound": "1",
+            "selectionModelMode": "single",
+            "commandsAnchor": "saw1_RemovePrivilegeUserCellCommand",
+            "outputData": {
+                "searchResults": "{{data.dataProviders.getAssignedPrivilegedUser.viewModelCollection.loadedVMObjects}}",
+                "totalFound": "1",
+                "totalLoaded": "1"
+            }
+        },
+        "getworkflowTemplates": {
+            "action": "getworkflowTemplates",
+            "response": "{{data.getworkflowTemplates}}",
+            "moreValuesExist": "{{data.moreValuesExist}}"
+        },
+        "getworkflowTriggerList": {
+            "action": "getworkflowTriggerList",
+            "response": "{{data.getworkflowTriggerList}}",
+            "moreValuesExist": "{{data.moreValuesExist}}"
+        }
+    },
+    "messages": {
+        "ownerRemoveErrorMsg": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.ownerRemoveErrorMessage}}"
+        },
+        "soaFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "preferences": [
+        "CR_allow_alternate_procedures",
+        "WRKFLW_use_legacy_template_filter"
+    ],
+    "lifecycleHooks": {
+        "onMount": "reveal",
+        "onUpdate": [ {
+                "action": "assignPrivilegedUser",
+                "observers": [
+                    "props.subPanelContext.addUserPanelStatePrivUser.value.selectedUsers"
+                ]
+            },
+            {
+                "action": "assignWorkflowOwner",
+                "observers": [
+                    "props.subPanelContext.addUserPanelStateWorkflowOwner.value.selectedUsers"
+                ]
+            }
+        ]
+    },
+    "conditions": {
+        "isPrivUserSelectedInPeoplePicker": {
+            "expression": "props.subPanelContext.addUserPanelStatePrivUser.selectedUsers && props.subPanelContext.addUserPanelStatePrivUser.selectedUsers.length > 0"
+        },
+        "isWorkflowOwnerSelectedInPeoplePicker": {
+            "expression": "props.subPanelContext.addUserPanelStateWorkflowOwner.selectedUsers && props.subPanelContext.addUserPanelStateWorkflowOwner.selectedUsers.length > 0"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "RemovePrivileged.removeUser",
+            "action": "removePrivilegedUser"
+        },
+        {
+            "eventId": "saw1UserSectionAddEvent",
+            "action": "openfromUserSection"
+        },
+        {
+            "eventId": "saw1OwnerSectionAddEvent",
+            "action": "openfromWorkflowSection"
+        },
+        {
+            "eventId":"closeDialog",
+            "action":"closePanelDialog"
+        }
+    ],
+
+    "i18n": {
+        "WorkflowTasks": [
+            "ScheduleManagerMessages"
+        ],
+        "WorkflowTrigger": [
+            "ScheduleManagerMessages"
+        ],
+        "WorkflowTemplate": [
+            "ScheduleManagerMessages"
+        ],
+        "PrivilegedUser": [
+            "ScheduleManagerMessages"
+        ],
+        "WorkflowOwner": [
+            "ScheduleManagerMessages"
+        ],
+        "saveBtnTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "workflowTaskTypeError": [
+            "ScheduleManagerMessages"
+        ],
+        "ownerRemoveErrorMessage": [
+            "ScheduleManagerMessages"
+        ]
+
+    }
+}

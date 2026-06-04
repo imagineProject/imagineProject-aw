@@ -1,0 +1,204 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports":
+    [],
+
+    "lifecycleHooks": {
+        "onUpdate": [ {
+            "action": "actionFilterList",
+            "observers": [ "viewModel.data.filterBox.dbValue" ]
+        }, {
+            "action": "getSubTypesDataAndSetInitialValue",
+            "observers": [ "props.subPanelContext.sharedData.typePropInfos.length" ]
+
+        } ]
+    },
+    "actions":
+    {
+        "getSubTypesDataAndSetInitialValue": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getObjectSubTypes"
+                },
+                {
+                    "action": "setInitialValueForSubType"
+                },
+                {
+                    "action": "refreshDataProviderForProperties"
+                }
+            ]
+        },
+        "getObjectSubTypes": {
+            "actionType": "JSFunction",
+            "method": "getObjectSubTypes",
+            "inputData":
+            {
+                "typePropInfos": "{{subPanelContext.sharedData.typePropInfos}}",
+                "secTypePropInfos": "{{subPanelContext.sharedData.secTypePropInfos}}"
+            },
+            "outputData": {
+                "objectSubTypes": ""
+            },
+            "deps": "js/importBOMService"
+        },
+        "setInitialValueForSubType": {
+            "actionType": "JSFunction",
+            "method": "setInitialValueForSubType",
+            "inputData": {
+                "subTypes": "{{data.subTypes}}",
+                "objectSubTypes": "{{data.objectSubTypes}}"
+            },
+            "outputData": {
+                "subTypes": ""
+            },
+            "deps": "js/importBOMService"
+        },
+        "subTypeChangeAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "resetPropertiesFilter"
+                },
+                {
+                    "action": "refreshDataProviderForProperties"
+                }
+            ]
+        },
+        "resetPropertiesFilter":
+        {
+            "actionType": "JSFunction",
+            "method": "resetPropertiesFilter",
+            "inputData":
+            {
+                "filterBox": "{{data.filterBox}}"
+            },
+            "outputData": {
+                "filterBox": ""
+            },
+            "deps": "js/importBOMService"
+        },
+
+        "refreshDataProviderForProperties":
+        {
+            "actionType": "dataProvider",
+            "method": "dataProviderForProperties"
+        },
+
+        "addNewPropertiesForMapping":
+        {
+            "actionType": "JSFunction",
+            "method": "addNewPropertiesForMapping",
+            "inputData":
+            {
+                "sharedData": "{{subPanelContext.sharedData}}"
+            },
+            "events": {
+                "success": [{
+                    "name": "importBOM.updatePropertiesForMapping"
+                }]
+            },
+
+            "deps": "js/importBOMService"
+        },
+
+        "actionFilterList":
+        {
+            "actionType": "JSFunction",
+            "method": "actionFilterList",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "typePropInfos": "{{subPanelContext.sharedData.typePropInfos}}",
+                "secTypePropInfos": "{{subPanelContext.sharedData.secTypePropInfos}}",
+                "subType": "{{data.subTypes.dbValue}}"
+            },
+            "outputData": {
+                "propertiesToSelect": ""
+            },
+            "deps": "js/importBOMService"
+        },
+
+        "updateProperties":
+        {
+            "actionType": "JSFunction",
+            "method": "updateProperties",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "deps": "js/importBOMService"
+        }
+    },
+
+    "data":
+    {
+       "subTypes":
+        {
+            "displayName": "{{i18n.subTypes}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "hasLov": true,
+            "dataProvider": "subTypeDataProvider",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP",
+            "emptyLOVEntry": false
+        },
+        "filterBox":
+        {
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "false",
+            "requiredText": "Filter",
+            "dbValue": "",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "Awb0ToolTipForInternalProp": {
+            "view": "Awb0TooltipForInternalProp"
+        }
+    },
+
+    "dataProviders":
+    {
+        "dataProviderForProperties":
+        {
+            "action": "actionFilterList",
+            "response": "{{data.propertiesToSelect}}",
+            "totalFound": "{{data.propertiesToSelect.length}}"
+        },
+        "subTypeDataProvider": {
+            "action": "getObjectSubTypes",
+            "response": "{{data.objectSubTypes}}",
+            "totalFound": "{{data.objectSubTypes.length}}"
+        }
+    },
+
+    "onEvent":
+    [
+        {
+            "eventId": "importBOM.refreshDataProviderForProperties",
+            "action": "refreshDataProviderForProperties"
+        },
+        {
+            "eventId": "subTypes.lovValueChanged",
+            "action": "subTypeChangeAction"
+        }
+    ],
+
+    "conditions": {
+        "isAddPropertiesButtonVisible": {
+            "expression": "data.subTypes.dbValue !== ''"
+        }
+    },
+
+    "i18n":
+    {
+       "subTypes":
+        [
+            "OccmgmtImportExportConstants"
+        ],
+        "Add":
+        [
+            "OccmgmtImportExportConstants"
+        ]
+    }
+}

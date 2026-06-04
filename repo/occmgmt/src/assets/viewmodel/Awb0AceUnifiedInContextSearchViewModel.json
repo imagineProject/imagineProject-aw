@@ -1,0 +1,480 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "findInfoMessage": {
+            "iconName": "cmdHelp"
+        },
+        "tooltipForFindInfo": "FindPanelWorksetTooltip",
+        "extendedTooltipOptions": {"placement" : "top"},
+        "searchScope": {
+            "displayName": "{{i18n.searchScopeText}}",
+            "dbValue": false,
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "navigateContext":{
+            "type": "STRING",
+            "dbValue": "{{props.subPanelContext.occContext.viewKey}}"
+        },
+        "scopeLabel": {
+            "displayName": "{{i18n.scopeLabel}}",
+            "type": "STRING",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP"
+        },
+        "searchStateForFind": {
+            "initialValues": {
+                "provider": "Awb0FullTextSearchProvider",
+                "sortType": "Priority",
+                "additionalCriteria": {},
+                "selectFirstObjectPreference": "AWC_select_firstobject_inSearchLocation",
+                "autoApplyFilters": true,
+                "lovPropertyName": "awb0InContextSavedQueryName",
+                "calculateResultCountUsingCursorObject": true,
+                "showIntermediateResultCount": true,
+                "label": {
+                    "source": "/i18n/SearchMessages",
+                    "key": "resultsText"
+                },
+                "showCustomSearchResultInfo": true,
+                "customSearchResultInfoView": "Awb0AceUnifiedInContextSearchScope"
+            },
+            "meta": {
+                "categories": [ {
+                    "filterValues": [ {
+                        "selected": {
+                            "field": "true",
+                            "type": "ViewModelProperty"
+                        }
+                    } ]
+                } ]
+            }
+        },
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "unifiedInContextSearchTitle":"{{subPanelContext.provider.unifiedInContextSearchTitle}}"
+    },
+    "selectionModels": {
+        "findSelectionModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "actions": {
+        "inContextSearchExecuted": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "stopRequestQueue"
+                },
+                {
+
+                    "action": "updateCommandVisibilityOnSearchExecution"
+                }
+            ]
+        },
+        "selectionHasChanged": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "updateAdditionalSearchCriteriaForSelectionChange"
+                },
+                {
+                    "action": "synchronizePWASelectionWithSearchResults"
+                }
+            ]
+        },
+        "synchronizePWASelectionWithSearchResults":{
+            "actionType": "JSFunction",
+            "method": "synchronizePWASelectionWithSearchResults",
+            "inputData": {
+                "data": "{{data}}" ,
+                "subPanelContext": "{{props.subPanelContext}}",
+                "selectionModel": "{{selectionModels.findSelectionModel}}"
+            },
+            "deps": "js/navigateSearchService"
+        },
+        "synchronizeFindSelectionWithPWA":{
+            "actionType": "JSFunction",
+            "method": "synchronizeFindSelectionWithPWA",
+            "inputData": {
+                "data": "{{data}}" ,
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/navigateSearchService"
+        },
+        "subscribeToProductContextChangeEvent": {
+            "actionType": "JSFunction",
+            "method": "subscribeToProductContextChangeEvent",
+            "inputData": {
+                "data": "{{data}}" ,
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "deps": "js/navigateSearchService"
+        },
+        "productContextInfoChangedBatchJob": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "subscribeToProductContextChangeEvent"
+                },
+                {
+                    "action": "updateAdditionalSearchCriteria"
+                }
+            ]
+        },
+        "resetPanel": {
+            "actionType": "JSFunction",
+            "method": "resetPanel",
+            "inputData": {
+                "data": "{{data}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "outputData": {
+                "searchScope": "searchScope",
+                "showFindIn": "shouldShowFindIn",
+                "shouldShowFindInfoMessage": "shouldShowFindInfoMessage",
+                "shouldShowDiscoveryIndexedProductsMessage": "shouldShowDiscoveryIndexedProductsMessage"
+            },
+            "deps": "js/navigateSearchService"
+        },
+        "stopRequestQueue": {
+            "actionType": "JSFunction",
+            "method": "cancelAll",
+            "deps": "js/invoker/requestQueue"
+        },
+        "updateCommandVisibilityOnSearchExecution": {
+            "actionType": "JSFunction",
+            "method": "updateCommandVisibilityOnSearchExecution",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/navigateSearchService"
+        },
+        "updateSearchScope":{
+            "actionType": "JSFunction",
+            "method": "updateSearchScopeOnSearchState",
+            "inputData": {
+                "searchStateForFind": "{{data.searchStateForFind}}",
+                "searchStateUpdater": "{{data.updateAtomicData}}",
+                "subPanelContext" : "{{props.subPanelContext}}",
+                "searchScopeValue": "{{data.searchScope}}"
+            },
+            "deps": "js/navigateSearchService"
+        },
+        "updateAdditionalSearchCriteria":{
+            "actionType": "JSFunction",
+            "method": "updateAdditionalSearchCriteria",
+            "inputData": {
+                "data": "{{data}}",
+                "subPanelContext" : "{{props.subPanelContext}}",
+                "searchScopeValue": "{{data.searchScope}}"
+            },
+            "outputData": {
+                "searchScope": "searchScope",
+                "showFindIn": "shouldShowFindIn",
+                "shouldShowFindInfoMessage": "shouldShowFindInfoMessage",
+                "shouldShowDiscoveryIndexedProductsMessage": "shouldShowDiscoveryIndexedProductsMessage"
+            },
+            "deps": "js/navigateSearchService"
+        },
+        "updateAdditionalSearchCriteriaForSelectionChange":{
+            "actionType": "JSFunction",
+            "method": "updateAdditionalSearchCriteria",
+            "inputData": {
+                "data": "{{data}}",
+                "subPanelContext" : "{{props.subPanelContext}}",
+                "searchScopeValue": "{{data.searchScope}}",
+                "hasSelectionChange": true
+            },
+            "outputData": {
+                "searchScope": "searchScope",
+                "showFindIn": "shouldShowFindIn",
+                "shouldShowFindInfoMessage": "shouldShowFindInfoMessage",
+                "shouldShowDiscoveryIndexedProductsMessage": "shouldShowDiscoveryIndexedProductsMessage"
+            },
+            "deps": "js/navigateSearchService"
+        },
+        "updateFindPanelWidget":{
+            "actionType": "JSFunction",
+            "method": "updateFindPanelWidget",
+            "inputData": {
+                "subPanelContext" : "{{props.subPanelContext}}"
+            },
+            "outputData": {
+                "showFindIn": "shouldShowFindIn",
+                "shouldShowFindInfoMessage": "shouldShowFindInfoMessage",
+                "shouldShowDiscoveryIndexedProductsMessage": "shouldShowDiscoveryIndexedProductsMessage"
+            },
+            "deps": "js/navigateSearchService"
+        },
+        "updatePropertyPolicyOnSearchState":{
+            "actionType": "JSFunction",
+            "method": "updatePropertyPolicyOnSearchState",
+            "inputData": {
+                "data": "{{data}}",
+                "subPanelContext" : "{{props.subPanelContext}}"
+            },
+            "deps": "js/navigateSearchService"
+        },
+        "closeFindPanel" : {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "activateAceView": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "ace.activateWindow",
+                    "eventData": {
+                        "key": "{{data.navigateContext.dbValue}}"
+                    }
+                } ]
+            }
+        },
+        "thresholdExceededChanged": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "showNotificationDialog",
+                    "condition": "conditions.hasThresholdExceeded"
+                }
+            ]
+        },
+        "synchronizeFindSelectionWithPWABatch": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "activateAceView",
+                    "condition": "conditions.isActiveViewDifferentThanFindView"
+                },
+                {
+                    "action": "synchronizeFindSelectionWithPWA"
+                }
+            ]
+        },
+        "showNotificationDialog": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "InfoMessageForSearchThresholdExceeded"
+                    }
+                ]
+            }
+        },
+        "continueSearchAfterThresholdExceeded":{
+            "actionType": "JSFunction",
+            "method": "searchWithoutForceThreshold",
+            "inputData": {
+                "searchState": "{{data.searchStateForFind}}",
+                "searchStateUpdater": "{{data.updateAtomicData}}"
+            },
+            "deps": "js/navigateSearchService"
+        },
+        "cancelSearchAfterThresholdExceeded":{
+            "actionType": "JSFunction",
+            "method": "cancelSearchAfterThresholdExceeded",
+            "inputData": {
+                "searchState": "{{data.searchStateForFind}}",
+                "searchStateUpdater": "{{data.updateAtomicData}}"
+            },
+            "deps": "js/navigateSearchService"
+        },
+        "closeFindInfoMessage": {
+            "actionType": "JSFunction",
+            "method": "closeFindInfoMessage",
+            "inputData": {},
+            "outputData":{
+                "shouldShowDiscoveryIndexedProductsMessage": ""
+            },
+            "deps": "js/navigateSearchService"
+        },
+        "clearPanelData": {
+            "actionType": "JSFunction",
+            "method": "clearPanelData",
+            "deps": "js/navigateSearchService"
+        }
+    },
+    "messages":{
+        "ThresholdExceededNotificationMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.thresholdExceeded}}",
+            "messageTextParams": [
+                "{{data.searchStateForFind.criteria.searchString}}"
+            ],
+            "navigationOptions": [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.CancelText}}",
+                    "action": "cancelSearchAfterThresholdExceeded"
+                },
+                {
+                    "option":"Continue",
+                    "text": "{{i18n.continueSearch}}",
+                    "action": "continueSearchAfterThresholdExceeded"
+                }
+            ]
+        },
+        "findForDiscoveryIndexedProductsMessage": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.findForDiscoveryIndexedProductsMessage}}"
+        }
+    },
+    "conditions": {
+        "isFindInFeatureSupported": {
+            "expression": "props.subPanelContext.occContext.supportedFeatures.Awb0ScopedFindInStructure || props.subPanelContext.occContext.openedObjectType === 'WorksetRevision' || props.subPanelContext.occContext.openedObjectType === 'AppSessionWorkset'"
+        },
+        "isValidSelection": {
+            "expression": "props.subPanelContext.occContext.currentState.c_uid !== props.subPanelContext.occContext.currentState.t_uid"
+        },
+        "isLeafNode": {
+            "expression":"props.subPanelContext.occContext.pwaSelection[0].props.awb0NumberOfChildren && props.subPanelContext.occContext.pwaSelection[0].props.awb0NumberOfChildren.dbValues[0] === '0' && conditions.isSearchScopeToShowOnLeafNode"
+        },
+        "isSearchScopeToShowOnLeafNode": {
+            "expression":"!props.subPanelContext.occContext.unifiedInContextSearchConfig || (props.subPanelContext.occContext.unifiedInContextSearchConfig && props.subPanelContext.occContext.unifiedInContextSearchConfig.showSearchScopeOnleafNode)"
+        },
+        "hasUnifiedInContextSearchTitle": {
+            "expression": "props.subPanelContext.provider.unifiedInContextSearchTitle"
+        },
+        "isSearchScopeDisable": {
+            "expression": "props.subPanelContext.occContext.unifiedInContextSearchConfig && props.subPanelContext.occContext.unifiedInContextSearchConfig.disableSearchScope === true"
+        },
+        "isWorksetSelected": {
+            "expression": {
+                "$and": [ {
+                        "$source": "props.subPanelContext.occContext.openedObjectType",
+                        "$query": {
+                            "$eq": "WorksetRevision"
+                        }
+                    },
+                    {
+                        "$source": "ctx.mselected.length",
+                        "$query": {
+                            "$eq": 1
+                        }
+                    },
+                    {
+                        "$source": "ctx.mselected",
+                        "$query": {
+                            "$all": {
+                                "$source": "props.awb0UnderlyingObject.dbValues[0]",
+                                "$query": {
+                                    "$eq": "{{props.subPanelContext.occContext.topElement.props.awb0UnderlyingObject.dbValues[0]}}"
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "isNavigationSupportedForWorksetOrAppSessionWorkset": {
+            "expression": "( props.subPanelContext.occContext.openedObjectType === 'AppSessionWorkset' || props.subPanelContext.occContext.openedObjectType === 'WorksetRevision' ) && ( props.subPanelContext.occContext.supportedFeatures.Awb0FindInStructure === true || ctx.filter.isFindEnabled === true )"
+        },
+        "isNavigationSupportedForObject": {
+            "expression": "(( props.subPanelContext.occContext.isOpenedUnderAContext && (props.subPanelContext.occContext.openedObjectType !== 'AppSessionWorkset' || conditions.isNavigationSupportedForWorksetOrAppSessionWorkset)) ||  ( !props.subPanelContext.occContext.isOpenedUnderAContext && (( props.subPanelContext.occContext.openedObjectType !== 'WorksetRevision' && props.subPanelContext.occContext.supportedFeatures.Awb0FindInStructure === true || props.subPanelContext.occContext.supportedFeatures.Awb0FullTextSearchFeature === true) || conditions.isNavigationSupportedForWorksetOrAppSessionWorkset )) )"
+        },
+        "hasThresholdExceeded": {
+            "expression": "data.searchStateForFind.thresholdExceeded && data.searchStateForFind.thresholdExceeded === 'true'"
+        },
+        "isActiveViewDifferentThanFindView": {
+            "expression": "data.navigateContext.dbValue !== props.subPanelContext.occContext.viewKey"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "ace.ResetContentEvent",
+            "action": "subscribeToProductContextChangeEvent",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "navigate.resetStructure",
+            "action": "resetPanel"
+        },
+        {
+            "eventId": "appCtx.update",
+            "criteria": {
+                "target": "context.configContext"
+            },
+            "cacheEventData": true,
+            "action": "subscribeToProductContextChangeEvent"
+        },
+        {
+            "eventId": "productContextChangedEvent",
+            "action": "closeFindPanel",
+            "condition": "(dataProviderActionType === 'productChangedOnSelectionChange' || dataProviderActionType === 'initializeAction' ) && !conditions.isNavigationSupportedForObject"
+        },
+        {
+            "eventId": "navigate.closeFindPanel",
+            "action": "closeFindPanel"
+        },
+        {
+            "eventId": "InfoMessageForSearchThresholdExceeded",
+            "message": "ThresholdExceededNotificationMessage"
+        },
+        {
+            "eventId":"tree.packUnpackSuccessful",
+            "action": "resetPanel"
+        },
+        {
+            "eventId":"navigate.updateFindPanelWidget",
+            "action": "updateFindPanelWidget"
+        }
+    ],
+    "i18n": {
+        "results": [ "OccurrenceManagementConstants" ],
+        "criteria": [ "OccurrenceManagementConstants" ],
+        "input": [ "OccurrenceManagementConstants" ],
+        "filters": [ "OccurrenceManagementConstants" ],
+        "searchScopeText": [ "OccurrenceManagementConstants" ],
+        "find": [ "OccmgmtFindConstants" ],
+        "by": [ "OccurrenceManagementConstants" ],
+        "scopeLabel": [ "OccurrenceManagementConstants" ],
+        "thresholdExceeded": [ "OccurrenceManagementSubsetConstants" ],
+        "continueSearch": [ "OccurrenceManagementSubsetConstants" ],
+        "CancelText": [  "OccurrenceManagementSubsetConstants" ],
+        "findForDiscoveryIndexedProductsMessage":[ "OccmgmtFindConstants" ]
+    },
+    "lifecycleHooks": {
+        "onMount": "updateAdditionalSearchCriteria",
+        "onUnmount": "clearPanelData",
+        "onUpdate": [{
+            "action": "selectionHasChanged",
+            "observers": [ "props.subPanelContext.occContext.pwaSelection[0].uid", "props.subPanelContext.occContext.pwaSelection.length" ]
+        },
+        {
+            "action": "synchronizeFindSelectionWithPWABatch",
+            "observers": [ "viewModel.atomicData.selectionData.selected" ]
+        },
+        {
+            "action": "inContextSearchExecuted",
+            "observers": [
+                "viewModel.atomicData.searchStateForFind.criteria",
+                "viewModel.atomicData.searchStateForFind.advancedSearchCriteria"
+            ]
+        },
+        {
+            "action": "productContextInfoChangedBatchJob",
+            "observers": [ "props.subPanelContext.occContext.productContextInfo.props", "props.subPanelContext.occContext.transientRequestPref.replayRecipe" ]
+        },
+        {
+            "action": "updatePropertyPolicyOnSearchState",
+            "observers": [ "props.subPanelContext.pageContext.sublocationState.secondaryActiveTabId", "props.subPanelContext.pageContext.sublocationState.viewModeContext.displayedViewModes.altPwaViews" ]
+        },
+        {
+            "action": "thresholdExceededChanged",
+            "observers": ["viewModel.atomicData.searchStateForFind.thresholdExceeded"]
+        }
+    ]
+    },
+    "props": {
+        "sub-panel-context":{
+            "type":"object"
+        }
+    }
+}

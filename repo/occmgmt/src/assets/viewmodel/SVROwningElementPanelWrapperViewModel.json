@@ -1,0 +1,116 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "initSVROwningItems": {
+            "actionType": "JSFunction",
+            "method": "initSVROwningItems",
+            "inputData": {
+                "context": "{{props.subPanelContext.occContext}}",
+                "contextKey":"{{props.subPanelContext.contextKey}}"
+            },
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "applyEndItemChanged": {
+            "actionType": "JSFunction",
+            "method": "applyVariantConfigChange",
+            "inputData": {
+                "value": {
+                    "configContext": {
+                        "r_uid": "{{props.subPanelContext.occContext.productContextInfo.props.awb0CurrentRevRule.dbValues[0]}}",
+                        "var_uids": "{{data.eventData.variantRules}}",
+                        "iro_uid": "{{data.eventData.svrOwningItem.uid}}",
+                        "de": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EffDate.dbValues[0]}}",
+                        "ue": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EffUnitNo.dbValues[0]}}",
+                        "ei_uid": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EffEndItem.dbValues[0]}}",
+                        "startDate": "{{props.subPanelContext.occContext.productContextInfo.props.awb0StartEffDates.dbValues[0]}}",
+                        "endDate": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EndEffDates.dbValues[0]}}",
+                        "fromUnit": "{{props.subPanelContext.occContext.productContextInfo.props.awb0StartEffUnits.dbValues[0]}}",
+                        "toUnit": "{{props.subPanelContext.occContext.productContextInfo.props.awb0EndEffUnits.dbValues[0]}}",
+                        "startFreshNavigation": true
+                    },
+                    "transientRequestPref": {
+                        "jitterFreePropLoad" : true,
+                        "userGesture": "VARIANT_RULE_CHANGE"
+                    }
+                },
+                "occContext":"{{props.subPanelContext.occContext}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "launchConfigurationPanel"
+                } ]
+            },
+
+            "deps": "js/variantInfoConfigurationService"
+        },
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "launchConfigurationPanelOnBack": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view": "Awb0ConfigurationFilter",
+                    "placement": "left",
+                    "parent": ".aw-layout-workarea",
+                    "width": "STANDARD",
+                    "height": "FULL",
+                    "subPanelContext": "{{subPanelContext}}",
+                    "push": true,
+                    "isCloseVisible": false,
+                    "isPinUnpinEnabled": true
+                }
+            }
+        }
+    },
+    "data": {
+
+    },
+    "messages": {},
+    "conditions": {
+        "isConfigurationFilterNotSupported": {
+            "expression": "props.subPanelContext.occContext.supportedFeatures.Awb0EnableConfigurationPanelFeature === undefined || props.subPanelContext.occContext.supportedFeatures.Awb0EnableConfigurationPanelFeature === false"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "initSVROwningItems",
+                "observers": [
+                    "props.subPanelContext.occContext.svrOwningItemSelected"
+                ]
+            }
+        ]
+    },
+    "onEvent": [
+        {
+            "eventId": "launchConfigurationPanel",
+            "action": "launchConfigurationPanelOnBack"
+        },
+        {
+            "eventId": "ace.productChangedEvent",
+            "condition": "conditions.isConfigurationFilterNotSupported",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "awConfigPanel.variantInfoChanged",
+            "cacheEventData": true,
+            "condition": "svrOwningItem && !variantRules",
+            "action": "applyEndItemChanged"
+        }
+    ],
+    "i18n": {
+        "configPanelEffectiveVariantForTitle": [
+            "OccurrenceManagementConstants"
+        ],
+        "occmgmtConfigurationFilterTitle": [
+            "OccurrenceManagementConstants"
+        ]
+    }
+}

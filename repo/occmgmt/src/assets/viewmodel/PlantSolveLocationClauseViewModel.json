@@ -1,0 +1,176 @@
+{
+    "schemaVersion" : "1.0.0",
+
+    "actions":
+    {
+
+        "loadplantLocations":{
+            "actionType": "JSFunctionAsync",
+            "method": "processPlantLocationSearchResults",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "outputData":{
+                "plantLocationListResponse":""
+            },
+            "deps": "js/plantSolveService"
+        },
+        "validatePlantEntry": {
+            "actionType": "JSFunction",
+            "method": "validatePlantWidgetValue",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "outputData":{
+                "validEvent":"valid",
+                "messageForLocationEntry":"message"
+            },
+            "deps": "js/plantSolveService"
+        },
+        "updateplantLocationClauseText":{
+            "actionType": "JSFunction",
+            "method": "updatePlantLocationClauseText",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "outputData":{
+                "plant_location":""
+            },
+            "deps": "js/plantSolveService"
+        },
+        "plantLoactionListSelectionChanged":
+        {
+            "actionType": "JSFunction",
+            "method": "plantLocationListSelectionChanged",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "deps": "js/plantSolveService"
+        },
+        "locationClausePropertyValueInitialized":
+        {
+            "actionType": "JSFunction",
+            "method": "locationClausePropertyValueInitialized",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "outputData":
+            {
+                "plant_location": ""
+            },
+            "deps": "js/plantSolveService"
+        },
+        "initializeClauseProperties":
+        {
+            "actionType": "batchJob",
+
+            "steps": [
+                {
+                    "action": "loadplantLocations"
+                },
+                {
+                    "action": "locationClausePropertyValueInitialized",
+                    "condition": "subPanelContext && subPanelContext.activeView && subPanelContext.activeView === 'RevisionRuleAdminPanel'"
+                }
+        ]
+        }
+    },
+
+    "data" : {
+        "plant_location":
+        {
+            "type": "STRING",
+            "dataProvider": "plantLocationDataProvider",
+            "dbValue": "",
+            "uiValue": "",
+            "isRequired": "true",
+            "displayName": "{{i18n.plantLocationName}}",
+            "emptyLOVEntry": false
+        },
+        "currentEvent":
+        {
+            "displayName": "{{i18n.currentEvent}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "dbValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "moreValuesExist": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        }
+    },
+    "dataProviders":
+    {
+        "plantLocationDataProvider":
+        {
+            "initializeAction": "loadplantLocations",
+            "nextAction": "loadplantLocations",
+            "response": "{{data.plantLocationListResponse.plantLocationList}}",
+            "totalFound": "{{data.plantLocationListResponse.plantLocationList.length}}",
+            "selectionModelMode": "single",
+            "moreValuesExist": "{{data.plantLocationListResponse.moreValuesExist}}",
+            "validateAction": "validatePlantEntry",
+            "valid": "{{data.validEvent}}",
+            "message": "{{data.messageForLocationEntry}}"
+        }
+    },
+    "functions":
+    {
+        "getSearchStringValueForEvent":
+        {
+            "functionName": "getSearchStringValueForEvent",
+            "parameters":
+            [
+                "{{data}}"
+            ]
+        }
+    },
+
+    "onEvent":
+    [
+        {
+            "eventId": "RevisionRuleAdminPanel.updatePlantLocationClauseText",
+            "action": "updateplantLocationClauseText"
+        },
+        {
+            "eventId": "RevisionRuleAdminEventClause.plantClausePropertyValueInitialized",
+            "action": "locationClausePropertyValueInitialized"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "initializeClauseProperties",
+        "onUpdate": [
+            {
+                "action": "plantLoactionListSelectionChanged",
+                "observers": [
+                    "viewModel.data.plant_location.dbValue"
+                ]
+            }]
+    },
+    "conditions":
+    {
+        "isCurrentEventChanged":
+        {
+            "expression": "!data.currentEvent.dbValue",
+            "trackValues": true
+        }
+    },
+
+    "i18n":
+    {
+        "currentEvent":
+        [
+            "RevisionRuleAdminConstants"
+        ],
+        "plantLocationName":
+        [
+            "RevisionRuleAdminConstants"
+        ]
+    }
+}

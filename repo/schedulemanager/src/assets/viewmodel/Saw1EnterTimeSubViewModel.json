@@ -1,0 +1,202 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "loadTimesheetEntries": {
+            "actionType": "dataProvider",
+            "methods": [
+                "getTimesheetEntries"
+            ]
+        },
+        "searchTimesheetEntries": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData":
+            {
+                "searchInput": {
+                    "maxToLoad": 50,
+                    "maxToReturn": 50,
+                    "providerName": "Saw1TaskSearchProvider",
+                    "searchCriteria":
+                    {
+                        "searchContentType": "TimeSheetEntry",
+                        "parentUid": "{{props.parentSelectionData.selected[0].uid}}"
+                    },
+                    "startIndex": "{{data.dataProviders.scheduleTasksProvider.startIndex}}"
+
+                }
+            },
+                "policy":
+                {
+                  "types": [ {
+                      "name": "TimeSheetEntry",
+                      "properties": [ {
+                              "name": "object_desc"
+                          },
+                          {
+                              "name": "date"
+                          },
+                          {
+                            "name": "minutes"
+                          },
+                          {
+                            "name": "saw1EntryStatus"
+                          },
+                          {
+                            "name": "process_stage_list"
+                          },
+                          {
+                            "name": "release_status_list"
+                          }
+                      ]
+                  } ]
+             },
+             "outputData": {
+                "timesheetEntries": "{{function:processProviderResponse}}",
+                "totalFound": "totalFound",
+                "totalLoaded": "totalLoaded"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            },
+            "deps": "js/Saw1TimesheetEntryUtils"
+        },
+        "updateTimesheetEntryDataAction":
+        {
+            "actionType": "JSFunction",
+            "method": "updateTimesheetEntryData",
+            "inputData": {
+                "dataProviders": "{{data.dataProviders.getTimesheetEntries}}",
+                "deletedVMO": "{{data.eventMap['updateTimesheetEntryData'].uid}}"
+            },
+            "deps": "js/Saw1TimesheetEntryCellCommandsHandler"
+        },
+        "submitTimesheetEntries":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2018-11-ScheduleManagement",
+            "method": "submitTimesheetEntries",
+            "inputData":
+            {
+
+                "timesheetEntries": "{{data.dataProviders.getTimesheetEntries.selectedObjects}}",
+                "runInBackground": false
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "loadTimesheetEntriesEvent"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaErrorMessage"
+                    }
+                ]
+            }
+
+        },
+        "selectedTimesheetEntriesEvent": {
+            "actionType": "JSFunction",
+            "method": "getStatusOfSelectedEntries",
+            "inputData": {
+                "selectedEntries" :"{{data.dataProviders.getTimesheetEntries.selectedObjects}}"
+            },
+            "outputData": {
+                "submit": ""
+
+            },
+            "deps": "js/Saw1TimesheetEntryUtils"
+        }
+
+    },
+    "dataProviders": {
+        "getTimesheetEntries": {
+            "action": "searchTimesheetEntries",
+            "response": "{{data.timesheetEntries}}",
+            "totalFound": "{{data.totalFound}}",
+            "totalLoaded": "{{data.totalLoaded}}",
+            "commandsAnchor"  : "aw_TimesheetEntryCellCommand",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionData": "{{props.selectionData}}"
+            }
+        }
+    },
+    "data": {
+        "addTimesheetEntryCommand": "saw1_addTimesheetEntry"
+    },
+    "messages": {
+        "soaFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n": {
+        "assignedEntries": [
+            "ScheduleManagerMessages"
+        ],
+        "submitBtnTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "entry": [
+            "ScheduleManagerMessages"
+        ],
+        "timesheetWorkDate": [ "ScheduleManagerMessages"],
+        "timesheetTimeSpent": [ "ScheduleManagerMessages"],
+        "description": [ "ScheduleManagerMessages"],
+        "timesheetStatus": [ "ScheduleManagerMessages"]
+    },
+    "onEvent": [
+        {
+            "eventId": "updateTimesheetEntryData",
+            "cacheEventData": true,
+            "action": "updateTimesheetEntryDataAction"
+        },
+        {
+            "eventId": "loadTimesheetEntriesEvent",
+            "action": "loadTimesheetEntries"
+        }
+
+    ],
+    "lifecycleHooks": {
+        "onMount": "loadTimesheetEntries",
+        "onUpdate":[
+            {
+                "action": "selectedTimesheetEntriesEvent",
+                "observers": ["props.selectionData.selected"]
+            },
+            {
+                "action": "loadTimesheetEntries",
+                "observers": ["props.parentSelectionData.selected"]
+            },
+            {
+                "action": "loadTimesheetEntries",
+                "observers": ["props.sharedData.createdObj"]
+            }
+      ]
+    },
+    "conditions": {
+        "isValidToShowSubmitButton": {
+            "expression": "data.dataProviders.getTimesheetEntries.selectedObjects.length > 0 && data.submit"
+        }
+    },
+    "functions": {
+        "processProviderResponse":
+        {
+            "functionName": "processProviderResponse",
+            "parameters":
+            [
+                "{{data.i18n}}"
+            ],
+            "deps": "js/Saw1TimesheetEntryUtils"
+        }
+
+   }
+}

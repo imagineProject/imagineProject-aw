@@ -1,0 +1,103 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {
+        "onMount": "revealRevisionRulesLOV"
+    },
+    "data":
+    {
+        "filterBox": {
+            "displayName": "{{i18n.activeChangeFilterDisplay}}",
+            "type": "STRING",
+            "dbValue": "",
+            "requiredText":"{{i18n.activeChangefilter}}"
+        }
+    },
+    "actions":
+    {
+        "closePopups": {
+            "actionType": "JSFunctionAsync",
+            "method": "hide",
+            "inputData": {
+                "popupEl": "allPopups"
+            },
+            "deps": "js/popupService"
+        },
+        "revealRevisionRulesLOV": {
+            "actionType": "dataProvider",
+            "method": "revisionRules"
+        },
+        "getRevisionRulesBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getRevisionRules"
+                },
+                {
+                    "action": "getFilteredRevisionRules"
+                }
+
+            ]
+        },
+        "getFilteredRevisionRules": {
+            "actionType": "JSFunction",
+            "method": "getFilteredRevisionRules",
+            "inputData": {
+                "lovDataInfo": "{{data.lovDataInfo}}",
+                "filterBox": "{{data.filterBox}}"
+            },
+            "outputData": {
+                "filteredLovDataInfo" : ""
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "getRevisionRules": {
+            "actionType": "JSFunction",
+            "method": "getInitialValuesWrapper",
+            "inputData": {
+                "filterStr": "",
+                "lovPageSize":10000,
+                "viewModelObj": "{{ctx.userSession}}",
+                "viewProp": "{{ctx.userSession.props.awp0RevRule}}",
+                "operationName": ""
+            },
+            "outputData": {
+                "lovDataInfo" : ""
+            },
+            "deps": "js/awSearchService"
+        }
+    },
+    "dataProviders":
+    {
+        "revisionRules": {
+            "action": "getRevisionRulesBatchJob",
+            "response": "{{data.filteredLovDataInfo.lovEntries}}",
+            "totalFound": "{{data.totalFound}}"
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "closeAllPopups",
+            "action": "closePopups"
+        },
+        {
+            "eventId": "revisionRules.selectionChangeEvent",
+            "action": "closePopups"
+        }
+    ],
+    "conditions":
+    {
+        
+    },
+    "i18n":
+    {
+        "activeChangeFilterDisplay":
+        [
+            "ChangeMessages"
+        ],
+        "activeChangefilter":
+        [
+            "ChangeMessages"
+        ]
+    }
+}

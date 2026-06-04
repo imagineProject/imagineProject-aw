@@ -1,0 +1,294 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "actions": {
+        "initializeDynaParticipantsPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateDynaParticipantsTableCtxInfo"
+                },
+                {
+                    "action": "getAssignableParticipantTypes"
+                }
+            ]
+        },
+        "getDynaParticipantsFromRel": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Awp0DynaParticipantsColConfig",
+                        "operationType": "as_arranged"
+                    },
+                    "saveColumnConfigData": {
+                        "clientScopeURI": "Awp0DynaParticipantsColConfig",
+                        "columnConfigId": "{{data.dataProviders.dynamicParticipantsProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.dynamicParticipantsProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0ParticipantTypeProvider",
+                        "searchCriteria": {
+                            "parentUid": "{{function:getAdaptedObjects}}",
+                            "dcpSortByDataProvider":"true"
+                        },
+                        "columnFilters": "{{data.columnProviders.dynamicParticipantsColumnProvider.columnFilters}}",
+                        "searchSortCriteria": "{{data.columnProviders.dynamicParticipantsColumnProvider.sortCriteria}}",
+                        "startIndex": "{{data.dataProviders.dynamicParticipantsProvider.startIndex}}"
+                    },
+                    "inflateProperties": true
+                },
+                "1": {
+                    "types": [ {
+                        "name": "Fnd0ParticipantByType",
+                        "properties": [
+                            {
+                                "name": "fnd0Participant"
+                            },
+                            {
+                                "name": "fnd0ParticipantType"
+                            },
+                            {
+                                "name": "fnd0IsRequired"
+                            },
+                            {
+                                "name": "fnd0IsMultiValued"
+                            }
+                        ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "searchResults": "{{json:searchResultsJSON}}",
+                "dataProviders.dynamicParticipantsProvider.columnConfig": "columnConfig",
+                "totalFound": "totalFound"
+            }
+        },
+        "saveColumnConfigData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [{
+                        "clientScopeURI": "Awp0DynaParticipantsColConfig",
+                        "columnConfigId": "{{data.dataProviders.dynamicParticipantsProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.dynamicParticipantsProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    }]
+                }
+            },
+            "outputData": {}
+        },
+        "resetColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [{
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos": [{
+                            "clientScopeURI": "Awp0DynaParticipantsColConfig",
+                            "operationType": "configured",
+                            "typeNames": [
+                                "WorkspaceObject"
+                            ],
+                            "columnsToExclude": []
+                        }],
+                        "businessObjects": [
+                            {}
+                        ]
+                    }]
+                }
+            },
+            "outputData": {
+                "dataProviders.dynamicParticipantsProvider.columnConfigs": "columnConfigurations[0].columnConfigurations[0]"
+            }
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "getFilterFacets": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AWS2-2019-12-Finder",
+            "method": "getFilterValues",
+            "inputData": {
+                "filterFacetInput": {
+                    "columnFilters": "{{filterFacetInput.columnFilters}}",
+                    "columnName": "{{filterFacetInput.column.field}}",
+                    "maxToReturn": "{{filterFacetInput.maxToReturn}}",
+                    "providerName": "Awp0ParticipantTypeProvider",
+                    "searchCriteria": {
+                        "parentUid": "{{ctx.pselected.uid}}"
+                    },
+                    "searchFilterMap": "{{subPanelContext.searchState.activeFilterMap}}",
+                    "startIndex": "{{filterFacetInput.startIndex}}"
+                }
+            },
+            "outputData": {
+                "filterFacetResults": "{{json:facetValues}}"
+            }
+        },
+        "updateDynaParticipantsTableCtxInfo": {
+            "actionType": "JSFunction",
+            "method": "updateCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "awp0DynaParticipantsTable",
+                "value": {
+                    "isDynaParticipantsTableMounted": true
+                }
+            }
+        },
+        "getAssignableParticipantTypes": {
+            "actionType": "JSFunctionAsync",
+            "method": "getAssignableParticipantTypes",
+            "inputData": {
+                "adaptedObjUid": "{{function:getAdaptedObjects}}"
+            },
+            "outputData": {
+                "assignableParticipantTypes": ""
+            },
+            "deps": "js/Awp0ParticipantService"
+        },
+        "cleanupDynaParticipantsTableCtxInfo": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "awp0DynaParticipantsTable"
+            }
+        },
+        "doParticipantTypeProviderSelectionChangeAction": {
+            "actionType": "JSFunction",
+            "method": "participantTypeProviderSelectionChange",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.dynamicParticipantsProvider.selectionModel}}"
+            },
+            "deps": "js/Awp0ParticipantService"
+        },
+        "refreshDynamicParticipantsTable": {
+           "actionType":"Event",
+            "method":"Event",
+            "inputData":{
+                "events":[{
+                    "name": "dynamicParticipants.plTable.reload"
+                },
+                {
+                    "name": "dynaParticipants.refreshSelectionData"
+                }]
+            }
+        }
+    },
+
+    "dataProviders": {
+        "dynamicParticipantsProvider": {
+            "initializeAction": "getDynaParticipantsFromRel",
+            "nextAction": "getDynaParticipantsFromRel",
+            "previousAction": "getDynaParticipantsFromRel",
+            "focusAction": "getDynaParticipantsFromRel",
+            "inputData": {
+                "selectionModel": "{{data.selectionModels.dynaParticipantsSelModel}}",
+                "selectionData": "{{subPanelContext.selectionData}}"
+            },
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple",
+            "contextMenuCommandsAnchor": "awp0DynaPartTable_contextMenuAnchor",
+            "filterFacetAction": "getFilterFacets",
+            "filterFacetResults": "{{data.filterFacetResults}}"
+        }
+    },
+
+    "selectionModels": {
+        "dynaParticipantsSelModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "columnProviders": {
+        "dynamicParticipantsColumnProvider": {
+            "saveColumnAndLoadAction": "getDynaParticipantsFromRel",
+            "resetColumnAction": "resetColumnConfig",
+            "saveColumnAction": "saveColumnConfigData",
+            "columns": "{{dataProviders.dynamicParticipantsProvider.columnConfig.columns}}",
+            "columnInfos": "{{data.columns}}",
+            "columnFilters": "{{filterFacetInput.columnFilters}}"
+        }
+    },
+    "grids": {
+        "dynamicParticipants": {
+            "dataProvider": "dynamicParticipantsProvider",
+            "columnProvider": "dynamicParticipantsColumnProvider",
+            "addIconColumn": false,
+            "enableArrangeMenu":true,
+            "gridOptions": {
+                "enableGridMenu": true,
+                "enablePinning": false,
+                "enableSorting": true,
+                "enableDynamicRowHeight":true,
+                "maxRowsToShow": 20,
+                "isFilteringEnabled": true
+            }
+        }
+    },
+    "data": {
+
+    },
+    "messages": {
+
+    },
+    "ctx": {
+
+    },
+    "functions": {
+        "getAdaptedObjects": {
+            "functionName": "getAdaptedObjectsForSelectedObjects",
+            "deps": "js/AddParticipant"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeDynaParticipantsPanel",
+        "onUnmount": "cleanupDynaParticipantsTableCtxInfo"
+    },
+    "onEvent": [
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent"
+        },
+        {
+            "eventId": "dynamicParticipantsProvider.selectionChangeEvent",
+            "cacheEventData": true,
+            "action": "doParticipantTypeProviderSelectionChangeAction"
+        },
+        {
+            "eventId": "workflow.updateTaskCount",
+            "cacheEventData": true,
+            "action": "refreshDynamicParticipantsTable"
+        }
+    ],
+    "conditions": {
+
+    },
+    "i18n": {
+        "participants": [ "WorkflowCommandPanelsMessages" ]
+    }
+}

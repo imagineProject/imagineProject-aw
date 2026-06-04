@@ -1,0 +1,368 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports":
+    [
+        "js/aw-command-sub-panel.directive",
+        "js/aw-command-panel.directive"
+    ],
+    "data":
+    {
+        "useXRTSecondaryAsRelationPrimary":false,
+        "allowedTypeInfo":
+        {
+            "preferredType":"{{subPanelContext.preferredTypeForAlignDesign}}",
+            "objectTypeName":"{{ctx.preferences.FND0_DESIGN_TYPES.toString()}}",
+            "searchTypeName":"{{ctx.preferences.FND0_DESIGNREVISION_TYPES.toString()}}"
+        },
+        "addPanelState": {
+            "initialValues": {
+                "creationType": "",
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {}
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub",
+                "context": {}
+            },
+            "meta": {}
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {
+                "selectedProjects": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "triggerAssign": {
+                    "field": "true",
+                    "type": "BOOLEAN"
+                }
+            }
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions":
+    {
+        "createAndAddObject":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Core-2012-10-DataManagement",
+            "method": "createRelateAndSubmitObjects",
+            "inputData":
+            {
+                "inputs": "{{function:getCreateInput}}"
+            },
+            "outputData":
+            {
+                "createdMainObject": "output[0].objects[0]",
+                "createdObjects": "{{function:getCreatedObjects}}",
+                "secondaryType": "output[0].objects[0].type"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "addObject.itemCreated"
+                    },
+                    {
+                        "name": "relationList.updated"
+                    }
+                ],
+                "failure":
+                [
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                    "message": "soaFailure"
+                    }
+                ]
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "alignSelectedObjects":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Bom-2024-06-StructureManagement",
+            "method": "manageAlignments",
+            "inputData": {
+                "input": "{{data.eventData}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData":
+                        {
+                            "refreshLocationFlag": true,
+                            "relations": "",
+                            "isPinnedFlag": "{{subPanelContext.panelPinned}}",
+                            "relatedModified":
+                            [
+                                "{{data.primarySelection}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "cba.refreshPrimaryObjects",
+                        "eventData": {
+                            "primarySelection": ["{{data.primarySelection}}"],
+                            "secondarySelection":"{{data.sourceObjects}}"
+                        }
+                    },
+                    {
+                        "name": "cba.partDesignAlignment",
+                        "condition":"subPanelContext.cbaContext.srcStructure && subPanelContext.cbaContext.trgStructure",
+                        "eventData": {
+                            "contextName": "{{ctx.aceActiveContext.key}}",
+                            "secondarySelection": "{{data.sourceObjects}}"
+                        }
+                    },
+                    {
+                        "name": "cba.notifyViewerAlignmentUpdated",
+                        "eventData": {
+                            "contextName": "{{ctx.aceActiveContext.key}}",
+                            "primarySelection": "{{data.primarySelection}}",
+                            "secondarySelection": "{{data.sourceObjects}}"
+                        },
+                        "excludeLocalDataCtx": true,
+                        "condition":"ctx.sublocation.clientScopeURI==='Awb0OccurrenceManagement'"
+                    },
+                    {
+                        "name": "closePanelDialog",
+                        "condition": "!subPanelContext.panelPinned"
+                    },
+                    {
+                        "name": "awPanel.loadNextValues",
+                        "condition": "subPanelContext.panelPinned"
+                    }
+
+                ],
+                "failure":
+                [
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData":
+                        {
+                            "refreshLocationFlag": false,
+                            "relations": "",
+                            "relatedModified":
+                            [
+                                "{{data.primarySelection}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                    "message": "soaFailure"
+                    }
+                ]
+            }
+        },
+        "closePanel":
+        {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext" : "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "addSelectedObjects":
+        {
+            "actionType": "JSFunction",
+            "method": "alignSelectedObjects",
+            "inputData": {
+                "data": "{{data}}",
+                "useXRTSecondaryAsRelationPrimary":"{{data.useXRTSecondaryAsRelationPrimary}}",
+                "sourceObjects": "{{addPanelState.sourceObjects}}",
+                "occContext":"{{props.subPanelContext.occContext}}"
+            },
+            "deps":"js/CadBomAlignmentService"
+        },
+        "executeAlignmentCheckPostPartCADUnAlign": {
+            "actionType": "JSFunction",
+            "method": "reExecuteAlignmentCheck",
+            "inputData": {
+                "objects":  "{{function:getAffectedObjectUIDPostPartCADAlignmentUpdate}}"
+            },
+            "deps": "js/CadBomOccAlignmentCheckService"
+        },
+        "cbaRefreshObjectsAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-01-DataManagement",
+            "method": "refreshObjects",
+            "inputData": {
+                "objects":  "{{function:getRefreshObjectsInput}}"
+            },
+            "deps": "js/CadBomAlignmentService"
+        },
+        "notifyViewerAlignmentUpdated": {
+            "actionType": "JSFunction",
+            "method": "notifyStructureViewers",
+            "deps": "js/cbaViewerService",
+            "inputData": {
+                "contextName": "{{data.eventData.contextName}}",
+                "primarySelection": "{{data.eventData.primarySelection}}",
+                "secondarySelection": "{{data.eventData.secondarySelection}}"
+            }
+        },
+        "setActiveView":{
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "functions": {
+        "getRefreshObjectsInput": {
+            "functionName": "getRefreshObjectsInput",
+            "parameters": [
+                "{{data.eventMap['cba.refreshPrimaryObjects'].primarySelection}}",
+                "{{data.eventMap['cba.refreshPrimaryObjects'].secondarySelection}}"
+            ]
+        },
+        "getAffectedObjectUIDPostPartCADAlignmentUpdate": {
+            "functionName": "getAffectedObjectUIDPostPartCADAlignmentUpdate",
+            "parameters": [
+                "{{data.eventMap['cba.partDesignAlignment'].contextName}}",
+                "{{data.eventMap['cba.partDesignAlignment'].secondarySelection}}"
+            ]
+        },
+        "getCreateInput": {
+            "functionName": "getCreateInput",
+            "parameters": [
+                "{{data}}",
+                "",
+                "{{addPanelState.creationType}}",
+                "{{editHandlers.addPanelEditHandler}}"
+            ]
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "alignSelectedObjects",
+            "action": "alignSelectedObjects",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "addObject.itemCreated",
+            "action": "addSelectedObjects"
+        },
+        {
+            "eventId": "primaryWorkArea.selectionChangeEvent",
+            "action": "closePanel",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "cba.partDesignAlignment",
+            "action": "executeAlignmentCheckPostPartCADUnAlign",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "cba.refreshPrimaryObjects",
+            "action": "cbaRefreshObjectsAction",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "cba.notifyViewerAlignmentUpdated",
+            "action": "notifyViewerAlignmentUpdated",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "closePanelDialog",
+            "action": "closePanel"
+        }
+    ],
+    "conditions":
+    {
+        "shouldShowAddButtonInNewTab":
+        {
+            "expression": "addPanelState.selectedTab.view==='NewTabPageSub' && addPanelState.creationType"
+        },
+        "shouldShowAddButtonInPaletteTab":
+        {
+            "expression": "addPanelState.selectedTab.view==='PaletteTabPageSub' && addPanelState.sourceObjects.length > 0"
+        },
+        "shouldShowAddButtonInSearchTab":
+        {
+            "expression": "addPanelState.selectedTab.view!='NewTabPageSub' && addPanelState.selectedTab.view!='PaletteTabPageSub' && addPanelState.sourceObjects.length > 0"
+        }
+    },
+    "i18n":
+    {
+        "add":
+        [
+            "CadBomAlignmentConstants"
+        ],
+        "BACK_BUTTON_TITLE":
+        [
+            "BaseMessages"
+        ],
+        "toTitle": [
+            "OccurrenceManagementConstants"
+        ]
+    },
+    "messages": {
+        "soaFailure": {
+        "messageType": "ERROR",
+           "messageText": "{{errorCode}}"
+         }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

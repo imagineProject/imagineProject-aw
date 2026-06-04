@@ -1,0 +1,109 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions":{
+        "loadUpdateSummaryChips":{
+            "actionType":"JSFunction",
+            "method":"loadUpdateSummaryChips",
+            "inputData":{
+                "updateSummaries":"{{subPanelContext.updateSummaryState.updateSummaries}}",
+                "selectedUpdateAction":"{{data.tileRadioButton[0]}}",
+                "subPanelContext":"{{subPanelContext}}"
+            },
+            "deps":"js/Pma1ImpactAnalysisService"
+        },
+        "tileSelected":{
+            "actionType":"JSFunction",
+            "method":"tileSelected",
+            "inputData":{
+                "subPanelContext":"{{subPanelContext}}"
+            },
+            "events": {
+                "success": [{
+                    "name": "Pma1ImpactAnalysis.tileSelectedInUpdatePanel"
+                }]
+            },
+            "deps":"js/Pma1ImpactAnalysisService"
+        },
+        "initialize": {
+            "actionType":"JSFunction",
+            "method":"initializeTile",
+            "inputData":{
+                "data":"{{data}}",
+                "subPanelContext":"{{subPanelContext}}"
+            },
+            "outputData":{
+                "tileRadioButton":""
+            },
+            "deps":"js/Pma1ImpactAnalysisService"
+        }
+    },
+
+    "onEvent":[
+        {
+            "eventId": "Pma1ImpactAnalysis.disableImpactAnalysisModeInCBA",
+            "action": "disableIAModeAndReloadCBA"
+        },
+        {
+            "eventId": "Pma1ImpactAnalysis.clearUpdateProcessFlag",
+            "action": "setUpdateSummaryProgressState",
+            "cacheEventData": true
+        }
+    ],
+    "data":{
+        "selectedUpdateAction":{
+            "displayValue": "updateActionValues",
+            "displayName":"",
+            "type": "STRING",
+            "isRequired":false,
+            "isEditable":true,
+            "isEnabled":true,
+            "dbValue":"{{props.subPanelContext.updateSummary.selectedUpdateAction.dbValue}}",
+            "vertical":false,
+            "labelPosition":"PROPERTY_LABEL_AT_RIGHT"
+
+        },
+        "tileRadioButton":[]
+    },
+    "props":{
+        "sub-panel-context":{
+            "type":"object"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initialize"
+    },
+    
+    "conditions": {
+        
+        "isSameSourceItemTileSelected":{
+            "expression":"subPanelContext.updateSummary.srcItem.uid === subPanelContext.updateSummaryState.selectedTileSummary.srcItem.uid"
+        },
+        "isSameTargetItemTileSelected":{
+            "expression":"subPanelContext.updateSummary.trgItem.uid === subPanelContext.updateSummaryState.selectedTileSummary.trgItem.uid"
+        },
+        "isSameSourceOccurrenceTileSelected":{
+            "expression":"subPanelContext.updateSummary.srcInstances[0].uid === subPanelContext.updateSummaryState.selectedTileSummary.srcInstances[0].uid"
+        },
+        "isSameTargetOccurrenceTileSelected":{
+            "expression":"subPanelContext.updateSummary.trgInstances[0].uid === subPanelContext.updateSummaryState.selectedTileSummary.trgInstances[0].uid"
+        },
+
+        "isSourceTileSelected":{
+            "expression":"conditions.isSameSourceItemTileSelected && conditions.isSameSourceOccurrenceTileSelected"
+        },
+        "isTargetTileSelected":{
+            "expression":"conditions.isSameTargetItemTileSelected && conditions.isSameTargetOccurrenceTileSelected"
+        },
+        "isTileSelected":{
+            "expression":"conditions.isSourceTileSelected && conditions.isTargetTileSelected"
+        }
+    },
+    "i18n": {
+        "Pma1Designs": [
+            "PMA1AutomationMessages"
+        ],
+        "Pma1Parts": [
+            "PMA1AutomationMessages"
+        ]
+    }
+}

@@ -1,0 +1,100 @@
+{
+    "schemaVersion": "1.0.0",
+    "props": {
+        "search-filter-map": {
+            "type": "object"
+        },
+        "node-index": {
+            "type": "NUMBER"
+        }
+    },
+    "data": {
+        "breadcrumbChips": [],
+        "displayBreadcrumbChips": [],
+        "chipsModel": [],
+        "displayOverflowButton": "",
+        "clearAllDisplayName": "",
+        "searchFilterCategoryExpandMore":"{{i18n.searchFilterCategoryExpandMore}}",
+        "overflowConfig": {
+            "overflownChips": [],
+            "hideMore": true
+        }
+    },
+    "actions": {
+        "render": {
+            "method": "Rb0SegmentFilterChipsRenderFunction",
+            "deps": "js/Rb0SegmentFilterChipsService",
+            "options": {
+                "elementRefList": [ "chiplist" ]
+            }
+        },
+        "chipOverflowPopup": {
+            "actionType": "popup",
+            "options": {
+                "placement": "bottom-start",
+                "toggleMode": true,
+                "whenParentScrolls": "close",
+                "forceCloseOthers": false,
+                "clickOutsideToClose": true,
+                "anchor": "closePopupAnchor",
+                "resizeToClose": true
+            }
+        },
+        "onMountActions":{
+            "actionType": "batchJob",
+            "steps":[
+                {
+                    "action":"buildSearchChips"
+                },
+                {
+                    "action":"attachResizeObserver"
+                }
+            ]
+        },
+        "buildSearchChips": {
+            "actionType": "JSFunction",
+            "method": "buildSearchChips",
+            "inputData": {
+                "staticFilterMap": "{{props.searchFilterMap}}"
+            },
+            "outputData": {
+                "breadcrumbChips": ""
+            },
+            "deps": "js/Rb0SegmentFilterChipsService"
+        },
+        "attachResizeObserver": {
+            "actionType": "JSFunction",
+            "method": "attachResizeObserver",
+            "inputData": {
+                "data": "{{data}}",
+                "elementRefList": "{{parameters.elementRefList}}",
+                "nodeIndex": "{{props.nodeIndex}}"
+            },
+            "deps": "js/Rb0SegmentFilterChipsService"
+        },
+        "calculateOverflow": {
+            "actionType": "JSFunction",
+            "method": "calculateOverflow",
+            "inputData": {
+                "elementRefList": "{{parameters.elementRefList}}",
+                "breadcrumbChips": "{{data.breadcrumbChips}}",
+                "searchFilterCategoryExpandMore": "{{i18n.searchFilterCategoryExpandMore}}",
+                "nodeIndex": "{{props.nodeIndex}}"
+            },
+            "outputData": {
+                "displayBreadcrumbChips": "displayChips",
+                "overflowConfig.overflownChips":"overflownChips",
+                "displayOverflowButton": "displayOverflowButton"
+            },
+            "deps": "js/Rb0SegmentFilterChipsService"
+        }
+    },
+    "lifecycleHooks": {
+        "render": "render",
+        "onMount": "onMountActions"
+    },
+    "i18n": {
+        "clear": ["SearchCoreMessages"],
+        "searchFilterCategoryExpandMore": ["SearchCoreMessages"]
+    }
+}

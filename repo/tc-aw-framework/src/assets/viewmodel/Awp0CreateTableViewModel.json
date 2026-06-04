@@ -1,0 +1,85 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "createTableBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "createTable"
+                },
+                {
+                    "action": "closeDialog",
+                    "condition": "data.createdTableData"
+                }
+            ]
+        },
+        "createTable": {
+            "actionType": "JSFunctionAsync",
+            "method": "createTable",
+            "inputData": {
+                "clientScopeUri": "{{data.clientScopeUri.dbValue}}",
+                "columnConfigId": "{{data.columnConfigId.dbValue}}"
+            },
+            "outputData": {
+                "createdTableData": "{{json:createdTableConfigurationJson}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "tableCreated",
+                        "eventData": {
+                            "createdTableData": "{{data.createdTableData}}"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/tableConfigsPwaService"
+        },
+        "closeDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "data": {
+        "clientScopeUri": {
+            "displayName": "{{i18n.clientScopeUri}}",
+            "type": "STRING",
+            "renderingHint": "textbox",
+            "isEditable": true,
+            "isRequired": true,
+            "dbValue": ""
+        },
+        "columnConfigId": {
+            "displayName": "{{i18n.columnConfigId}}",
+            "type": "STRING",
+            "renderingHint": "textbox",
+            "isEditable": true,
+            "isRequired": true,
+            "dbValue": ""
+        }
+    },
+    "dataProviders": {},
+    "i18n": {
+        "clientScopeUri": [
+            "tableConfigsMessages"
+        ],
+        "columnConfigId": [
+            "tableConfigsMessages"
+        ],
+        "createTableTitle": [
+            "tableConfigsMessages"
+        ],
+        "create": [
+            "ZeroCompileCommandMessages"
+        ]
+    },
+    "onEvent": [],
+    "functions": {},
+    "messages": {},
+    "conditions": {}
+}

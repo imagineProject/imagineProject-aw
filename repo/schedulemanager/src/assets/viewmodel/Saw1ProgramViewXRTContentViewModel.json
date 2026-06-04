@@ -1,0 +1,536 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "ganttChartState": {
+            "initialValues": {
+                "zoomLevels": [ "year", "month", "week", "day" ]
+            },
+            "meta": {}
+        },
+        "programViewConfigurations": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "schedule": {
+            "type": "object"
+        },
+        "tree-action-state": {
+            "type": "object"
+        },
+        "selection-data": {
+            "type": "object"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeProgramViewGantt",
+        "onUpdate":{
+            "action": "checkisUpdateReqValue",
+            "observers": [ "viewModel.atomicData.programViewConfigurations.isUpdateReq" ]
+        }
+    },
+    "actions": {
+        "checkisUpdateReqValue":{
+            "actionType":"Event",
+            "method":"Event",
+            "inputData":{
+                "events":[
+                    {
+                        "name":"saw1PrgView.updatePrgView",
+                        "condition":"data.programViewConfigurations.isUpdateReq === true"
+                    }
+                ]
+            }
+        },
+        "updateProgramView": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProjectManagementAw-2019-12-ScheduleManagementAw",
+            "method": "manageProgramView",
+            "inputData": {
+                "programViewInfo": {
+                    "programView": "{{props.subPanelContext.selected}}",
+                    "operationType": "save",
+                    "inputOptions": [ {
+                        "name": "returnProgramViewConfig",
+                        "stringValue": "true"
+                    } ],
+                    "programViewConfiguration": "{{data.programViewConfigurations.configurations}}"
+                }
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaErrorMessage"
+                    }
+                ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "saw1PrgView.reloadData"
+                    }
+                ]
+            }
+        },
+        "initializeProgramViewGantt": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadColumns"
+                },
+                {
+                    "action": "initializeGanttChartState"
+                },
+                {
+                    "action": "loadData"
+                }
+            ]
+        },
+        "initializeGanttChartState": {
+            "actionType": "JSFunction",
+            "method": "initializeProgramViewChartState",
+            "inputData": {
+                "atomicDataRef": "{{data.atomicDataRef}}",
+                "configColumns": "{{data.columns}}"
+            },
+            "outputData": {
+                "isProgramViewInited": "isProgramViewInited",
+                "programViewDataService": "programViewDataService"
+            },
+            "deps": "js/Saw1ProgramViewXRTService"
+        },
+        "arrangeColumns" : {
+            "actionType": "JSFunction",
+            "method": "arrangeColumns",
+            "inputData": {
+                "configColumns": "{{data.columns}}"
+            },
+            "deps": "js/Saw1ProgramViewXRTService"
+
+        },
+        "loadColumns": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [
+                        {
+                            "scope": "LoginUser",
+                            "scopeName": "",
+                            "clientName": "AWClient",
+                            "resetColumnConfig": false,
+                            "columnConfigQueryInfos": [
+                                {
+                                    "clientScopeURI": "Saw1ProgramViewColumns",
+                                    "operationType": "configured",
+                                    "typeNames": [
+                                        "WorkspaceObject"
+                                    ],
+                                    "columnsToExclude": []
+                                }
+                            ],
+                            "businessObjects": [
+                                {}
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "columns": "{{function:getAWColumnInfoList}}"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            }
+        },
+        "reloadProgramView": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearGantt"
+                },
+                {
+                    "action": "loadData"
+                }
+            ]
+        },
+        "reloadColumns": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadColumns"
+                },
+                {
+                    "action": "updateGanttColumns"
+                },
+                {
+                    "action": "resetFlagForAllTasks"
+                },
+                {
+                    "action": "loadPropsForExistingObj"
+                }
+            ]
+        },
+        "resetFlagForAllTasks": {
+            "actionType": "JSFunction",
+            "method": "resetFlagForAllTasks",
+            "inputData": {
+                "atomicDataRef": "{{data.atomicDataRef}}"
+            },
+            "deps": "js/Saw1ProgramViewXRTService"
+        },
+        "updateGanttColumns": {
+            "actionType": "JSFunction",
+            "method": "updateGanttColumns",
+            "inputData": {
+                "atomicDataRef": "{{data.atomicDataRef}}",
+                "configColumns": "{{data.columns}}"
+            },
+            "deps": "js/Saw1ProgramViewXRTService"
+        },
+        "clearGantt": {
+            "actionType": "JSFunction",
+            "method": "clearGantt",
+            "inputData": {
+                "atomicDataRef": "{{data.atomicDataRef}}"
+            },
+            "deps": "js/Saw1ProgramViewXRTService"
+        },
+        "loadInitialDataToProgramView": {
+            "actionType": "JSFunction",
+            "method": "loadInitialDataToProgramView",
+            "inputData": {
+                "response": "{{data.response}}",
+                "atomicDataRef": "{{data.atomicDataRef}}"
+            },
+            "outputData": {
+                "isProgramViewDataInited": "isProgramViewDataInited"
+            },
+            "deps": "js/Saw1ProgramViewXRTService",
+            "events": {
+                "success": [
+                    {
+                        "name": "saw1PrgView.loadInitialData"
+                    }
+                ]
+            }
+
+        },
+        "loadInitialObjects": {
+            "actionType": "JSFunction",
+            "method": "loadInitialObjects",
+            "inputData": {
+                "response": "{{data.response}}",
+                "atomicDataRef": "{{data.atomicDataRef}}",
+                "programViewDataService": "{{data.programViewDataService}}"
+            },
+            "deps": "js/Saw1ProgramViewXRTService"
+
+        },
+        "loadData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProjectManagementAw-2019-12-ScheduleManagementAw",
+            "method": "manageProgramView",
+            "inputData": {
+                "programViewInfo": {
+                    "programView": "{{props.subPanelContext.selected}}",
+                    "operationType": "load",
+                    "contextNodeId" : "{{props.subPanelContext.selected.uid}}",
+                    "referenceNodeId": "",
+                    "inputOptions" : [
+                        {
+                            "name": "returnProgramViewConfig",
+                            "stringValue" : "true"
+                        }
+                    ],
+                    "programViewConfiguration": "{{data.programViewConfigurations.configurations}}"
+                }
+            },
+            "outputData": {
+                "response": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "saw1PrgView.dataFetched"
+                    }
+                ]
+            }
+        },
+        "loadChildData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProjectManagementAw-2019-12-ScheduleManagementAw",
+            "method": "manageProgramView",
+            "inputData": {
+                "programViewInfo": {
+                    "programView": "{{props.subPanelContext.selected}}",
+                    "operationType": "load",
+                    "contextNodeId" : "{{data.eventMap['saw1PrgView.loadSchTasks'].uid}}",
+                    "referenceNodeId": "",
+                    "inputOptions" : [
+                        {
+                            "name": "returnProgramViewConfig",
+                            "stringValue" : "true"
+                        }
+                    ],
+                    "programViewConfiguration": {}
+                }
+            },
+            "outputData": {
+                "childResponse": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "saw1PrgView.childDataFetched"
+                    }
+                ]
+            }
+        },
+        "parseChildData":{
+            "actionType":"JSFunction",
+            "method":"parseChildData",
+            "inputData": {
+                "response": "{{data.childResponse}}"
+            },
+            "outputData": {
+                "childObjs": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "saw1PrgView.displayData"
+                    }
+                ]
+            },
+            "deps":"js/Saw1ProgramViewXRTService"
+        },
+        "displayChildData":{
+            "actionType":"JSFunction",
+            "method":"displayChildData",
+            "inputData": {
+                "childRes": "{{data.childResponse}}",
+                "childObjs": "{{data.childObjs}}",
+                "atomicDataRef": "{{data.atomicDataRef}}",
+                "programViewDataService": "{{data.programViewDataService}}",
+                "contextNodeId" : "{{data.eventMap['saw1PrgView.loadSchTasks'].uid}}"
+            },
+            "outputData": {
+                "valueEvaluated": ""
+            },
+            "deps":"js/Saw1ProgramViewXRTService",
+            "events": {
+                "success": [
+                    {
+                        "condition": "data.valueEvaluated === loadProps",
+                        "name": "saw1PrgView.loadPropsForExistingObj"
+                    }
+                ]
+            }
+        },
+        "loadPropsForExistingObj": {
+            "actionType":"JSFunction",
+            "method":"fetchAndUpdateVisibleTasks",
+            "deps":"js/Saw1ProgramViewCallbacks",
+            "inputData": {
+                "gantt": "",
+                "atomicDataRef": "{{data.atomicDataRef}}"
+            }
+        },
+        "doArrangeEvent": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "saveNewArrangementDefaultEvent",
+                        "condition": "data.eventMap['columnArrange'].arrangeType==='saveAsNewColumnAndLoadAction'"
+                    },
+                    {
+                        "name": "saveUIColumnConfigEvent",
+                        "condition": "data.eventMap['columnArrange'].arrangeType==='saveColumnAndLoadAction' || data.eventMap['columnArrange'].arrangeType==='saveAsNewColumnAndLoadAction'"
+                    },
+
+                        {
+                            "name": "resetColumnConfigEvent",
+                            "condition": "data.eventMap['columnArrange'].arrangeType==='reset'"
+                        }
+                ]
+            }
+        },
+        "saveUIColumnConfigAction": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [
+                        {
+                            "clientScopeURI": "Saw1ProgramViewColumns",
+                            "columnConfigId": "Saw1ProgramViewColumns",
+                            "columns": "{{function:getArrangeCols}}",
+                            "scope": "LoginUser",
+                            "scopeName": ""
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "SaveUIConfigResponse": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "saw1PrgView.reloadColumns"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            }
+        },
+        "resetColumnConfigAction": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [
+                        {
+                            "scope": "LoginUser",
+                            "scopeName": "",
+                            "clientName": "AWClient",
+                            "resetColumnConfig": true,
+                            "columnConfigQueryInfos": [
+                                {
+                                    "clientScopeURI": "Saw1ProgramViewColumns",
+                                    "operationType": "configured",
+                                    "typeNames": [
+                                        "WorkspaceObject"
+                                    ],
+                                    "columnsToExclude": []
+                                }
+                            ],
+                            "businessObjects": [
+                                {}
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "columnSOAResponse": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "saw1PrgView.reloadColumns"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "soaFailureMessage"
+                    }
+                ]
+            }
+        }
+    },
+    "messages":{
+        "soaFailureMessage": {
+           "messageType": "ERROR",
+           "messageText": "{{errorCode}}"
+        }
+    },
+    "functions": {
+        "getArrangeCols":
+        {
+            "functionName": "getArrangeCols",
+            "parameters": [
+                "{{data.eventData}}"
+            ],
+            "deps":"js/Saw1ProgramViewXRTService"
+        },
+        "getAWColumnInfoList": {
+            "functionName": "getAWColumnInfoList",
+            "parameters": [],
+            "deps": "js/Saw1ProgramViewXRTService"
+        }
+    },
+    "onEvent":[
+        {
+            "eventId" : "saw1PrgView.updatePrgView",
+            "action": "updateProgramView"
+        },
+        {
+            "eventId" : "saw1PrgView.reloadData",
+            "action": "reloadProgramView"
+        },
+        {
+            "eventId" : "saw1PrgView.dataFetched",
+            "action": "loadInitialDataToProgramView"
+        },
+        {
+            "eventId" : "saw1PrgView.loadPropsForExistingObj",
+            "action": "loadPropsForExistingObj"
+        },
+        {
+            "eventId" : "saw1PrgView.loadSchTasks",
+            "cacheEventData": true,
+            "action": "loadChildData"
+        },
+        {
+            "eventId" : "saw1PrgView.childDataFetched",
+            "action": "parseChildData"
+        },
+        {
+            "eventId" : "saw1PrgView.loadInitialData",
+            "action": "loadInitialObjects"
+        },
+        {
+            "eventId" : "saw1PrgView.displayData",
+            "action": "displayChildData"
+        },
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent"
+        },
+        {
+            "eventId": "resetColumnConfigEvent",
+            "action": "resetColumnConfigAction"
+        },
+        {
+            "eventId": "saveUIColumnConfigEvent",
+            "action": "saveUIColumnConfigAction"
+        },
+        {
+            "eventId" : "saw1PrgView.reloadColumns",
+            "action": "reloadColumns"
+        }
+
+    ],
+    "conditions": {
+        "isProgramViewDataReady": {
+            "expression": "data.isProgramViewInited === true"
+        }
+    }
+}

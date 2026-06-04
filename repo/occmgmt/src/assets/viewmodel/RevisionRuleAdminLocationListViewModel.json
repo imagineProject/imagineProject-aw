@@ -1,0 +1,96 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports":
+    [
+        "js/aw-list.directive",
+        "js/aw-default-cell.directive",
+        "js/aw-scrollpanel.directive"
+    ],
+
+    "actions":
+    {
+        "reveal":
+        {
+            "actionType": "dataProvider",
+            "method": "listDataProvider"
+        },
+        "deleteRevisionRule":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "deleteObjects",
+            "inputData": {
+                "objects": "{{ctx.mselected}}"
+            }
+        },
+        "loadData":
+        {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData":
+            {
+                "0": {
+                    "searchInput":
+                    {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0SavedSearchProvider",
+                        "searchCriteria":
+                        {
+                            "searchString": "{{ctx.search.criteria.searchString}}"
+                        },
+                        "startIndex": "{{data.dataProviders.listDataProvider.startIndex}}"
+                    },
+                    "inflateProperties": false
+                },
+                "1": {
+                    "types":
+                    [
+                        {
+                            "name": "BusinessObject",
+                            "properties":
+                            [
+                                {
+                                    "name": "awp0CellProperties"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData":
+            {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "ctx.search.totalFound": "totalFound",
+                "ctx.search.totalLoaded": "totalLoaded",
+                "ctx.searchResponseInfo.totalFound": "totalFound",
+                "ctx.searchResponseInfo.lastEndIndex": "endIndex"
+            }
+        }
+    },
+
+    "dataProviders":
+    {
+        "listDataProvider":
+        {
+            "action": "loadData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "single",
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+
+    "onEvent": [
+        {
+            "eventId": "RevisionRuleAdminList.contentLoaded",
+            "action": "reveal"
+        },
+        {
+            "eventId": "RevisionRuleAdmin.deleteRevisionRule",
+            "action": "deleteRevisionRule"
+        }
+    ]
+}

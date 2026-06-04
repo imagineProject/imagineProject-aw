@@ -1,0 +1,693 @@
+{
+  "schemaVersion": "1.0.0",
+  "pasteHandlers": {
+    "aceDefaultPasteHandler": {
+      "action": "aceDefaultPasteAction",
+      "activeWhen": {
+        "condition": "conditions.isAceDefaultPasteHandlerActive"
+      }
+    },
+    "aceDefaultPasteActionSWC": {
+      "action": "aceDefaultPasteActionSWC",
+      "activeWhen": {
+        "condition": "conditions.isAceSWCDefaultPasteHandlerActive"
+      }
+    },
+    "aceDefaultPasteAttachmentOverride": {
+      "action": "aceDefaultPasteAttachmentOverride",
+      "activeWhen": {
+        "condition": "conditions.isAcePasteAttachmentOverrideActive"
+      }
+    },
+    "defaultPasteHandlerForSession": {
+      "action": "sessionDefaultPasteAction",
+      "activeWhen": {
+        "condition": "conditions.isPasteHandlerActiveForProductsInSession"
+      }
+    },
+    "pasteHandlerForPartStructure": {
+      "action": "aceDefaultPasteAction",
+      "activeWhen": {
+        "condition": "conditions.isSourceAndTargetValidPartElement"
+      }
+    },
+    "pasteHandlerForCbaStructure": {
+      "action": "aceDefaultPasteAction",
+      "activeWhen": {
+        "condition": "conditions.isSourceAndTargetValidElement"
+      }
+    }
+  },
+  "actions": {
+    "aceDefaultPasteAction": {
+      "actionType": "JSFunctionAsync",
+      "method": "aceDefaultPasteHandler",
+      "deps": "js/aceDefaultPasteHandler",
+      "inputData": {
+        "targetObject": "{{pasteContext.targetObject}}",
+        "sourceObject": "{{pasteContext.sourceObject}}",
+        "context": "{{pasteContext}}"
+      },
+      "outputData": {
+        "addElementResponse": "addElementResponse",
+        "totalObjectsAdded": "totalObjectsAdded",
+        "addElementInput": "addElementInput"
+      }
+    },
+    "aceDefaultPasteActionSWC": {
+      "actionType": "JSFunctionAsync",
+      "method": "aceDefaultPasteHandlerForSWC",
+      "deps": "js/aceDefaultPasteHandler",
+      "inputData": {
+        "targetObject": "{{pasteContext.targetObject}}",
+        "sourceObject": "{{pasteContext.sourceObject}}",
+        "context": "{{pasteContext}}"
+      },
+      "outputData": {
+        "addToBookMarkResponse": "addToBookMarkResponse"
+      },
+      "actionMessages": {
+        "failure": [
+          {
+            "message": "addElementsToBookmarkFailureMessage"
+          }
+        ]
+      }
+    },
+    "aceDefaultPasteAttachmentOverride": {
+      "actionType": "JSFunction",
+      "method": "attachmentOverridePasteHandler",
+      "deps": "js/aceDefaultPasteHandler",
+      "inputData": {
+        "targetObject": "{{pasteContext.targetObject}}",
+        "sourceObject": "{{pasteContext.sourceObject}}",
+        "relationType": "{{pasteContext.relationType}}",
+        "occContext": "{{pasteContext.occContext}}"
+      },
+      "actionMessages": {
+        "failure": [
+          {
+            "message": "aceDefaultPasteAttachmentOverrideFailure"
+          }
+        ]
+      }
+    },
+    "sessionDefaultPasteAction": {
+      "actionType": "JSFunction",
+      "method": "sessionPasteHandler",
+      "deps": "js/occmgmtSubsetUtils"
+    }
+  },
+  "conditions": {
+    "isAceDefaultPasteHandlerActive": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Awb0PositionedElement"
+            }
+          },
+          {
+            "$or": [
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Awb0PositionedElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "ItemRevision"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Ase0LogicalElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Fnd0LogicalBlockRevision"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Ase0FunctionalElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Arm0RequirementSpecElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Arm0RequirementElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Arm0ParagraphElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Awb0Connection"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "isAceSWCDefaultPasteHandlerActive": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Awb0SavedBookmark"
+            }
+          },
+          {
+            "$or": [
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Awb0PositionedElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "ItemRevision"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Ase0FunctionalElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Ase0LogicalElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Arm0RequirementSpecElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Arm0RequirementElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Arm0ParagraphElement"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "isAcePasteAttachmentOverrideActive": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "ItemRevision"
+            }
+          },
+          {
+            "$or": [
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Dataset"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "ItemRevision"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "DocumentRevision"
+                }
+              }
+            ]
+          },
+          {
+            "$source": "ctx.sublocation.clientScopeURI",
+            "$query": {
+              "$eq": "Awb0OccurrenceManagement"
+            }
+          }
+        ]
+      }
+    },
+    "isPasteHandlerActiveForProductsInSession": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Fnd0AppSession"
+            }
+          },
+          {
+            "$or": [
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "ItemRevision"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Awb0Element"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "isSourceAndTargetValidPartElement": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "pasteContext.targetObject",
+            "$query": {
+              "$typeOf": "Awb0PartElement"
+            }
+          },
+          {
+            "$or": [
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Awb0PartElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "ItemRevision"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Awb0PositionedElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "PartRevision"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Ase0LogicalElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Fnd0LogicalBlockRevision"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Ase0FunctionalElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Arm0RequirementSpecElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Arm0RequirementElement"
+                }
+              },
+              {
+                "$source": "pasteContext.sourceObject",
+                "$query": {
+                  "$typeOf": "Arm0ParagraphElement"
+                }
+              }
+            ]
+          },
+          {
+            "$source": "ctx.sublocation.nameToken",
+            "$query": {
+              "$neq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+            }
+          }
+        ]
+      }
+    },
+    "isSourceAndTargetValidElement": {
+      "expression": {
+        "$and": [
+          {
+            "$or": [
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Awb0PartElement"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Awb0PartElement"
+                    }
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              },
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Awb0PartElement"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Awb0PositionedElement"
+                    }
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              },
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Awb0PositionedElement"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Awb0PartElement"
+                    }
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              },
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Awb0PositionedElement"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Awb0PositionedElement"
+                    }
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              },
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Fgf0PartitionElement"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Awb0Element"
+                    }
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              },
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Awb0PartElement"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "ItemRevision"
+                    }
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              },
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Awb0PartElement"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "PartRevision"
+                    }
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              },
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Awb0PartElement"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Ase0LogicalElement"
+                    }
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              },
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Awb0PartElement"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Fnd0LogicalBlockRevision"
+                    }
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              },
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Awb0PartElement"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Ase0FunctionalElement"
+                    }
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              },
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Awb0PartElement"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Arm0RequirementSpecElement"
+                    }
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              },
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Awb0PartElement"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Arm0RequirementElement"
+                    }
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              },
+              {
+                "$and": [
+                  {
+                    "$source": "pasteContext.targetObject",
+                    "$query": {
+                      "$typeOf": "Awb0PartElement"
+                    }
+                  },
+                  {
+                    "$source": "pasteContext.sourceObject",
+                    "$query": {
+                      "$typeOf": "Arm0ParagraphElement"
+                    }
+                  },
+                  {
+                    "$source": "ctx.sublocation.nameToken",
+                    "$query": {
+                      "$eq": "com.siemens.splm.client.cba.CADBOMAlignment:CBASublocation"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "$source": "pasteContext.isDragDropIntent",
+            "$query": {
+              "$eq": false
+            }
+          }
+        ]
+      }
+    }
+  },
+  "messages": {
+    "aceDefaultPasteAttachmentOverrideFailure": {
+      "messageType": "ERROR",
+      "messageText": "{{errorCode}}"
+    },
+    "addElementsToBookmarkFailureMessage": {
+      "messageType": "ERROR",
+      "messageText": "{{errorCode}}"
+    }
+  }
+}

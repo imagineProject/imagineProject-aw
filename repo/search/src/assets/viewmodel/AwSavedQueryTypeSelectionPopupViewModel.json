@@ -1,0 +1,326 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {
+        "render": "render",
+        "onMount": "getSearchTypesTree",
+        "onUpdate": [
+            {
+                "action": "filterTypesBySearchBox",
+                "observers": [ "viewModel.data.searchBox.dbValue" ]
+            }
+        ],
+        "onUnmount": "clearContextForTypeSelectionPanel"
+    },
+    "actions": {
+        "render": {
+            "method": "awSavedQueryTypeSelectionPopupRenderFunction",
+            "deps": "js/AwSavedQueryTypeSelectionPopupService"
+        },
+        "getSearchTypes": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Core-2017-11-Type",
+            "method": "getSubTypeHierarchicalTrees",
+            "inputData": {
+                "givenTypes": [
+                    {
+                        "typeInternalName": "POM_object",
+                        "clientId": ""
+                    }
+                ]
+            },
+            "outputData": {
+                "responseFromSOA": ""
+            }
+        },
+        "getSearchTypesForSubType": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Core-2017-11-Type",
+            "method": "getSubTypeHierarchicalTrees",
+            "inputData": {
+                "givenTypes": [
+                    {
+                        "typeInternalName": "{{props.subPanelContext.selectedNode.originalReferenceType}}",
+                        "clientId": ""
+                    }
+                ]
+            },
+            "outputData": {
+                "responseFromSOA": ""
+            }
+        },
+        "renameKeys": {
+            "actionType": "JSFunction",
+            "method": "renameKeysForTypeHierarchyTree",
+            "inputData": {
+                "tempTree": "{{data.responseFromSOA.treeRootNodes}}"
+            },
+            "outputData": {
+                "tempTree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "expandRoot": {
+            "actionType": "JSFunction",
+            "method": "expandRoot",
+            "inputData": {
+                "tempTree": "{{data.tempTree}}"
+            },
+            "outputData": {
+                "tree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "filterTypesBySearchBox": {
+            "actionType": "JSFunction",
+            "method": "filterTypesBySearchBox",
+            "inputData": {
+                "searchQuery": "{{data.searchBox.dbValue}}",
+                "tree": "{{data.tree}}"
+            },
+            "outputData": {
+                "filteredTree": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "getSearchTypesTree": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getAddClausePanelDisplayNameInternalNamePref"
+                },
+                {
+                    "action": "getSearchTypes",
+                    "condition": "!props.subPanelContext.isSubTypeSelection"
+                },
+                {
+                    "action": "getSearchTypesForSubType",
+                    "condition": "props.subPanelContext.isSubTypeSelection"
+                },
+                {
+                    "action": "renameKeys"
+                },
+                {
+                    "action": "expandRoot"
+                }
+            ]
+        },
+        "confirmSelectTypeNonReferencedByProperty": {
+            "actionType": "JSFunctionAsync",
+            "method": "confirmSelectTypeNonReferencedByProperty",
+            "inputData": {
+                "selectedType": "{{data.selectedType}}",
+                "selectedNode": "{{props.subPanelContext.selectedNode}}",
+                "parentViewModel": "{{props.subPanelContext.parentViewModel}}"
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "updateSelectedType": {
+            "actionType": "JSFunction",
+            "method": "updateSelectedType",
+            "inputData": {
+                "selectedType": "{{data.selectedType}}",
+                "node": "{{parameters.eventData.node}}"
+            },
+            "outputData": {
+                "selectedType": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "updateSelectedTypeBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateSelectedType"
+                },
+                {
+                    "action": "collapseTypeSection"
+                }
+            ]
+        },
+        "confirmSelectTypeBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "confirmSelectTypeNonReferencedByProperty",
+                    "condition": "!props.subPanelContext.isReferencedBy"
+                },
+                {
+                    "action": "confirmSelectProperty",
+                    "condition": "props.subPanelContext.isReferencedBy"
+                },
+                {
+                    "action": "changeActiveViewToAddClause"
+                }
+            ]
+        },
+        "changeActiveViewToAddClause": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.subPanelContext.context.searchState}}",
+                "value": {
+                    "activeView": "addClause"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "setIsTypeSelectionCollapsed": {
+            "actionType": "JSFunction",
+            "method": "setIsTypeSelectionCollapsed",
+            "inputData": {
+                "eventData": "{{data.eventData}}"
+            },
+            "outputData": {
+                "isTypeSectionCollapsed": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "setIsTypeSelectionCollapsedBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "clearSelectedProperty",
+                    "condition": "!eventData.isCollapsed"
+                },
+                {
+                    "action": "setIsTypeSelectionCollapsed"
+                }
+            ]
+        },
+        "clearSelectedProperty": {
+            "actionType": "JSFunction",
+            "method": "clearSelectedProperty",
+            "inputData": {},
+            "outputData": {
+                "selectedProperty": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "collapseTypeSection": {
+            "actionType": "JSFunction",
+            "method": "collapseTypeSection",
+            "inputData": {},
+            "outputData": {
+                "isTypeSectionCollapsed": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "confirmSelectProperty": {
+            "actionType": "JSFunction",
+            "method": "confirmSelectProperty",
+            "inputData": {
+                "referencedByNode": "{{props.subPanelContext.selectedNode}}",
+                "selectedType": "{{data.selectedType.value}}",
+                "selectedProperty": "{{data.selectedProperty}}",
+                "parentViewModel": "{{props.subPanelContext.parentViewModel}}"
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "updateSelectedProperty": {
+            "actionType": "JSFunction",
+            "method": "updateSelectedType",
+            "inputData": {
+                "selectedProperty": "{{data.selectedProperty}}",
+                "node": "{{parameters.eventData.node}}"
+            },
+            "outputData": {
+                "selectedProperty": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "clearContextForTypeSelectionPanel": {
+            "actionType": "JSFunction",
+            "method": "clearContextForTypeSelectionPanel",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.context.searchState}}"
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "getAddClausePanelDisplayNameInternalNamePref": {
+            "actionType": "JSFunction",
+            "method": "getAddClausePanelDisplayNameInternalNamePref",
+            "outputData": {
+                "displayMode": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        },
+        "switchViewMode": {
+            "actionType": "JSFunction",
+            "method": "switchViewMode",
+            "inputData": {
+                "newViewMode": "{{parameters.eventData.newViewMode}}"
+            },
+            "outputData": {
+                "displayMode": ""
+            },
+            "deps": "js/AwSavedQueryAddClauseService"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "typeSelectionTree.treeNodeSelected",
+            "action": "updateSelectedTypeBatchJob",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "awPanelSection.collapse",
+            "action": "setIsTypeSelectionCollapsedBatchJob",
+            "cacheEventData": true,
+            "criteria": {
+                "name": "typeSection"
+            }
+        },
+        {
+            "eventId": "propertySelectionTree.treeNodeSelected",
+            "action": "updateSelectedProperty",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Awp0SavedQueryAddClausePanelChangeViewMode",
+            "action": "switchViewMode",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+    ],
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "data": {
+        "searchBox": {
+            "dbValue": "",
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "true",
+            "propertyDisplayName": "",
+            "requiredText": "{{i18n.filterTypes}}"
+        },
+        "selectedProperty": "",
+        "isTypeSectionCollapsed": false
+    },
+    "dataProviders": {},
+    "i18n": {
+        "select": [
+            "SearchMessages"
+        ],
+        "addCommandTitle": [
+            "SearchMessages"
+        ],
+        "filterTypes": [
+            "SearchMessages"
+        ],
+        "object_type": [
+            "SearchMessages"
+        ],
+        "propertyText": [
+            "SearchMessages"
+        ]
+    }
+}

@@ -1,0 +1,137 @@
+{
+    "schemaVersion" : "1.0.0",
+    "i18n":
+    {
+        "failedToApplyEffectivity":[ "OccurrenceManagementConstants"],
+        "filter": [ "OccurrenceManagementConstants"],
+        "addElementBtn":[ "OccurrenceManagementConstants" ]
+    },
+    "functions": {
+        "getExistingAndSearchedGroupEffectivities": {
+            "functionName": "getExistingAndSearchedGroupEffectivities",
+            "parameters": ["{{props.subPanelContext.occContext}}", "{{data.dataProviders.performSearchForSharedEffectivities.selectedObjects}}"]
+        }
+    },
+    "dataProviders":
+    {
+        "performSearchForSharedEffectivities":
+        {
+            "action": "performSearchForSharedEffectivitiesAction",
+            "response": "{{data.effectivitiesFound}}",
+            "totalFound": "{{data.effectivitiesTotalFound}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+    "data" :
+    {
+        "filterBox": {
+          "displayName" :"{{i18n.filter}}",
+          "type": "STRING",
+          "dbValue" :""
+        }
+    },
+    "actions":
+    {
+        "searchAndAddGroupEffectivity": {
+            "actionType": "JSFunction",
+            "method": "applyConfiguration",
+            "inputData":{
+                "value": {
+                    "configContext": {
+                        "r_uid": "{{data.subPanelContext.occContext.productContextInfo.props.awb0CurrentRevRule.dbValues[0]}}",
+                        "eg_uids": "{{function:getExistingAndSearchedGroupEffectivities}}",
+                        "de": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EffDate.dbValues[0]}}",
+                        "var_uids": "{{props.subPanelContext.occContext.productContextInfo.props.awb0VariantRules.dbValues}}",
+                        "iro_uid": "{{props.subPanelContext.occContext.productContextInfo.props.awb0VariantRuleOwningRev.dbValues[0]}}",
+                        "startDate": "{{data.subPanelContext.occContext.productContextInfo.props.awb0StartEffDates.dbValues[0]}}",
+                        "endDate": "{{data.subPanelContext.occContext.productContextInfo.props.awb0EndEffDates.dbValues[0]}}",
+                        "startFreshNavigation": true
+                    },
+                    "transientRequestPref": {
+                        "jitterFreePropLoad" : true,
+                        "userGesture": "EFFECTIVITY_CHANGE"
+                    }
+                },
+                "occContext": "{{data.subPanelContext.occContext}}"
+            },
+            "events": {
+                "success": [{
+                    "name": "navigateToGroupEffectivitiesView"
+                }]
+            },
+            "deps": "js/effectivityUnitGroupTableService"
+        },
+        "navigateToGroupEffectivitiesView":{
+            "actionType": "JSFunction",
+            "method": "goToPrevPanel",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}"
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+
+        "getAllSharedEffectivitiesAction":
+        {
+            "actionType": "dataProvider",
+            "method": "performSearchForSharedEffectivities"
+        },
+
+        "performSearchForSharedEffectivitiesAction":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData":
+            {
+                "searchInput":
+                {
+                    "maxToLoad": 20,
+                    "maxToReturn": 20,
+                    "providerName": "Awb0EffectivityProvider",
+                    "searchFilterFieldSortType": "Alphabetical",
+                    "startIndex": "{{data.dataProviders.performSearchForSharedEffectivities.startIndex}}",
+                    "searchCriteria":
+                    {
+                        "effectivityId": "{{data.filterBox.dbValue}}",
+                        "effectivityType": "groupEffectivity"
+                    },
+                    "searchFilterMap":
+                    {
+                    },
+                    "searchSortCriteria":
+                    [
+                    ],
+                    "attributesToInflate":
+                    [
+                    ],
+                    "internalPropertyName": ""
+                }
+            },
+            "outputData":
+            {
+                "effectivitiesFound": "searchResults",
+                "effectivitiesTotalFound": "totalFound"
+            }
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "getAllSharedEffectivitiesAction"
+    },
+
+    "onEvent": [
+        {
+            "eventId": "navigateToGroupEffectivitiesView",
+            "action": "navigateToGroupEffectivitiesView"
+        }
+    ],
+     "conditions":{
+        "isAnyItemSelectedFromSearchPanelList":{
+            "expression" : "data.dataProviders.performSearchForSharedEffectivities.selectedObjects.length>0"
+        }
+     },
+     "props": {
+         "sub-panel-context": {
+             "type": "object"
+         }
+     }
+}

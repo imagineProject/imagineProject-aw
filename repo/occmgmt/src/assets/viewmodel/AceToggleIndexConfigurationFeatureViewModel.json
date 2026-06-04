@@ -1,0 +1,145 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports": [
+                "js/aw-panel-section.directive",
+                "js/visible-when.directive",
+                "js/aw-checkbox.directive"
+               ],
+
+    "actions":
+    {
+        "initializeToggleIndexConfigurationSection":
+        {
+            "actionType": "dataProvider",
+            "method": "initializeToggleIndexConfigurationInfo"
+        },
+
+        "initializeToggleIndexConfigurationInfo":
+        {
+            "actionType": "JSFunction",
+            "method": "getInitialToggleIndexConfigurationData",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "subPanelContext": "{{subPanelContext}}"
+            },
+        "deps": "js/aceToggleIndexConfigurationService"
+        },
+
+       "toggleIndexConfiguration":
+       {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [
+                    {
+                        "name": "awConfigPanel.applyIndexedConfigurationToggled",
+                        "eventData":
+                        {
+                            "toggleValue": "{{data.occmgmtIndexUpdateDateLabelText.dbValue}}"
+                        },
+                        "condition":"data.occmgmtIndexUpdateDateLabelText.dbValue != data.isFullTextFeatureSupported"
+                    }
+                ]
+            }
+       },
+
+       "performToggleIndexConfiguration": {
+           "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "deps": "js/occmgmtUtils",
+            "inputData": {
+                "path": "",
+                "value": {
+                    "persistentRequestPref": {
+                        "useProductIndex": "{{data.occmgmtIndexUpdateDateLabelText.dbValue}}"
+                    },
+                    "transientRequestPref": {
+                        "startFreshNavigation": true
+                    },
+                    "pwaReset": true
+                },
+                "target": "{{props.subPanelContext.occContext}}"
+            }
+        },
+
+        "setIndexOffProductListInLocalStorage": {
+            "actionType": "JSFunction",
+            "method": "setIndexOffProductListInLocalStorage",
+            "inputData": {
+                "ignoreIndexForPCIs": "{{props.subPanelContext.occContext.persistentRequestPref.ignoreIndexForPCIs}}"
+            },
+            "deps": "js/aceToggleIndexConfigurationService"
+        },
+
+        "setIndexOffProductListInLocalStorageOnConfigurationChange": {
+            "actionType": "JSFunction",
+            "method": "setIndexOffProductListInLocalStorageOnConfigurationChange",
+            "inputData": {
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "deps": "js/aceToggleIndexConfigurationService"
+        }
+    },
+
+    "dataProviders":
+    {
+        "initializeToggleIndexConfigurationInfo":
+        {
+            "action": "initializeToggleIndexConfigurationInfo"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeToggleIndexConfigurationSection",
+        "onUpdate": [ {
+            "action": "setIndexOffProductListInLocalStorage",
+            "observers": [ "props.subPanelContext.occContext.persistentRequestPref.ignoreIndexForPCIs" ]
+        },
+        {
+            "action": "setIndexOffProductListInLocalStorageOnConfigurationChange",
+            "observers": [ "props.subPanelContext.occContext.configContext" ]
+        } ]
+    },
+    "onEvent": [
+        {
+            "eventId": "productContextChangedEvent",
+            "action": "initializeToggleIndexConfigurationSection"
+        },
+        {
+           "eventId": "awConfigPanel.applyIndexedConfigurationToggled",
+           "action": "performToggleIndexConfiguration"
+        }
+    ],
+
+    "messages":
+    {
+    },
+
+    "data":
+    {
+        "currentIndexDate":
+        {
+            "uiValue": "{{data.currentIndexDate}}",
+            "type": "STRING"
+        },
+        "occmgmtIndexUpdateDateLabelText":
+        {
+            "dbValue": "{{props.subPanelContext.occContext.supportedFeatures.Awb0FullTextSearchFeature}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "i18n":
+    {
+        "occmgmtIndexUpdateDateLabelText": ["OccurrenceManagementConstants"]
+    }
+}

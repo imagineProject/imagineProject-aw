@@ -1,0 +1,409 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "participantReassigntableColProv_1": [
+        {
+            "name": "participantType",
+            "displayName": "{{i18n.participantType}}",
+            "minWidth": 100,
+            "width": 300,
+            "pinnedLeft": false,
+            "isTableCommand": false,
+            "enableColumnHiding": false
+        },
+        {
+            "name": "object",
+            "displayName": "{{i18n.object}}",
+            "width": 300,
+            "isTreeNavigation": false,
+            "isTableCommand": false,
+            "minWidth": 100,
+            "enableColumnHiding": false
+        },
+        {
+            "name": "previousAssignment",
+            "displayName": "{{i18n.previousAssignment}}",
+            "width": 200,
+            "isTreeNavigation": false,
+            "isTableCommand": false,
+            "minWidth": 100,
+            "enableColumnHiding": false
+        },
+        {
+            "name": "newAssignment",
+            "displayName": "{{i18n.newAssignment}}",
+            "width": 200,
+            "isTreeNavigation": false,
+            "isTableCommand": false,
+            "minWidth": 100,
+            "enableColumnHiding": false
+        }
+    ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "provider": {
+            "type": "object"
+        }
+    },
+    "actions": {
+        "initializeParticipantTable": {
+            "actionType": "JSFunctionAsync",
+            "method": "initializeParticipantTable",
+            "deps": "js/Awp0ImpactedWorkflowTasks"
+        },
+        "loadRowObject": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadRowObject",
+            "inputData": {
+                "addUserPanelState" : "{{ctx.state.params.addUserPanelState}}",
+                "participantType": "{{function:getParticipantType}}",
+                "object": "{{function:getObject}}",
+                "newassignee": "{{ctx.state.params.toAssignee}}",
+                "oldAssignee": "{{function:getOldAssignee}}",
+                "ctx": "{{ctx}}",
+                "dispValOldAssignee": "{{function:getdispValOldAssignee}}"
+            },
+            "outputData": {
+                "loadResult": ""
+            },
+            "deps": "js/Awp0ImpactedWorkflowTasks"
+        },
+        "impactedWorkflowTasksNavigateToBack": {
+            "actionType": "JSFunction",
+            "method": "goBack",
+            "deps": "js/locationNavigation.service"
+        },
+        "loadimpactedWftInfoResults":{
+            "actionType": "JSFunction",
+            "method": "loadimpactedWftInfoResults",
+            "inputData": {
+                "addUserPanelState" : "{{ctx.state.params.addUserPanelState}}",
+                "data": "{{data}}",
+                "subPanelContext" : "{{subPanelContext}}",
+                "ctx" : "{{ctx}}"
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "searchResults",
+                "ctx.impactedTasks" : "impactedTasks",
+                "ctx.originalImpactedTasksList" : "originalImpactedTasksList",
+                "dataProviders.impactedWorkflowTasksInfoSearch.columnConfig": "columnConfig",
+                "dataProviders.impactedWorkflowTasksInfoSearch.objectSetUri": "objectSetUri",
+                "data.columns1" : "columns1"
+            },
+            "deps": "js/Awp0ImpactedWorkflowTasks"
+        },
+        "loadParticipantTableColumns": {
+            "actionType": "JSFunction",
+            "method": "loadParticipantTableColumns",
+            "inputData": {
+                "columns" : "{{data.participantReassigntableColProv_1}}",
+                "showRemove": "{{conditions.showRemove}}",
+                "showAdd": "{{conditions.showAdd}}"
+            },
+            "outputData": {
+                "dataProviders.participantReassignDataProvider.columnConfig": "columnConfig"
+            },
+            "deps": "js/Awp0ImpactedWorkflowTasks"
+        },
+        "resetColumnConfigForRemove": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [{
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos": [{
+                            "clientScopeURI": "Awp0PreviewImpactedWorkflowTaskForRemove",
+                            "operationType": "configured",
+                            "typeNames": [
+                                "WorkspaceObject"
+                            ],
+                            "columnsToExclude": []
+                        }],
+                        "businessObjects": [
+                            {}
+                        ]
+                    }]
+                }
+            },
+            "outputData": {
+                "dataProviders.impactedWorkflowTasksInfoSearch.columnConfigs": "columnConfigurations[0].columnConfigurations[0]"
+            }
+        },
+        "resetColumnConfigForAddReplace": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [{
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos": [{
+                            "clientScopeURI": "Awp0PreviewImpactedWorkflowTask",
+                            "operationType": "configured",
+                            "typeNames": [
+                                "WorkspaceObject"
+                            ],
+                            "columnsToExclude": []
+                        }],
+                        "businessObjects": [
+                            {}
+                        ]
+                    }]
+                }
+            },
+            "outputData": {
+                "dataProviders.impactedWorkflowTasksInfoSearch.columnConfigs": "columnConfigurations[0].columnConfigurations[0]"
+            }
+        },
+        "resetColumnConfig": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "resetColumnConfigForRemove",
+                    "condition": "conditions.showRemove"
+                },
+                {
+                    "action": "resetColumnConfigForAddReplace",
+                    "condition": "conditions.showAdd || conditions.showReplace"
+                }
+            ]
+        },
+        "doArrangeEvent" : {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "saveColumnConfigDataForRemove": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [{
+                        "clientScopeURI": "Awp0PreviewImpactedWorkflowTaskForRemove",
+                        "columnConfigId": "{{data.dataProviders.impactedWorkflowTasksInfoSearch.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.impactedWorkflowTasksInfoSearch.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    }]
+                }
+            },
+            "outputData": {}
+        },
+        "saveColumnConfigDataForAddReplace": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [{
+                        "clientScopeURI": "Awp0PreviewImpactedWorkflowTask",
+                        "columnConfigId": "{{data.dataProviders.impactedWorkflowTasksInfoSearch.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.impactedWorkflowTasksInfoSearch.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    }]
+                }
+            },
+            "outputData": {}
+        },
+        "saveColumnConfigData": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "saveColumnConfigDataForRemove",
+                    "condition": "conditions.showRemove"
+                },
+                {
+                    "action": "saveColumnConfigDataForAddReplace",
+                    "condition": "conditions.showAdd || conditions.showReplace"
+                }
+            ]
+        }
+    },
+    "columnProviders": {
+        "impactedWorkflowTasksColumnProvider":
+        {
+            "saveColumnAndLoadAction": "loadimpactedWftInfoResults",
+            "resetColumnAction": "resetColumnConfig",
+            "saveColumnAction": "saveColumnConfigData",
+            "columns": "{{dataProviders.impactedWorkflowTasksInfoSearch.columnConfig.columns1}}",
+            "columnInfos": "{{data.columns1}}",
+            "columnFilters": "{{filterFacetInput.columnFilters}}"
+        },
+        "participantReassigntableColProv": {
+            "loadColumnAction": "loadParticipantTableColumns",
+            "columns": "{{data.columns}}",
+            "sortCriteria": [],
+            "frozenColumnIndex": -1
+        }
+    },
+    "dataProviders": {
+        "participantReassignDataProvider": {
+            "action": "loadRowObject",
+            "response": "{{data.loadResult.rowObject}}",
+            "totalFound": "{{data.loadResult.rowObjecttotalFound}}",
+            "selectionModelMode": "single"
+        },
+        "impactedWorkflowTasksInfoSearch": {
+            "action": "loadimpactedWftInfoResults",
+            "response": "{{data.searchResults}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "grids": {
+        "participantToBeReassignTable": {
+            "columnProvider": "participantReassigntableColProv",
+            "dataProvider": "participantReassignDataProvider",
+            "enableArrangeMenu": false,
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableGridMenu": false,
+                "enablePinning": false,
+                "enableSorting": false
+            }
+        },
+        "impactedWorkflowTasksTable": {
+            "dataProvider": "impactedWorkflowTasksInfoSearch",
+            "columnProvider": "impactedWorkflowTasksColumnProvider",
+            "addIconColumn": true,
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "maxRowsToShow": 50,
+                "enablePinning": true,
+                "isFilteringEnabled": true,
+                "enableSorting": true
+            }
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent"
+        }
+    ],
+    "functions": {
+        "getFromAssignee": {
+            "functionName": "getFromAssignee",
+            "parameters": [
+                "{{ctx.state.params.addUserPanelState.selectedObject}}",
+                "{{ctx.state.params.addUserPanelState.selParticipantObject}}",
+                "{{ctx.state.params.addUserPanelState.participantType}}",
+                "{{ctx}}"
+            ]
+        },
+        "getParticipantType": {
+            "functionName": "getParticipantType",
+            "parameters": [
+                "{{ctx.state.params}}"
+            ]
+        },
+        "getObject": {
+            "functionName": "getObject",
+            "parameters": [
+                "{{ctx.state.params}}",
+                "{{conditions.showAdd}}"
+            ]
+        },
+        "getOldAssignee": {
+            "functionName": "getOldAssignee",
+            "parameters": [
+                "{{ctx.state.params}}"
+            ]
+        },
+        "getOldAssigneeUid": {
+            "functionName": "getOldAssigneeUid",
+            "parameters": [
+                "{{ctx.state.params}}"
+            ]
+        },
+        "getdispValOldAssignee": {
+            "functionName": "getdispValOldAssignee",
+            "parameters": [
+                "{{ctx.state.params}}"
+            ]
+        },
+        "getImpactedTaskResponse": {
+            "functionName": "getImpactedTaskResponse",
+            "parameters": [
+                "{{data}}",
+                "{{ctx}}"
+            ]
+        }
+    },
+    "conditions": {
+        "showReplace": {
+            "expression": "ctx.state.params.toAssignee != undefined && ctx.state.params.oldAssigneeUid != undefined"
+        },
+        "showRemove": {
+            "expression": "ctx.state.params.toAssignee === undefined"
+        },
+        "showAdd": {
+            "expression": "ctx.state.params.oldAssigneeUid === undefined"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeParticipantTable"
+    },
+    "i18n": {
+        "CancelText": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "ModifyParticipantsOnly": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "participantType": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "object": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "previousAssignment": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "newAssignment": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "ModifyParticipantsReassignTasks": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "ImpactedWorkflowTasks": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "ParticipantToBeReassign": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "ParticipantToBeAdded": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "ParticipantToBeRemoved": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "showAddInfo": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "showReplaceInfo": [
+            "WorkflowCommandPanelsMessages"
+        ],
+        "showRemoveInfo": [
+            "WorkflowCommandPanelsMessages"
+        ]
+    }
+}

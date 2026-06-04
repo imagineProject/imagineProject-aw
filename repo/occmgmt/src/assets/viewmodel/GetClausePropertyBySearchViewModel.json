@@ -1,0 +1,187 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-panel-body.directive",
+        "js/aw-search-box.directive",
+        "js/aw-list.directive",
+        "js/aw-default-cell.directive"
+    ],
+
+    "actions": {
+        "search": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2013-05-DataManagement",
+            "method": "getSubTypeNames",
+            "inputData": {
+                "inBOTypeNames": [ {
+                    "typeName": "{{function:getTypeFilter}}",
+                    "contextName": "subtypes",
+                    "exclusionPreference": ""
+                } ]
+            },
+            "outputData": {
+                "typeNames": "{{function:processSoaResponseForBOTypes}}"
+            },
+            "deps": "js/addRevRuleClausePropertyService",
+            "events": {
+                "success": [ {
+                    "name": "searchClauseProperty.doSearch"
+                } ],
+                "failure": [ {
+                    "name": "searchClauseProperty.doSearch"
+                } ]
+            }
+        },
+        "doSearch": {
+            "actionType": "dataProvider",
+            "method": "searchClauseProperty"
+        },
+        "searchForClauseProperty": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": ""
+                    },
+                    "inflateProperties": false,
+                    "saveColumnConfigData": {},
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Awp0SavedQuerySearchProvider",
+                        "searchCriteria": "{{function:getSearchCriteria}}",
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.searchClauseProperty.startIndex}}"
+                        },
+                        "searchFilterFieldSortType": "Priority"
+                    }
+                }
+            },
+            "outputData": {
+                "foldersTotalFound": "totalFound",
+                "foldersFound": "{{json:searchResultsJSON}}",
+                "ctx.search.totalFound": "totalFound",
+                "ctx.search.totalLoaded": "totalLoaded",
+                "ctx.search.lastEndIndex": "endIndex"
+
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "condition": "errorCode.code==141203",
+                    "message": "searchWithNoCriteriaErrorMessage"
+                } ]
+            }
+        },
+        "updateClauseProperty": {
+            "actionType": "JSFunction",
+            "method": "updateClauseProperty",
+            "inputData": {
+                "data": "{{props.subPanelContext.nestedNavigationState}}",
+                "selection": "{{data.dataProviders.searchClauseProperty.selectedObjects[0]}}"
+            },
+            "deps": "js/addRevRuleClausePropertyService"
+        },
+        "backToPreviousPanel": {
+            "actionType": "JSFunction",
+            "method": "goToPrevPanel",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}"
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "updateValueInClauseProperties":
+        {
+            "actionType": "JSFunction",
+            "method": "updateValueInClauseProperties",
+            "inputData": {
+                "data":"{{data}}",
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}"
+
+            },
+            "deps": "js/addRevRuleClausePropertyService"
+        },
+        "setClausePropertyAndNavigateBack":
+        {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateClauseProperty"
+                },
+                {
+                    "action": "updateValueInClauseProperties"
+                },
+                {
+                    "action": "backToPreviousPanel"
+                }
+            ]
+        }
+    },
+
+    "onEvent": [ {
+            "eventId": "searchClauseProperty.doSearch",
+            "action": "doSearch"
+        },
+        {
+            "eventId": "searchClauseProperty.selectionChangeEvent",
+            "action": "setClausePropertyAndNavigateBack"
+        }
+    ],
+
+    "data": {
+        "searchString": {
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "true",
+            "dbValue": ""
+        }
+    },
+
+    "dataProviders": {
+        "searchClauseProperty": {
+            "action": "searchForClauseProperty",
+            "response": "{{data.foldersFound}}",
+            "totalFound": "{{data.foldersTotalFound}}",
+            "selectionModelMode": "single"
+        }
+    },
+
+    "functions": {
+        "processSoaResponseForBOTypes": {
+            "functionName": "processSoaResponseForBOTypes",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "getSearchCriteria": {
+            "functionName": "getSearchCriteria",
+            "parameters": [
+                "{{data}}",
+                "{{data.dataProviders.searchClauseProperty.startIndex}}"
+            ],
+            "deps": "js/addRevRuleClausePropertyService"
+        },
+        "getTypeFilter":{
+            "functionName": "getTypeFilter",
+            "parameters": [
+                "{{props.subPanelContext.nestedNavigationState}}"
+            ]
+        }
+    },
+
+    "messages":
+    {
+        "searchWithNoCriteriaErrorMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.searchWithNoCriteriaErrorMessage}}",
+            "messageTextParams": []
+        }
+    },
+
+    "i18n":
+    {
+        "searchWithNoCriteriaErrorMessage": [ "RevisionRuleAdminConstants" ]
+    }
+}

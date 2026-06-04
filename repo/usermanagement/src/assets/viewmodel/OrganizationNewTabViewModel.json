@@ -1,0 +1,345 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports": [],
+    "actions":
+    {
+        "getStyleSheetrCreateGroupSubGroup": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetDeclarativeStyleSheets",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "processEntireXRT": true,
+                    "input": [
+                        {
+                            "businessObjectType": "Group",
+                            "businessObject": {
+                                "uid": "AAAAAAAAAAAAAA",
+                                "type": "Group"
+                            },
+                            "styleSheetType": "CREATE",
+                            "styleSheetLastModDate": "",
+                            "targetPage": "",
+                            "clientContext": {
+                                "ActiveWorkspace:Location": "com.siemens.splm.client.usermanagement.peoplelocation",
+                                "ActiveWorkspace:SubLocation": "com.siemens.splm.client.usermanagement:groupsublocation"
+                            }
+                        }
+
+                    ]
+
+                },
+
+                "1":
+                {
+                    "types":
+                    [
+                        {
+                            "name": "CreateInput",
+                            "modifiers":
+                            [
+                                {
+                                    "name": "includeIsModifiable",
+                                    "Value": "true"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+
+            "outputData":
+            {
+                "modelPropGroup": "{{dataParseDefinitions:convertNvObject}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                   {
+                        "name": "orgNewTab.setToParentProperty"
+                   }
+                ]
+            }
+
+        },
+
+         "createGroup":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2008-06-DataManagement",
+            "method": "createObjects",
+            "inputData":
+            {
+                "input":
+                [{
+                    "clientId": "{{data.um0GroupName.uiValue}}",
+                    "data":
+                    {
+                        "boName": "Group",
+                        "stringProps":
+                        {
+                            "name":"{{data.um0GroupName.uiValue}}",
+                            "description":"{{data.modelPropGroup.props.description.uiValue}}",
+                            "security":"{{data.modelPropGroup.props.security.uiValue}}"
+                        },
+                        "intProps":
+                        {
+                            "privilege":"{{data.modelPropGroup.props.privilege.dbValue}}"
+                        },
+                        "tagProps":
+                        {
+                             "parent":
+                            {
+                                "uid": "{{data.modelPropGroup.props.parent.dbValue}}",
+                                "type": "Group"
+                            },
+                              "volume":
+                            {
+                                "uid": "{{data.modelPropGroup.props.volume.dbValue}}",
+                                "type": "Volume"
+                            },
+                              "local_volume":
+                            {
+                                "uid": "{{data.modelPropGroup.props.local_volume.dbValue}}",
+                                "type": "Volume"
+                            }
+                        }
+
+                    }
+                }]
+            },
+
+             "outputData":
+            {
+                "createdObjectUid": "output[0].objects[0].uid",
+                "createdObject":"output[0].objects[0]",
+                "partialErrors": "ServiceData.partialErrors"
+            },
+
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "OrgList.registerCtxForNewNodes",
+                        "condition":"conditions.reloadPWA && !subPanelContext.panelPinned",
+                        "eventData": {
+                            "createdObjectUid": "{{data.createdObjectUid}}"
+                        }
+                    },
+                    {
+                        "name": "OrgTree.reloadOrgTree",
+                        "condition":"conditions.isTreeMode",
+                        "eventData":
+                        {
+                            "uid": "{{data.createdObjectUid}}",
+                            "panelPinned": "{{subPanelContext.panelPinned}}"
+                        }
+                    },
+                    {
+                        "name": "closeDialog",
+                        "condition": "!subPanelContext.panelPinned"
+
+                    },
+                    {
+                        "name": "resetPanelDataBatchAction",
+                        "condition": "subPanelContext.panelPinned"
+                    },
+                    {
+                        "name": "primaryWorkarea.reset",
+                        "condition":"conditions.reloadPWA"
+                    }
+                ]
+
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "condition": "data.createdObjectUid",
+                        "message": "createGroupSuccessMessage"
+                    }
+                ],
+                "failure": [
+                    {
+                        "message": "createGroupFailureMessage"
+                    }
+                ]
+            },
+
+            "deps": "js/Um0CreateUserService"
+        },
+        "resetCreateGroupPanelData": {
+            "actionType": "JSFunction",
+            "method": "resetCreateGroupPanelData",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "um0GroupName": ""
+            },
+            "deps": "js/um0AddInAnOrganizationService"
+        },
+        "batchAction": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "resetCreateGroupPanelData"
+                },
+                {
+                    "action": "getStyleSheetrCreateGroupSubGroup"
+                }
+            ]
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "add":
+        {
+            "actionType": "JSFunction",
+            "method": "addAdminObjects",
+            "inputData":
+            {
+                "selectedPanelId": "OrganizationNewTab",
+                "isGroupRadioButtonSelected":  true,
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "deps": "js/um0AddInAnOrganizationService"
+        },
+        "setToParentProperty":
+        {
+            "actionType": "JSFunction",
+            "method": "setToParentProperty",
+            "inputData":
+            {
+                "data": "{{data}}",
+                "selectionData": "{{subPanelContext.selectionData}}",
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "outputData":
+            {
+                "modelPropGroup.props.parent": ""
+            },
+            "deps": "js/um0AddInAnOrganizationService"
+        }
+
+    },
+
+    "data":
+    {
+        "isGroupRadioButtonSelected":
+        {
+            "type": "BOOLEAN",
+            "isRequired": "true",
+            "propertyRadioTrueText": "{{i18n.GroupName}}",
+            "propertyRadioFalseText": "{{i18n.RoleName}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": true
+        },
+
+        "addRoleOrUserSelection":
+        {
+            "type": "BOOLEAN",
+            "isRequired": "true",
+            "propertyRadioTrueText": "{{i18n.RoleName}}",
+            "propertyRadioFalseText": "{{i18n.UserName}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT",
+            "dbValue": true
+        },
+       "um0GroupName":
+        {
+          "displayName": "{{i18n.CreateName}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP"
+        }
+    },
+
+     "dataParseDefinitions": {
+        "convertNvObject": {
+            "outputFormatType": "ViewModelObject",
+            "dataInput": "ServiceData.plain[0]",
+            "operationType": "CREATE"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "getStyleSheetrCreateGroupSubGroup"
+    },
+    "onEvent":
+    [
+        {
+           "eventId": "ics.createGroup",
+           "action": "createGroup"
+        },
+        {
+            "eventId": "orgNewTab.setToParentProperty",
+            "action": "setToParentProperty"
+         },
+        {
+            "eventId": "resetPanelDataBatchAction",
+            "action": "batchAction"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        },
+        {
+            "eventId": "primaryWorkArea.selectionChangeEvent",
+            "condition": "!conditions.isTreeMode",
+            "action": "closePanelDialog"
+        }
+
+    ],
+    "conditions":
+    {
+        "isAllowToCreateUser":
+        {
+
+            "expression": "ctx.lastSelectedObject.type==\"Role\""
+        },
+        "isValidToAddAdminObjects":
+        {
+            "expression": "(data.um0GroupName.uiValue.length>0)"
+        },
+        "isTreeMode": {
+            "expression": "ctx.ViewModeContext && (ctx.ViewModeContext.ViewModeContext === 'TreeView' || ctx.ViewModeContext.ViewModeContext === 'TreeSummaryView')"
+        },
+        "reloadPWA":{
+            "expression":"!conditions.isTreeMode && (!ctx.selected || (ctx.locationContext['ActiveWorkspace:Location'] === 'com.siemens.splm.client.usermanagement.peoplelocation' &&  ctx.locationContext['ActiveWorkspace:SubLocation'] !== 'organization'))"
+        }
+    },
+
+    "messages":
+     {
+        "createGroupFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{partialErrors[0].errorValues[0].message}}"
+        },
+        "createGroupSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.createGroupSuccess}}",
+            "messageTextParams": [
+                "{{data.um0GroupName.uiValue}}"
+            ]
+        }
+    },
+
+    "i18n":
+    {
+        "GroupName": [ "UsermanagementCommandPanelMessages" ],
+        "RoleName": [ "UsermanagementCommandPanelMessages" ],
+        "UserName": [ "UsermanagementCommandPanelMessages" ],
+        "UserProperties": [ "UsermanagementCommandPanelMessages" ],
+        "PersonProperties": [ "UsermanagementCommandPanelMessages" ],
+        "CreateName": [ "UsermanagementCommandPanelMessages" ],
+        "AddButton": [ "UsermanagementCommandPanelMessages" ],
+        "createGroupSuccess": [ "UsermanagementCommandPanelMessages" ]
+    }
+}

@@ -1,0 +1,111 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "render": {
+            "method": "scheduleBreadCrumbListRenderFn",
+            "deps": "js/scheduleNavigationBreadcrumbListService"
+        },
+        "onMount": {
+            "actionType": "JSFunction",
+            "method": "getSearchCriteriaUids",
+            "inputData": {
+                "selectedCrumb": "{{props.selectedCrumb}}"
+            },
+            "outputData": {
+                "searchCriteriaUids": ""
+            },
+            "deps": "js/scheduleNavigationBreadcrumbService"
+        },
+        "callDataProvider": {
+            "actionType": "dataProvider",
+            "method": "scheduleNavBreadcrumbChevronDataProvider"
+        },
+        "getChildren": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Saw1ScheduleGantt",
+                        "columnsToExclude": [],
+                        "hostingClientName": "",
+                        "operationType": ""
+                    },
+                    "saveColumnConfigData": {
+                        "columnConfigId": "",
+                        "clientScopeURI": "",
+                        "columns": [],
+                        "scope": "",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "attributesToInflate": [],
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Saw1TaskSearchProvider",
+                        "searchCriteria": {
+                            "includeProxies": "true",
+                            "parentTaskUid": "{{data.searchCriteriaUids.parentTaskUid}}",
+                            "searchContent": "childTasks",
+                            "searchContentType": "ScheduleTask",
+                            "sublocationToken": "ScheduleGantt",
+                            "topScheduleUid": "{{data.searchCriteriaUids.topScheduleUid}}"
+                        },
+                        "searchFilterFieldSortType": "",
+                        "searchFilterMap6": {},
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.scheduleNavBreadcrumbChevronDataProvider.startIndex}}",
+                            "endIndex": "{{data.dataProviders.scheduleNavBreadcrumbChevronDataProvider.endIndex}}",
+                            "startReached": "{{data.dataProviders.scheduleNavBreadcrumbChevronDataProvider.startReached}}",
+                            "endReached": "{{data.dataProviders.scheduleNavBreadcrumbChevronDataProvider.endReached}}"
+                        }
+                    }
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}"
+            }
+        },
+        "onChevronPopupObjSelected": {
+            "actionType": "JSFunction",
+            "method": "onChevronObjectSelection",
+            "inputData": {
+                "selected": "{{data.schNavBreadcrumbListSelection.dbValue.selected[0]}}",
+                "chevronPopup": "{{props.chevronPopup}}"
+            },
+            "deps": "js/scheduleNavigationBreadcrumbService"
+        }
+    },
+    "data": {
+        "schNavBreadcrumbListSelection": {
+            "dbValue": {},
+            "type": "OBJECT"
+        }
+    },
+    "dataProviders": {
+        "scheduleNavBreadcrumbChevronDataProvider": {
+            "action": "getChildren",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionData": "{{fields.schNavBreadcrumbListSelection}}"
+            }
+        }
+    },
+    "lifecycleHooks": {
+        "render": "render",
+        "onMount": "onMount",
+        "onUpdate": [ {
+            "action": "onChevronPopupObjSelected",
+            "observers": [ "viewModel.data.schNavBreadcrumbListSelection.dbValue" ]
+        },
+        {
+            "action": "callDataProvider",
+            "observers": [ "viewModel.data.searchCriteriaUids" ]
+        } ]
+    }
+}

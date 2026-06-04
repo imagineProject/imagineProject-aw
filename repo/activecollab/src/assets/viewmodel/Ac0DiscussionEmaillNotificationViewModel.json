@@ -1,0 +1,125 @@
+{
+    "schemaVersion": "1.0.0",
+
+    "actions":
+    {
+        "initialBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateExtendedTooltip"
+                },
+                {
+                    "action": "loadEmailNotificationPreferences"
+                }
+            ]
+        },
+        "updateExtendedTooltip":
+        {
+            "actionType": "JSFunction",
+            "method": "updateExtendedTooltip",
+            "inputData": {
+                "discThrottleTooltip": "{{data.discThrottleTooltip}}",
+                "i18n": "{{i18n}}"
+            },
+            "outputData": {
+                "discThrottleTooltip": ""
+            },
+            "deps": "js/Ac0ConversationUtils"
+        },
+        "discActivityClick": {
+            "actionType": "JSFunction",
+            "method": "discActivityClick",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "deps": "js/Ac0NotificationService"
+        },
+        "discThrottleClick": {
+            "actionType": "JSFunction",
+            "method": "discThrottleClick",
+            "inputData":
+            {
+                "data": "{{data}}"
+            },
+            "deps": "js/Ac0NotificationService"
+        },
+        "loadEmailNotificationPreferences":
+        {
+            "actionType": "JSFunctionAsync",
+            "method": "loadEmailNotificationPreferences",
+            "inputData":
+            {
+                "data" : "{{data}}"
+            },
+            "outputData": {
+                "discActivity": "discActivity",
+                "discThrottle": "discThrottle"
+            },
+            "deps": "js/Ac0NotificationService"
+        }
+    },
+
+    "data":
+    {
+        "discussions":
+        {
+            "displayName": "{{i18n.discussions}}",
+            "type": "STRING",
+            "hasLov": true,
+            "dbValue": "",
+            "uiValue": ""
+        },
+        "discActivity":
+        {
+            "displayName": "{{i18n.discActivityTitle}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "discThrottle":
+        {
+            "displayName": "{{i18n.discThrottleTitle}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "discNotificationTooltip": {
+            "extendedTooltipContent": "{{i18n.discActivityTitleTooltip}}"
+        },
+        "discThrottleTooltip": {
+            "extendedTooltipContent": ""
+        }
+    },
+
+    "ctx": {
+
+        "preferences": {
+            "type": "object"
+        }
+    },
+
+    "conditions": {
+        "Ac0EnableEmailDiscussionNotifications": {
+            "expression": "ctx.preferences.Ac0EnableEmailDiscussionNotifications.values.values[0] === 'true'"
+        },
+        "UserEnableEmailDiscussionNotificatons" : {
+            "expression": "data.discActivity.dbValue === true || data.discActivity.dbValue === 'true'"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "initialBatchJob"
+    },
+
+    "i18n": {
+        "discussions": ["ActiveCollabDeclarativeMessages"],
+        "discActivityTitle":["ActiveCollabDeclarativeMessages"],
+        "discActivityTitleTooltip":["ActiveCollabDeclarativeMessages"],
+        "discThrottleTitle":["ActiveCollabDeclarativeMessages"],
+        "discThrottleTitleTooltip": ["ActiveCollabDeclarativeMessages"]
+    }
+}

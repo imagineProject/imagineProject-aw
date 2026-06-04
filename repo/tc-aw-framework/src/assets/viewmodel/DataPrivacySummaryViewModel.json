@@ -1,0 +1,249 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {
+        "onMount": "initialize"
+    },
+    "actions":
+    {
+        "dpNoticeAction": {
+            "actionType": "Navigate",
+            "navigateIn": "newTab",
+            "navigateTo": "https://www.sw.siemens.com/en-US/privacy-policy/",
+            "navigationParams": {}
+        },
+        "dpeTrustCenterAction": {
+            "actionType": "Navigate",
+            "navigateIn": "newTab",
+            "navigateTo": "https://www.sw.siemens.com/en-US/trust-center/digital-product-experience/",
+            "navigationParams": {}
+        },
+        "pepTrustCenterAction": {
+            "actionType": "Navigate",
+            "navigateIn": "newTab",
+            "navigateTo": "https://www.sw.siemens.com/en-US/trust-center/product-excellence-program/",
+            "navigationParams": {}
+        },
+        "initialize":{
+            "actionType": "JSFunction",
+            "method": "initializeDataPrivacyTab",
+            "inputData": {
+                "ctx": "{{ctx}}",
+                "dpeDecision": "{{data.dpeDecision}}",
+                "pepDecision": "{{data.pepDecision}}",
+                "dpeText2": "{{data.dpeText2}}",
+                "dpNoticeDesc": "{{data.dpNoticeDesc}}",
+                "pepText2": "{{data.pepText2}}"
+            },
+            "outputData": {
+                "dpeDecision": "dpeDecision",
+                "pepDecision": "pepDecision",
+                "dpeText2": "dpeText2",
+                "dpNoticeDesc": "dpNoticeDesc",
+                "pepText2": "pepText2"
+            },
+            "deps": "js/TcSessionData"
+        },
+        "setPEPDecisionOnCtx":{
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "Analytics_PEP",
+                "value": "{{data.pepDecision.dbValue}}"
+            }
+        },
+        "setDPEDecisionOnCtx":{
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "Analytics_DPE",
+                "value": "{{data.dpeDecision.dbValue}}"
+            }
+        },
+        "pepDecisionChange":
+        {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "pepDecisionSetPreference"
+                },
+                {
+                    "action": "setPEPDecisionOnCtx"
+                }
+            ]
+        },
+        "dpeDecisionChange":
+        {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "dpeDecisionSetPreference"
+                },
+                {
+                    "action": "setDPEDecisionOnCtx"
+                }
+            ]
+        },
+        "pepDecisionSetPreference": {
+            "actionType": "TcSoaService",
+            "serviceName": "Administration-2012-09-PreferenceManagement",
+            "method": "setPreferencesAtLocations",
+            "inputData": {
+              "setPreferenceIn": [
+                {
+                    "location": {
+                      "object": {
+                        "type": "",
+                        "uid": ""
+                      },
+                      "location": "user"
+                    },
+                    "preferenceInputs": {
+                      "preferenceName": "TC_ProductExcellenceProgram",
+                      "values": ["{{data.pepDecision.dbValue}}"]
+                    }
+                  }
+              ]
+            }
+    },
+        "dpeDecisionSetPreference":{
+            "actionType": "TcSoaService",
+            "serviceName": "Administration-2012-09-PreferenceManagement",
+            "method": "setPreferencesAtLocations",
+            "inputData": {
+              "setPreferenceIn": [
+                {
+                    "location": {
+                      "object": {
+                        "type": "",
+                        "uid": ""
+                      },
+                      "location": "user"
+                    },
+                    "preferenceInputs": {
+                      "preferenceName": "TC_DigitalProductExperience",
+                      "values": ["{{data.dpeDecision.dbValue}}"]
+                    }
+                  }
+              ]
+            }
+    }
+    },
+    "data":{
+        "dpeText": {
+            "displayName": "{{i18n.dpeText}}",
+            "type": "STRING"
+        },
+        "dpeDecision": {
+            "displayName": "",
+            "type": "STRING",
+            "isEditable": "true",
+            "dbValue": "true"
+        },
+        "pepDecision": {
+            "displayName": "",
+            "type": "STRING",
+            "isEditable": "true",
+            "dbValue": "true"
+        },
+        "pepDecisionValues": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.agreeText}}",
+                    "propInternalValue": "true"
+                },
+                {
+                    "propDisplayValue": "{{i18n.declinetText}}",
+                    "propInternalValue": "false"
+                }
+            ]
+        },
+        "dpeDecisionValues": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.agreeText}}",
+                    "propInternalValue": "true"
+                },
+                {
+                    "propDisplayValue": "{{i18n.declinetText}}",
+                    "propInternalValue": "false"
+                }
+            ]
+        },
+        "dpNotice": {
+            "displayName": "{{i18n.diswDpNoticeLink}}",
+            "type": "STRING",
+            "isRequired": "false"
+        },
+        "dpNoticeDesc": {
+            "dbValue": "{{i18n.dpNoticeDesc}}"
+        },
+        "swTrustCenter":{
+            "displayName": "{{i18n.swTrustCenter}}",
+            "type": "STRING",
+            "isRequired": "false"
+        },
+        "dpeText2":{
+            "dbValue": "{{i18n.dpeText2}}"
+        },
+        "dpeText1":{
+            "type": "STRING",
+            "dispValue": "{{i18n.dpeText1}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "dpeText3":{
+            "type": "STRING",
+            "dispValue": "{{i18n.dpeText3}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "dpeTitle":{
+            "type": "STRING",
+            "dispValue": "{{i18n.diswDpNotice}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "pepText1":{
+            "type": "STRING",
+            "dispValue": "{{i18n.pepText1}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "pepText2":{
+            "dbValue": "{{i18n.pepText2}}"
+        },
+        "pepText3":{
+            "type": "STRING",
+            "dispValue": "{{i18n.pepText3}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        }
+    },
+    "messages": {
+        "dataPrivacyChangeInfoMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.dataPrivacyChangeInfoMessage}}"
+        }
+    },
+    "i18n": {
+        "dataPrivacyChangeInfoMessage":["AnalyticsMessages"],
+        "dpeCaption":["AnalyticsMessages"],
+        "dpeText1":["AnalyticsMessages"],
+        "dpeText2":["AnalyticsMessages"],
+        "dpeText3":["AnalyticsMessages"],
+        "agreeText":["AnalyticsMessages"],
+        "declinetText":["AnalyticsMessages"],
+        "dpNoticeDesc":["AnalyticsMessages"],
+        "diswDpNotice":["AnalyticsMessages"],
+        "diswDpNoticeLink":["AnalyticsMessages"],
+        "pepCaption":["AnalyticsMessages"],
+        "pepText1":["AnalyticsMessages"],
+        "pepText2":["AnalyticsMessages"],
+        "swTrustCenter":["AnalyticsMessages"],
+        "pepText3":["AnalyticsMessages"]
+    },
+    "conditions": {
+        "isLoginUserSameAsCurrentUser": {
+            "expression": "ctx.state.params.uid === ctx.userSession.props.user.dbValues[0]"
+        }
+    }
+}

@@ -1,0 +1,739 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "selectedParentIdsPopup":{
+            "actionType": "popup",
+            "inputData": {
+                "options": {
+                    "view": "Cm1SelectedConfigurationsPopup",
+                    "placement": "top-start",
+                    "hasArrow": true,
+                    "whenParentScrolls": "close",
+                    "subPanelContext": {
+                        "selectedConfig": "{{props.subPanelContext.configState.displayValues.selectedProductIDs}}"
+                    }
+                }
+            }
+        },
+        "selectedEffectivitiesPopup":{
+            "actionType": "popup",
+            "inputData": {
+                "options": {
+                    "view": "Cm1SelectedConfigurationsPopup",
+                    "placement": "top-start",
+                    "hasArrow": true,
+                    "whenParentScrolls": "close",
+                    "subPanelContext": {
+                        "selectedConfig": "{{props.subPanelContext.configState.displayValues.selectedEffectivities}}"
+                    }
+                }
+            }
+        },
+        "loadProbableImpacted": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadProbableImpactedTree",
+            "inputData": {
+                "treeLoadInput": "request.treeLoadInput",
+                "dataProvider": "{{data.dataProviders.probableImpactedDataProvider}}",
+                "inContextData" :"{{data}}",
+                "props":"{{props}}",
+                "configState":"{{props.subPanelContext.configState}}"
+            },
+            "outputData": {
+                "dataProviders.probableImpactedDataProvider.columnConfig": "columnConfig",
+                "treeLoadResult":"treeLoadResult",
+                "updateProbableImpactedDataProviderInParentState":"{{function:updateProbableImpactedDataProviderInParentState}}"
+            },
+
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "loadInitialColumns": {
+            "actionType": "JSFunction",
+            "method": "loadInitialColumns",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.probableImpactedDataProvider}}"
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "createImpactedRelationAndSetProps": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2008-06-DataManagement",
+            "method": "createOrUpdateRelations",
+            "inputData": {
+                "infos": "{{function:getInputToCreateImpactedRelation}}",
+
+                "sync": false
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "resetPersistedImpactedTable.refreshTable"
+                    },
+                    {
+                        "name": "calculateColorIndicatorForProbableImpacted"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "resetPersistedImpactedTable.refreshTable"
+                    },
+                    {
+                        "name": "calculateColorIndicatorForProbableImpacted"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "condition": "data.alreadyImpactedObjects.length === 0 && (data.dataProviders.probableImpactedDataProvider.selectedObjects.length === 1) && (data.dataProviders.probableImpactedDataProvider.selectedObjects[0].props.cm0UsageRevision.dbValue !== null)",
+                        "message": "pasteImpactedSuccessMessageForUBPart"
+                    },
+                    {
+                        "condition": "data.alreadyImpactedObjects.length === 0 && (data.dataProviders.probableImpactedDataProvider.selectedObjects.length === 1) && (data.dataProviders.probableImpactedDataProvider.selectedObjects[0].props.cm0UsageRevision.dbValue === null)",
+                        "message": "pasteImpactedSuccessMessage"
+                    },
+                    {
+                        "condition": "data.alreadyImpactedObjects.length === 0 && data.dataProviders.probableImpactedDataProvider.selectedObjects.length > 1",
+                        "message": "pasteMultipleImpactedSuccessMessage"
+                    }
+                ],
+
+                "failure":[
+                    {
+                        "message":"partialErrorMessage"
+                    }
+                ]
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "isSelectedObjAssociatedWithDiffChange": {
+            "actionType": "TcSoaService",
+            "serviceName": "ChangeManagement-2025-06-ChangeManagement",
+            "method": "getConcurrentChanges",
+            "deps": "js/Cm1CreateChangeService",
+            "inputData": {
+                "inputObjs": "{{function:getInputObjectsForConcurrentChanges}}",
+                "typeFilters": [ "GnChangeNoticeRevision" ]
+            },
+            "outputData": {
+                "openEcns": "{{function:getListOfItemAndassociatedECNs}}",
+                "warningMessage": "{{function:processWarningMessages}}",
+                "response": "output"
+            },
+            "events": {
+                "success": [
+                   {
+                        "condition": "!ctx.Cm1CreateChange.selectedItemHasConflictingChange",
+                        "name": "Cm1CreateChange.createImpactedRelationAndSetProps"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "condition": "(data.openEcns.length === 1)",
+                        "message": "showSingleSelectionChangeWarning"
+                    },
+                    {
+                        "condition": "(data.openEcns.length > 1)",
+                        "message": "showMultiSelectionChangeWarning"
+                    }
+                ]
+            }
+        },
+        "calculateColorIndicatorForProbableImpactedAction": {
+            "actionType": "JSFunction",
+            "method": "calculateColorIndicatorForProbableImpacted",
+            "inputData": {
+                "parentState": "{{data.eventMap['calculateColorIndicatorForProbableImpacted'].parentState}}",
+                "changeObj":"{{props.changeObject}}"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "setViewerContext": {
+            "actionType": "JSFunction",
+            "method": "setViewerContext",
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "expandAndSelectFirstLevelTreeNode":{
+            "actionType": "JSFunction",
+            "method": "expandAndSelectFirstLevelTreeNode",
+            "inputData": {
+                "data": "{{data}}",
+                "loadedTreeNodes": "{{data.dataProviders.probableImpactedDataProvider.viewModelCollection.loadedVMObjects}}",
+                "cm1ImpactWidgetState":"{{props.cm1ImpactWidgetState}}"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "calculateColorIndicatorForProbableImpacted": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "calculateColorIndicatorForProbableImpacted",
+                    "eventData": {
+                        "parentState": "{{props.cm1ImpactWidgetState}}"
+                    }
+                } ]
+            }
+        },
+        "impactAnalysisTableRefreshTable": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "condition":"commandContext.name === probableImpactedDataProvider",
+                        "name":"probableImpactedGrid.plTable.clientRefresh"
+                    }
+                ]
+            }
+        },
+        "saveColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [ {
+                        "clientScopeURI": "CMProbableImpactedTable",
+                        "columnConfigId": "CMProbableImpactedTableColConfig",
+                        "columns": "{{function:getProbableImpactedTableColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    } ]
+                }
+            },
+            "outputData": {}
+        },
+        "resetColumnConfig" : {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [{
+                        "scope": "LoginUser",
+                        "scopeName": "",
+                        "clientName": "AWClient",
+                        "resetColumnConfig": true,
+                        "columnConfigQueryInfos":
+                            [{
+                                "clientScopeURI": "{{data.clientScopeURI}}",
+                                "operationType": "configured",
+                                "columnsToExclude": []
+                            }],
+                        "businessObjects": [{}]
+                    }]
+                }
+            },
+            "outputData": {
+                "dataProviders.probableImpactedDataProvider.columnConfig": "columnConfigurations[0].columnConfigurations[0]"
+            }
+        },
+        "doArrangeEvent" : {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "updateParentState":{
+            "actionType": "JSFunction",
+            "method": "updateParentState",
+            "inputData": {
+                "selectedObjects": "{{data.dataProviders.probableImpactedDataProvider.selectedObjects}}",
+                "dataProviderName":"{{data.dataProviders.probableImpactedDataProvider}}",
+                "cm1ImpactWidgetState": "{{props.cm1ImpactWidgetState}}"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "setProbableImpactedTableSelection": {
+            "actionType": "JSFunction",
+            "method": "setProbableImpactedTableSelection",
+            "inputData": {
+                "data": "{{data}}",
+                "props": "{{props}}"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "clearTableData": {
+            "actionType": "JSFunction",
+            "method": "clearTableData",
+            "inputData": {
+                "tabs": "{{props.cm1ImpactWidgetState}}"
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "deleteImpactedRelations": {
+            "actionType": "JSFunctionAsync",
+            "method": "deleteRelations",
+            "inputData": {
+                "changeObject":"{{props.changeObject}}",
+                "selectionData":"{{props.subPanelContext.selectionData}}"
+            },
+            "actionMessages": {
+                "failure":[
+                    {
+                        "message":"failureMessageFromSOA"
+                    }
+                ]
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "deleteNotImpactedRelations":{
+            "actionType": "JSFunctionAsync",
+            "method": "deleteRelations",
+            "inputData": {
+                "changeObject":"{{props.changeObject}}",
+                "selectionData":"{{props.subPanelContext.selectionData}}",
+                "deleteImpactedRelations": false
+            },
+            "actionMessages": {
+                "failure":[
+                    {
+                        "message":"failureMessageFromSOA"
+                    }
+                ]
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "createNotImpactedRelations":{
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2006-03-DataManagement",
+            "method": "createRelations",
+            "inputData": {
+                "input": "{{function:inputForCreateNotImpactedRelations}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "resetPersistedImpactedTable.refreshTable"
+                    },
+                    {
+                        "name": "calculateColorIndicatorForProbableImpacted"
+                    }
+                ],
+                "failure": [
+                    {
+                        "name": "resetPersistedImpactedTable.refreshTable"
+                    },
+                    {
+                        "name": "calculateColorIndicatorForProbableImpacted"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [
+                    {
+                        "condition": "data.dataProviders.probableImpactedDataProvider.selectedObjects.length === 1",
+                        "message": "notImpactedRelationSuccessMessage"
+                    },
+                    {
+                        "condition": "data.dataProviders.probableImpactedDataProvider.selectedObjects.length > 1",
+                        "message":"pasteMultipleNotImpactedSuccessMessage"
+                    }
+                ],
+                "failure":[
+                    {
+                        "message":"failureMessageFromSOA"
+                    }
+
+                ]
+            },
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "deleteImpactedRelationAndCreateNotImpactedRelation":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "deleteImpactedRelations"
+                },
+                {
+                    "action":"createNotImpactedRelations"
+                }
+            ]
+        },
+        "deleteNotImpactedRelationAndCreateImpactedRelation":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "deleteNotImpactedRelations"
+                },
+                {
+                    "action":"isSelectedObjAssociatedWithDiffChange",
+                    "condition":"conditions.showWarningPrefEnable"
+
+                },
+                {
+                    "action":"createImpactedRelationAndSetProps",
+                    "condition":"!conditions.showWarningPrefEnable"
+                }
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onUnmount": "clearTableData",
+        "onUpdate": []
+    },
+    "functions": {
+        "getProbableImpactedTableColumns": {
+            "functionName": "removeDuplicateEntriesForColumns",
+            "parameters": [
+                "{{data.dataProviders.probableImpactedDataProvider.newColumns}}"
+            ],
+            "deps": "js/Cm1ImpactedWidgetService"
+        },
+        "inputForCreateNotImpactedRelations":{
+            "functionName": "inputForCreateNotImpactedRelationsCall",
+            "parameters": [
+                "{{props.changeObject}}",
+                "{{props.subPanelContext.selectionData}}"
+            ]
+        },
+        "getCreateInputToCreteImpactedRelation": {
+            "functionName": "getCreateInputToCreteImpactedRelation",
+            "parameters": [
+                "{{subPanelContext}}"
+            ]
+        },
+        "updateProbableImpactedDataProviderInParentState":{
+            "functionName":"updateDataProvidersInParentState",
+            "parameters":[
+                "{{data.dataProviders.probableImpactedDataProvider}}",
+                "{{props.cm1ImpactWidgetState}}"
+            ]
+        },
+        "getInputToCreateImpactedRelation": {
+            "functionName": "getSoaInputForCreateRelations",
+            "parameters": [
+                "{{props.changeObject}}",
+                "{{data.dataProviders.probableImpactedDataProvider.selectedObjects}}",
+                "{{data}}"
+            ]
+        },
+        "getInputObjectsForConcurrentChanges": {
+            "functionName": "getSoaInputObjectsForGetConcurrentChanges",
+            "parameters": [
+                "{{data.dataProviders.probableImpactedDataProvider.selectedObjects}}"
+            ]
+        },
+        "processSecondaryObjectsInput": {
+            "functionName": "processSecondaryObjectsInput",
+            "parameters": [
+                "{{data.addPanelState}}",
+                "{{data.dataProviders.probableImpactedDataProvider}}",
+                "{{ctx.xrtSummaryContextObject.uid}}"
+            ]
+
+        },
+        "getListOfItemAndassociatedECNs": {
+            "functionName": "getListOfItemAndassociatedECNs"
+        },
+        "processWarningMessages": {
+            "functionName": "processWarningMessages"
+        }
+    },
+
+    "onEvent": [
+        {
+            "eventId":"createNotImpactedRelationEvent",
+            "action": "deleteImpactedRelationAndCreateNotImpactedRelation"
+        },
+        {
+            "eventId": "probableImpactedDataProvider.treeNodesLoaded",
+            "action": "setViewerContext"
+        },
+        {
+            "eventId": "probableImpactedDataProvider.treeNodesLoaded",
+            "cacheEventData": true,
+            "action": "expandAndSelectFirstLevelTreeNode"
+        },
+        {
+            "eventId": "probableImpactedDataProvider.treeNodesLoaded",
+            "action": "calculateColorIndicatorForProbableImpacted"
+        },
+        {
+            "eventId": "calculateColorIndicatorForProbableImpacted",
+            "cacheEventData": true,
+            "action": "calculateColorIndicatorForProbableImpactedAction"
+        },
+        {
+            "eventId": "probableImpactedDataProvider.selectionChangeEvent",
+            "action": "updateParentState"
+        },
+        {
+            "eventId": "createImpactedRelationSoaCall.probableImpactedTable",
+            "action": "deleteNotImpactedRelationAndCreateImpactedRelation"
+        },
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent"
+        },
+        {
+            "eventId": "Cm1CreateChange.createImpactedRelationAndSetProps",
+            "action": "createImpactedRelationAndSetProps"
+        }
+    ],
+
+    "conditions": {
+        "isCallRelatedProvider": {
+            "expression": "data.dataProviders.probableImpactedDataProvider.selectedObjects.length === 1"
+        },
+        "showWarningPrefEnable":{
+            "expression":"ctx.preferences.CM_show_concurrent_change_warning[0].toLowerCase() === 'true' && ( (ctx.pselected && ctx.pselected.modelType.typeHierarchyArray.indexOf( 'GnChangeNoticeRevision' ) > -1) || (ctx.selected && ctx.selected.modelType.typeHierarchyArray.indexOf( 'GnChangeNoticeRevision' ) > -1) )"
+        }
+    },
+    "props": {
+        "cm1-impact-widget-state":{
+            "type":"object"
+        },
+        "change-object":{
+            "type":"object"
+        },
+        "selected-problem-item":{
+            "type":"object"
+        },
+        "sub-panel-context":{
+            "type":"object"
+        }
+    },
+    "data": {
+        "moreLink":{
+            "displayName": "{{i18n.Cm1DisplayMoreConfig}}",
+            "type": "STRING"
+        },
+        "selectedRevRule": {
+            "displayName": "{{i18n.revRule}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "{{subPanelContext.configState.displayValues.revRule}}",
+            "displayValue": "{{subPanelContext.configState.displayValues.revRule}}"
+        },
+        "selectedParentId":{
+            "displayName": "{{i18n.parentId}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "{{subPanelContext.configState.displayValues.singleProductId}}",
+            "displayValue": "{{subPanelContext.configState.displayValues.singleProductId}}"
+        },
+        "selectedEffectivity":{
+            "displayName": "{{i18n.effectivity}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "{{subPanelContext.configState.displayValues.singleEffectivity}}",
+            "displayValue": "{{subPanelContext.configState.displayValues.singleEffectivity}}"
+        },
+        "probableImpactedTablePrevSel": {
+            "type": "STRING",
+            "dbValue": null
+        },
+        "addToImpactedCommand": "cm1_addImpactedItemCommands"
+    },
+    "columnProviders": {
+        "probableImpactedColumnProvider": {
+            "saveColumnAndLoadAction" : "saveColumnConfigLoadData",
+            "resetColumnAction" : "resetColumnConfig",
+            "frozenColumnIndex" : 0
+        }
+    },
+
+    "dataProviders": {
+        "probableImpactedDataProvider": {
+            "initializeAction": "loadProbableImpacted",
+            "nextAction": "loadProbableImpacted",
+            "previousAction": "loadProbableImpacted",
+            "treeLoadResult": "action.result.treeLoadResult",
+            "editContext": "TABLE_CONTEXT",
+            "inputData": {
+                "accessMode": "tree",
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "selectionData":"{{subPanelContext.selectionData}}"
+            },
+            "response": "data.response",
+            "selectionModelMode": "multiple",
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+
+    "grids": {
+        "probableImpactedGrid": {
+            "dataProvider": "probableImpactedDataProvider",
+            "columnProvider": "probableImpactedColumnProvider",
+            "enableArrangeMenu": true,
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableSorting": false,
+                "useStaticFirstCol": true,
+                "isFilteringEnabled": false,
+                "enableExpandAndPaginationInEdit": true,
+                "textBundle": {
+                    "TwistieTooltipCollapsed": "{{i18n.TwistieTooltipCollapsed}}",
+                    "TwistieTooltipExpanded": "{{i18n.TwistieTooltipExpanded}}"
+                },
+                "maxRowsToShow": 10
+            },
+
+            "deps": "js/Cm1ImpactedWidgetService"
+        }
+    },
+
+    "messages": {
+        "failureMessageFromSOA": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        },
+        "notImpactedRelationSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.notImpactedRelationSuccessMessage}}",
+            "messageTextParams": [
+                "{{data.dataProviders.probableImpactedDataProvider.selectedObjects[0].props.object_string.uiValues[0]}}",
+                "{{props.changeObject.props.object_string.uiValues[0]}}"
+            ]
+        },
+        "partialErrorMessage":{
+            "messageType":"ERROR",
+            "messageText": "{{errorCode}}",
+            "messageTextParams":[
+                "{{ServiceData.partialErrors.errorValues.message}}"
+            ]
+        },
+        "pasteImpactedSuccessMessageForUBPart": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.pasteImpactedSuccessMessageForUBPart}}",
+            "messageTextParams": [
+                "{{data.dataProviders.probableImpactedDataProvider.selectedObjects[0].props.object_string.uiValues[0]}}",
+                "{{props.changeObject.props.object_string.uiValues[0]}}"
+            ]
+        },
+        "pasteImpactedSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.pasteImpactedSuccessMessage}}",
+            "messageTextParams": [
+                "{{data.dataProviders.probableImpactedDataProvider.selectedObjects[0].props.object_string.uiValues[0]}}",
+                "{{props.changeObject.props.object_string.uiValues[0]}}"
+            ]
+        },
+        "pasteMultipleImpactedSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.pasteMultipleImpactedSuccessMessage}}",
+            "messageTextParams": [
+                "{{data.dataProviders.probableImpactedDataProvider.selectedObjects.length}}",
+                "{{props.changeObject.props.object_string.uiValues[0]}}"
+            ]
+        },
+        "pasteMultipleNotImpactedSuccessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.pasteMultipleNotImpactedSuccessMessage}}",
+            "messageTextParams": [
+                "{{data.dataProviders.probableImpactedDataProvider.selectedObjects}}",
+                "{{props.changeObject.props.object_string.uiValues[0]}}"
+            ]
+        },
+        "showSingleSelectionChangeWarning": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.showMultiSelectionChangeWarnEmptyMsg}}",
+            "messageTextParams": [
+                "{{data.warningMessage}}"
+
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancelText}}"
+                },
+                {
+                    "option": "Add",
+                    "text": "{{i18n.addButtonTitle}}",
+                    "action": "createImpactedRelationAndSetProps"
+                }
+            ]
+        },
+        "showMultiSelectionChangeWarning":{
+            "messageType": "WARNING",
+            "messageText": "{{i18n.showMultiSelectionChangeWarnEmptyMsg}}",
+            "messageTextParams": [
+             "{{data.warningMessage}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancelText}}"
+                },
+                {
+                    "option": "Add",
+                    "text": "{{i18n.addButtonTitle}}",
+                    "action": "createImpactedRelationAndSetProps"
+                }
+            ]
+        }
+
+    },
+
+    "i18n": {
+        "notImpactedRelationSuccessMessage":[
+            "ChangeMessages"
+        ],
+        "pasteMultipleNotImpactedSuccessMessage":[
+            "ChangeMessages"
+        ],
+        "TwistieTooltipCollapsed": [
+            "ChangeMessages"
+        ],
+        "TwistieTooltipExpanded": [
+            "ChangeMessages"
+        ],
+        "pasteImpactedSuccessMessageForUBPart": [
+            "ChangeMessages"
+        ],
+        "pasteImpactedSuccessMessage": [
+            "ChangeMessages"
+        ],
+        "pasteMultipleImpactedSuccessMessage": [
+            "ChangeMessages"
+        ],
+        "proposedImpactedTitle": [
+            "ChangeMessages"
+        ],
+        "revisionRuleLabel": [
+            "ChangeMessages"
+        ],
+        "revRule":[
+            "ChangeMessages"
+        ],
+        "parentId":[
+            "ChangeMessages"
+        ],
+        "effectivity":[
+            "ChangeMessages"
+        ],
+        "Cm1DisplayMoreConfig":[
+            "ChangeMessages"
+        ],
+        "legendTitle":[
+            "ChangeMessages"
+        ],
+        "NotImpacted":[
+            "ChangeMessages"
+        ],
+        "Impacted":[
+            "ChangeMessages"
+        ],
+        "addButtonTitle": [
+            "TCUICommandPanelsMessages"
+        ],
+        "cancelText": [
+            "ChangeMessages"
+        ],
+        "showMultiSelectionChangeWarnEmptyMsg": [
+             "ChangeMessages"
+        ],
+        "impactedRelationNotCreatedErrorMsg": [
+            "ChangeMessages"
+        ]
+    }
+}

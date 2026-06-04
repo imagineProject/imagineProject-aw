@@ -1,0 +1,169 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "updateBaselineToView":{
+            "actionType": "JSFunction",
+            "method": "setBaselineToView",
+            "inputData":{
+                "loadedBaselines": "{{data.eventData}}",
+                "scheduleNavigationContext":"{{subPanelContext}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "complete",
+                    "eventData": {
+                        "source": "toolAndInfoPanel"
+                    }
+                } ]
+            },
+            "deps": "js/scheduleNavigationGanttIntegrationService"
+        },
+        "reveal": {
+            "actionType": "dataProvider",
+            "methods": [
+                "getBaselines",
+                "activeBaseline"
+            ]
+        },
+        "search": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData": {
+                "searchInput": {
+                    "maxToLoad": "{{function:getDefaultPageSize}}",
+                    "maxToReturn": "{{function:getDefaultPageSize}}",
+                    "providerName": "Saw1TaskSearchProvider",
+                    "searchCriteria": {
+                        "searchContentType": "ScheduleBaseline",
+                        "scheduleUid": "{{ctx.selected.uid}}",
+                        "searchString": "{{data.filterBox.dbValue}}"
+                    },
+                    "startIndex": "{{data.dataProviders.getBaselines.startIndex}}",
+                    "searchFilterFieldSortType": "Alphabetical",
+                    "searchFilterMap": {},
+                    "searchSortCriteria": []
+                }
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "WorkspaceObject",
+                        "properties": [
+                            {
+                                "name": "object_desc"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "searchResults": "{{function:processProviderResponse}}"
+            },
+            "events": {
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "displayError"
+                    }
+                ]
+            },
+            "deps": "js/Saw1BaselineScheduleService"
+        },
+        "updateProvidersDeleteAction": {
+            "actionType": "JSFunction",
+            "method": "updateProvidersForDelete",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/Saw1BaselineCellCommandsHandler"
+        },
+        "updateProvidersActiveAction": {
+            "actionType": "JSFunction",
+            "method": "updateProvidersForActive",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/Saw1BaselineCellCommandsHandler"
+        }
+    },
+    "dataProviders": {
+        "getBaselines": {
+            "action": "search",
+            "response": "{{data.searchResults}}",
+            "selectionModelMode": "single",
+            "commandsAnchor": "aw_manageBaselineCellCommand"
+        },
+        "activeBaseline": {
+            "commandsAnchor": "aw_manageBaselineCellCommand"
+        }
+    },
+    "data": {
+        "filterBox": {
+            "type": "STRING",
+            "dbValue": ""
+        }
+    },
+    "functions": {
+        "getDefaultPageSize": {
+            "functionName": "getDefaultPageSize",
+            "parameters": [
+                "{{ctx.preferences.AWC_DefaultPageSize}}"
+            ]
+        },
+        "processProviderResponse":{
+            "functionName": "processProviderResponse",
+            "parameters": [
+                "{{data}}"
+            ]
+        }
+    },
+    "messages": {
+        "displayError": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n": {
+        "manageBaselines": [
+            "ScheduleManagerMessages"
+        ],
+        "availableSectionTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "saw1ActiveBaseline": [
+            "ScheduleManagerMessages"
+        ],
+        "baselineName": [
+            "ScheduleManagerMessages"
+        ],
+        "creationDate": [
+            "ScheduleManagerMessages"
+        ],
+        "owningUser": [
+            "ScheduleManagerMessages"
+        ],
+        "owner": [
+            "ScheduleManagerMessages"
+        ]
+    },
+    "lifecycleHooks":{
+        "onMount": "reveal"
+    },
+    "onEvent": [
+        {
+            "eventId": "updateBaselineToView",
+            "cacheEventData": true,
+            "action": "updateBaselineToView"
+        },
+        {
+            "eventId": "Saw1BaselinesSchedule.updateProvidersForDelete",
+            "action": "updateProvidersDeleteAction"
+        },
+        {
+            "eventId": "Saw1BaselinesSchedule.updateProvidersForActive",
+            "action": "updateProvidersActiveAction"
+        }
+    ]
+}

@@ -1,0 +1,182 @@
+{
+    "schemaVersion" : "1.0.0",
+    "data":
+    {
+        "allowedTypeInfo":
+        {
+            "preferredType":"{{subPanelContext.preferredTypes[0]}}",
+            "objectTypeName":"{{subPanelContext.preferredTypes.toString()}}",
+            "searchTypeName":"{{subPanelContext.objectTypesNames.toString()}}"
+        },
+        "addPanelState": {
+            "initialValues": {
+                "creationType": "",
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {}
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub",
+                "context": {}
+            },
+            "meta": {}
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {
+                "selectedProjects": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "triggerAssign": {
+                    "field": "true",
+                    "type": "BOOLEAN"
+                }
+            }
+        }
+    },
+    "actions":
+    {
+        "createAndAddObject":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-Core-2012-10-DataManagement",
+            "method": "createRelateAndSubmitObjects",
+            "inputData":
+            {
+                "inputs": "{{function:getCreateInput}}"
+            },
+            "outputData":
+            {
+                "createdMainObject": "output[0].objects[0]",
+                "createdObjects": "{{function:getCreatedObjects}}",
+                "secondaryType": "output[0].objects[0].type"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "closeCreateDialog",
+                        "condition": "!conditions.isPanelPinned"
+                    },
+                    {
+                        "name":"primaryWorkarea.reset"
+                    },
+                    {
+                        "name": "awPanel.loadNextValues",
+                        "condition": "conditions.isPanelPinned"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "success": [ {
+                        "condition": "data.createdObjects",
+                        "message": "createObjectSuccess"
+                    } ]
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "setActiveView":{
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "activeState",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "functions": {
+        "getCreateInput": {
+            "functionName": "getCreateInput",
+            "parameters": [
+                "{{data}}",
+                "",
+                "{{addPanelState.creationType}}",
+                "{{editHandlers.addPanelEditHandler}}"
+            ]
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "closeCreateDialog",
+            "action": "closePanelDialog",
+            "cacheEventData": true
+        }
+    ],
+    "conditions":
+    {
+        "shouldShowAddButtonInNewTab":
+        {
+            "expression": "addPanelState.selectedTab.view==='NewTabPageSub' && addPanelState.creationType"
+        },
+        "isPanelPinned": {
+            "expression": "subPanelContext.panelPinned"
+        }
+    },
+    "i18n":
+    {
+        "add":
+        [
+            "Asm1EbomConstants"
+        ],
+        "BACK_BUTTON_TITLE":
+        [
+            "BaseMessages"
+        ],
+        "pasteSuccessful":
+        [
+            "awAddDirectiveMessages"
+        ]
+    },
+    "messages": {
+        "createObjectSuccess": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.pasteSuccessful}}",
+            "messageTextParams": [
+                "{{data.createdObjects[0].props.object_string.uiValues[0]}}"
+            ]
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}

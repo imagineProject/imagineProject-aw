@@ -1,0 +1,275 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports":
+    [
+        "js/aw-command-panel.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-widget.directive",
+        "js/aw-i18n.directive",
+        "js/aw-default-cell.directive",
+        "js/aw-list-filter.directive",
+        "js/visible-when.directive",
+        "js/aw-flex-row.directive",
+        "js/aw-flex-column.directive"
+    ],
+
+    "actions": {
+        "initDataProvider": {
+            "actionType": "dataProvider",
+            "method": "availableSitesSearch"
+        },
+        "populateSubscribeSites": {
+            "actionType": "TcSoaService",
+            "serviceName": "GlobalMultiSite-2007-12-ImportExport",
+            "method": "getRemoteSites",
+            "inputData": {
+                "siteType": "ALL"
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "POM_imc",
+                        "properties": [
+                            {
+                                "name": "name"
+                            },
+                            {
+                                "name": "site_name"
+                            },
+                            {
+                                "name": "site_id"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "totalFound": "plain.length",
+                "searchResults": "{{function:getAvailableMultisiteSites}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "remoteInbox.loadDataProvider"
+                    }
+                ]
+            },
+            "deps": "js/Awp0RemoteInboxService"
+        },
+        "showAvailableSites": {
+            "actionType": "JSFunction",
+            "method": "showAvailableSites",
+            "inputData": {
+                "searchResults": "{{data.searchResults}}",
+                "filterString": "{{data.filterBox.dbValue}}",
+                "userObject": "{{props.subPanelContext.openedObject}}",
+                "isPanelPinned": "{{props.subPanelContext.panelPinned}}"
+            },
+            "outputData": {
+                "availableSites": ""
+            },
+            "deps": "js/Awp0RemoteInboxService"
+        },
+        "addRemoteInboxSubscription": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2010-09-DataManagement",
+            "method": "setProperties",
+            "inputData": {
+                "info": "{{function:getSubscribeInboxPropertyInput}}"
+            },
+            "outputData": {
+                "serviceData": ""
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "User",
+                        "properties": [
+                            {
+                                "name": "remote_inboxes"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": false,
+                            "relatedModified": [
+                                "{{props.subPanelContext.openedObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "complete",
+                        "condition": "!subPanelContext.panelPinned",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "remoteInbox.loadDataProvider",
+                        "condition": "subPanelContext.panelPinned"
+                    },
+                    {
+                        "name": "closeDialog",
+                        "condition": "!subPanelContext.panelPinned"
+                    }
+                ]
+            },
+            "deps": "js/Awp0RemoteInboxService",
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "serverError"
+                    }
+                ]
+            }
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [
+                    {
+                        "name": "complete",
+                        "condition": "!subPanelContext.panelPinned && !data.isDestroyed()",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            }
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cacheInitialSelection",
+                    "condition": "!data.initialSelection"
+                },
+                {
+                    "action": "closePanel",
+                    "condition": "data.initialSelection !== props.subPanelContext.selectionData.selected[0].uid"
+                }
+            ]
+        },
+        "cacheInitialSelection":{
+            "actionType": "JSFunction",
+            "method": "cacheSelection",
+            "inputData": {
+                "selectedUid": "{{props.subPanelContext.selectionData.selected[0].uid}}"
+            },
+            "outputData": {
+                "initialSelection": ""
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+
+    "data": {
+        "filterBox": {
+            "displayName": "",
+            "type": "STRING",
+            "dbValue": ""
+        }
+    },
+    "dataProviders": {
+        "availableSitesSearch": {
+            "action": "showAvailableSites",
+            "response": "{{data.availableSites}}",
+            "totalFound": "{{data.availableSites.length}}",
+            "totalLoaded": "{{data.availableSites.length}}",
+            "selectionModelMode": "{{subPanelContext.selectionModelMode}}",
+            "commands": {
+                "Awp0ShowObjectCell": {
+                    "id": "cmdOpen",
+                    "areas": [ "com.siemens.splm.clientfx.ui.modelObjectListActionCommands" ],
+                    "priorities": [ 300 ],
+                    "dependencies": [ "js/showObjectCommandHandler" ],
+                    "displayOption": "ON_HOVER_AND_SELECTION",
+                    "position": "TOP_RIGHT"
+                }
+            },
+            "noResultsFound": "{{i18n.noResultsFound}}"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "remoteInbox.loadDataProvider",
+            "action": "initDataProvider"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "populateSubscribeSites",
+        "onUpdate": {
+            "action": "closePanelOnSelectionChange",
+            "observers": [ "props.subPanelContext.selectionData.selected" ]
+        }
+    },
+    "ctx": {
+        "panelContext": null,
+        "preferences": null
+    },
+    "functions": {
+        "getAvailableMultisiteSites": {
+            "functionName": "getAvailableMultisiteSites",
+            "parameters": [
+                "{{ctx.panelContext}}"
+            ]
+        },
+        "getSubscribeInboxPropertyInput": {
+            "functionName": "getSubscribeInboxPropertyInput",
+            "parameters": [
+                "{{props.subPanelContext.openedObject}}",
+                "{{data.dataProviders.availableSitesSearch.selectedObjects}}",
+                "{{ctx.panelContext}}",
+                "true"
+            ]
+        }
+    },
+
+    "conditions": {
+        "isValidToSubscribe": {
+            "expression": "data.dataProviders.availableSitesSearch.selectedObjects && data.dataProviders.availableSitesSearch.selectedObjects.length > 0"
+        }
+    },
+    "messages": {
+        "serverError": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n": {
+        "addCommandTitle": [ "InboxMessages" ],
+        "fromSite": [ "InboxMessages" ],
+        "noResultsFound": [ "InboxMessages" ]
+    }
+}

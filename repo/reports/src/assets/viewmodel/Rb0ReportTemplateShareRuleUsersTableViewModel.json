@@ -1,0 +1,146 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "usersTableSearchBox": {
+            "displayName": "{{i18n.filterPanelCategoryFilterPlaceholderText}}",
+            "type": "STRING",
+            "dbValue": "",
+            "requiredText": "{{i18n.filterPanelCategoryFilterPlaceholderText}}"
+        }
+    },
+    "actions": {
+        "doGridDataProvider": {
+            "actionType": "dataProvider",
+            "method": "gridDataProvider"
+        },
+        "loadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadData",
+            "inputData": {
+                "0": {
+                    "attributesToInflate": [],
+                    "maxToLoad": 50,
+                    "maxToReturn": 50,
+                    "providerName": "um0AdminDataProvider",
+                    "focusObjUid": "{{ctx.newlyCreatedObj.uid}}",
+                    "searchFilterMap6": {},
+                    "searchCriteria": {
+                        "resourceProviderContentType": "User",
+                        "searchString": "{{data.usersTableSearchBox.dbValue}}"
+                    },
+                    "startIndex": "{{data.dataProviders.gridDataProvider.startIndex}}"
+                },
+                "1": {
+                    "clientName": "AWClient",
+                    "clientScopeURI": "Um0ShowUser"
+                },
+                "2": null,
+                "3": true,
+                "4": "{{ctx.newlyCreatedObj}}"
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "searchResults",
+                "dataProviders.gridDataProvider.startIndex": "cursor.startIndex"
+            },
+            "deps": "js/userMgmtService"
+        },
+        "updateSharedWithStateWithAddAndRemoveButtonVisibility": {
+            "actionType": "JSFunction",
+            "method": "disableAddButtonForAvailable",
+            "inputData": {
+                "buttonName": "remove",
+                "dataProvider": "{{data.dataProviders.gridDataProvider}}",
+                "currentSearchFolderAccessors": [],
+                "shareReportState": "{{props.shareReportState}}"
+            },
+            "deps": "js/ShareTemplateService"
+        },
+        "removeSelection": {
+            "actionType": "JSFunction",
+            "method": "removeSelectionsFromSearchFolderShareRule",
+            "inputData": {
+                "shareReportState": "{{props.shareReportState}}",
+                "dataProvider": "{{data.dataProviders.gridDataProvider}}"
+            },
+            "deps": "js/Awp0SearchFolderShareRuleService"
+        },
+        "removeSelectionBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "removeSelection",
+                    "condition": "props.shareReportState.value.selectedAccessors"
+                }
+            ]
+        }
+    },
+    "dataProviders": {
+        "gridDataProvider": {
+            "action": "loadData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+    "columnProviders": {
+        "clientScopeUI": {
+            "frozenColumnIndex": 0,
+            "columns": [
+                {
+                    "name": "icon",
+                    "displayName": "",
+                    "maxWidth": 70,
+                    "minWidth": 70,
+                    "width": 70,
+                    "enableColumnMenu": false,
+                    "enableSorting": false,
+                    "pinnedLeft": true,
+                    "enableColumnResizing": false
+                },
+                {
+                    "isFilteringEnabled": true,
+                    "maxWidth": 375,
+                    "minWidth": 250,
+                    "width": 300,
+                    "enableSorting": false,
+                    "propertyName": "user_name",
+                    "displayName": "{{i18n.reportName}}"
+                }
+            ],
+            "sortCriteria": []
+        }
+    },
+    "grids": {
+        "gridUsersView": {
+            "dataProvider": "gridDataProvider",
+            "columnProvider": "clientScopeUI",
+            "gridOptions": {
+                "enableGridMenu": false,
+                "enablePinning": false
+            }
+        }
+    },
+    "props": {
+        "share-report-state": {
+            "type": "object"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "gridDataProvider.selectionChangeEvent",
+            "action": "updateSharedWithStateWithAddAndRemoveButtonVisibility"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount":"updateSharedWithStateWithAddAndRemoveButtonVisibility",
+        "onUpdate": {
+            "action": "removeSelectionBatchJob",
+            "observers": [ "props.shareReportState" ]
+        }
+    },
+    "i18n": {
+        "filterPanelCategoryFilterPlaceholderText": [ "SearchMessages" ],
+        "reportName": [ "ReportChartMessages" ]
+    }
+}

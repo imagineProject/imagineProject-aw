@@ -1,0 +1,1166 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "onEvent": [
+        {
+            "eventId":"publishAclTableSaveSuccessEvent",
+            "cacheEventData": true,
+            "action":"publishAclTableSaveSuccessAction"
+        },
+        {
+            "eventId":"publishAclTableSaveFailureEvent",
+            "cacheEventData": true,
+            "action":"publishAclTableSaveFailureAction"
+        },
+        {
+            "eventId": "AccessorType.selectionChangeEvent",
+            "cacheEventData": true,
+            "action": "clearAccessorInObjectACLProvider"
+        },
+        {
+            "eventId": "am.saveACEEntries",
+            "action": "saveACLEntries",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "am.addACEEntry",
+            "action": "addACEEntryAction",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "am.removeACEEntry",
+            "action": "removeACEEntryAction",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "am.updatePrivileges",
+            "cacheEventData": true,
+            "action": "updatePrivileges"
+        },
+        {
+            "eventId": "am.resetPrivileges",
+            "cacheEventData": true,
+            "action": "resetPrivileges"
+        },
+        {
+            "eventId": "am.clearAllPrivileges",
+            "action": "updatePrivileges",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "objectAclTable.dataLoaded",
+            "cacheEventData": true,
+            "action": "objectAclTableContentLoadedBatchAction"
+        },
+        {
+            "eventId": "attributeAclTable.dataLoaded",
+            "cacheEventData": true,
+            "action": "attributeAclTableContentLoadedBatchAction"
+        },
+        {
+            "eventId": "editHandlerStateChange",
+            "cacheEventData": true,
+            "condition": "state === 'starting'",
+            "action": "setNamedAclEditable"
+        },
+        {
+            "eventId": "editHandlerStateChange",
+            "cacheEventData": true,
+            "condition": "state === 'saved' ",
+            "action": "saveNamedAclTable"
+        },
+        {
+            "eventId": "editHandlerStateChange",
+            "cacheEventData": true,
+            "condition": "state === 'canceling'",
+            "action": "objectAclTableCancelEdit"
+        },
+        {
+            "eventId": "am.addAlsACEEntry",
+            "action": "addAlsACEEntryAction",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "am.removeAlsACEEntry",
+            "action": "removeAlsACEEntryAction",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "updateReadWritePrivilege",
+            "cacheEventData": true,
+            "action": "updateReadWritePrivilege"
+        }
+    ],
+    "conditions": {
+        "isAclName": {
+            "expression":"data.acl.uiValue && !data.acl.filterString"
+        },
+        "isNonSystemAcl": {
+            "expression": "props.namedAclState.aclType!=='SYSTEM' && props.namedAclState.aclType!=='RULETREE'"
+        },
+        "isTableEditable": {
+            "expression": "conditions.isNonSystemAcl || (!conditions.isNonSystemAcl && data.isPrivilege.dbValues[0] === '1' && props.subPanelContext.context.name === 'accessManagerSublocation')"
+        },
+        "isInEdit": {
+            "expression": "props.isEditing && conditions.isTableEditable"
+        },
+        "isInNonEdit": {
+            "expression": "!props.isEditing && conditions.isTableEditable"
+        },
+        "isAclEditing": {
+            "expression": "props.isEditing"
+        },
+        "showAlsConfig":{
+            "expression":"data.acl.uiValue"
+        }
+    },
+    "data": {
+        "acl": {
+            "displayName": "{{i18n.objectAclName}}",
+            "name": "acl",
+            "type": "STRING",
+            "isRequired": "false",
+            "dataProvider": "objectAclNameProvider",
+            "dbValue": "{{props.aclProp.dbValue}}",
+            "dispValue": "{{props.aclProp.uiValue}}",
+            "labelPosition": "PROPERTY_LABEL_AT_LEFT",
+            "isLocalizable": true
+        },
+        "isRestrictedWrite": {
+            "displayName": "{{i18n.isRestrictedWrite}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "labelPosition:": "PROPERTY_LABEL_AT_LEFT"
+        },
+        "defRestrictedWrite": {
+            "displayName": "{{i18n.defRestrictedWrite}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "labelPosition:": "PROPERTY_LABEL_AT_LEFT"
+        },
+        "defRestrictedRead": {
+            "displayName": "{{i18n.defRestrictedRead}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "labelPosition:": "PROPERTY_LABEL_AT_LEFT"
+        },
+        "isRestrictedWriteTooltip": {
+            "extendedTooltipContent": "{{i18n.isRestrictedWriteTooltipText}}"
+        },
+        "defRestrictedWriteTooltip": {
+            "extendedTooltipContent": "{{i18n.defRestrictedWriteTooltipText}}"
+        },
+        "defRestrictedReadTooltip": {
+            "extendedTooltipContent": "{{i18n.defRestrictedReadTooltipText}}"
+        },
+        "AM_SaveCommandAnchorWithFullScreen": "am0_aclSaveCommands,aw_fullScreen",
+        "AM_SaveCommandAnchor": "am0_aclSaveCommands",
+          "showCheckBox": {
+            "initialValues": {
+                "value": false
+            },
+            "meta": {}
+        },
+        "attrAccessShowCheckBox": {
+            "initialValues": {
+                "value": false
+            },
+            "meta": {}
+        }
+    },
+    "actions": {
+        "init": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "addAclPropToDataSource"
+                },
+                {
+                    "action": "getUserSessionGroupInfo"
+                },
+                {
+                    "action": "updateAclInNamedAclState",
+                    "condition":"data.acl.dbValue!==props.namedAclState.updatedAcl.dbValue"
+                }
+            ]
+        },
+        "publishAclTableSaveSuccessAction":{
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "Am0AclTable.saveEditComplete",
+                        "eventData":{
+                            "state":"success"
+                        }
+                    }
+                ]
+            }
+        },
+        "publishAclTableSaveFailureAction":{
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "Am0AclTable.saveEditComplete",
+                        "eventData":{
+                            "state":"failure"
+                        }
+                    }
+                ]
+            }
+        },
+        "addAclPropToDataSource": {
+            "actionType": "JSFunction",
+            "method": "loadAclProp",
+            "deps": "js/Am0AclTableService",
+            "inputData": {
+                "data": "{{data}}",
+                "aclProp": "{{props.aclProp}}",
+                "isEditing": "{{props.isEditing}}"
+            },
+            "outputData":{
+                "acl":""
+            }
+        },
+        "registerPreSaveAction": {
+            "actionType": "JSFunction",
+            "method": "preSaveAction",
+            "inputData": {
+                "data": "{{data}}",
+                "dataProvider": "{{data.dataProviders}}",
+                "namedAclState": "{{props.namedAclState}}",
+                "aclProp": "{{props.aclProp}}",
+                "register": true,
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "unregisterPreSaveAction": {
+            "actionType": "JSFunction",
+            "method": "preSaveAction",
+            "inputData": {
+                "data": "{{data}}",
+                "dataProvider": "{{data.dataProviders}}",
+                "namedAclState": "{{props.namedAclState}}",
+                "aclProp": "{{props.aclProp}}",
+                "register": false,
+                "subPanelContext": "{{subPanelContext}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "startNamedACLTableEditAction": {
+            "actionType": "dataProvider",
+            "method": "objectAccessControlProvider",
+            "inputData": {
+                "action": "startEdit"
+            }
+        },
+        "startAttributeACLTableEditAction": {
+            "actionType": "dataProvider",
+            "method": "attributeAccessControlProvider",
+            "inputData": {
+                "action": "startEdit"
+            }
+        },
+        "saveEditObjectAclTable": {
+            "actionType": "dataProvider",
+            "method": "objectAccessControlProvider",
+            "inputData": {
+                "action": "saveEdits"
+            }
+        },
+        "saveEditAttributeAclTable": {
+            "actionType": "dataProvider",
+            "method": "attributeAccessControlProvider",
+            "inputData": {
+                "action": "saveEdits"
+            }
+        },
+        "cancelEditObjectAclTable": {
+            "actionType": "dataProvider",
+            "method": "objectAccessControlProvider",
+            "inputData": {
+                "action": "cancelEdits"
+            }
+        },
+        "cancelEditAttrAclTable": {
+            "actionType": "dataProvider",
+            "method": "attributeAccessControlProvider",
+            "inputData": {
+                "action": "cancelEdits"
+            }
+        },
+        "objectAclTableDummyAction": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": []
+            }
+        },
+        "setNamedAclEditable": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "setAclEditable",
+                    "condition": "!data.acl.isEditable"
+                },
+                {
+                    "action": "startNamedACLTableEditAction",
+                    "condition": "conditions.isInEdit"
+                },
+                {
+                    "action": "registerPreSaveAction",
+                    "condition": "conditions.isInEdit"
+                },
+                {
+                    "action": "startAttributeACLTableEditAction",
+                    "condition":"conditions.isInEdit && conditions.showAlsConfig"
+                }
+            ]
+        },
+        "setAclEditable": {
+            "actionType": "JSFunction",
+            "method": "setAclEditable",
+            "inputData": {
+                "data": "{{data}}",
+                "editable": true
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "saveACLEntries": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getModifiedACLEntries"
+                },
+                {
+                    "action": "saveACL"
+                },
+                {
+                    "action": "saveEditObjectAclTable",
+                    "condition": "props.namedAclState.aclType!=='WORKFLOW'"
+                },
+                {
+                    "action": "saveEditAttributeAclTable",
+                    "condition":"props.namedAclState.aclType!=='WORKFLOW'"
+                }
+            ]
+        },
+        "saveACL": {
+            "actionType": "JSFunction",
+            "method": "saveACL",
+            "inputData": {
+                "data": "{{props.namedAclState}}"
+            },
+            "events":{
+                "success":[
+                    {
+                        "name": "publishAclTableSaveSuccessEvent",
+                        "condition":"!props.namedAclState.errMessage"
+                    }
+                 ],
+                "failure":[
+                    {
+                        "name": "publishAclTableSaveFailureEvent"
+                    }
+                 ]
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "onRestrictedWriteChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action":"isRestrictedWriteChange"
+                },
+                {
+                    "action": "updateAclStateWithRestrictedWriteValues"
+                }
+            ]
+        },
+        "updateAclStateWithRestrictedWriteValues":{
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.namedAclState}}",
+                "value": {
+                    "isRestrictedWrite": "{{data.isRestrictedWrite}}",
+                    "defRestrictedWrite": "{{data.defRestrictedWrite}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "unsetWriteRestricted":{
+            "actionType": "JSFunction",
+            "method": "unsetWriteRestricted",
+            "inputData": {
+                "namedAclState":"{{props.namedAclState}}",
+                "data":"{{data}}"
+            },
+            "outputData":{
+                "isRestrictedWrite":"isRW"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+
+        "isRestrictedWriteChange":{
+            "actionType": "JSFunction",
+            "method": "onCheckBoxChange",
+            "inputData": {
+                "namedAclState":"{{props.namedAclState}}",
+                "data":"{{data}}",
+                "isRestrictedWriteChange":true
+            },
+
+            "deps": "js/Am0AclTableService"
+        },
+        "isDefRestrictedWriteChangeBatchAction":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "isDefRestrictedWriteChange"
+                },
+                {
+                    "action": "updateAclStateWithRestrictedWriteValues"
+                }
+            ]
+        },
+        "isDefRestrictedWriteChange":{
+            "actionType": "JSFunction",
+            "method": "onCheckBoxChange",
+            "inputData": {
+                "namedAclState":"{{props.namedAclState}}",
+                "data":"{{data}}",
+                "isRestrictedWriteChange":false
+            },
+            "outputData":{
+                "isRestrictedWrite":"isRW",
+                "defRestrictedWrite":"defRW"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "isDefRestrictedReadChange":{
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.namedAclState}}",
+                "value": {
+                    "defRestrictedRead": "{{data.defRestrictedRead}}"
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "getModifiedACLEntries": {
+            "actionType": "JSFunction",
+            "method": "getModifiedACLEntries",
+            "inputData": {
+                "acl": "{{data.acl}}",
+                "dataProvider": "{{data.dataProviders}}",
+                "namedAclState": "{{props.namedAclState}}",
+                "isRestrictedWrite": "{{data.isRestrictedWrite}}",
+                "defRestrictedRead": "{{data.defRestrictedRead}}",
+                "defRestrictedWrite": "{{data.defRestrictedWrite}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "objectAclTableCancelEdit": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cancelEditObjectAclTable",
+                    "condition": "conditions.isInNonEdit"
+                },
+                {
+                    "action":"cancelEditAttrAclTable",
+                    "condition": "conditions.isInNonEdit"
+                },
+                {
+                    "action": "unregisterPreSaveAction",
+                    "condition": "conditions.isInNonEdit"
+                }
+            ]
+        },
+        "saveNamedAclTable": {
+            "actionType": "batchJob",
+            "steps": [
+
+                {
+                    "action": "unregisterPreSaveAction"
+                },
+                {
+                    "action":"saveEditObjectAclTable"
+                },
+                {
+                    "action":"saveEditAttributeAclTable"
+                }
+            ]
+        },
+        "objectAclTableSaveEdit": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": []
+            }
+        },
+        "setAclNonEditable": {
+            "actionType": "JSFunction",
+            "method": "setAclEditable",
+            "inputData": {
+                "data": "{{data}}",
+                "editable": false
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "removeBlankRows": {
+            "actionType": "JSFunction",
+            "method": "removeBlankRows",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.objectAccessControlProvider}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "onAclChange": {
+            "actionType": "batchJob",
+            "steps": [
+
+                {
+                    "action": "callObjectAccessControlProvider",
+                    "condition": "data.acl.uiValue"
+                },
+                {
+                    "action": "callAttributeAccessControlProvider",
+                    "condition":"conditions.showAlsConfig"
+                },
+                {
+                    "action": "updateAclInNamedAclState",
+                    "condition":"data.acl.dbValue!==props.namedAclState.updatedAcl.dbValue"
+                }
+            ]
+        },
+        "updateAclInNamedAclState": {
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{props.namedAclState}}",
+                "value": {
+                    "updatedAcl": "{{data.acl}}",
+                    "updatedAclEntries":[],
+                    "updatedAttrEntries":[]
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "callObjectAccessControlProvider": {
+            "actionType": "dataProvider",
+            "method": "objectAccessControlProvider"
+        },
+        "callObjectAclNameProvider":{
+            "actionType": "dataProvider",
+            "method": "ObjectAclNameProvider"
+        },
+        "callAttributeAccessControlProvider": {
+            "actionType": "dataProvider",
+            "method": "attributeAccessControlProvider"
+        },
+        "loadAclTableColumnBatch": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadColumns"
+                },
+                {
+                    "action": "getPrivilegeNames",
+                    "condition": "data.dataProviders.objectAccessControlProvider.columnConfig.columns.length===0"
+                }
+            ]
+        },
+        "loadColumns": {
+            "actionType": "JSFunction",
+            "method": "getViewModelColumns",
+            "outputData": {
+                "dataProviders.objectAccessControlProvider.columnConfig": ""
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "getPrivilegeNames": {
+            "actionType": "TcSoaService",
+            "serviceName": "Administration-2010-04-IRM",
+            "method": "getPrivilegeNames",
+            "inputData": {},
+            "outputData": {
+                "dataProviders.objectAccessControlProvider.columnConfig": "{{function:initColumns}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "loadData": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadDataIfValidAclName",
+                    "condition": "conditions.isAclName"
+                }
+            ]
+        },
+        "loadDataIfValidAclName": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2022-12-AwAccessManager",
+            "method": "getACEInfoForACL",
+            "inputData": {
+                "input": [
+                    {
+                        "acl": {
+                            "uid": "{{data.acl.dbValue}}",
+                            "type": "AM_ACL"
+                        },
+                        "aceInput": {
+                            "startIndex": "{{data.dataProviders.objectAccessControlProvider.startIndex}}",
+                            "maxToReturn": 50
+                        },
+                        "clientId": "ObjACl"
+                    }
+                ]
+            },
+            "outputData": {
+                "totalACLEntries": "output[0].totalAce",
+                "aclEntries": "{{function:loadObjectACLEntries}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "objectAclTable.dataLoaded",
+                        "eventData": {
+                            "aclEntries": "{{data.aclEntries}}"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/Am0AclTableService"
+        },
+
+        "objectAclTableContentLoadedBatchAction":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "storeAceEntriesFromTable"
+                },
+                {
+                    "action": "startNamedACLTableEditAction",
+                    "condition": "conditions.isInEdit && data.acl.uiValue"
+                },
+                {
+                    "action":"cancelEditObjectAclTable",
+                    "condition":"!conditions.isInEdit && data.acl.uiValue"
+                }
+            ]
+        },
+        "attributeAclTableContentLoadedBatchAction":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "storeAttrAceEntriesFromTable"
+                },
+                {
+                    "action": "startAttributeACLTableEditAction",
+                    "condition":"conditions.isInEdit && data.acl.uiValue"
+                },
+                {
+                    "action":"cancelEditAttrAclTable",
+                    "condition":"!conditions.isInEdit && data.acl.uiValue"
+                }
+            ]
+        },
+        "loadAttributeAclData": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "loadAttributeAclDataIfValidAclName",
+                    "condition": "conditions.isAclName"
+                }
+            ]
+        },
+        "loadAttributeAclDataIfValidAclName": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2022-12-AwAccessManager",
+            "method": "getACEInfoForACL",
+            "inputData": {
+                "input": [
+                    {
+                        "acl": {
+                            "uid": "{{data.acl.dbValue}}",
+                            "type": "AM_ACL"
+                        },
+                        "attrAceInput": {
+                            "startIndex": "{{function:totalAttrAclStartIndex}}",
+                            "maxToReturn": 50
+                        },
+                        "clientId": "AttrACl"
+                    }
+                ]
+            },
+            "outputData": {
+                "totalAttrACLEntries": "output[0].totalAttrAce",
+                "attrAclEntries": "{{function:loadAttributeACLEntries}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "attributeAclTable.dataLoaded",
+                        "eventData": {
+                            "aclEntries": "{{data.attrAclEntries}}"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "storeAceEntriesFromTable": {
+            "actionType": "JSFunction",
+            "method": "storeAceEntriesFromTable",
+            "inputData": {
+                "aclEntries": "{{data.eventData.aclEntries}}",
+                "namedAclState":"{{props.namedAclState}}",
+                "type":"AM_ACE"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "storeAttrAceEntriesFromTable": {
+            "actionType": "JSFunction",
+            "method": "storeAceEntriesFromTable",
+            "inputData": {
+                "aclEntries": "{{data.eventData.aclEntries}}",
+                "namedAclState":"{{props.namedAclState}}",
+                "type":"fnd0AlsAce"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "addACEEntryAction": {
+            "actionType": "JSFunction",
+            "method": "addACEEntryToTable",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.objectAccessControlProvider}}",
+                "objectAcl": "{{data.acl}}",
+                "data": "{{data.isRestrictedWrite.dbValue}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "removeACEEntryAction": {
+            "actionType": "JSFunction",
+            "method": "removeACEEntryFromTable",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.objectAccessControlProvider}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "resetPrivileges": {
+            "actionType": "JSFunction",
+            "method": "resetPrivileges",
+            "inputData": {
+                "dataProviders": "{{data.dataProviders}}",
+                "namedAclState": "{{props.namedAclState}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "updatePrivileges": {
+            "actionType": "JSFunction",
+            "method": "updatePrivileges",
+            "inputData": {
+                "dataProviders": "{{data.dataProviders}}",
+                "access": "{{data.eventData.access}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "clearAccessorInObjectACLProvider": {
+            "actionType": "JSFunction",
+            "method": "clearAccessorCell",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "data": "{{data}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "loadACLData": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-AccessManager-2022-12-AwAccessManager",
+            "method": "getACLs2",
+            "inputData": {
+                "aclType": "{{props.namedAclState.aclType}}",
+                "searchStr": "{{function:getAclsSearchString}}",
+                "startIndex": "{{data.dataProviders.objectAclNameProvider.startIndex}}",
+                "pageSize": 50
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "aclDropdownEntries": "{{function:loadObjectACLNames}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "getUserSessionGroupInfo": {
+            "actionType": "JSFunction",
+            "method": "getObject",
+            "inputData": {
+                "data": "{{ctx.userSession.props.group.dbValue}}"
+            },
+            "outputData": {
+                "isPrivilege": "props.privilege"
+            },
+            "deps": "soa/kernel/clientDataModel"
+        },
+        "addAlsACEEntryAction": {
+            "actionType": "JSFunction",
+            "method": "addACEEntryToTable",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.attributeAccessControlProvider}}",
+                "objectAcl": "{{data.acl}}",
+                "isRestrictedWrite": "{{data.isRestrictedWrite.dbValue}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "removeAlsACEEntryAction": {
+            "actionType": "JSFunction",
+            "method": "removeACEEntryFromTable",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.attributeAccessControlProvider}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "updateReadWritePrivilege":{
+            "actionType": "JSFunction",
+            "method": "updateReadWritePrivilege",
+            "inputData": {
+                "eventData": "{{data.eventData}}",
+                "provider": "{{data.dataProviders.attributeAccessControlProvider}}"
+            },
+            "deps": "js/Am0AclTableService"
+        },
+        "onEditStateChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action":"addAclPropToDataSource"
+                },
+                {
+                    "action": "saveNamedAclTable",
+                    "condition":"props.isEditing===false && props.namedAclState.autoSave===true"
+                },
+                {
+                    "action": "cancelEditObjectAclTable",
+                    "condition":"conditions.isInNonEdit && props.namedAclState.autoSave===false"
+                },
+                {
+                    "action": "Am0ACLDisableMultiSelectCommandAction"
+                },
+                {
+                    "action":"handleSelectionMode"
+                },
+                {
+                    "action":"publishClientRefreshEventForPlTable"
+                },
+
+                {
+                    "action": "callObjectAccessControlProvider",
+                    "condition":"data.acl.uiValue && props.isEditing===false"
+                },
+                {
+                    "action": "callAttributeAccessControlProvider",
+                    "condition":"conditions.showAlsConfig && props.isEditing===false"
+                }
+            ]
+        },
+        "Am0ACLDisableMultiSelectCommandAction": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+
+                        "name": "objectAccessControlProvider.multiSelectModeAction",
+                        "eventData": {
+                            "multiSelect": false
+                        }
+                    },
+                    {
+
+                        "name": "attributeAccessControlProvider.multiSelectModeAction",
+                        "eventData": {
+                            "multiSelect": false
+                        }
+                    }
+                ]
+            }
+        },
+        "handleSelectionMode":{
+            "actionType": "JSFunction",
+            "method": "handleSelectionMode",
+            "deps": "js/Am0AclTableService",
+            "inputData": {
+                "fields": "{{fields}}",
+                "multiSelectEnabled": false
+            }
+        },
+        "publishClientRefreshEventForPlTable": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "objectACLTable.plTable.clientRefresh"
+                },
+                {
+                    "name": "attributeACLTable.plTable.clientRefresh"
+                }
+             ]
+            }
+        }
+    },
+    "ctx": {
+        "userSession": {
+            "type": "object"
+        },
+        "preferences": {
+            "type": "object"
+        }
+    },
+    "dataProviders": {
+        "objectAccessControlProvider": {
+            "action": "loadData",
+            "response": "{{data.aclEntries}}",
+            "totalFound": "{{data.totalACLEntries}}",
+            "enablePropEdit": "FALSE",
+            "selectionModelMode": "multiple",
+            "editConfig": {
+                "startEditAction": "objectAclTableDummyAction",
+                "saveEditAction": "objectAclTableSaveEdit",
+                "identifier": "uid"
+            }
+        },
+        "attributeAccessControlProvider": {
+            "action": "loadAttributeAclData",
+            "response": "{{data.attrAclEntries}}",
+            "totalFound": "{{data.totalAttrACLEntries-1}}",
+            "enablePropEdit": "FALSE",
+            "selectionModelMode": "multiple",
+            "editConfig": {
+                "startEditAction": "objectAclTableDummyAction",
+                "saveEditAction":"objectAclTableSaveEdit",
+                "identifier": "uid"
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        },
+        "objectAclNameProvider": {
+            "action": "loadACLData",
+            "response": "{{data.aclDropdownEntries}}",
+            "totalFound": "{{data.totalFound}}"
+        }
+    },
+    "columnProviders": {
+        "objectACLColumnProvider": {
+            "loadColumnAction": "loadAclTableColumnBatch",
+            "columns": "{{data.columns}}"
+        },
+        "attributeACLColumnProvider": {
+            "columns": [
+                {
+                    "name": "PropertyGroup",
+                    "propertyName": "PropertyGroup",
+                    "displayName": "{{i18n.PropertyGroup}}",
+                    "minWidth": 100,
+                    "width": 200,
+                    "typeName": "String",
+                    "enableColumnHiding": false,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true,
+                    "renderingHint": "AmTreeNamedACLLOVComponent"
+                },
+                {
+                    "name": "AccessorType",
+                    "propertyName": "AccessorType",
+                    "displayName": "{{i18n.AccessorType}}",
+                    "minWidth": 100,
+                    "width": 165,
+                    "typeName": "String",
+                    "enableColumnHiding": false,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true,
+                    "renderingHint": "AmTreeNamedACLLOVComponent"
+                },
+                {
+                    "name": "Accessor",
+                    "propertyName": "Accessor",
+                    "displayName": "{{i18n.Accessor}}",
+                    "minWidth": 100,
+                    "width": 160,
+                    "typeName": "String",
+                    "enableColumnHiding": false,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true,
+                    "renderingHint": "AmTreeNamedACLLOVComponent"
+                },
+                {
+                    "name": "READ",
+                    "propertyName": "READ",
+                    "displayName": "{{i18n.Read}}",
+                    "minWidth": 40,
+                    "width": 65,
+                    "typeName": "String",
+                    "enableColumnHiding": false,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true,
+                    "renderingHint": "AmTreeNamedACLLOVComponent"
+                },
+                {
+                    "name": "WRITE",
+                    "propertyName": "WRITE",
+                    "displayName": "{{i18n.Write}}",
+                    "minWidth": 40,
+                    "width": 65,
+                    "typeName": "String",
+                    "enableColumnHiding": false,
+                    "enableColumnMenu": false,
+                    "pinnedLeft": true,
+                    "renderingHint": "AmTreeNamedACLLOVComponent"
+                }
+            ],
+            "frozenColumnIndex": -1
+        }
+    },
+    "grids": {
+        "objectACLTable": {
+            "dataProvider": "objectAccessControlProvider",
+            "columnProvider": "objectACLColumnProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enablePinning": false,
+                "enableSorting": false,
+                "maxRowsToShow": 7
+            }
+        },
+        "attributeACLTable": {
+            "dataProvider": "attributeAccessControlProvider",
+            "columnProvider": "attributeACLColumnProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enablePinning": false,
+                "enableSorting": false,
+                "maxRowsToShow": 7
+            }
+        }
+    },
+    "functions": {
+        "getAclsSearchString": {
+            "functionName": "getFilterString",
+            "parameters": [
+                "{{data.acl.filterString}}"
+            ]
+        },
+        "loadObjectACLEntries": {
+            "functionName": "loadObjectACLEntries",
+            "parameters": [
+                "{{data.dataProviders.objectAccessControlProvider}}",
+                "{{data.acl}}",
+                "{{fields}}"
+            ]
+        },
+        "loadAttributeACLEntries": {
+            "functionName": "loadAttributeACLEntries",
+            "parameters": [
+                "{{data.dataProviders.attributeAccessControlProvider}}",
+                "{{data}}",
+                "{{formProp}}"
+            ]
+        },
+        "totalAttrAclStartIndex": {
+            "functionName": "totalAttrAclStartIndex",
+            "parameters": [
+                "{{data.dataProviders.attributeAccessControlProvider.startIndex}}"
+            ]
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "init",
+                "observers": [
+                    "props.aclProp.dbValue",
+                    "props.namedAclState.aclType",
+                    "props.subPanelContext.selectionData.selected"
+                ]
+            },
+            {
+                "action": "onAclChange",
+                "observers": [
+                    "viewModel.acl.dbValue"
+                ]
+            },
+            {
+                "action": "onEditStateChange",
+                "observers": [
+                    "props.isEditing"
+                ]
+            }
+
+        ]
+    },
+    "props": {
+        "named-acl-state": {
+            "type": "object"
+        },
+        "is-editing": {
+            "type": "object"
+        },
+        "acl-prop": {
+            "type": "object"
+        },
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "i18n": {
+        "objectAclName": [
+            "AccessmgmtConstants"
+        ],
+        "namedAcl": [
+            "AccessmgmtConstants"
+        ],
+        "PropertyGroup": [
+            "AccessmgmtConstants"
+        ],
+        "Read": [
+            "AccessmgmtConstants"
+        ],
+        "Write": [
+            "AccessmgmtConstants"
+        ],
+        "AccessorType": [
+            "AccessmgmtConstants"
+        ],
+        "Accessor": [
+            "AccessmgmtConstants"
+        ],
+        "objectAccessControlList": [
+            "AccessmgmtConstants"
+        ],
+        "attributeAccessControlList": [
+            "AccessmgmtConstants"
+        ],
+        "isRestrictedWrite": [
+            "AccessmgmtConstants"
+        ],
+        "defRestrictedWrite": [
+            "AccessmgmtConstants"
+        ],
+        "defRestrictedRead": [
+            "AccessmgmtConstants"
+        ],
+        "isRestrictedWriteTooltipText":[
+            "AccessmgmtConstants"
+        ],
+        "defRestrictedWriteTooltipText":[
+            "AccessmgmtConstants"
+        ],
+        "defRestrictedReadTooltipText":[
+            "AccessmgmtConstants"
+        ]
+    }
+}

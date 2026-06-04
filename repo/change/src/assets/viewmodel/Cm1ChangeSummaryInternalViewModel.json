@@ -1,0 +1,580 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-command-panel-section.directive",
+        "js/aw-compare2.directive",
+        "js/aw-flex-row.directive",
+        "js/aw-toolbar.directive"
+    ],
+
+    "actions": {
+        "getChangeSummaryData": {
+            "actionType": "JSFunctionAsync",
+            "method": "getChangeSummaryData",
+            "inputData": {
+                "treeLoadInput": "request.treeLoadInput",
+                "dataProvider": "{{data.dataProviders.getChangeSummaryDataProvider}}",
+                "isGenealogy": false,
+                "subPanelContext": "{{subPanelContext}}",
+                "isMergeCandidate": "{{data.isMergeCandidate}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "getChangeSummaryData.loaded"
+
+                    }
+                ]
+            },
+            "outputData": {
+                "dataProviders.getChangeSummaryDataProvider.columnConfig": "columnConfig",
+                "treeLoadResult":"treeLoadResult"
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "reloadChangeSummaryData":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "resetChangeSummaryTable",
+                    "condition": "parameters.eventData.refreshLocationFlag"
+                }
+            ]
+        },
+        "handleModelObjectUpdated": {
+            "actionType": "JSFunction",
+            "method": "handleModelObjectUpdated",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.getChangeSummaryDataProvider}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+
+        "refreshAction": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "cdm.relatedModified",
+                    "eventData": {
+                        "refreshLocationFlag": true,
+                        "relatedModified": [ "{{ctx.pselected}}" ]
+                    }
+                } ]
+            }
+        },
+        "setArrangeEventAction": {
+            "actionType": "JSFunction",
+            "method": "selectArrangeEventAction",
+            "inputData": {
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "doArrangeCompareEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+
+        "saveColumnConfig": {
+            "actionType": "JSFunction",
+            "method": "saveColumnConfig",
+            "deps": "js/Cm1ChangeSummaryService",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.getChangeSummaryDataProvider}}",
+                "columns": "{{data.dataProviders.getChangeSummaryDataProvider.newColumns}}"
+            }
+        },
+
+        "resetColumnConfig": {
+            "actionType": "JSFunction",
+            "method": "resetColumnConfig",
+            "deps": "js/Cm1ChangeSummaryService",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.getChangeSummaryDataProvider}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "resetChangeSummaryTable"
+                    }
+                ]
+            }
+        },
+
+        "handleSelectionInChangeSummaryTable": {
+            "actionType": "JSFunction",
+            "method": "handleSelectionInChangeSummaryTable",
+            "inputData": {
+                "selectedObjectFromChangeSummary": "{{data.dataProviders.getChangeSummaryDataProvider.selectedObjects}}"
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+
+        "setViewerContext": {
+            "actionType": "JSFunction",
+            "method": "setViewerContext",
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+
+        "setChangeSummaryTableWidth": {
+             "actionType": "JSFunction",
+            "method": "setChangeSummaryTableToolTipWidth",
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "loadPropertyCompareColumns": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/Cm1ChangeSummaryService",
+            "method": "getPropertyCompareTableColumnConfig",
+            "inputData": {
+                "soaInput": {
+                    "getOrResetUiConfigsIn": [
+                        {
+                            "scope": "LoginUser",
+                            "clientName": "AWClient",
+                            "resetColumnConfig": false,
+                            "columnConfigQueryInfos": [
+                                {
+                                    "clientScopeURI": "Awp0ObjectNavigation",
+                                    "operationType": "union",
+                                    "typeNames": ""
+                                }
+                            ],
+                            "businessObjects": ""
+                        }
+                    ]
+                },
+                "modelObjects": "{{function:getModelObjectsFromUID}}",
+                "columnProvider": "{{data.columnProviders.propertyCompareColumnProvider}}"
+            },
+            "outputData": {
+                "dataProviders.propertyCompareDataProvider.columnConfig": "columnConfigurations.0.columnConfigurations.0",
+                "dataProviders.propertyCompareDataProvider.columnConfigId": "columnConfigurations.0.columnConfigurations.0.columnConfigId"
+            },
+            "events": {
+                "success": [
+                    {
+                        "condition": "data.isReloadValid.dbValue === true && data.isObjTypeDifferent.dbValue === true",
+                        "name": "propertyCompareGrid.plTable.reload"
+                    }
+                ]
+            }
+        },
+        "loadPropertyCompareTableData": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/Cm1ChangeSummaryService",
+            "method": "getPropertyCompareTableVMOs",
+            "inputData": {
+                "0": "{{function:getModelObjectsFromUID}}",
+                "1": "{{data.dataProviders.propertyCompareDataProvider.columnConfig.columns}}"
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "searchResults"
+            }
+        },
+        "validatePropertyCompareTableReload": {
+            "actionType": "JSFunction",
+            "method": "validatePropertyCompareTableReload",
+            "inputData": {
+                "data": "{{data}}",
+                "selectedObj": "{{data.dataProviders.getChangeSummaryDataProvider.selectedObjects}}"
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "saveCompareColumnAndLoadAction": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [
+                        {
+                            "clientScopeURI": "Awp0ObjectNavigation",
+                            "columnConfigId": "{{data.dataProviders.propertyCompareDataProvider.columnConfigId}}",
+                            "columns": "{{data.dataProviders.propertyCompareDataProvider.newColumns}}",
+                            "scope": "LoginUser",
+                            "scopeName": ""
+                        }
+                    ]
+                }
+            },
+            "outputData": {}
+        },
+        "resetPropertyCompareColumns": {
+            "actionType": "JSFunctionAsync",
+            "deps": "js/Cm1ChangeSummaryService",
+            "method": "getPropertyCompareTableColumnConfig",
+            "inputData": {
+                "soaInput": {
+                    "getOrResetUiConfigsIn": [
+                        {
+                            "scope": "LoginUser",
+                            "clientName": "AWClient",
+                            "resetColumnConfig": true,
+                            "columnConfigQueryInfos": [
+                                {
+                                    "clientScopeURI": "Awp0ObjectNavigation",
+                                    "operationType": "union",
+                                    "typeNames": ""
+                                }
+                            ],
+                            "businessObjects": ""
+                        }
+                    ]
+                },
+                "modelObjects": "{{function:getModelObjectsFromUID}}",
+                "columnProvider": "{{data.columnProviders.propertyCompareColumnProvider}}"
+            },
+            "outputData": {
+                "dataProviders.propertyCompareDataProvider.columnConfig": "columnConfigurations.0.columnConfigurations.0"
+            }
+        },
+        "registerContext": {
+            "actionType": "JSFunction",
+            "method": "registerCtx",
+            "inputData": {
+                "name": "Cm1ChangeSummaryContext",
+                "value": "{{data.dataProviders}}"
+            },
+            "deps": "js/appCtxService"
+        },
+        "unregisterContext": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "Cm1ChangeSummaryContext"
+            }
+        },
+        "resetChangeSummaryTable": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "resetDataProviderStartIndexEvent"
+                    },
+                    {
+                        "name": "changeSummaryGrid.plTable.reload"
+                    }
+                ]
+            }
+        },
+        "resetDataProviderStartIndexAction": {
+            "actionType": "JSFunction",
+            "method": "resetDataProviderStartIndex",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.getChangeSummaryDataProvider}}"
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "reloadChangeSummaryTableOnSelection": {
+            "actionType": "batchJob",
+            "steps": [
+                    {
+                        "action": "resetChangeSummaryTable",
+                        "condition": "conditions.isImpactedItemsSelected && !conditions.isSameObjSelected && !conditions.isUnselected"
+                    },
+                    {
+                        "action": "resetSelectedImpactItemsData",
+                        "condition": "conditions.isImpactedItemsSelected && !conditions.isSameObjSelected"
+                    }
+            ]
+        },
+        "handleSelectionChange": {
+            "actionType": "JSFunction",
+            "method": "updateChangeSummarySelection",
+            "inputData": {
+                "localSelectionData": "{{fields.changeSummarySelectionData}}",
+                "parentSelectionData": "{{subPanelContext.selectionData}}",
+                "selectedImpactItems": "{{data.selectedImpactItems}}"
+            },
+            "outputData": {
+                "selectedImpactItems": "selectedImpactItems"
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "resetSelectedImpactItemsData": {
+            "actionType": "JSFunction",
+            "method": "resetImpactItemData",
+            "inputData": {
+                "selectedImpactedItems": "{{props.subPanelContext.selectionData.selected}}"
+            },
+            "outputData": {
+                "selectedImpactItems": "selectedImpactItems"
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "swaTabChange": {
+            "actionType": "JSFunction",
+            "method": "resetSelectionData",
+            "inputData": {
+                "parentSelectionData": "{{subPanelContext.selectionData}}"
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "updateShowMergeIndicatorAtPort": {
+            "actionType": "Sync",
+            "inputData": {
+                "port": "showMergeIndicator",
+                "syncObject": "{{data.isMergeCandidate}}"
+            }
+        }
+    },
+
+    "functions": {
+        "getSaveUIColumns": {
+            "functionName": "getSaveUIColumns",
+            "parameters": [
+                "{{arrangeEvent.columns}}"
+            ]
+        },
+        "getModelObjectsFromUID": {
+            "functionName": "getModelObjectsFromUID",
+            "parameters": [
+                "{{data.dataProviders.getChangeSummaryDataProvider.selectedObjects}}"
+            ]
+        }
+    },
+    "columnProviders": {
+        "getChangeSummarycolumnProvider": {
+            "saveColumnAndLoadAction": "saveColumnConfig",
+            "resetColumnAction": "resetColumnConfig"
+        },
+        "propertyCompareColumnProvider": {
+            "name": "compareGridView",
+            "loadColumnAction": "loadPropertyCompareColumns",
+            "saveColumnAndLoadAction": "saveCompareColumnAndLoadAction",
+            "resetColumnAction": "resetPropertyCompareColumns"
+        }
+    },
+
+    "dataProviders": {
+        "getChangeSummaryDataProvider": {
+            "initializeAction": "getChangeSummaryData",
+            "nextAction": "getChangeSummaryData",
+            "previousAction": "getChangeSummaryData",
+            "treeLoadResult": "action.result.treeLoadResult",
+            "inputData": {
+                "accessMode": "tree",
+                "selectionData":"{{fields.changeSummarySelectionData}}",
+                "selectionModel": "{{data.selectionModels.changeSummarySelectionModel}}"
+            },
+            "selectionModelMode": "multiple",
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        },
+        "propertyCompareDataProvider": {
+            "action": "loadPropertyCompareTableData",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}"
+        }
+    },
+    "selectionModels": {
+        "changeSummarySelectionModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "grids": {
+        "changeSummaryGrid": {
+            "dataProvider": "getChangeSummaryDataProvider",
+            "columnProvider": "getChangeSummarycolumnProvider",
+            "enableArrangeMenu": true,
+            "addIconColumn": false,
+            "gridOptions": {
+                "useStaticFirstCol": true,
+                "enableSorting": false
+            }
+        },
+        "propertyCompareGrid": {
+            "dataProvider": "propertyCompareDataProvider",
+            "columnProvider": "propertyCompareColumnProvider",
+            "enableArrangeMenu": true
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        },
+        "selection-data": {
+            "type": "field"
+        }
+    },
+
+    "onEvent": [
+        {
+            "eventId": "resetDataProviderStartIndexEvent",
+            "action": "resetDataProviderStartIndexAction"
+        },
+        {
+            "eventId": "resetChangeSummaryTable",
+            "action": "resetChangeSummaryTable"
+        },
+        {
+            "eventId": "cdm.updated",
+            "action": "handleModelObjectUpdated",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "cm.setLineageCompleted",
+            "action": "refreshAction"
+        },
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "setArrangeEventAction"
+        },
+        {
+            "eventId": "getChangeSummaryDataProvider.selectionChangeEvent",
+            "action": "handleSelectionInChangeSummaryTable"
+        },
+        {
+            "eventId": "Cm1ChangeSummary.contentLoaded",
+            "action": "setViewerContext"
+        },
+        {
+            "eventId": "Cm1ChangeSummaryTooltip.contentLoaded",
+            "action": "setChangeSummaryTableWidth"
+        },
+        {
+            "eventId": "getChangeSummaryDataProvider.selectionChangeEvent",
+            "action": "validatePropertyCompareTableReload"
+        },
+        {
+            "eventId": "propertyCompareGrid.columnConfiguration.reload",
+            "action": "loadPropertyCompareColumns"
+        },
+        {
+            "eventId": "doArrangeCompareEvent",
+            "action": "doArrangeCompareEvent"
+        },
+        {
+            "eventId": "doArrangeEvent",
+            "action": "doArrangeEvent"
+        },
+        {
+            "eventId": "Cm1ChangeSummary.contentLoaded",
+            "action": "registerContext"
+        },
+        {
+            "eventId": "Cm1ChangeSummary.contentUnloaded",
+            "action": "unregisterContext"
+        },
+        {
+            "eventId": "cdm.relatedModified",
+            "action": "reloadChangeSummaryData",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+    ],
+
+    "conditions": {
+        "isRowSelectedInChangeSummaryTable": {
+            "expression": "data.dataProviders.getChangeSummaryDataProvider.selectedObjects.length === 1 &&  conditions.isValidActionForCompare"
+        },
+        "isValidActionForCompare": {
+            "expression": "data.dataProviders.getChangeSummaryDataProvider.selectedObjects[0].props.action.dbValues[0] === 'Modify' || conditions.isReplaceAction"
+        },
+        "isReplaceAction": {
+            "expression": "(data.dataProviders.getChangeSummaryDataProvider.selectedObjects[0].props.action.dbValues[0] === 'Replace') || (data.dataProviders.getChangeSummaryDataProvider.selectedObjects[0].props.action.dbValues[0] === 'Replace_New') || (data.dataProviders.getChangeSummaryDataProvider.selectedObjects[0].props.action.dbValues[0] === 'Replace_Existing') || (data.dataProviders.getChangeSummaryDataProvider.selectedObjects[0].compareCandidates !== undefined  && data.dataProviders.getChangeSummaryDataProvider.selectedObjects[0].compareCandidates.primaryAction !== undefined && data.dataProviders.getChangeSummaryDataProvider.selectedObjects[0].compareCandidates.primaryAction === 'Replace')"
+        },
+        "isImpactedItemsSelected": {
+            "expression": "conditions.isSelectNone || props.subPanelContext.selectionData.relationInfo[0].relationType === 'CMHasImpactedItem' && props.subPanelContext.selectionData.selected.length > 0"
+        },
+        "isSelectNone": {
+            "expression": "props.subPanelContext.selectionData.selected[0] === undefined"
+        },
+        "isSameObjSelected": {
+            "expression": "props.subPanelContext.selectionData.selected[0].uid === data.selectedImpactItems.selected[0].uid && props.subPanelContext.selectionData.selected.length === data.selectedImpactItems.selected.length"
+        },
+        "isUnselected": {
+            "expression": "props.subPanelContext.selectionData.selected === fields.changeSummarySelectionData.selected"
+        }
+    },
+
+    "data": {
+        "changeSummarySelectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "selectionModel": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "tableTooltip": {
+            "view": "Cm1ChangeSummaryTooltip"
+        },
+        "isReloadValid": {
+            "type": "BOOLEAN",
+            "dbValue": false
+        },
+        "isObjTypeDifferent": {
+            "type": "BOOLEAN",
+            "dbValue": false
+        },
+        "isMergeCandidate": {
+            "type": "BOOLEAN",
+            "dbValue": false
+        }
+    },
+    "ports": {
+        "showMergeIndicator": {
+            "syncObject": {}
+        }
+    },
+    "lifecycleHooks":{
+        "onUpdate": [{
+            "action": "reloadChangeSummaryTableOnSelection",
+            "observers": [ "props.subPanelContext.selectionData.selected" ]
+        },
+        {
+            "action": "handleSelectionChange",
+            "observers": [ "fields.changeSummarySelectionData.selected" ]
+        },
+        {
+            "action": "swaTabChange",
+            "observers":[ "props.subPanelContext.xrtState.pageContext.secondaryActiveTabId"]
+        },
+        {
+            "action": "updateShowMergeIndicatorAtPort",
+            "observers": [ "viewModel.data.isMergeCandidate.dbValue" ]
+        }
+        ],
+        "onMount": "swaTabChange"
+
+    },
+
+    "i18n" : {
+        "aw_changeSummary": [
+            "ChangeMessages"
+        ],
+        "relatedChangeSummaryTableCaption":[
+            "ChangeMessages"
+        ],
+        "mergeRequired": [
+            "ChangeMessages"
+        ],
+        "mergeComplete": [
+            "ChangeMessages"
+        ],
+        "overridesForContext": [
+            "ChangeMessages"
+        ]
+    }
+}

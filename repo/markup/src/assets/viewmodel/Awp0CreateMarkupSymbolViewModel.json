@@ -1,0 +1,124 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports":
+    [
+        "js/aw-panel-body.directive"
+    ],
+    "actions":
+    {
+        "launchSVGEditView":
+        {
+            "actionType": "JSFunction",
+            "method": "launchSVGEditView",
+            "inputData": {
+                "data": "{{data}}",
+                "ctx":"{{ctx}}"
+            },
+            "deps": "js/Awp0MarkupService"
+        },
+        "symbolGroupOrNameAddedForNewSymbol":
+        {
+            "actionType": "JSFunction",
+            "method": "symbolGroupOrNameAddedForNewSymbol",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/Awp0MarkupService"
+        },
+        "getGroupNameList":
+        {
+            "actionType": "JSFunction",
+            "method": "getGroupNameList",
+            "inputData": {
+                "list": "{{data.symbolList}}"
+            },
+            "outputData": {
+                "groupNameList.dbValue": "groupNameList"
+            },
+            "deps": "js/Awp0MarkupService"
+        }
+    },
+
+    "data":
+    {
+        "symbolGroup": {
+            "displayName": "{{i18n.symbolGroup}}",
+            "type": "STRING",
+            "dataProvider": "listProviderGroupName",
+            "dbValue": "{{i18n.mySymbols}}",
+            "uiValue": "{{i18n.mySymbols}}",
+            "isSelectOnly": false
+        },
+        "symbolName":
+        {
+            "displayName": "{{i18n.symbolName}}",
+            "isRequired": "true",
+            "type": "STRING",
+            "dbValue": "",
+            "uiValue": "",
+            "requiredText": "{{i18n.enterSymbolName}}"
+        },
+        "groupNameList":
+        {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.mySymbols}}",
+                    "propInternalValue": "{{i18n.mySymbols}}"
+                }
+            ]
+        },
+        "symbolList": []
+    },
+    "dataProviders": {
+        "listProviderGroupName": {
+            "action": "getGroupNameList",
+            "response": "{{data.groupNameList.dbValue}}",
+            "totalFound": "{{data.groupNameList.dbValue.length}}"
+        }
+    },
+    "i18n":
+    {
+        "symbolGroup": [ "MarkupMessages" ],
+        "symbolName": [ "MarkupMessages" ],
+        "create": [ "MarkupMessages" ],
+        "mySymbols": [ "MarkupMessages" ],
+        "enterSymbolName": [ "MarkupMessages" ],
+        "properties": [ "MarkupMessages" ]
+    },
+
+    "lifecycleHooks": {
+    },
+
+    "onEvent":
+    [
+        {
+            "eventId": "awPanel.navigate",
+            "criteria": { "destPanelId": "Awp0MarkupSymbolOperations" }
+        },
+        {
+            "eventId": "condition.expressionValueChanged",
+            "action": "symbolGroupOrNameAddedForNewSymbol",
+            "criteria": {
+                "condition": "conditions.symbolGroupCondition"
+            }
+        },
+        {
+            "eventId": "condition.expressionValueChanged",
+            "action": "symbolGroupOrNameAddedForNewSymbol",
+            "criteria": {
+                "condition": "conditions.symbolNameCondition"
+            }
+        }
+    ],
+    "conditions": {
+        "symbolGroupCondition": {
+            "expression": "data.symbolGroup.dbValue",
+            "trackValues": true
+        },
+        "symbolNameCondition": {
+            "expression": "data.symbolName.dbValue",
+            "trackValues": true
+        }
+    }
+}

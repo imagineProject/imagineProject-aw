@@ -1,0 +1,118 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports": [],
+
+    "actions":
+    {
+        "reveal":
+        {
+            "actionType": "dataProvider",
+            "method": "imageDataProvider"
+        },
+        "search":
+        {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData":
+            {
+                "0": {
+                    "searchInput":
+                    {
+                        "attributesToInflate": [ "object_name", "owning_user", "resources", "shared", "task_templates", "state" ],
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "{{subPanelContext.provider.context.search.provider}}",
+                        "searchCriteria": "{{subPanelContext.provider.context.search.criteria}}",
+                        "searchFilterFieldSortType": "{{subPanelContext.provider.context.search.sortType}}",
+                        "searchFilterMap6": "{{subPanelContext.provider.context.search.activeFilterMap}}",
+                        "searchSortCriteria": "{{ctx.sublocation.sortCriteria}}",
+                        "focusObjUid": "{{ctx.newlyCreatedAssignmentListObjUid}}",
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.imageDataProvider.startIndex}}"
+                        }
+                    }
+                },
+                "1": {
+                    "types": [ {
+                        "name": "BusinessObject",
+                        "properties": [ {
+                            "name": "awp0CellProperties"
+                        } ]
+                    } ]
+                }
+            },
+            "outputData":
+            {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "output": "{{function:processOutput}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "selectCreatedAssignmentListObject",
+                    "condition": "ctx.newlyCreatedAssignmentListObjUid"
+                } ],
+                "failure": [ {
+                    "name": "completedPerformSearch",
+                    "condition": "ctx.newlyCreatedAssignmentListObjUid"
+                } ]
+            }
+        },
+        "selectAssignmentListObject" : {
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.imageDataProvider.selectionModel}}",
+                "newSelection": "{{ctx.newlyCreatedAssignmentListObjUid}}"
+            },
+            "deps": "js/selectionModelFactory"
+        },
+        "unregisterContext": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "newlyCreatedAssignmentListObjUid"
+            }
+        }
+    },
+
+    "dataProviders":
+    {
+        "imageDataProvider":
+        {
+            "action": "search",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount" : "reveal"
+    },
+    "functions": {
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.searchState}}"
+            ],
+            "deps": "js/awSearchService"
+        }
+    },
+    "onEvent": [{
+        "eventId": "dataProvider.reset",
+        "action": "reveal"
+    }, {
+        "eventId": "selectCreatedAssignmentListObject",
+        "action": "selectAssignmentListObject"
+    },{
+        "eventId": "completedPerformSearch",
+        "action": "unregisterContext"
+    }]
+}

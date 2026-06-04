@@ -1,0 +1,293 @@
+{
+    "schemaVersion" : "1.0.0",
+    "imports":
+    [
+        "js/aw-button.directive",
+        "js/aw-command-panel.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-i18n.directive",
+        "js/aw-listbox.directive",
+        "js/aw-list.directive",
+        "js/visible-when.directive",
+        "js/aw-default-cell.directive"
+    ],
+
+    "actions":
+    {
+        "findImpactedItems":{
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "",
+                        "operationType": ""
+                    },
+                    "searchInput": {
+                        "startIndex": "{{data.dataProviders.performSearch.startIndex}}",
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Cm1LineageImpactedProvider",
+                        "searchCriteria": {
+                            "parentUid": "{{ctx.changeObject.object.uid}}",
+                            "returnAllImpacted": "true"
+                        },
+                        "searchSortCriteria":
+                        [
+                            {
+                                "fieldName": "object_string",
+                                "sortDirection": "ASC"
+                            }
+                        ],
+                        "searchFilterFieldSortType": "Alphabetical"
+                    },
+                    "inflateProperties": false
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "totalLoaded": "totalLoaded"
+            }
+        },
+        "reveal":
+        {
+            "actionType": "dataProvider",
+            "method": "performSearch"
+        },
+
+        "setLineage":
+        {
+            "actionType": "TcSoaService",
+            "serviceName": "ChangeManagement-2015-10-ChangeManagement",
+            "method": "createChangeLineage",
+            "inputData":
+            {
+                "input":
+                [
+                    {
+                        "clientId": "GWT_THIN_CLIENT",
+                        "solutionItems": "{{ctx.SolutionItems.items}}",
+                        "impactedItems": "{{data.dataProviders.performSearch.selectedObjects}}"
+                    }
+                ]
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData":
+                        {
+                            "relatedModified": ["{{ctx.changeObject.object}}"]
+                        }
+                    },
+                    {
+                        "name": "cm.setLineageCompleted"
+                    },
+                    {
+                        "name": "changeSummaryGrid.plTable.reload"
+                    },
+                    {
+                        "name": "closePanelEvent"
+                    }
+                ]
+            },
+            "actionMessages":
+            {
+                "success":
+                [
+                    {
+                        "condition": "ctx.SolutionItems.items.length == 1 && data.dataProviders.performSearch.selectedObjects.length ==1",
+                        "message": "setLineageOperationSuccess"
+                    },
+
+                    {
+                        "condition": "ctx.SolutionItems.items.length == 1 && data.dataProviders.performSearch.selectedObjects.length > 1",
+                        "message": "setLineageOperationSuccessOneSolution"
+                    },
+                    {
+                        "condition": "ctx.SolutionItems.items.length > 1 && data.dataProviders.performSearch.selectedObjects.length == 1",
+                        "message": "setLineageOperationSuccessOneImpacted"
+                    },
+                    {
+                        "condition": "ctx.SolutionItems.items.length > 1 && data.dataProviders.performSearch.selectedObjects.length > 1",
+                        "message": "setLineageOperationSuccessMultiple"
+                    }
+                ],
+                "failure":
+                [
+                    {
+                        "condition": "ctx.SolutionItems.items.length == 1 && data.dataProviders.performSearch.selectedObjects.length ==1",
+                        "message": "setLineageOperationFailed"
+                    },
+
+                    {
+                        "condition": "ctx.SolutionItems.items.length == 1 && data.dataProviders.performSearch.selectedObjects.length > 1",
+                        "message": "setLineageOperationFailedOneSolution"
+                    },
+                    {
+                        "condition": "ctx.SolutionItems.items.length > 1 && data.dataProviders.performSearch.selectedObjects.length == 1",
+                        "message": "setLineageOperationFailedOneImpacted"
+                    },
+                    {
+                        "condition": "ctx.SolutionItems.items.length > 1 && data.dataProviders.performSearch.selectedObjects.length > 1",
+                        "message": "setLineageOperationFailedMultiple"
+                    }
+                ]
+            }
+        },
+        "closePanel":
+        {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData":
+            {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+
+    "dataProviders":
+    {
+        "performSearch":
+        {
+            "action": "findImpactedItems",
+            "commands":
+            {
+                "Awp0ShowObjectCell":
+                {
+                    "id": "cmdOpen",
+                    "title": "Open",
+                    "areas": [ "com.siemens.splm.clientfx.ui.modelObjectListActionCommands" ],
+                    "priorities": [ 300 ],
+                    "dependencies": [ "js/showObjectCommandHandler" ],
+                    "displayOption": "ON_HOVER_AND_SELECTION",
+                    "position": "TOP_RIGHT"
+                }
+            },
+            "response":"{{data.searchResults}}",
+            "totalFound":"{{data.totalFound}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+
+    "messages":
+    {
+        "setLineageOperationSuccess":
+        {
+            "messageType": "INFO",
+            "messageText": "{{i18n.setLineageOperationSuccess}}",
+            "messageTextParams":
+            [
+                "{{ctx.SolutionItems.items[0].props.object_string.dbValues[0]}}",
+                "{{data.dataProviders.performSearch.selectedObjects[0].props.object_string.dbValues[0]}}"
+            ]
+        },
+        "setLineageOperationFailed":
+        {
+            "messageType": "INFO",
+            "messageText": "{{i18n.setLineageOperationFailed}}",
+            "messageTextParams":
+            [
+                "{{ctx.SolutionItems.items[0].props.object_string.dbValues[0]}}",
+                "{{data.dataProviders.performSearch.selectedObjects[0].props.object_string.dbValues[0]}}"
+            ]
+        },
+        "setLineageOperationSuccessOneSolution":
+        {
+            "messageType": "INFO",
+            "messageText": "{{i18n.setLineageOperationSuccessOneSolution}}",
+            "messageTextParams":
+            [
+                "{{ctx.SolutionItems.items[0].props.object_string.dbValues[0]}}",
+                "{{data.dataProviders.performSearch.selectedObjects.length}}"
+            ]
+        },
+        "setLineageOperationFailedOneSolution":
+        {
+            "messageType": "INFO",
+            "messageText": "{{i18n.setLineageOperationFailedOneSolution}}",
+            "messageTextParams":
+            [
+                "{{ctx.SolutionItems.items[0].props.object_string.dbValues[0]}}",
+                "{{data.dataProviders.performSearch.selectedObjects.length}}"
+            ]
+        },
+        "setLineageOperationSuccessOneImpacted":
+        {
+            "messageType": "INFO",
+            "messageText": "{{i18n.setLineageOperationSuccessOneImpacted}}",
+            "messageTextParams":
+            [
+                "{{ctx.SolutionItems.items.length}}",
+                "{{data.dataProviders.performSearch.selectedObjects[0].props.object_string.dbValues[0]}}"
+            ]
+        },
+        "setLineageOperationFailedOneImpacted":
+        {
+            "messageType": "INFO",
+            "messageText": "{{i18n.setLineageOperationFailedOneImpacted}}",
+            "messageTextParams":
+            [
+                "{{ctx.SolutionItems.items.length}}",
+                "{{data.dataProviders.performSearch.selectedObjects[0].props.object_string.dbValues[0]}}"
+            ]
+        },
+        "setLineageOperationSuccessMultiple":
+        {
+            "messageType": "INFO",
+            "messageText": "{{i18n.setLineageOperationSuccessMultiple}}",
+            "messageTextParams":
+            [
+                "{{ctx.SolutionItems.items.length}}",
+                "{{data.dataProviders.performSearch.selectedObjects.length}}"
+            ]
+        },
+        "setLineageOperationFailedMultiple":
+        {
+            "messageType": "INFO",
+            "messageText": "{{i18n.setLineageOperationFailedMultiple}}",
+            "messageTextParams":
+            [
+                "{{ctx.SolutionItems.items.length}}",
+                "{{data.dataProviders.performSearch.selectedObjects.length}}"
+            ]
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "closePanelEvent",
+            "action": "closePanel"
+        }
+    ],
+    "conditions":
+    {
+        "isValidToSet":
+        {
+            "expression": "data.dataProviders.performSearch.selectedObjects && data.dataProviders.performSearch.selectedObjects.length > 0"
+        }
+    },
+    "i18n":
+    {
+        "setLineage": ["SetLineageMessages"],
+        "setLineageTitle": ["SetLineageMessages"],
+        "impactedItem": ["SetLineageMessages"],
+        "Set": ["SetLineageMessages"],
+        "setLineageOperationSuccess": ["SetLineageMessages"],
+        "setLineageOperationFailed": ["SetLineageMessages"],
+        "setLineageOperationSuccessOneSolution": ["SetLineageMessages"],
+        "setLineageOperationFailedOneSolution": ["SetLineageMessages"],
+        "setLineageOperationSuccessOneImpacted": ["SetLineageMessages"],
+        "setLineageOperationFailedOneImpacted": ["SetLineageMessages"],
+        "setLineageOperationSuccessMultiple": ["SetLineageMessages"],
+        "setLineageOperationFailedMultiple": ["SetLineageMessages"]
+    }
+}

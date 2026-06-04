@@ -1,0 +1,146 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "addPropertyForClauseTabsModel": {
+            "isArray": "true",
+            "dbValue": [
+                {
+                    "panelId": "GetClausePropertyBySearch",
+                    "name": "{{i18n.searchText}}",
+                    "recreatePanel": true,
+                    "selectedTab": true
+                },
+                {
+                    "panelId": "GetClausePropertyFromPalette",
+                    "name": "{{i18n.paletteTabTitle}}",
+                    "recreatePanel": true
+                }
+            ]
+        }
+    },
+    "actions": {
+        "closeRevisionRulePanelAction": {
+            "actionType": "JSFunction",
+            "method": "closeRevisionRulePanel",
+            "inputData": {
+                "isClauseModified": "{{props.subPanelContext.nestedNavigationState.isClauseModified}}",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "actionMessages": {
+                "success": [ {
+                    "message": "confirmClosePanel",
+                    "condition": "props.subPanelContext.nestedNavigationState.isClauseModified === true"
+                } ]
+            },
+            "deps": "js/revisionRuleAdminPanelService"
+        },
+        "closeRevisionRuleAdminPanelAction": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "unRegisterRevisionRuleAdminCtx"
+                },
+                {
+                    "action": "closeRevisionRuleAdminPanel"
+                }
+            ]
+        },
+        "unRegisterRevisionRuleAdminCtx": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "path": "RevisionRuleAdmin"
+            }
+        },
+        "closeRevisionRuleAdminPanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "backToRevisionRuleAdminPanel": {
+            "actionType": "JSFunction",
+            "method": "goToPrevPanel",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState}}",
+                "numOfBacks":"{{props.subPanelContext.nestedNavigationState.views.length}}"
+            },
+            "events": {
+                "success":[
+                    {
+                        "name": "RevisionRuleAdminPanel.UpdateDataProvider"
+                    }
+                ]
+            },
+            "deps": "js/aceNestedNavigationPanelService"
+        },
+        "endItemClauseAddPolicyAction": {
+            "actionType": "JSFunction",
+            "method": "addPolicyForEndItemClause",
+            "inputData": {
+                "nestedNavigationState": "{{props.subPanelContext.nestedNavigationState.views}}"
+            },
+            "deps": "js/addRevRuleClausePropertyService"
+        },
+        "endItemClauseRemovePolicyAction": {
+            "actionType": "JSFunction",
+            "method": "removePolicyForEndItemClause",
+            "deps": "js/addRevRuleClausePropertyService"
+        }
+    },
+    "messages": {
+        "confirmClosePanel": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.cancelEditMsg}}",
+            "messageTextParams": [
+                "{{ctx.RevisionRuleAdmin.currentlySelectedRevisionRule.props.object_string.dbValues[0]}}"
+            ],
+            "navigationOptions": [ {
+                    "option": "Cancel",
+                    "text": "{{i18n.backToEdit}}"
+                },
+                {
+                    "option": "Proceed",
+                    "text": "{{i18n.discard}}",
+                    "action": "closeRevisionRuleAdminPanelAction"
+                }
+            ]
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "RevisionRuleAdminPanel.closeRevisionRulePanel",
+            "action": "closeRevisionRulePanelAction"
+        },
+        {
+            "eventId": "navigateToRevisionRuleAdminMainPanel",
+            "action": "backToRevisionRuleAdminPanel"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "endItemClauseAddPolicyAction",
+        "onUnmount": "endItemClauseRemovePolicyAction"
+    },
+    "conditions": {},
+    "functions": {},
+    "i18n": {
+        "paletteTabTitle": [
+            "awAddDirectiveMessages"
+        ],
+        "searchText": [
+            "UIMessages"
+        ],
+        "cancelEditMsg": [
+            "RevisionRuleAdminConstants"
+        ],
+        "backToEdit": [
+            "RevisionRuleAdminConstants"
+        ],
+        "discard": [
+            "RevisionRuleAdminConstants"
+        ]
+    }
+}

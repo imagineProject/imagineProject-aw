@@ -1,0 +1,251 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "loadListAndUpdateFilters":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "updateSearchFilters",
+                "condition": "data.reportTypeRadio.dbValue === '0'"
+            },{
+                "action": "showData",
+                "condition": "data.reportTypeRadio.dbValue === '1'"
+            }]
+        },
+        "selectFirstItem": {
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.selectionList.selectionModel}}",
+                "newSelection": "{{data.searchResults[0].uid}}"
+            },
+            "deps": "js/selectionModelFactory"
+        },
+        "updateSearchFilters": {
+            "actionType": "JSFunction",
+            "method": "updateSearchFilters",
+            "inputData": {
+                "searchFilterMap": "{{subPanelContext.searchState.searchFilterMap}}",
+                "searchFilterCategories": "{{subPanelContext.searchState.searchFilterCategories}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "searchFilters": ""
+            },
+            "deps": "js/Awp0SaveSearchUtils"
+        },
+        "showData": {
+            "actionType": "dataProvider",
+            "method": "selectionList"
+        },
+        "getListAndSelectFirstItem":{
+            "actionType":"batchJob",
+            "steps":[ {
+                "action": "getSelectionList"
+            },{
+                "action": "selectFirstItem",
+                "condition":"data.searchResults.length > 0"
+            }]
+        },
+        "getSelectionList": {
+            "actionType": "JSFunction",
+            "method": "getSelectedObjects",
+            "inputData": {
+                "selectedObjects": "{{ctx.mselected}}"
+            },
+            "outputData": {
+                "searchResults": ""
+            },
+            "deps": "js/addNewReportService"
+        },
+        "navigateWithoutCriteria":{
+            "actionType": "Navigate",
+            "navigateTo": "createReportTemplate",
+            "navigationParams": {
+                "previewMode": "false",
+                "reportType": "{{data.reportTypeRadio.dbValue}}"
+            },
+            "options": {
+                "inherit": false
+            }
+        },
+        "naviateToSummaryReportWithCriteria":{
+            "actionType": "JSFunction",
+            "method": "navigateToCreateReportFromSearch",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.searchState}}"
+            },
+            "deps": "js/AwConfigureReportViewerService"
+        },
+        "getSearchCriteriaForItemReport":{
+            "actionType": "JSFunction",
+            "method": "getSearchCriteriaForItemReport",
+            "inputData": {
+                "uid": "{{data.dataProviders.selectionList.selectedObjects[0].uid}}"
+            },
+            "outputData": {
+                "searchCriteria": ""
+            },
+            "deps": "js/AwConfigureReportViewerService"
+        },
+        "navigateToItemReportWithCriteria": {
+            "actionType": "Navigate",
+            "navigateTo": "createReportTemplate",
+            "navigationParams": {
+                "searchCriteria": "{{data.searchCriteria}}",
+                "previewMode": "false",
+                "reportType": "{{data.reportTypeRadio.dbValue}}"
+            },
+            "options": {
+                "inherit": false
+            }
+        },
+        "naviateToSummaryReport":{
+            "actionType":"batchJob",
+            "steps":[ {
+                "action": "navigateWithoutCriteria",
+                "condition": "data.blankRepCriteriaToggleBtn.dbValue"
+            },{
+                "action": "naviateToSummaryReportWithCriteria",
+                "condition":"!data.blankRepCriteriaToggleBtn.dbValue"
+            }]
+        },
+        "navigateToItemReport":{
+            "actionType":"batchJob",
+            "steps":[ {
+                "action": "navigateWithoutCriteria",
+                "condition": "data.blankRepCriteriaToggleBtn.dbValue || data.dataProviders.selectionList.selectedObjects.length === 0"
+            },{
+                "action": "getSearchCriteriaForItemReport",
+                "condition": "!data.blankRepCriteriaToggleBtn.dbValue && data.dataProviders.selectionList.selectedObjects.length > 0"
+            },{
+                "action": "navigateToItemReportWithCriteria",
+                "condition": "!data.blankRepCriteriaToggleBtn.dbValue && data.dataProviders.selectionList.selectedObjects.length > 0"
+            }]
+        },
+        "navigateToCreateReport":{
+            "actionType":"batchJob",
+            "steps":[ {
+                "action": "naviateToSummaryReport",
+                "condition": "data.reportTypeRadio.dbValue === '0'"
+            },{
+                "action": "navigateToItemReport",
+                "condition":"data.reportTypeRadio.dbValue === '1'"
+            }]
+        }
+    },
+    "data": {
+        "blankRepCriteriaToggleBtn": {
+            "displayName": "{{i18n.blankRepCriteriaText}}",
+            "type": "BOOLEAN",
+            "isRequired": "false",
+            "isEditable": "true",
+            "dbValue": false,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "chooseCriteriaLabel":{
+            "type": "STRING",
+            "dispValue": "{{i18n.chooseCriteria}}",
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "reportTypeRadio": {
+            "type": "STRING",
+            "isEditable": "true",
+            "dbValue": "{{ctx.sublocation.historyNameToken === 'teamcenter_search_search' || ctx.sublocation.historyNameToken === 'teamcenter_search_advancedSearch' ? '' : '1'}}",
+            "vertical": true,
+            "labelPosition": "NO_PROPERTY_LABEL"
+        },
+        "reportTypeValues": {
+            "type": "STRING",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.advSummReportRadioBtn}}",
+                    "propInternalValue": "0"
+                },
+                {
+                    "propDisplayValue": "{{i18n.advItemReportRadioBtn}}",
+                    "propInternalValue": "1"
+                }
+            ]
+        },
+        "reportCriteriaValues":{
+            "type": "BOOLEAN",
+            "dbValue": [
+                {
+                    "propDisplayValue": "{{i18n.useReportCriteriaText}}",
+                    "propInternalValue": true
+                },
+                {
+                    "propDisplayValue": "{{i18n.blankRepCriteriaText}}",
+                    "propInternalValue": false
+                }
+            ]
+        },
+        "search":{
+            "displayName": "{{i18n.search}}",
+            "labelPosition": "PROPERTY_LABEL_AT_LEFT",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "{{props.subPanelContext.searchState.savedQuery.name}}",
+            "dispValue": "{{props.subPanelContext.searchState.savedQuery.name}}"
+        },
+        "searchString": {
+            "displayName": "{{i18n.criteria}}",
+            "labelPosition": "PROPERTY_LABEL_AT_LEFT",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "{{subPanelContext.searchState.criteria.searchString || subPanelContext.searchState.referencingSavedQuery}}",
+            "dispValue": "{{subPanelContext.searchState.criteria.searchString || subPanelContext.searchState.referencingSavedQuery}}"
+        },
+        "searchFilters": {
+            "displayName": "{{i18n.filterString}}",
+            "labelPosition": "PROPERTY_LABEL_AT_LEFT",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "",
+            "dispValue": ""
+        },
+        "searchResults": "{{ctx.mselected}}"
+    },
+    "dataProviders": {
+        "selectionList": {
+            "action": "getListAndSelectFirstItem",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.searchResults.length}}",
+            "selectionModelMode": "single",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "selectionData": "{{subPanelContext.selectionData}}"
+            }
+        }
+    },
+    "i18n": {
+        "reportTypeLabel": ["ReportChartMessages"],
+        "addNewReport": ["ReportChartMessages"],
+        "criteria": ["ReportChartMessages"],
+        "filterString": [ "SearchMessages" ],
+        "reportCriteria": ["ReportChartMessages"],
+        "chooseCriteria": ["ReportChartMessages"],
+        "useReportCriteriaText": ["ReportChartMessages"],
+        "blankRepCriteriaText": ["ReportChartMessages"],
+        "search": ["ReportChartMessages"],
+        "advSummReportRadioBtn": ["ReportChartMessages"],
+        "advItemReportRadioBtn": ["ReportChartMessages"]
+    },
+    "lifecycleHooks": {
+        "onUpdate": [ {
+            "action": "loadListAndUpdateFilters",
+            "observers": [
+                "viewModel.ctx.mselected",
+                "viewModel.data.reportTypeRadio.dbValue"
+            ]
+        }]
+    },
+    "conditions": {
+        "isSelectEnabled":{
+            "expression": "(data.reportTypeRadio.dbValue === '1' && (data.blankRepCriteriaToggleBtn.dbValue || props.subPanelContext.selectionData.value.selected.length > 0 )) || (data.reportTypeRadio.dbValue === '0' || (data.reportTypeRadio.dbValue === '1' && data.searchResults.length === 0))"
+        }
+    }
+}

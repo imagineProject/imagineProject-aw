@@ -1,0 +1,140 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "object_name": {
+            "displayName": "{{i18n.name}}",
+            "type": "STRING",
+            "dbValue": "",
+            "isRequired": "true",
+            "isEditable": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP"
+        },
+        "object_desc": {
+            "displayName": "{{i18n.description}}",
+            "type": "STRING",
+            "dbValue": "",
+            "isEditable": "true"
+        }
+    },
+    "actions": {
+        "reveal": {
+            "actionType": "JSFunction",
+            "method": "populateDataForBaseline",
+            "inputData": {
+                "objectName": "{{data.object_name}}",
+                "objectDesc": "{{data.object_desc}}"
+            },
+            "outputData": {
+                "currentBaseline": ""
+            },
+            "deps": "js/Saw1BaselineCellCommandsHandler"
+        },
+        "updateBaseline": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2012-02-ScheduleManagement",
+            "method": "updateSchedules",
+            "inputData": {
+                "scheduleUpdates": [
+                    {
+                        "object": {
+                            "uid": "{{data.currentBaseline.uid}}",
+                            "type": "Schedule"
+                        },
+                        "updates": "{{function:getUpdatesAttributesContainer}}"
+                    }
+                ]
+            },
+            "outputData": {
+                "partialErrors": "partialErrors"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "navigateToManagePanelEvent"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "condition": "data.partialErrors[0].errorValues[0].code==230045",
+                        "message": "displayError"
+                    },
+                    {
+                        "condition": "data.partialErrors[0].errorValues[0].code!=230045",
+                        "message": "editBaselineError"
+                    }
+                ]
+            },
+            "deps": "js/Saw1BaselineCellCommandsHandler"
+        },
+        "navigateToManagePanelAction": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "awPanel.navigate",
+                        "eventData": {
+                            "destPanelId": "Saw1BaselinesScheduleSub"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "conditions": {
+        "isValidToShowButton": {
+            "expression": "data.object_name.dbValue !== data.currentBaseline.props.object_name.dbValue || data.object_desc.dbValue !== data.currentBaseline.props.object_desc.dbValue"
+        }
+    },
+    "functions": {
+        "getUpdatesAttributesContainer": {
+            "functionName": "getUpdatesAttributesContainer",
+            "parameters": [
+                "{{data.object_name}}",
+                "{{data.object_desc}}",
+                "{{data.currentBaseline}}"
+            ]
+        }
+    },
+    "messages": {
+        "editBaselineError": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.duplicateBaselineName}}",
+            "messageTextParams": [
+                "{{data.object_name.dbValue}}"
+            ]
+        },
+        "displayError": {
+            "messageType": "ERROR",
+            "messageText": "{{data.partialErrors[0].errorValues[0].message}}"
+        }
+    },
+    "i18n": {
+        "name": [
+            "ScheduleManagerMessages"
+        ],
+        "description": [
+            "ScheduleManagerMessages"
+        ],
+        "saveBtnTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "editBaseline": [
+            "ScheduleManagerMessages"
+        ],
+        "duplicateBaselineName": [
+            "ScheduleManagerMessages"
+        ]
+    },
+    "lifecycleHooks":{
+        "onMount": "reveal"
+    },
+    "onEvent": [
+        {
+            "eventId": "navigateToManagePanelEvent",
+            "action": "navigateToManagePanelAction"
+        }
+    ]
+}

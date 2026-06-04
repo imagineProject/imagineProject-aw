@@ -1,0 +1,107 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "reveal": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "setViewerContext"
+                },
+                {
+                    "action": "updateDataProvider"
+                }
+            ]
+        },
+        "setViewerContext": {
+            "actionType": "JSFunction",
+            "method": "setViewerContext",
+            "inputData": {
+                "data": "{{data}}",
+                "snapshotDiscData": "{{fields.snapshotDiscData}}"
+            },
+            "deps": "js/viewerProductSnapshotService"
+        },
+        "updateDataProvider": {
+            "actionType": "dataProvider",
+            "method": "productSnapshotCardViewDataProvider"
+        },
+        "loadProductSnapshotDataForCard": {
+            "actionType": "JSFunction",
+            "method": "loadProductSnapshotDataForCard",
+            "inputData": {
+                "sharedData": "{{props.subPanelContext.sharedData}}"
+            },
+            "outputData": {
+                "snapshotOnDiscussion": "snapshotOnDiscussion",
+                "snapshotTotalFound": "snapshotTotalFound"
+            },
+            "deps": "js/viewerProductSnapshotService"
+        }
+    },
+
+    "data": {
+        "addSnapshotOnDiscussionCmds": "awv0_addSnapshotOnDiscussionCmds",
+        "commandAnchor": "aw_ProductSnapshotOnDiscussion",
+        "vmoForProductSnapshotOnDiscussiom": "",
+        "isRemoveSnapshotCalledOnProductGallery": "",
+        "snapshotDiscData": {
+            "initialValues": {
+                "isViewerRevealed": false,
+                "viewerViewMode": "NOVIEWER"
+            },
+            "meta": {}
+        }
+    },
+
+    "conditions": {
+        "isViewerRevealedAndIn3DMode": {
+            "expression": "data.snapshotDiscData.isViewerRevealed && data.snapshotDiscData.viewerViewMode === 'VIEWER3D'"
+        },
+        "isAceSubLocation":
+        {
+            "expression":"ctx.sublocation.nameToken === 'com.siemens.splm.client.occmgmt:OccurrenceManagementSubLocation'"
+        },
+        "isAc0SnapshotDiscussionsEnabled":
+        {
+            "expression": "ctx.preferences.Ac0SnapshotDiscussionsEnabled[0]==='true'"
+        },
+        "showSnapshotOnDiscussionPanel": {
+            "expression": "conditions.isViewerRevealedAndIn3DMode && conditions.isAceSubLocation && conditions.isAc0SnapshotDiscussionsEnabled && !conditions.isSavedWorkingContextObj && !conditions.isSessionSnapshotVisibleCondition"
+        },
+        "isSavedWorkingContextObj": {
+            "expression": "props.subPanelContext.context.occContext.workingContextObj && props.subPanelContext.context.occContext.workingContextObj.modelType.typeHierarchyArray.indexOf( 'Awb0SavedBookmark' ) > -1"
+        },
+        "isSessionSnapshotVisibleCondition": {
+            "expression": "props.subPanelContext.context.occContext !== undefined &&  props.subPanelContext.context.occContext.topElement.modelType.typeHierarchyArray.indexOf('Fnd0AppSession') !== -1"
+        },
+        "showSnapshotInMyGalleryDiscussion": {
+            "expression": "ctx.sublocation.clientScopeURI === 'Awv0SnapshotSearchResults'"
+        },
+        "isSnapshotSelected": {
+            "expression": "props.subPanelContext.sharedData.currentlySelectedObject === 'Fnd0Snapshot'"
+        }
+    },
+
+    "functions": {},
+
+    "dataProviders": {
+        "productSnapshotCardViewDataProvider": {
+            "action": "loadProductSnapshotDataForCard",
+            "response": "{{data.snapshotOnDiscussion}}",
+            "totalFound": "{{data.snapshotTotalFound}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "onEvent": [],
+    "lifecycleHooks": {
+        "onMount": "reveal",
+        "onUpdate": [ {
+            "action": "updateDataProvider",
+            "observers": [ "props.subPanelContext.sharedData.updateSnapshotOnDiscussion" ]
+        } ]
+    },
+
+    "i18n": {
+        "snapshot": [ "ViewerSnapshotMessages" ],
+        "editProductSnapshot": [ "ViewerSnapshotMessages" ]
+    }
+}

@@ -1,0 +1,108 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions":
+    {
+        "updateDataSource": {
+            "actionType": "JSFunction",
+            "method": "addHtmlPanelInDataSource",
+            "inputData": {
+                "data": "{{data}}",
+                "type": "{{data.subPanelContext.xrtType}}",
+                "panelID": "Awb0SWCCustomPanel"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateReadShare": {
+            "actionType": "JSFunction",
+            "method": "updatedbValue",
+            "inputData": {
+                "par1": "{{subPanelContext.occContext.workingContextObj.props.awb0AllowReadShare.dbValues[0]}}"
+            },
+            "outputData": {
+                "awb0AllowReadShare.dbValue": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "updateWriteShare": {
+            "actionType": "JSFunction",
+            "method": "updatedbValue",
+            "inputData": {
+                "par1": "{{subPanelContext.occContext.workingContextObj.props.awb0AllowWriteShare.dbValues[0]}}"
+            },
+            "outputData": {
+                "awb0AllowWriteShare.dbValue": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "keepShareAttrsInSync": {
+            "actionType": "JSFunction",
+            "method": "keepShareAttrsInSync",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/saveWorkingContextService"
+        },
+        "customPanelMount": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "updateDataSource"
+                },
+                {
+                    "action": "updateReadShare",
+                    "condition": "subPanelContext.occContext.workingContextObj !== undefined"
+                },
+                {
+                    "action": "updateWriteShare",
+                    "condition": "subPanelContext.occContext.workingContextObj !== undefined"
+                }
+            ]
+        }
+    },
+
+    "data":
+    {
+        "awb0AllowReadShare":
+        {
+            "type": "BOOLEAN",
+            "isEditable": "true",
+            "displayName": "{{i18n.allowReadShare}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "awb0AllowWriteShare":
+        {
+            "type": "BOOLEAN",
+            "isEditable": "true",
+            "displayName": "{{i18n.allowWriteShare}}",
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+
+    "conditions": {
+        "canShowReadCheckBox": {
+            "expression": "(subPanelContext.operationType === 'UPDATE' && subPanelContext.occContext.workingContextObj && ctx.user.uid == subPanelContext.occContext.workingContextObj.props.owning_user.dbValues[0]) || (subPanelContext.operationType !== 'UPDATE')"
+        },
+        "canShowWriteCheckBox": {
+            "expression": "(subPanelContext.operationType === 'UPDATE' && subPanelContext.occContext.workingContextObj && ctx.user.uid == subPanelContext.occContext.workingContextObj.props.owning_user.dbValues[0] && data.awb0AllowReadShare.dbValue) || (subPanelContext.operationType !== 'UPDATE' && data.awb0AllowReadShare.dbValue)"
+        },
+        "readShareAllowed": {
+            "expression": "subPanelContext.occContext.workingContextObj && subPanelContext.occContext.workingContextObj.props.awb0AllowReadShare.dbValues[0] === '1'"
+        },
+        "writeShareAllowed": {
+            "expression": "subPanelContext.occContext.workingContextObj && subPanelContext.occContext.workingContextObj.props.awb0AllowWriteShare.dbValues[0] === '1'"
+        }
+    },
+
+    "lifecycleHooks": {
+        "onMount": "customPanelMount",
+        "onUpdate": {
+            "action": "updateDataSource",
+            "observers": [ "viewModel.data" ]
+        }
+    },
+    "i18n":
+    {
+        "allowReadShare": [ "OccurrenceManagementConstants" ],
+        "allowWriteShare": [ "OccurrenceManagementConstants" ]
+    }
+}

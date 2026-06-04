@@ -1,0 +1,114 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions":
+    {
+        "navigateBackToDiscoverySubPanel": {
+            "actionType": "JSFunction",
+            "method": "navigateBackToDiscoverySubPanel",
+            "inputData": {
+                "activeViewSharedData": "{{data.activeViewSharedData}}",
+                "sharedData": "{{data.sharedData}}",
+                "nextActiveView": "Awb0DiscoveryFilterCommandSubPanel"
+            },
+            "outputData":{
+                "activeViewSharedData" : "newViewSharedData",
+                "sharedData": "sharedData"
+            },
+            "deps": "js/occmgmtSubsetUtils"
+        },
+        "updateSharedActiveViewBasedOnPCI": {
+            "actionType": "JSFunction",
+            "method": "updateSharedActiveViewBasedOnPCI",
+            "inputData": {
+                "activeViewSharedData": "{{data.activeViewSharedData}}",
+                "occContext": "{{props.subPanelContext.occContext}}",
+                "updateAtomicData": "{{data.updateAtomicData}}",
+                "subPanelContext":"{{props.subPanelContext}}"
+            },
+            "deps": "js/discoveryFilterService"
+        },
+        "closeFilterPanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "data":
+    {
+        "sharedData": {
+            "initialValues": {
+                "clickedObj": null,
+                "activeGroupIndex": 0
+            },
+            "meta": {
+            }
+        },
+        "activeViewSharedData": {
+            "initialValues": {
+                "activeView": ""
+            },
+            "meta": {
+
+            }
+        }
+    },
+    "props":
+    {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "i18n": {
+        "filter" :  ["OccurrenceManagementConstants"],
+        "ProximitySubPanel": ["OccurrenceManagementSubsetConstants"],
+        "EditProximitySubPanel": ["OccurrenceManagementSubsetConstants"],
+        "PlaneZoneSubPanel": ["OccurrenceManagementSubsetConstants"],
+        "BoxZoneSubPanel": ["OccurrenceManagementSubsetConstants"],
+        "settings": ["OccurrenceManagementSubsetConstants"]
+    },
+    "lifecycleHooks": {
+        "onMount": "updateSharedActiveViewBasedOnPCI"
+    },
+    "conditions": {
+        "isStructureFilterSupported": {
+            "expression": "props.subPanelContext.occContext.supportedFeatures.Awb0StructureFilterFeature === true && !conditions.isStructureFilterCommandHidden"
+        },
+        "isInUnassignedMode": {
+            "expression": "conditions.isInUnassignedView || conditions.isInAssignedView"
+        },
+        "isInUnassignedView": {
+            "expression": "ctx.splitView && ctx.splitView.mode && props.subPanelContext.occContext.supportedFeatures.Awb0UnassignedFeature !== undefined && props.subPanelContext.occContext.supportedFeatures.Awb0UnassignedFeature"
+        },
+        "isInAssignedView": {
+            "expression": "ctx.splitView && ctx.splitView.mode && props.subPanelContext.occContext.supportedFeatures.Awb0AssignedFeature !== undefined && props.subPanelContext.occContext.supportedFeatures.Awb0AssignedFeature"
+        },
+        "isStructureFilterCommandHidden": {
+            "expression": "ctx.hiddenCommands.Awb0StructureFilter && !conditions.isInUnassignedMode"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "productContextChangedEvent",
+            "action": "closeFilterPanel",
+            "condition": "(dataProviderActionType === 'productChangedOnSelectionChange' || dataProviderActionType === 'initializeAction' ) && !conditions.isStructureFilterSupported"
+        },
+        {
+            "eventId": "aceActiveContextChanged",
+            "action": "closeFilterPanel",
+            "condition": "conditions.isInUnassignedMode"
+        },
+        {
+            "eventId": "occDataLoadedEvent",
+            "action": "updateSharedActiveViewBasedOnPCI"
+        },
+        {
+            "eventId": "productContextChangedEvent",
+            "action": "updateSharedActiveViewBasedOnPCI",
+            "condition": "dataProviderActionType === 'initializeAction' || dataProviderActionType === 'productChangedOnSelectionChange'"
+        }
+    ]
+}

@@ -1,0 +1,163 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "firstTimeRenderer": true
+    },
+    "actions": {
+        "calendarSelectionChange":{
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "callWorkingHoursDataProviderEvent",
+                        "condition": "data.firstTimeRenderer == false"
+                    }
+                ]
+            }
+        },
+        "callWorkingHoursDataProvider": {
+            "actionType": "dataProvider",
+            "method": "workingHoursDataProvider"
+        },
+        "loadData": {
+            "actionType": "JSFunction",
+            "method": "loadWorkingHoursTableData",
+            "inputData": {
+                "workingHoursColumnProvider": "{{data.columnProviders.workingHoursColumnProvider}}",
+                "startIndex": "{{data.dataProviders.workingHoursDataProvider.startIndex}}",
+                "selectedCalendarData": "{{props.selectedCalendarData}}"
+            },
+            "outputData": {
+                "loadResult": "",
+                "firstTimeRenderer": false
+            },
+            "deps": "js/AwWorkingDaysService"
+        },
+        "setSelectionAction": {
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "workingHoursDataProvider": "{{data.dataProviders.workingHoursDataProvider}}",
+                "date": "{{props.selectedDate.dateApi}}"
+            },
+            "deps": "js/AwWorkingDaysService"
+        },
+        "updateWorkingHoursDataProvider": {
+            "actionType": "JSFunction",
+            "method": "updateWorkingHoursDataProvider",
+            "inputData": {
+                "workingHoursDataProvider": "{{data.dataProviders.workingHoursDataProvider}}",
+                "updatedTotalHours": "{{props.updatedtotalhoursdata.newSharedData.updatedTotalHours}}",
+                "updatedRanges": "{{props.updatedtotalhoursdata.newSharedData.updatedRanges}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "updateParentDefaultWorkingHours"
+                } ]
+            },
+            "deps": "js/AwWorkingDaysService"
+        },
+        "updateParentDefaultWorkingHours": {
+            "actionType": "JSFunction",
+            "method": "updateParentDefaultWorkingHours",
+            "inputData": {
+                "updatedHoursDataProvider": "{{data.dataProviders.workingHoursDataProvider.viewModelCollection.loadedVMObjects}}",
+                "workingHoursDataProvider": "{{subPanelContext.workingHoursDataProvider}}"
+            },
+            "deps": "js/AwWorkingDaysService"
+        }
+    },
+    "props": {
+        "sub-panel-context":{
+            "type": "object"
+        },
+        "selected-calendar-data":{
+            "type": "object"
+        },
+        "selected-date": {
+            "type": "object"
+        }
+    },
+    "dataProviders": {
+        "workingHoursDataProvider": {
+            "action": "loadData",
+            "response": "{{data.loadResult.searchResults}}",
+            "totalFound": "{{data.loadResult.totalFound}}",
+            "searchIndex": "{{data.loadResult.searchIndex}}",
+            "selectionModelMode": "single",
+            "inputData": {
+                "selectionData": "{{subPanelContext.selectionData}}",
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            }
+        }
+    },
+    "columnProviders": {
+        "workingHoursColumnProvider": {
+            "columns": [ {
+                    "name": "workingDays",
+                    "displayName": "{{i18n.day}}",
+                    "pinnedLeft": false,
+                    "enableColumnMenu": false,
+                    "enableColumnMoving": false,
+                    "width": 139
+                },
+                {
+                    "name": "totalHours",
+                    "displayName": "{{i18n.workingHours}}",
+                    "pinnedLeft": false,
+                    "enableColumnMenu": false,
+                    "enableColumnMoving": false,
+                    "width": 139
+                }
+            ],
+            "sortCriteria": []
+        }
+    },
+    "grids": {
+        "WorkingDaysTable": {
+            "dataProvider": "workingHoursDataProvider",
+            "columnProvider": "workingHoursColumnProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableGridMenu": false,
+                "enablePinning": false,
+                "enableSorting": false
+            }
+        }
+    },
+    "onEvent": [ {
+        "eventId": "updateParentDefaultWorkingHours",
+        "action": "updateParentDefaultWorkingHours"
+    },
+    {
+        "eventId": "callWorkingHoursDataProviderEvent",
+        "action": "callWorkingHoursDataProvider"
+    }
+ ],
+    "lifecycleHooks": {
+        "onUpdate": [ {
+            "action": "updateWorkingHoursDataProvider",
+            "observers": [ "props.updatedtotalhoursdata.newSharedData" ]
+        },
+        {
+            "action": "calendarSelectionChange",
+            "observers": [ "props.selectedCalendarData" ]
+        },
+        {
+            "action": "setSelectionAction",
+            "observers": [
+                "props.selectedDate.dbValue",
+                "viewModel.dataProviders.workingHoursDataProvider.viewModelCollection.loadedVMObjects.length"
+            ]
+        } ]
+    },
+    "i18n": {
+        "day":[
+            "CalendarManagementMessages"
+        ],
+        "workingHours":[
+            "CalendarManagementMessages"
+        ]
+    }
+}

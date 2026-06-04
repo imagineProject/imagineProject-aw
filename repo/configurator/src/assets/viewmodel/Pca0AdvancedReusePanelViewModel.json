@@ -1,0 +1,96 @@
+{
+    "schemaVersion": "1.0.0",
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "data": {
+        "activeReuseView": "search",
+        "selectedContext": null
+    },
+    "actions": {
+        "updateAdvancedReuseProp": {
+            "actionType": "JSFunction",
+            "method": "toggleReuseFlagInCtx",
+            "inputData": {
+                "flagName": "advancedReuseMode"
+            },
+            "deps": "js/pca0AdvancedReuseService"
+        },
+        "processPartialErrors": {
+            "actionType": "JSFunction",
+            "method": "processPartialErrors",
+            "inputData": {
+                "eventData": "{{parameters.eventData.ServiceData}}"
+            },
+            "deps": "js/pca0CommonUtils"
+        },
+        "updateContextDetails": {
+            "actionType": "JSFunction",
+            "method": "updateContextDetailsAndSetView",
+            "inputData": {
+                "context": "{{parameters.eventData.row}}"
+            },
+            "outputData": {
+                "selectedContext": "selectedContext",
+                "activeReuseView": "activeReuseView"
+            },
+            "deps": "js/pca0AdvancedReuseService"
+        },
+        "resetContextDetails": {
+            "actionType": "JSFunction",
+            "method": "updateContextDetailsAndSetView",
+            "outputData": {
+                "selectedContext": "selectedContext",
+                "activeReuseView": "activeReuseView"
+            },
+            "deps": "js/pca0AdvancedReuseService"
+        },
+        "closeAdvancedReusePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "Pca0AdvancedReuse.processPartialErrors",
+            "action": "processPartialErrors",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0AdvancedReuse.loadContext",
+            "action": "updateContextDetails",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0AdvancedReuse.resetContext",
+            "action": "resetContextDetails"
+        },
+        {
+            "eventId": "Pca0AdvancedReuse.closePanel",
+            "action": "closeAdvancedReusePanel"
+        }
+    ],
+    "conditions": {
+        "showSearchPanel": {
+            "expression": "data.activeReuseView === 'search'"
+        },
+        "showPickerPanel": {
+            "expression": "data.activeReuseView === 'picker'"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "updateAdvancedReuseProp",
+        "onUnmount": "updateAdvancedReuseProp"
+    }
+}

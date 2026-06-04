@@ -1,0 +1,45 @@
+<aw-sublocation
+    sub-panel-context="{provider : {...ctx.aceActiveContext.key === 'CBASrcContext' ? data._cbaSrcSublocation : data._cbaTrgSublocation},
+    occContext: ctx.aceActiveContext.key === 'CBASrcContext' ? data.occContext : data.occContext2,
+    inactiveContext : ctx.aceActiveContext.key === 'CBASrcContext' ? data.occContext2 : data.occContext,
+    contextKey: ctx.aceActiveContext.key === 'CBASrcContext' ? data._cbaSrcSublocation.contextKey : data._cbaTrgSublocation.contextKey,
+    cbaContext: subPanelContext.cbaContext,
+    leftSublocationState: fields.sublocationState,
+    rightSublocationState: fields.sublocationState2}"
+    sub-location-preference="data.awSubLocationPref">
+    <aw-dialog action="actions.customDialogAction"
+        sub-panel-context="{...subPanelContext, provider : {...ctx.aceActiveContext.key === 'CBASrcContext' ? data._cbaSrcSublocation : data._cbaTrgSublocation},
+                            occContext: ctx.aceActiveContext.key === 'CBASrcContext' ? data.occContext : data.occContext2,
+                            inactiveContext : ctx.aceActiveContext.key === 'CBASrcContext' ? data.occContext2 : data.occContext,
+                            contextKey: ctx.aceActiveContext.key === 'CBASrcContext' ? data._cbaSrcSublocation.contextKey : data._cbaTrgSublocation.contextKey,
+                            cbaContext: subPanelContext.cbaContext}">
+    </aw-dialog>
+    <span exist-when="data.occContext2.AceHeaderForApplication">
+        <aw-include name={{data.occContext2.AceHeaderForApplication}}
+            sub-panel-context ="{...subPanelContext,occContext: data.occContext2,nameToken:data._cbaTrgSublocation.nameToken}"></aw-include>
+    </span>
+    <div class="sw-row h-12 afx-content-background aw-occmgmt-split">
+        <div class="sw-column w-6 aw-cba-leftPanel" aw-click="actions.activateLeftView">
+            <cba-bom-panel exist-when="subPanelContext.cbaContext.srcStructure" model-object="subPanelContext.cbaContext.srcStructure" sublocation-state="fields.sublocationState"
+                sub-panel-context="{...subPanelContext,provider:data._cbaSrcSublocation,openedObject:subPanelContext[0],occContext : data.occContext,contextKey: data._cbaSrcSublocation.contextKey, selectionData: fields.selectionData}">
+            </cba-bom-panel>
+            <pma-aligned-structure-absent exist-when="!subPanelContext.cbaContext.srcStructure && subPanelContext.cbaContext.isImpactAnalysisMode" sub-panel-context="subPanelContext.cbaContext.ImpactAnalysis"></pma-aligned-structure-absent>
+            <cba-aligned-structure-absent exist-when="!subPanelContext.cbaContext.srcStructure && !subPanelContext.cbaContext.isImpactAnalysisMode" sub-panel-context="subPanelContext"></cba-aligned-structure-absent>
+        </div>
+        <aw-splitter min-size-1="0" min-size-2="200" direction="vertical"></aw-splitter>
+        <div class="sw-column w-6 aw-cba-rightPanel" aw-click="actions.activateRightView">
+            <cba-bom-panel exist-when="subPanelContext.cbaContext.trgStructure" model-object="subPanelContext.cbaContext.trgStructure" sublocation-state="fields.sublocationState2"
+                sub-panel-context="{...subPanelContext,provider:data._cbaTrgSublocation,openedObject:subPanelContext.length >1 ?subPanelContext[1] :subPanelContext[0] ,occContext : data.occContext2,contextKey: data._cbaTrgSublocation.contextKey, selectionData: fields.selectionData2}">
+            </cba-bom-panel>
+            <pma-aligned-structure-absent exist-when="!subPanelContext.cbaContext.trgStructure && subPanelContext.cbaContext.isImpactAnalysisMode" sub-panel-context="subPanelContext.cbaContext.ImpactAnalysis"></pma-aligned-structure-absent>
+            <cba-aligned-structure-absent exist-when="!subPanelContext.cbaContext.trgStructure && !subPanelContext.cbaContext.isImpactAnalysisMode" sub-panel-context="subPanelContext"></cba-aligned-structure-absent>
+        </div>
+        <div exist-when="subPanelContext.cbaContext.isImpactAnalysisMode && ((subPanelContext.cbaContext.srcStructure && subPanelContext.cbaContext.trgStructure && data.occContext.topElement!=undefined && data.occContext2.topElement!==undefined) || ((subPanelContext.cbaContext.srcStructure && !subPanelContext.cbaContext.trgStructure && data.occContext.topElement!==undefined) || (!subPanelContext.cbaContext.srcStructure && subPanelContext.cbaContext.trgStructure && data.occContext2.topElement!=undefined)))">
+            <pma-update-summary-dialog sub-panel-context="{subPanelContext:props,occContext:data.occContext,occContext2:data.occContext2,cbaContext:subPanelContext.cbaContext}"></pma-update-summary-dialog>
+            
+        </div>
+        <div exist-when="(((subPanelContext.cbaContext.srcStructure && !subPanelContext.cbaContext.trgStructure && data.occContext.topElement) || (!subPanelContext.cbaContext.srcStructure && subPanelContext.cbaContext.trgStructure && data.occContext2.topElement)))">
+            <aw-dialog action="openSingleStructureDialog"></aw-dialog>
+        </div>
+    </div>
+</aw-sublocation>

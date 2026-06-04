@@ -1,0 +1,265 @@
+{
+  "commands": {
+    "exportToPLMXMLCommand": {
+      "iconId": "cmdExport",
+      "isGroup": false,
+      "title": "{{i18n.exportToPLMXML}}",
+      "description": "{{i18n.exportToPLMXMLDesc}}"
+    },
+    "importPLMXMLCommand": {
+      "iconId": "cmdImport",
+      "isGroup": false,
+      "title": "{{i18n.importPLMXML}}",
+      "description": "{{i18n.importPLMXMLDesc}}"
+    }
+  },
+  "commandHandlers": {
+    "exportToPLMXMLCommandHandler": {
+      "id": "exportToPLMXMLCommand",
+      "action": "launchExportToPLMXMLPanel",
+      "activeWhen": {
+        "condition": "conditions.isPLMXMLExportSupported"
+      },
+      "visibleWhen": {
+        "condition": "conditions.isPLMXMLExportSupported"
+      },
+      "enableWhen": true
+    },
+    "importPLMXMLCommandHandler": {
+      "id": "importPLMXMLCommand",
+      "action": "launchImportPLMXMLPanel",
+      "activeWhen": {
+        "condition": "conditions.enablePLMXMLImportCommand"
+      },
+      "visibleWhen": {
+        "condition": "conditions.enablePLMXMLImportCommand"
+      },
+      "enableWhen": {
+        "condition": "conditions.enablePLMXMLImportCommand"
+      }
+    }
+  },
+  "commandPlacements": {
+    "exportToPLMXMLCommandPlacement": {
+      "id": "exportToPLMXMLCommand",
+      "parentGroupId": "Awp0ImportExportGroup",
+      "priority": 80
+    },
+    "importPLMXMLCommandPlacement": {
+      "id": "importPLMXMLCommand",
+      "parentGroupId": "Awp0ImportExportGroup",
+      "priority": 500
+    }
+  },
+  "actions": {
+    "launchExportToPLMXMLPanel": {
+      "actionType": "dialog",
+      "inputData": {
+        "options": {
+          "view": "ExportToPLMXMLMainPanel",
+          "parent": ".aw-layout-workarea",
+          "width": "SMALL",
+          "height": "FULL",
+          "placement": "right",
+          "subPanelContext": "{{commandContext}}",
+          "isCloseVisible": false
+        }
+      }
+    },
+    "launchImportPLMXMLPanel": {
+      "actionType": "dialog",
+      "inputData": {
+        "options": {
+          "view": "ImportPLMXMLMainPanel",
+          "parent": ".aw-layout-workarea",
+          "width": "SMALL",
+          "height": "FULL",
+          "placement": "right",
+          "subPanelContext": "{{commandContext}}",
+          "isCloseVisible": false
+        }
+      }
+    }
+  },
+  "functions": {},
+  "onEvent": [],
+  "conditions": {
+    "hasValidActiveCtx": {
+      "expression": "ctx.selected && ctx.mselected && ctx.mselected.length === 1"
+    },
+    "enablePLMXMLImportCommand": {
+      "expression": "conditions.hasValidActiveCtx && ctx.selected.modelType.typeHierarchyArray.indexOf( 'Folder' ) > -1"
+    },
+    "isNotSupplierCollborationObject": {
+      "expression": {
+        "$and": [
+          {
+            "$source": "ctx.mselected.length",
+            "$query": {
+              "$gt": 0
+            }
+          },
+          {
+            "$source": "ctx.mselected",
+            "$query": {
+              "$all": {
+                "$source": "modelType.typeHierarchyArray",
+                "$query": {
+                  "$notin": [
+                    "Sc0SRMXChange",
+                    "Sc0SRMXChangeRevision"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "isPLMXMLExportSupported": {
+      "expression": {
+        "$or": [
+          {
+            "$and": [
+              {
+                "$source": "ctx.mselected.length",
+                "$query": {
+                  "$gt": 0
+                }
+              },
+              {
+                "$source": "ctx.preferences.AWC_PLMXML_export_supported_types",
+                "$query": {
+                  "$notNull": true
+                }
+              },
+              {
+                "$source": "ctx.mselected",
+                "$query": {
+                  "$source": "modelType.typeHierarchyArray",
+                  "$query": {
+                    "$in": "{{ctx.preferences.AWC_PLMXML_export_supported_types}}"
+                  }
+                }
+              },
+              {
+                "$source": "ctx.mselected",
+                "$query": {
+                  "$all": {
+                    "$source": "modelType.typeHierarchyArray",
+                    "$query": {
+                      "$notin": [
+                        "Sc0SRMXChange",
+                        "Sc0SRMXChangeRevision"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "$source": "ctx.locationContext.modelObject",
+                "$query": {
+                  "$source": "modelType.typeHierarchyArray",
+                  "$query": {
+                    "$notin": [
+                      "Sc0SRMXChangeRevision"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "$and": [
+              {
+                "$source": "ctx.mselected.length",
+                "$query": {
+                  "$gt": 0
+                }
+              },
+              {
+                "$source": "ctx.preferences.AWC_PLMXML_export_supported_types",
+                "$query": {
+                  "$isNull": true
+                }
+              },
+              {
+                "$source": "ctx.mselected",
+                "$query": {
+                  "$source": "modelType.typeHierarchyArray",
+                  "$query": {
+                    "$in": [
+                      "Awb0Element",
+                      "Folder",
+                      "Item",
+                      "ItemRevision",
+                      "Form",
+                      "Dataset",
+                      "CCObject",
+                      "StructureContext",
+                      "TransactionElement",
+                      "FaultCode",
+                      "CfgAttachmentLine",
+                      "AppearanceGroup",
+                      "DC_Admin",
+                      "DCt_GraphicPriority",
+                      "DCt_Language",
+                      "Schedule",
+                      "Cls0HierarchyNode",
+                      "Lbr0Library",
+                      "Lbr0LibraryElement",
+                      "Mdl0SubsetDefinition",
+                      "Ptn0Partition",
+                      "Cpd0DesignElement",
+                      "Cpd0DesignFeature"
+                    ]
+                  }
+                }
+              },
+              {
+                "$source": "ctx.mselected",
+                "$query": {
+                  "$all": {
+                    "$source": "modelType.typeHierarchyArray",
+                    "$query": {
+                      "$notin": [
+                        "Sc0SRMXChange",
+                        "Sc0SRMXChangeRevision"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "$source": "ctx.locationContext.modelObject",
+                "$query": {
+                  "$source": "modelType.typeHierarchyArray",
+                  "$query": {
+                    "$notin": [
+                      "Sc0SRMXChangeRevision"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "messages": {},
+  "i18n": {
+    "exportToPLMXML": [
+      "pieMessages"
+    ],
+    "exportToPLMXMLDesc": [
+      "pieMessages"
+    ],
+    "importPLMXML": [
+      "pieMessages"
+    ],
+    "importPLMXMLDesc": [
+      "pieMessages"
+    ]
+  }
+}

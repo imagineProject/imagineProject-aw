@@ -1,0 +1,207 @@
+{
+    "schemaVersion": "1.0.0",
+    "i18n": {
+        "addElementBtn": [
+            "OccmgmtRevOccConstants"
+        ]
+    },
+    "data": {
+        "triggerCreate": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        },
+        "addPanelState": {
+            "initialValues": {
+                "creationType": "",
+                "createdObject": "",
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {}
+        },
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        },
+        "activeState": {
+            "initialValues": {
+                "activeView": "AddObjectPrimarySub",
+                "context": {}
+            },
+            "meta": {}
+        },
+        "projectState": {
+            "initialValues": {
+                "selectedProjects": [],
+                "triggerAssign": false
+            },
+            "meta": {
+                "selectedProjects": {
+                    "field": "true",
+                    "type": "OBJECT"
+                },
+                "triggerAssign": {
+                    "field": "true",
+                    "type": "BOOLEAN"
+                }
+            }
+        }
+    },
+    "editHandlers": {
+        "addPanelEditHandler": {
+            "context": "CREATE_PANEL_CONTEXT",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    },
+    "actions": {
+        "getInfoForAddElementRevOccInlineAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2021-06-OccurrenceManagement",
+            "method": "getInfoForAddElement4",
+            "inputData": {
+                "getInfoForElementIn": {
+                        "parentElement":{
+                        "uid" : "{{ctx.selected.uid}}",
+                         "type": "{{ctx.selected.type}}"},
+                    "fetchAllowedOccRevTypes": false
+                }
+            },
+            "outputData": {
+                "allowedTypeInfo2": "{{function:extractAllowedTypesInfoFromResponse}}"
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "addExistingRevision": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "referenceProperty.update",
+                        "eventData": {
+                            "selectedObjects": "{{addPanelState.sourceObjects}}",
+                            "subPanelContext": "{{subPanelContext}}"
+                        },
+                        "condition": "conditions.isInlineAuth"
+                    },
+                    {
+                        "name": "referenceAdded.closeDialog"
+                    },
+                    {
+                        "name": "complete.subPanel",
+                        "eventData": {
+                            "source": "Awb0AddRevision"
+                        }
+                    }
+                ]
+            }
+        },
+        "createPartRevision": {
+            "actionType": "JSFunction",
+            "method": "updateCreateTrigger",
+            "inputData": {
+                "triggerCreate": "{{data.triggerCreate}}",
+                "value": true
+            },
+            "outputData": {
+                "triggerCreate": "triggerCreate"
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "partRevisionCreated": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                        "name": "referenceProperty.update",
+                        "eventData": {
+                            "selectedObjects": [ "{{addPanelState.createdObject}}" ],
+                            "subPanelContext": "{{subPanelContext}}"
+                        },
+                        "condition": "conditions.isInlineAuth"
+                    },
+                    {
+                        "name": "referenceAdded.closeDialog",
+                        "condition": "conditions.isInlineAuth"
+                    }
+                ]
+            }
+        },
+        "closeDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "performPostProcessingAfterCreate": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "partRevisionCreated",
+                    "condition": "addPanelState.createdObject"
+                }
+            ]
+        },
+        "setActiveView":{
+            "actionType": "JSFunction",
+            "method": "resetActiveView",
+            "inputData": {
+                "stateName": "{{data.activeState}}",
+                "destPanelId": "AddObjectPrimarySub"
+            },
+            "outputData": {
+                "activeState": ""
+            },
+            "deps": "js/addObjectUtils"
+        }
+    },
+    "messages": {
+        "genericAddRevOccFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "functions": {
+        "extractAllowedTypesInfoFromResponse": {
+            "functionName": "extractAllowedTypesInfoFromResponse",
+            "parameters": []
+        }
+    },
+    "lifecycleHooks": {
+        "onMount":"getInfoForAddElementRevOccInlineAction",
+        "onUpdate": {
+            "action": "performPostProcessingAfterCreate",
+            "observers": [ "viewModel.atomicData.addPanelState.createdObject" ]
+        }
+    },
+    "conditions": {
+        "isPaletteTabAddButtonVisible": {
+            "expression": "addPanelState.selectedTab.view==='PaletteTabPageSub' && addPanelState.sourceObjects.length === 1"
+        },
+        "isSearchTabAddButtonVisible": {
+            "expression": "addPanelState.selectedTab.view!='NewTabPageSub' && addPanelState.selectedTab.view!='PaletteTabPageSub' && addPanelState.sourceObjects.length === 1"
+        },
+        "isNewTabAddButtonVisible": {
+            "expression": "addPanelState.selectedTab.view==='NewTabPageSub' && addPanelState.creationType"
+        },
+        "isInlineAuth": {
+            "expression": "subPanelContext.isInlineAuth"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "referenceAdded.closeDialog",
+            "action": "closeDialog"
+        }
+    ]
+}

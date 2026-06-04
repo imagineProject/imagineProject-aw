@@ -1,0 +1,932 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {
+        "render": "pca0FeaturesRenderFunction",
+        "onUpdate": [ ]
+    },
+    "actions": {
+        "pca0FeaturesRenderFunction": {
+            "actionType": "JSFunction",
+            "method": "pca0FeaturesRenderFunction",
+            "deps": "js/pca0FeaturesService",
+            "options": {
+                "elementRefList": [ "pca0FeaturesFamilies", "pca0Features" ]
+            }
+
+        },
+        "removeViolationsFromCurrentGroup" :{
+            "actionType": "JSFunction",
+            "method": "removeViolationsFromCurrentGroup",
+            "inputData": {
+                "scopes": "{{data.scopeStruct}}"
+            },
+            "outputData": {
+                "scopeStruct.selectedGroup": "result.selectedGroup",
+                "scopeStruct": "result.newScopes"
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "removeViolationsFromAllGroupLevel" :{
+            "actionType": "JSFunction",
+            "method": "removeViolationsFromAllGroupLevel",
+            "inputData": {
+                "scopes": "{{data.scopeStruct}}"
+            },
+            "outputData": {
+                "scopeStruct": ""
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "clearAllViolationsAndSystemSelectionIndicators" :{
+            "actionType": "JSFunction",
+            "method": "clearAllViolationsAndSystemSelectionIndicators",
+            "inputData": {
+                "scopes": "{{data.scopeStruct}}"
+            },
+            "outputData": {
+                "scopeStruct": ""
+            },
+            "events": {
+                "success": [ {
+                        "name": "Pca0FscConfigurationModuleTree.resetModuleIndicators",
+                        "condition": "ctx.fscContext.switchingToGuidedMode"
+                    }
+                ]
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "resetAndReload": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getCachedScopeData",
+                    "condition": "conditions.shouldLoadCachedScopeDataCondition"
+                },
+                {
+                    "action": "loadVariabilityFromServer",
+                    "condition": "conditions.shouldLoadScopeDataFromServerCondition"
+                }
+            ],
+            "deps": "js/pca0FeaturesService"
+        },
+        "loadVariabilityFromServer": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "policy": {
+                "types": "{{function:getPropertyPolicyForVCV}}",
+                "override":true
+            },
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{function:getConfigPerspective}}",
+                    "selectedContext": "{{function:getSelectionForVariantContext}}",
+                    "scopes": [ "{{ctx.fscContext.currentScope ? ctx.fscContext.currentScope : ''}}" ],
+                    "activeVariantRules": "{{function:getActiveVariantRules}}",
+                    "selectedExpressions": "{{function:convertSelectedExpressionJsonObjectToString}}",
+                    "payloadStrings": "{{ctx.fscContext.payloadStrings}}",
+                    "requestInfo": {
+                        "requestType": [ "getConfig" ],
+                        "isCompactMode": [ "{{ctx.fscContext.vcvLayoutSettings.showCompressedData === true ? 'true' : \"\"}}" ],
+                        "configurationControlMode": [ "{{function:getConfigurationModeForLoadScopeData}}" ],
+                        "switchingToGuidedMode": [ "{{function:getSwitchingToGuidedMode}}" ],
+                        "profileSettings": [ "{{function:getProfileSettings}}" ],
+                        "fetchSummaryOfSelections": [ "{{props.fscState.isSwitchingFromGridToListView ? 'true' : \"\" }}" ],
+                        "reassessSelections": [ "{{ctx.fscContext.reassessSelections === undefined ? \"\" : ctx.fscContext.reassessSelections}}" ],
+                        "moduleHierarchy": [ "{{ctx.fscContext.configurationModuleHierarchy ? ctx.fscContext.configurationModuleHierarchy : ''}}" ]
+                    }
+                }
+            },
+            "outputData": {
+                "scopeStruct": "{{function:getScopeData}}",
+                "responseInfo": "responseInfo",
+                "violationLabels": "labels",
+                "payloadStrings": "payloadStrings",
+                "filterText": "{{function:resetFilterText}}",
+                "systemExpandedFamilies": "{{[]}}"
+            },
+            "events": {
+                "success": [ {
+                        "name": "Pca0Features.focusToFamily",
+                        "condition": "ctx.fscContext.navigateTo !== undefined"
+                    }
+                ],
+                "failure": [ {
+                    "name": "Pca0Features.stayInManualMode",
+                    "condition": "ctx.fscContext.guidedMode"
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "displayErrorCode"
+                } ]
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "addInlineFreeFormFeature": {
+            "actionType": "JSFunction",
+            "method": "addInlineFreeFormFeature",
+            "inputData": {
+                "eventData": "{{data.eventData.commandContext}}",
+                "scopes": "{{data.scopeStruct}}"
+            },
+            "outputData": {
+                "scopeStruct": ""
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "removeInlineFreeFormFeature": {
+            "actionType": "JSFunction",
+            "method": "removeInlineFreeFormFeature",
+            "inputData": {
+                "eventData": "{{data.eventData.commandContext}}",
+                "scopes": "{{data.scopeStruct}}"
+            },
+            "outputData": {
+                "scopeStruct": ""
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "removeRangeExpForEnumeratedFeature": {
+            "actionType": "JSFunction",
+            "method": "removeRangeExpForEnumeratedFeature",
+            "inputData": {
+                "eventData": "{{data.eventData.commandContext}}",
+                "scopes": "{{data.scopeStruct}}"
+            },
+            "outputData": {
+                "scopeStruct": ""
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "setNoneSelectionForFamily": {
+            "actionType": "JSFunction",
+            "method": "setNoneSelectionForFamily",
+            "inputData": {
+                "eventData": "{{parameters.eventData.commandContext}}",
+                "scopes": "{{data.scopeStruct}}"
+            },
+            "outputData": {
+                "scopeStruct":""
+            },
+            "deps": "js/Pca0FscSelectionService"
+        },
+        "setAnySelectionForFamily": {
+            "actionType": "JSFunction",
+            "method": "setAnySelectionForFamily",
+            "inputData": {
+                "eventData": "{{parameters.eventData.commandContext}}",
+                "scopes": "{{data.scopeStruct}}"
+            },
+            "outputData": {
+                "scopeStruct":""
+            },
+            "deps": "js/Pca0FscSelectionService"
+        },
+        "getCachedScopeData": {
+            "actionType": "JSFunction",
+            "method": "getCachedScopeData",
+            "inputData": {
+                "data": "{{data}}",
+                "soaResponse": "{{parameters.eventData.soaResponse}}",
+                "fscState": "{{props.fscState}}",
+                "scopes": "{{data.scopeStruct}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0Features.focusToFamily",
+                    "condition": "ctx.fscContext.navigateTo !== undefined"
+                } ]
+            },
+            "outputData": {
+                "scopeStruct": "result.scopeStruct",
+                "systemExpandedFamilies": "{{[]}}"
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "toggleManualGuidedMode": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "policy": {
+                "types": "{{function:getPropertyPolicyForVCV}}",
+                "override":true
+            },
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{function:getConfigPerspective}}",
+                    "selectedContext": "{{function:getSelectionForVariantContext}}",
+                    "scopes": [ "{{ctx.fscContext.currentScope ? ctx.fscContext.currentScope : ''}}" ],
+                    "activeVariantRules": "{{function:getActiveVariantRules}}",
+                    "selectedExpressions": "{{function:convertSelectedExpressionJsonObjectToString}}",
+                    "payloadStrings": "{{ctx.fscContext.payloadStrings}}",
+                    "requestInfo": "{{function:getRequestInfoForToggleManualGuidedMode}}"
+                }
+            },
+            "outputData": {
+                "scopeStruct": "{{function:getScopeData}}",
+                "responseInfo": "responseInfo",
+                "ServiceData": "ServiceData",
+                "filterText": "{{function:resetFilterText}}"
+            },
+            "events": {
+                "failure": [ {
+                    "name": "Pca0Features.stayInManualMode",
+                    "condition": "ctx.fscContext.guidedMode"
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "displayErrorCode"
+                } ]
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "clearScopeData": {
+            "actionType": "JSFunction",
+            "method": "clearScopeData",
+            "outputData": {
+                "scopeStruct.group.families": "result.families",
+                "scopeStruct.selectedGroup":"result.selectedGroup"
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "selectFeature": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "policy": {
+                "types": "{{function:getPropertyPolicyForVCV}}",
+                "override":true
+            },
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{function:getConfigPerspective}}",
+                    "scopes": [ "{{ctx.fscContext.currentScope ? ctx.fscContext.currentScope : ''}}" ],
+                    "selectedExpressions": "{{function:convertSelectedExpressionJsonObjectToString}}",
+                    "payloadStrings": "{{ctx.variantConfigContext.payloadStrings}}",
+                    "requestInfo": {
+                        "requestType": [ "getConfig" ],
+                        "isCompactMode": [ "{{ctx.fscContext.vcvLayoutSettings.showCompressedData === true ? 'true' : \"\"}}" ],
+                        "configurationControlMode": [ "{{function:getConfigurationMode}}" ],
+                        "profileSettings": [ "{{function:getProfileSettings}}" ],
+                        "fetchSummaryOfSelections": [ "{{props.fscState.isSwitchingFromGridToListView ? 'true' : \"\" }}" ],
+                        "moduleHierarchy": [ "{{ctx.fscContext.configurationModuleHierarchy ? ctx.fscContext.configurationModuleHierarchy : ''}}" ],
+                        "statsCollectorScopeName": [ "{{ctx.state.urlAttributes.configuratorDebugMode !== undefined ? 'selectFeature' : '' }}" ]
+                    }
+                }
+            },
+            "outputData": {
+                "scopeStruct": "{{function:getScopeData}}",
+                "notifySystemSelections": "responseInfo.System_Selection_Notification_Message[0]"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0Features.showPopupMessage",
+                    "eventData": {
+                        "message": "{{data.notifySystemSelections}}",
+                        "messageType": "INFO"
+                    }
+                } ],
+                "failure": [ {
+                    "name": "Pca0Features.scopeSelectionChanged"
+                } ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "displayErrorCode"
+                } ]
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "showViolations": {
+            "actionType": "JSFunction",
+            "method": "showViolationsOnValidation",
+            "inputData": {
+                "violationLabels": "{{data.violationLabels}}",
+                "responseInfo": "{{data.responseInfo}}",
+                "payloadStrings": "{{data.payloadStrings}}",
+                "scopes": "{{data.scopeStruct}}"
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "showValidationError": {
+            "actionType": "JSFunction",
+            "method": "showValidationErrorMessage",
+            "inputData": {
+                "data": "{{data}}",
+                "cntx": "{{fscContext}}"
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "showUnableToSwitchToGuidedModeMessage": {
+            "actionType": "JSFunction",
+            "method": "showUnableToSwitchToGuidedModeMessage",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "showPopupMessage": {
+            "actionType": "JSFunction",
+            "method": "showNotificationMessage",
+            "inputData": {
+                "message": "{{data.eventData.message}}",
+                "messageType": "{{data.eventData.messageType}}"
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "stayInManualMode": {
+            "actionType": "JSFunction",
+            "method": "stayInManualMode",
+            "inputData": {},
+            "deps": "js/pca0FeaturesService"
+        },
+        "Pca0ExpandSystemSelection": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "policy": {
+                "types": "{{function:getPropertyPolicyForVCV}}",
+                "override":true
+            },
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{function:getConfigPerspective}}",
+                    "selectedContext": "{{function:getSelectionForVariantContext}}",
+                    "scopes": [ "{{ctx.fscContext.currentScope ? ctx.fscContext.currentScope : ''}}" ],
+                    "selectedExpressions": "{{function:convertSelectedExpressionJsonObjectToString}}",
+                    "payloadStrings": "{{ctx.fscContext.payloadStrings}}",
+                    "requestInfo": "{{function:getRequestInfoForExpandSystemSelection}}"
+                }
+            },
+            "outputData": {
+                "scopeStruct": "{{function:getScopeDataForExpand}}",
+                "violationLabels": "labels",
+                "responseInfo": "responseInfo",
+                "payloadStrings": "payloadStrings"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0Features.Pca0Expanded",
+                    "eventData": {
+                        "responseInfo": "{{data.responseInfo}}"
+                    }
+                }
+             ]
+
+            },
+            "deps": "js/pca0FeaturesService",
+            "actionMessages": {
+                "failure": [ {
+                    "message": "displayErrorCode"
+                } ]
+            }
+        },
+        "validateConfiguration": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ProductConfiguratorAw-2022-12-ConfiguratorManagement",
+            "method": "variantConfigurationView3",
+            "policy": {
+                "types": "{{function:getPropertyPolicyForVCV}}",
+                "override":true
+            },
+            "inputData": {
+                "input": {
+                    "configPerspective": "{{function:getConfigPerspective}}",
+                    "selectedContext": "{{function:getSelectionForVariantContext}}",
+                    "scopes": [ "{{ctx.fscContext.currentScope ? ctx.fscContext.currentScope : ''}}" ],
+                    "selectedExpressions": "{{function:convertSelectedExpressionJsonObjectToString}}",
+                    "payloadStrings": "{{ctx.fscContext.payloadStrings}}",
+                    "requestInfo": {
+                        "requestType": [ "validate" ],
+                        "configurationControlMode": [ "{{function:getConfigurationMode}}" ],
+                        "profileSettings": [ "{{function:getProfileSettings}}" ],
+                        "moduleHierarchy": [ "{{ctx.fscContext.configurationModuleHierarchy ? ctx.fscContext.configurationModuleHierarchy : ''}}" ],
+                        "statsCollectorScopeName": [ "{{ctx.state.urlAttributes.configuratorDebugMode !== undefined ? 'validateConfiguration' : '' }}" ]
+                    }
+                }
+            },
+            "outputData": {
+                "scopeStruct": "{{function:getScopeDataForValidate}}",
+                "violationLabels": "labels",
+                "responseInfo": "responseInfo",
+                "payloadStrings": "payloadStrings"
+            },
+            "deps": "js/pca0FeaturesService",
+            "actionMessages": {
+                "failure": [ {
+                    "message": "displayErrorCode"
+                } ]
+            }
+        },
+        "updateVariantMode": {
+            "actionType": "JSFunction",
+            "method": "updateVariantMode",
+            "inputData": {
+                "fscState": "{{props.fscState}}",
+                "stayInManualMode": "{{data.eventData.stayInManualMode}}"
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "setSelection": {
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "selectionData": "{{data.eventData.selectionData}}",
+                "isFamilySelection": "{{data.eventData.isFamilySelection}}"
+            },
+            "deps": "js/Pca0FscSelectionService"
+        },
+        "clearSystemSelectionsInManualMode": {
+            "actionType": "JSFunction",
+            "method": "clearSystemSelectionsInManualMode",
+            "inputData": {
+                "fscState": "{{props.fscState}}",
+                "scopes": "{{data.scopeStruct}}"
+            },
+            "outputData": {
+                "scopeStruct.selectedGroup": "result.group"
+            },
+            "events": {
+                "success": [ {
+                        "name": "customVariantRule.variantRuleDirty",
+                        "eventData": {
+                            "variantRulePanelDirty": true,
+                            "selectedCtx": "fscContext"
+                        }
+                    } ]
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "clearAllSelections": {
+            "actionType": "JSFunction",
+            "method": "clearAllSelections",
+            "inputData": {
+                "fscState": "{{props.fscState}}",
+                "scopes": "{{data.scopeStruct}}"
+            },
+            "outputData": {
+                "scopeStruct": ""
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "customVariantRule.variantRuleDirty",
+                        "eventData": {
+                            "variantRulePanelDirty": true,
+                            "selectedCtx": "fscContext"
+                        }
+                    }
+                ]
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+
+        "filterFeatures": {
+            "actionType": "JSFunction",
+            "method": "filterFeatures",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "scopeStruct.selectedGroup": ""
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "addFreeFormOptionValue": {
+            "actionType": "JSFunction",
+            "method": "addFreeFormOptionValue",
+            "inputData": {
+                "eventData.": "{{data.eventData}}",
+                "scopeStruct": "{{data.scopeStruct}}"
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "addRangeExpressionForEnumeratedFamily": {
+            "actionType": "JSFunction",
+            "method": "addRangeExpressionForEnumeratedFamily",
+            "inputData": {
+                "valueText": "{{data.eventData.valueText}}",
+                "scopeInfo": "{{data.scopeStruct}}"
+            },
+            "outputData": {
+                "scopeStruct": ""
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "updateRangeExpressionForEnumeratedFamily": {
+            "actionType": "JSFunction",
+            "method": "updateRangeExpressionForEnumeratedFamily",
+            "inputData": {
+                "oldValueText": "{{data.eventData.oldValueText}}",
+                "valueText": "{{data.eventData.valueText}}",
+                "scopes": "{{data.scopeStruct}}"
+            },
+            "outputData": {
+                "scopeStruct": ""
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "focusToFamily": {
+            "actionType": "JSFunction",
+            "method": "focusToFamily",
+            "inputData": {
+                "group": "{{data.scopeStruct.selectedGroup}}"
+            },
+            "outputData": {
+                "scopeStruct.selectedGroup": "result.group",
+                "focusedFamilyId": "result.focusedFamilyId",
+                "systemExpandedFamilies": "result.systemExpandedFamilies"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0FeaturesService.removeNavigateTo"
+                } ]
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "removeNavigateTo": {
+            "actionType": "JSFunction",
+            "method": "updatePartialCtx",
+            "inputData": {
+                "path": "fscContext.navigateTo",
+                "value": "undefined"
+            },
+            "deps": "js/appCtxService"
+        },
+        "evaluateVariability": {
+            "actionType": "JSFunction",
+            "method": "handleExpandValidateFunctionalities",
+            "inputData": {
+                "scopeInfo":"{{data.scopeStruct}}",
+                "fscState": "{{props.fscState}}",
+                "operationType": "{{parameters.eventData.operationType}}"
+            },
+            "deps": "js/pca0FeaturesService"
+        },
+        "updateChangedVariability": {
+            "actionType": "JSFunction",
+            "method": "updateChangedVariability",
+            "inputData": {
+                "scopeInfo":"{{data.scopeStruct}}",
+                "eventData": "{{parameters.eventData}}"
+            },
+            "outputData": {
+                "scopeStruct": ""
+            },
+            "deps": "js/pca0FeaturesService"
+        }
+    },
+    "data": {
+        "scopeStruct": { "scopesList": [], "selectedGroup": {}, "selectedScopeIndex": -1 },
+        "familyCmdAnchor": "aw_cfgFamilyCommandBar",
+        "valueaction": "selectFeature",
+        "variantcontext": "fscContext",
+        "filterText": {
+            "displayName": "",
+            "type": "STRING",
+            "dbValue": "",
+            "isRequired": "false",
+            "isEditable": "true",
+            "requiredText": "{{i18n.filter}}",
+            "dispValue": ""
+        },
+        "systemExpandedFamilies": []
+    },
+    "props": {
+        "fsc-state": {
+            "type": "object"
+        },
+        "variant": {
+            "type": "object"
+        },
+        "config-ctx": {
+            "type": "object"
+        },
+        "is-selection-summary-open": {
+            "type": "boolean"
+        }
+    },
+    "messages": {
+        "validationErrorOnSwitchingToGuidedMode": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.validationErrorOnSwitchingToGuidedMode}}",
+            "messageTextParams": []
+        },
+        "displayErrorCode": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+
+    },
+    "functions": {
+        "getActiveVariantRules": {
+            "functionName": "getActiveVariantRules",
+            "parameters": [ "{{props.variant}}" ]
+        },
+        "getSelectionForVariantContext": {
+            "functionName": "getSelectionForVariantContext",
+            "parameters": [ "fscContext", "{{props.configCtx}}"]
+        },
+        "getConfigurationMode": {
+            "functionName": "getConfigurationMode",
+            "parameters": []
+        },
+        "getConfigurationModeForLoadScopeData": {
+            "functionName": "getConfigurationModeForLoadScopeData",
+            "parameters": [ "{{props.fscState}}" ]
+        },
+        "getProfileSettings": {
+            "functionName": "getProfileSettings"
+        },
+        "getScopeData": {
+            "functionName": "getScopeData",
+            "parameters": [
+                "{{data}}",
+                "{{props.fscState}}",
+                "{{data.scopeStruct}}"
+            ]
+        },
+        "getScopeDataForExpand": {
+            "functionName": "getScopeDataForExpand",
+            "parameters": [
+                "{{data}}",
+                "{{props.fscState}}",
+                "{{data.scopeStruct}}"
+            ]
+        },
+        "getScopeDataForValidate": {
+            "functionName": "getScopeDataForValidate",
+            "parameters": [
+                "{{props.fscState}}",
+                "{{data.scopeStruct}}"
+            ]
+        },
+        "getRequestInfoForToggleManualGuidedMode": {
+            "functionName": "getRequestInfoForToggleManualGuidedMode"
+        },
+        "getRequestInfoForExpandSystemSelection": {
+            "functionName": "getRequestInfoForExpandSystemSelection",
+            "parameters": [ "{{data}}", "{{props.isSelectionSummaryOpen}}" ]
+        },
+        "getSwitchingToGuidedMode": {
+            "functionName": "getSwitchingToGuidedMode"
+        },
+        "convertSelectedExpressionJsonObjectToString": {
+            "functionName": "convertSelectedExpressionJsonObjectToString",
+            "parameters": [ "{{ctx.fscContext.selectedExpressions}}" ]
+        },
+        "getConfigPerspective": {
+            "functionName": "getConfigPerspective",
+            "parameters": [ "{{props.variant}}" ]
+        },
+        "getPropertyPolicyForVCV": {
+            "functionName": "getPropertyPolicyForVCV"
+        },
+        "resetFilterText": {
+            "functionName": "resetFilterText",
+            "parameters": [ "{{data.filterText}}" ]
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "Pca0Features.toggleManualGuidedMode",
+            "action": "toggleManualGuidedMode"
+        },
+        {
+            "eventId": "Pca0Features.clearScopeData",
+            "action": "clearScopeData"
+        },
+        {
+            "eventId": " Pca0FullScreenConfiguration.applyConfigModuleSelectionToServer",
+            "action": "clearScopeData"
+        },
+
+        {
+            "eventId": "Pca0Features.loadScopeData",
+            "action": "loadVariabilityFromServer"
+        },
+        {
+            "eventId": "Pca0VariantRuleInFsc.showPopupMessage",
+            "cacheEventData": true,
+            "action": "showPopupMessage"
+        },
+        {
+            "eventId": "Pca0Features.Pca0Expand",
+            "cacheEventData": true,
+            "action": "Pca0ExpandSystemSelection"
+        },
+        {
+            "eventId": "Pca0Features.validate",
+            "action": "validateConfiguration"
+        },
+        {
+            "eventId": "awCustomVariantPanel.showValidationErrorMessage",
+            "criteria": {
+                "switchingToGuidedMode": "false"
+            },
+            "action": "showValidationError"
+        },
+        {
+            "eventId": "awCustomVariantPanel.showValidationErrorMessage",
+            "criteria": {
+                "switchingToGuidedMode": "true"
+            },
+            "action": "showUnableToSwitchToGuidedModeMessage"
+        },
+        {
+            "eventId": "Pca0Features.stayInManualMode",
+            "action": "stayInManualMode"
+        },
+        {
+            "eventId": "Pca0Features.updateVariantMode",
+            "cacheEventData": true,
+            "action": "updateVariantMode"
+        },
+        {
+            "eventId": "Pca0FscSelectionService.setSelection",
+            "cacheEventData": true,
+            "action": "setSelection"
+        },
+        {
+            "eventId": "Pca0Features.showPopupMessage",
+            "cacheEventData": true,
+            "action": "showPopupMessage"
+        },
+        {
+            "eventId": "Pca0Features.clearSystemSelectionsInManualMode",
+            "action": "clearSystemSelectionsInManualMode"
+        },
+        {
+            "eventId": "Pca0Features.updatedGroupList",
+            "action": "updatedGroupList"
+        },
+        {
+            "eventId": "Pca0AddRangeFeaturePanel.valueCreated",
+            "action": "addFreeFormOptionValue",
+            "cacheEventData": true,
+            "criteria": {
+                "sourceID": "fscFreeFormRangeExpPanel",
+                "isFreeForm": true
+            }
+        },
+        {
+            "eventId": "Pca0AddRangeFeaturePanel.valueUpdated",
+            "action": "addFreeFormOptionValue",
+            "cacheEventData": true,
+            "criteria": {
+                "sourceID": "fscFreeFormRangeExpPanel",
+                "isFreeForm": true
+            }
+        },
+        {
+            "eventId": "Pca0AddRangeFeaturePanel.valueCreated",
+            "action": "addRangeExpressionForEnumeratedFamily",
+            "cacheEventData": true,
+            "criteria": {
+                "sourceID": "fscFreeFormRangeExpPanel",
+                "isFreeForm": false
+            }
+        },
+        {
+            "eventId": "Pca0AddRangeFeaturePanel.valueUpdated",
+            "action": "updateRangeExpressionForEnumeratedFamily",
+            "cacheEventData": true,
+            "criteria": {
+                "sourceID": "fscFreeFormRangeExpPanel",
+                "isFreeForm": false
+            }
+        },
+        {
+            "eventId": "Pca0Features.selectFeature",
+            "action": "selectFeature"
+        },
+        {
+            "eventId": "Pca0Features.focusToFamily",
+            "action": "focusToFamily"
+        },
+        {
+            "eventId": "Pca0Features.scrollToActiveFamily",
+            "action": "scrollToActiveFamily"
+        },
+        {
+            "eventId": "condition.expressionValueChanged",
+            "action": "focusToFamily",
+            "criteria": {
+                "condition": "conditions.groupInfoChangedCondition"
+            },
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0Features.clearAllSelections",
+            "action": "clearAllSelections"
+        },
+        {
+            "eventId": "Pca0FeaturesService.removeNavigateTo",
+            "action": "removeNavigateTo"
+        },
+        {
+            "eventId": "Pca0Features.addInlineFreeFormFeature",
+            "cacheEventData": true,
+            "action": "addInlineFreeFormFeature"
+        },
+        {
+            "eventId": "Pca0Features.removeInlineFreeFormFeature",
+            "cacheEventData": true,
+            "action": "removeInlineFreeFormFeature"
+        },
+        {
+            "eventId": "Pca0Features.removeRangeExpForEnumeratedFeature",
+            "cacheEventData": true,
+            "action": "removeRangeExpForEnumeratedFeature"
+        },
+        {
+            "eventId": "Pca0Features.setNoneSelectionForFamily",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "setNoneSelectionForFamily"
+        },
+        {
+            "eventId": "Pca0Features.setAnySelectionForFamily",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "setAnySelectionForFamily"
+        },
+        {
+            "eventId": "Pca0Features.evaluateVariability",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "evaluateVariability"
+        },
+        {
+            "eventId": "pca0Features.selectionChanged",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "updateChangedVariability"
+        },
+        {
+            "eventId": "Pca0Features.removeViolationsFromAllGroupLevel",
+            "action": "removeViolationsFromAllGroupLevel"
+        },
+        {
+            "eventId": "Pca0Features.clearAllViolationsAndSystemSelectionIndicators",
+            "action": "clearAllViolationsAndSystemSelectionIndicators"
+        },
+        {
+            "eventId": "Pca0Features.scopeSelectionChanged",
+            "action": "resetAndReload",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "Pca0Features.removeViolationsFromCurrentGroup",
+            "action": "removeViolationsFromCurrentGroup"
+        },
+        {
+            "eventId": "Pca0Features.toggleCompactMode",
+            "criteria": {
+                "isCompactMode": false
+            },
+            "action": "loadVariabilityFromServer"
+        }
+     ],
+    "i18n": {
+        "validationErrorOnSwitchingToGuidedMode": [
+            "ConfiguratorMessages"
+        ],
+        "clear": [
+            "FullScreenConfigurationMessages"
+        ],
+        "cancel": [
+            "FullScreenConfigurationMessages"
+        ],
+        "filter": [
+            "ConfiguratorMessages"
+        ]
+    },
+    "conditions": {
+        "groupInfoChangedCondition": {
+            "expression": "data.group.families",
+            "trackValues": true
+        },
+        "definedCurrentScope": {
+            "expression": "parameters.eventData.currentScopeSelectionUid !== ''"
+        },
+        "shouldLoadCachedScopeDataCondition": {
+            "expression": "conditions.definedCurrentScope && parameters.eventData.soaResponse.ServiceData"
+        },
+        "shouldLoadScopeDataFromServerCondition": {
+            "expression": "conditions.definedCurrentScope && !parameters.eventData.soaResponse.ServiceData"
+        },
+        "isNotPIP": {
+            "expression": "ctx.fscContext.appliedSettings.configSettings.props.pca0ProductHierarchyDepth === undefined"
+        }
+
+    }
+}

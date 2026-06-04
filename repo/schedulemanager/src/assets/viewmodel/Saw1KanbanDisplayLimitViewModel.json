@@ -1,0 +1,172 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "displayLimit": {
+            "displayName": "{{i18n.Saw1KanbanDisplayLimitPropertyText}}",
+            "type": "INTEGER",
+            "dbValue": "",
+            "isRequired": "true",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP"
+        },
+        "SM_TASKS_KANBAN_BOARD_DEFAULT_DISPLAY_LIMIT": "20"
+    },
+    "actions": {
+        "callSetPreferenceSOA": {
+            "actionType": "TcSoaService",
+            "serviceName": "Administration-2012-09-PreferenceManagement",
+            "method": "setPreferences2",
+            "inputData": {
+                "preferenceInput": [ {
+                    "preferenceName": "AWC_SM_Tasks_Board_Display_Limit",
+                    "values": [
+                        "{{data.SMKanbanDisplayLimit}}"
+                    ]
+                } ]
+            },
+            "events": {
+                "success": [ {
+                        "name": "updateDisplayLimit"
+                    },
+                    {
+                        "name": "closeDialog"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [ {
+                    "message": "soaFailureMessage"
+                } ]
+            }
+        },
+
+        "updateDisplayLimit": {
+            "actionType": "JSFunction",
+            "method": "updateDisplayLimit",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.searchState}}",
+                "data": "{{data.displayLimit.dbValue}}"
+            },
+            "deps": "js/Saw1KanbanDisplayLimitService"
+        },
+        "populateDisplayLimit": {
+            "actionType": "JSFunction",
+            "method": "populateDisplayLimit",
+            "inputData": {
+                "data": "{{data}}",
+                "fields": "{{fields}}"
+            },
+            "deps": "js/Saw1KanbanDisplayLimitService"
+        },
+        "updateDisplayLimitPreference": {
+            "actionType": "JSFunction",
+            "method": "updateDisplayLimitPreference",
+            "inputData": {
+                "data": "{{data}}",
+                "value": "{{data.displayLimit.dbValue}}"
+            },
+            "outputData": {
+                "SMKanbanDisplayLimit": ""
+            },
+            "deps": "js/Saw1KanbanDisplayLimitService",
+            "events": {
+                "success": [ {
+                    "name": "callSetPreferenceSOA"
+                } ]
+            }
+        },
+        "resetDisplayLimit": {
+            "actionType": "batchJob",
+            "steps": [ {
+                    "action": "resetValueInPanel"
+                },
+                {
+                    "action": "resetDisplayLimitPreference"
+                }
+            ]
+        },
+        "resetValueInPanel": {
+            "actionType": "JSFunction",
+            "method": "populateDisplayLimit",
+            "inputData": {
+                "data": "{{data}}",
+                "fields": "{{fields}}",
+                "newValue": "{{data.SM_TASKS_KANBAN_BOARD_DEFAULT_DISPLAY_LIMIT}}"
+            },
+            "deps": "js/Saw1KanbanDisplayLimitService"
+        },
+        "resetDisplayLimitPreference": {
+            "actionType": "JSFunction",
+            "method": "updateDisplayLimitPreference",
+            "inputData": {
+                "data": "{{data}}",
+                "value": "{{data.SM_TASKS_KANBAN_BOARD_DEFAULT_DISPLAY_LIMIT}}"
+            },
+            "outputData": {
+                "SMKanbanDisplayLimit": ""
+            },
+            "deps": "js/Saw1KanbanDisplayLimitService",
+            "events": {
+                "success": [ {
+                    "name": "callSetPreferenceSOA"
+                } ]
+            }
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "onEvent": [ {
+            "eventId": "callSetPreferenceSOA",
+            "action": "callSetPreferenceSOA"
+        },
+        {
+            "eventId": "updateDisplayLimitPreference",
+            "action": "updateDisplayLimitPreference"
+        },
+        {
+            "eventId": "updateDisplayLimit",
+            "action": "updateDisplayLimit"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+    "conditions": {
+        "isValidToShowSetButton": {
+            "expression": "data.displayLimit.dbValue > 0"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "populateDisplayLimit"
+    },
+    "preferences": [
+        "AWC_SM_Tasks_Board_Display_Limit"
+    ],
+    "messages": {
+        "soaFailureMessage": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n": {
+        "Saw1KanbanDisplayLimit": [
+            "ScheduleManagerMessages"
+        ],
+        "setButtonText": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1KanbanDisplayLimitPropertyText": [
+            "ScheduleManagerMessages"
+        ],
+        "Saw1ResetButtonText": [
+            "ScheduleManagerMessages"
+        ]
+    }
+}

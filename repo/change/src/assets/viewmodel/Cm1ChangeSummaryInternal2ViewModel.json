@@ -1,0 +1,497 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "impactedItemsLov": {
+            "displayName": "{{i18n.impactedItemsTitle}}",
+            "type": "STRINGARRAY",
+            "uiValue": "All",
+            "dbValue": [],
+            "isSelectOnly": true,
+            "labelPosition": "PROPERTY_LABEL_AT_SIDE",
+            "isRequired": false,
+            "dataProvider": "impactedLovDataProvider",
+            "hasLov": true,
+            "renderingHint": "checkboxoptionlov",
+            "isArray": true
+        },
+        "detailsOfChangesState": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "isReloadValid": {
+            "type": "BOOLEAN",
+            "dbValue": false
+        },
+        "isObjTypeDifferent": {
+            "type": "BOOLEAN",
+            "dbValue": false
+        },
+        "filterCriteria": {
+            "initialValues": {
+            },
+            "meta": {}
+        },
+        "bulkSelect": {
+            "showBulkSelection": true,
+            "noValuesMessage": "No Values Message"
+        },
+        "changeSummarySelectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "selectedTab": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "isMergeCandidate": {
+            "type": "BOOLEAN",
+            "dbValue": false
+        }
+    },
+    "ports": {
+        "showMergeIndicator": {
+            "syncObject": {}
+        }
+    },
+    "actions": {
+        "saveColumnConfig": {
+            "actionType": "JSFunction",
+            "method": "saveColumnConfig",
+            "deps": "js/Cm1ChangeSummary2Service",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.changeSummaryDataProvider}}",
+                "columns": "{{data.dataProviders.changeSummaryDataProvider.newColumns}}"
+            }
+        },
+        "resetColumnConfig": {
+            "actionType": "JSFunction",
+            "method": "resetColumnConfig",
+            "deps": "js/Cm1ChangeSummary2Service",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.changeSummaryDataProvider}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "resetChangeSummaryTable"
+                    }
+                ]
+            }
+        },
+        "cacheAndResetChangeSummaryTable": {
+            "actionType": "JSFunction",
+            "method": "cacheImpactedItemsData",
+            "inputData": {
+                "impactedItems": "{{data.impactedItemsLov.dbValues}}",
+                "cachedImpactedItems": "{{data.cachedImpactedItems}}"
+            },
+            "outputData": {
+                "isReload": "isReload",
+                "cachedImpactedItems": "cacheData"
+            },
+            "events": {
+                "success": [ {
+                    "name": "resetChangeSummaryTable",
+                    "condition": "data.isReload === true"
+                } ]
+            },
+            "deps": "js/Cm1ChangeSummary2Service"
+        },
+        "updateSelectedMergeFilter": {
+            "actionType": "JSFunction",
+            "method": "getChangeSummaryMergeFilter",
+            "outputData": {
+                "selectedMergeFilter": ""
+            },
+            "events": {
+                "success": [ {
+                    "name": "resetChangeSummaryTable",
+                    "condition": "!parameters.isRefreshTableRequired"
+                } ]
+            },
+            "deps": "js/Cm1ChangeSummary2Service"
+        },
+        "reloadChangeSummaryData":{
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "resetChangeSummaryTable",
+                    "condition": "parameters.eventData.refreshLocationFlag"
+                }
+            ]
+        },
+        "resetChangeSummaryTable": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "changeSummaryGrid2.plTable.reload"
+                    }
+                ]
+            }
+        },
+        "getChangeSummaryData3Soa": {
+            "actionType": "TcSoaService",
+            "serviceName":"Internal-CmAws-2024-12-Changes",
+            "method": "getChangeSummaryData3",
+            "deps": "js/Cm1ChangeSummary2Service",
+            "inputData": {
+                "changeSummaryInput":{
+                    "changeNoticeRevision":{
+                        "uid":"{{ctx.xrtSummaryContextObject.uid}}",
+                        "type":"{{ctx.xrtSummaryContextObject.type}}"
+                    },
+                    "rowToExpand": "{{function:getRowToExpandData}}",
+                    "isAbsOccInContextParent": "request.treeLoadInput.parentNode.isAbsOccInContextParent",
+                    "startIndex": "request.treeLoadInput.startChildNdx",
+                    "pageSize": "request.treeLoadInput.pageSize",
+                    "sortCriteria": {
+                        "columnName" : "{{data.columnProviders.changeSummaryColumnProvider.sortCriteria[0].fieldName}}",
+                        "sortDirection" : "{{data.columnProviders.changeSummaryColumnProvider.sortCriteria[0].sortDirection}}"
+                    },
+                    "filterCriteria": {
+                        "columnName" : "mergeChangesFilter",
+                        "operation" : "EQUAL",
+                        "filterValue": "{{function:getChangeSummaryMergeFilter}}"
+                    },
+                    "impactedObjects": "{{function:getImpactedItemsSelected}}"
+                }
+            },
+            "policy": {
+                "types": [ {
+                    "name": "Cm1ChangeSummaryElement",
+                    "properties": [
+                        {
+                            "name": "cm1UnderlyingPrimaryObject",
+                            "modifiers": [
+                                {
+                                "name": "withProperties",
+                                "Value": "true"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "cm1IsLeaf"
+                        },
+                        {
+                            "name": "cm1UnderlyingSecondaryObject"
+                        },
+                        {
+                            "name": "cm1Awb0PositionedElement"
+                        },
+                        {
+                            "name": "cm1SiblingOf"
+                        }
+
+                    ]
+                }
+             ]
+            },
+            "outputData": {
+                "dataProviders.changeSummaryDataProvider.columnConfig": "{{function:initColumnsForChangeSummaryTable}}",
+                "treeResults": "{{function:processResponse}}"
+            }
+        },
+        "getImpactedItems": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-09-DataManagement",
+            "method": "expandGRMRelationsForPrimary",
+            "inputData": {
+                "primaryObjects": [
+                    {
+                        "uid": "{{ctx.xrtSummaryContextObject.uid}}",
+                        "type": "{{ctx.xrtSummaryContextObject.type}}"
+                    }
+                ],
+                "pref": {
+                    "expItemRev": false,
+                    "returnRelations": false,
+                    "info": [
+                        {
+                            "relationTypeName": "CMHasImpactedItem",
+                            "otherSideObjectTypes": ""
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "impactedItems": "{{function:processSecondaryObject}}"
+            },
+            "deps": "js/Cm1ChangeSummary2Service"
+        },
+        "detailsOfChangeDialogAction": {
+            "actionType": "dialog",
+            "inputData": {
+                "options": {
+                    "view": "Cm1DetailsOfChanges",
+                    "parent": ".aw-layout-workareaMain",
+                    "width": "SMALL",
+                    "height": "FULL"
+                }
+            }
+        },
+        "initChangeSummary": {
+            "actionType":"batchJob",
+            "steps": [
+                {
+                    "action": "registerCtx"
+                },
+                {
+                    "action": "updateSelectedMergeFilter",
+                    "inputArg":{
+                        "isRefreshTableRequired": true
+                    }
+                }
+            ]
+        },
+        "registerCtx":{
+            "actionType": "JSFunction",
+            "method": "updateCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "isRedLineMode",
+                "value": "true"
+            }
+        },
+        "Cm1ActivateDetailsOfChangesPanel": {
+            "actionType": "JSFunction",
+            "method": "openDetailsOfChangesPanel",
+            "inputData": {
+                "input": {
+                    "tabToOpen": "{{parameters.eventData.tabToOpen}}",
+                    "customDialogAction": "{{actions.detailsOfChangeDialogAction}}",
+                    "subPanelContext": "{{subPanelContext}}",
+                    "detailsOfChangesState": "{{fields.detailsOfChangesState}}",
+                    "isFullScreenEvent": "{{parameters.isFullScreenEvent}}",
+                    "selectedTab": "{{fields.selectedTab}}"
+                }
+            },
+            "outputData": {},
+            "deps": "js/Cm1ChangeSummary2Service"
+        },
+        "openDetailsOfChangesPanelBatchJob": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "Cm1ActivateDetailsOfChangesPanel",
+                    "inputArg": {
+                        "isFullScreenEvent": true
+                    }
+                }
+            ]
+        },
+        "setArrangeEventAction": {
+            "actionType": "JSFunction",
+            "method": "selectArrangeEventAction",
+            "inputData": {
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/Cm1ChangeSummaryService"
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "handleSelectionChange": {
+            "actionType": "JSFunction",
+            "method": "handleSelectionChange",
+            "inputData": {
+                "localSelectionData": "{{fields.changeSummarySelectionData}}",
+                "parentSelectionData": "{{subPanelContext.selectionData}}"
+            },
+            "outputData": {},
+            "deps": "js/Cm1ChangeSummary2Service"
+        },
+        "handleFocusChange": {
+            "actionType": "JSFunction",
+            "method": "handleFocusChange",
+            "inputData": {
+                "localSelectionData": "{{fields.changeSummarySelectionData}}",
+                "focusComponent": "{{props.subPanelContext.focusComponent}}",
+                "selectionModel": "{{selectionModels.changeSummarySelectionModel}}"
+            },
+            "deps": "js/Cm1ChangeSummary2Service"
+        },
+        "doArrangeCompareEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "updateShowMergeIndicatorAtPort": {
+            "actionType": "Sync",
+            "inputData": {
+                "port": "showMergeIndicator",
+                "syncObject": "{{data.isMergeCandidate}}"
+            }
+        }
+    },
+    "functions": {
+        "initColumnsForChangeSummaryTable":{
+            "functionName": "initColumnsForChangeSummaryTable2",
+            "parameters": [
+                "{{data.dataProviders.changeSummaryDataProvider}}",
+                "{{data.columnProviders.changeSummaryColumnProvider}}"
+            ]
+        },
+        "getModelObjectsFromUID": {
+            "functionName": "getModelObjectsFromUID",
+            "parameters": [
+                "{{data.dataProviders.changeSummaryDataProvider.selectedObjects}}"
+            ]
+        },
+        "processResponse": {
+            "functionName": "processChangeSummaryData3Response",
+            "parameters": [
+                "{{data.treeLoadInput}}",
+                "{{data}}"
+            ]
+        },
+        "getImpactedItemsSelected": {
+            "functionName": "getImpactedItemsSelected",
+            "parameters": [
+                "{{data.impactedItemsLov}}",
+                "{{fields}}"
+            ]
+        },
+        "getRowToExpandData": {
+            "functionName": "getRowToExpandData",
+            "parameters": [
+                "{{data.treeLoadInput.parentNode.cm1UnderlyingObj}}"
+            ]
+        },
+        "getChangeSummaryMergeFilter": {
+            "functionName": "getChangeSummaryMergeFilter",
+            "parameters": []
+        }
+    },
+    "dataProviders": {
+        "changeSummaryDataProvider": {
+            "initializeAction": "getChangeSummaryData3Soa",
+            "nextAction": "getChangeSummaryData3Soa",
+            "focusAction": "getChangeSummaryData3Soa",
+            "previousAction": "getChangeSummaryData3Soa",
+            "treeLoadResult": "{{data.treeResults}}",
+            "totalFound": "{{data.treeResults.totalFound}}",
+            "inputData": {
+                "accessMode": "tree",
+                "topNodeUid": "{{ctx.xrtSummaryContextObject.uid}}",
+                "selectionData":"{{fields.changeSummarySelectionData}}",
+                "selectionModel": "{{data.selectionModels.changeSummarySelectionModel}}"
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        },
+        "impactedLovDataProvider":
+        {
+            "action": "getImpactedItems",
+            "response":"{{data.impactedItems}}",
+            "totalFound":"{{data.impactedItems.length}}"
+        }
+    },
+    "columnProviders": {
+        "changeSummaryColumnProvider": {
+            "saveColumnAndLoadAction": "saveColumnConfig",
+            "resetColumnAction": "resetColumnConfig"
+        }
+    },
+    "selectionModels": {
+        "changeSummarySelectionModel": {
+            "selectionMode": "multiple"
+        }
+    },
+    "grids": {
+        "changeSummaryGrid2": {
+            "dataProvider": "changeSummaryDataProvider",
+            "columnProvider": "changeSummaryColumnProvider",
+            "addIconColumn": false,
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "enableGridMenu": true,
+                "enableSorting": true
+            }
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "Cm1ChangeSummary.openDetailsOfChangesPanel",
+            "action": "Cm1ActivateDetailsOfChangesPanel",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "resetChangeSummaryTable",
+            "action": "resetChangeSummaryTable"
+        },
+        {
+            "eventId": "updateMergeFilterAndResetChangeSummary",
+            "action": "updateSelectedMergeFilter"
+        },
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "setArrangeEventAction"
+        },
+        {
+            "eventId": "doArrangeCompareEvent",
+            "action": "doArrangeCompareEvent"
+        },
+        {
+            "eventId": "doArrangeEvent",
+            "action": "doArrangeEvent"
+        },
+        {
+            "eventId": "cdm.relatedModified",
+            "action": "reloadChangeSummaryData",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "initChangeSummary",
+        "onUpdate": [
+            {
+                "action": "openDetailsOfChangesPanelBatchJob",
+                "observers": [ "props.subPanelContext.fullScreenState.value" ]
+            },
+            {
+                "action": "cacheAndResetChangeSummaryTable",
+                "observers": [ "viewModel.data.impactedItemsLov.dbValue.length" ]
+            },
+            {
+                "action": "handleSelectionChange",
+                "observers": [ "fields.changeSummarySelectionData.selected" ]
+            },
+            {
+                "action": "handleFocusChange",
+                "observers": [ "props.subPanelContext.focusComponent" ]
+            },
+            {
+                "action": "updateShowMergeIndicatorAtPort",
+                "observers": [ "viewModel.data.isMergeCandidate.dbValue" ]
+            }
+        ]
+    },
+    "conditions": {},
+    "i18n" : {
+        "aw_changeSummary": [
+            "ChangeMessages"
+        ],
+        "impactedItemsTitle": [
+            "ChangeMessages"
+        ],
+        "relatedChangeSummaryTableCaption":[
+            "ChangeMessages"
+        ]
+    }
+}

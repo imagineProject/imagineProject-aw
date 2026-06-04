@@ -1,0 +1,118 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "initializeView": {
+            "actionType": "JSFunction",
+            "method": "initializeSettingsPanel",
+            "inputData": {
+                "settings": "{{props.subPanelContext.settings}}",
+                "settingsFields": {
+                    "showAllRevisions": "{{fields.showAllRevisions}}",
+                    "showDataFromAllContexts": "{{fields.showDataFromAllContexts}}"
+                }
+            },
+            "outputData": {
+                "canShowDataFromAllContexts": "canShowDataFromAllContexts",
+                "sectionsVisibility": "sectionsVisibility",
+                "isAtLeastOneSectionToggledOn":"isAtLeastOneSectionToggledOn"
+            },
+            "deps": "js/Pca0WhereUsedService"
+        },
+        "handleSectionsVisibilityChanged": {
+            "actionType": "JSFunction",
+            "method": "handleSectionsVisibilityChanged",
+            "inputData": {
+                "sectionsVisibility": "{{data.sectionsVisibility}}"
+            },
+            "outputData": {
+                "isAnySectionsVisibilitySettingDirty": "isAnySectionsVisibilitySettingDirty",
+                "isAtLeastOneSectionToggledOn": "isAtLeastOneSectionToggledOn"
+            },
+            "deps": "js/Pca0WhereUsedService"
+        },
+        "applySettings": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "Pca0WhereUsed.applySettings",
+                    "eventData": {
+                        "settingsFromPanel": "{{data.data}}",
+                        "popupId": "{{subPanelContext.popupOptions.popupId}}"
+                    }
+                } ]
+            }
+        }
+    },
+    "data": {
+        "showAllRevisions": {
+            "displayName": "{{i18n.showAllRevisions}}",
+            "type": "BOOLEAN",
+            "isRequired": false,
+            "isEditable": true,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        },
+        "canShowDataFromAllContexts": true,
+        "showDataFromAllContexts": {
+            "displayName": "{{i18n.showDataFromAllContexts}}",
+            "type": "BOOLEAN",
+            "isRequired": false,
+            "isEditable": true,
+            "labelPosition": "PROPERTY_LABEL_AT_RIGHT"
+        }
+    },
+    "i18n": {
+        "settings": [ "ConfiguratorExplorerMessages" ],
+        "revisions": [ "ConfiguratorExplorerMessages" ],
+        "showAllRevisions": [ "ConfiguratorExplorerMessages" ],
+        "dataFromContexts": [ "ConfiguratorExplorerMessages" ],
+        "showDataFromAllContexts": [ "ConfiguratorExplorerMessages" ],
+        "sectionTitle": [ "ConfiguratorExplorerMessages" ],
+        "applyCmd": [ "ConfiguratorExplorerMessages" ]
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeView"
+    },
+    "onEvent": [],
+    "conditions": {
+        "isShowAllRevisionsChanged": {
+            "expression": "data.showAllRevisions.valueUpdated"
+        },
+        "isShowDataFromAllContextsChanged": {
+            "expression": "data.showDataFromAllContexts.valueUpdated"
+        },
+        "settingsChanged": {
+            "expression": {
+                "$and": [ {
+                    "$source": "data.isAtLeastOneSectionToggledOn",
+                    "$query": {
+                        "$eq": true
+                    }
+                }, {
+                    "$or": [ {
+                            "$source": "data.isAnySectionsVisibilitySettingDirty",
+                            "$query": {
+                                "$eq": true
+                            }
+                        }, {
+                            "$source": "conditions.isShowAllRevisionsChanged",
+                            "$query": {
+                                "$eq": true
+                            }
+                        },
+                        {
+                            "$source": "conditions.isShowDataFromAllContextsChanged",
+                            "$query": {
+                                "$eq": true
+                            }
+                        }
+                    ]
+                } ]
+            }
+
+        },
+        "isModelsOrFeaturesTab": {
+            "expression": "subPanelContext.context.clientScopeURI === 'Pca0VariabilityExplorerFeatures' || subPanelContext.context.clientScopeURI === 'Pca0VariabilityExplorerProducts'"
+        }
+    }
+}

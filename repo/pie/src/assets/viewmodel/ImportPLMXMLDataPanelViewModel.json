@@ -1,0 +1,341 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+    "data": {
+        "importStarted": false,
+        "transferModeListBox": {
+            "displayName": "{{i18n.transferMode}}",
+            "type": "STRING",
+            "isRequired": "true",
+            "dataProvider" : "transferModeProvider",
+            "uiValue": "",
+            "dbValue": "",
+            "emptyLOVEntry": false,
+            "name": "transferModeListBox"
+        }
+    },
+    "dataProviders": {
+        "transferModeProvider": {
+            "response": "{{data.transferModeListBoxValues}}"
+        }
+    },
+    "actions": {
+        "showInvalidFileErrorMsg":{
+            "actionType": "JSFunction",
+            "method": "showInvalidFileErrorMsg",
+            "inputData": {
+                "data":"{{subPanelContext.uploadFileSelectionData.selectedFileInfo.fileExt}}"
+            },
+            "deps": "js/importPLMXML"
+        },
+        "getTransferList": {
+            "actionType": "batchJob",
+            "steps": [
+            {
+                "condition":"!conditions.isValidFile",
+                "action": "showInvalidFileErrorMsg"
+            },
+            {
+                "condition":"conditions.isValidFile",
+                "action": "getTransferModes"
+            },
+            {
+                "condition": "!conditions.isValidFile",
+                "action": "clearTransferModes"
+            }
+        ]
+        },
+        "localOrXcshareCall": {
+            "actionType": "batchJob",
+            "steps": [
+            {
+                "condition":"conditions.isLocalFileImport",
+                "action": "getFMSTicket"
+            },
+            {
+                "condition": "conditions.isFileImportFromXCShare",
+                "action": "XCfileUploadAction"
+            }
+        ]
+        },
+        "XCfileUploadAction":{
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "getCreateRequestJSONForImport"
+            },
+            {
+                "action": "XCUploadFile"
+            }
+            ,
+            {
+                "action": "importPLMXMLInternal"
+            }
+            ]
+        },
+        "getCreateRequestJSONForImport": {
+            "actionType": "JSFunction",
+            "method": "getCreateRequestJSONForImport",
+            "inputData": {
+                "fileSelData": "{{subPanelContext.uploadFileSelectionData}}"
+            },
+            "outputData": {
+                "xcFileUploadRequest": ""
+            },
+            "deps": "js/importPLMXML"
+        },
+        "XCUploadFile": {
+            "actionType": "JSFunction",
+            "method": "xcUploadFileToFMS",
+            "inputData": {
+                "addReqInp": "{{data.xcFileUploadRequest}}"
+            },
+            "outputData": {
+                "fmsTicket": "fmsTicket"
+            },
+            "deps": "js/importPLMXML"
+        },
+        "importPLMXML": {
+            "actionType": "JSFunction",
+            "method": "collectSessionOption",
+            "inputData": {
+                "ctx": "{{ctx}}"
+            },
+            "outputData": {
+                "sessionOptionsForImport": "",
+                "importStarted": true
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "importPLMXML.localOrXcshareCall"
+                    }
+                ]
+            },
+            "deps": "js/importPLMXML"
+        },
+        "getFMSTicket": {
+            "actionType": "TcSoaService",
+            "serviceName": "Core-2007-01-FileManagement",
+            "method": "getTransientFileTicketsForUpload",
+            "inputData": {
+                "transientFileInfos": [
+                    {
+                        "fileName": "{{subPanelContext.uploadFileSelectionData.selectedFileInfo.fileName}}",
+                        "isBinary": true,
+                        "deleteFlag": true
+                    }
+                ]
+            },
+            "outputData": {
+                "fmsTicket": "transientFileTicketInfos[0].ticket"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "fmsTicket.updatePLMXML"
+                    }
+                ]
+            }
+        },
+        "updateFormData": {
+            "actionType": "JSFunction",
+            "method": "updateFormData",
+            "inputData": {
+                "formData": "{{subPanelContext.uploadFileSelectionData.selectedFileInfo.formData}}",
+                "key": "fmsTicket",
+                "value": "{{data.fmsTicket}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "importPLMXML.gotTransientFileTicket"
+                    }
+                ]
+            },
+            "deps": "js/fileUploadUtils"
+        },        
+        "uploadPLMXMLFile": {
+            "actionType": "JSFunction",
+            "method": "uploadPLMXMLFile",
+            "inputData": {
+                "formData": "{{subPanelContext.uploadFileSelectionData.selectedFileInfo.formData}}",
+                "fileName": "{{subPanelContext.uploadFileSelectionData.selectedFileInfo.fileName}}"            
+            },            
+            "deps": "js/importPLMXML",
+            "events": {
+                "success": [
+                    {
+                        "name": "fmsTicket.actionPLMXMLImport"
+                    }
+                ]
+            }
+        },
+        "importPLMXMLInternal": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-TCXMLImportExport-2021-06-PLMXML",
+            "method": "importObjectsFromPLMXML",
+            "inputData": {
+                "input": "{{function:getSOAInputForPLMXMLImport}}"
+            },
+            "outputData": {
+                "exportPartialErrors": "{{function:processPLMXMLImportPartialErrors}}"
+            },
+            "deps": "js/importPLMXML",
+            "events": {
+                "success": [
+                    {
+                        "name": "importPLMXML.closeDialog"
+                    }
+                ]
+            }
+        },
+
+        "closeImportPLMXMLDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [ {
+                    "name": "complete",
+                    "eventData": {
+                        "source": "toolAndInfoPanel"
+                    }
+                } ]
+            }
+        },
+        "getTransferModes": {
+            "actionType": "TcSoaService",
+            "serviceName": "GlobalMultiSite-2007-06-ImportExport",
+            "method": "getTransferModes",
+            "inputData": {
+                "inputs": {
+                    "scope": "IMPORT",
+                    "schemaFormat": "PLMXML"
+                }
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "TransferMode",
+                        "properties": [
+                            {
+                                "name": "object_name"
+                            },
+                            {
+                                "name": "object_desc"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "outputData": {
+                "transferModeListBoxValues": "{{function:getXferModes}}"
+            },
+            "deps": "js/exportToPLMXML"
+        },
+        "clearTransferModes": {
+            "actionType": "JSFunction",
+            "method": "clearTransferModes",
+            "outputData": {
+                "transferModeListBoxValues": "emptyArray",
+                "transferModeListBox.uiValue": "emptyString",
+                "transferModeListBox.dbValue": "emptyString"
+            },
+            "deps": "js/importPLMXML"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "onFileSelectionFromXcshare",
+            "action": "getTransferList"
+        },
+        {
+            "eventId": "importPLMXML.localOrXcshareCall",
+            "action": "localOrXcshareCall"
+        },
+        {
+            "eventId": "importPLMXML.getXferModes",
+            "action": "getTransferModes"
+        },
+        {
+            "eventId": "importPLMXML.clearTransferModeListBox",
+            "action": "clearTransferModes"
+        },
+        {
+            "eventId": "importPLMXML.getFMSFileTicket",
+            "action": "getFMSTicket"
+        },
+        {
+            "eventId": "fmsTicket.updatePLMXML",
+            "action": "updateFormData"
+        },
+        {
+            "eventId": "importPLMXML.gotTransientFileTicket",
+            "action": "uploadPLMXMLFile"
+        },
+        {
+            "eventId": "fmsTicket.actionPLMXMLImport",
+            "action": "importPLMXMLInternal"
+        },
+        {
+            "eventId": "importPLMXML.closeDialog",
+            "action": "closeImportPLMXMLDialog"
+        }
+    ],
+    "functions": {
+        "getSOAInputForPLMXMLImport": {
+            "functionName": "getSOAInputForPLMXMLImport",
+            "parameters": [
+                "{{data}}"
+            ]
+        },
+        "processPLMXMLImportPartialErrors": {
+            "functionName": "processPLMXMLImportPartialErrors",
+            "parameters": [
+                "{{subPanelContext.uploadFileSelectionData.selectedFileInfo.fileName}}"
+            ]
+        }
+    },
+    "lifecycleHooks": {
+    },
+    "conditions": {
+        "isValidFile": {
+            "expression": "subPanelContext.uploadFileSelectionData.selectedFileInfo.fileName && subPanelContext.uploadFileSelectionData.selectedFileInfo.fileExt == 'zip'"
+        },
+        "enableImport": {
+            "expression": "conditions.isValidFile && data.transferModeListBox.dbValue && !data.importStarted"
+        },
+        "isFileImportFromXCShare":{
+            "expression" :"subPanelContext.uploadFileSelectionData.selectedFile.projectId"
+        },
+        "isLocalFileImport":{
+            "expression" :"!subPanelContext.uploadFileSelectionData.selectedFile"
+        }
+    },
+    "messages": {    
+    },
+    "i18n": {
+        "cmdImportButton": [
+            "pieMessages"
+        ],
+        "transferMode": [
+            "pieMessages"
+        ],
+        "plxmlImportStartedMessage": [
+            "pieMessages"
+        ],
+        "plmxmlImportFailedMessage": [
+            "pieMessages"
+        ]
+    }
+}

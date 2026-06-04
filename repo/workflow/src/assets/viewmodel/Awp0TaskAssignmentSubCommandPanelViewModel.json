@@ -1,0 +1,344 @@
+
+{
+    "schemaVersion": "1.0.0",
+    "imports": [
+        "js/aw-panel-footer.directive",
+        "js/aw-button.directive",
+        "js/aw-panel-section.directive",
+        "js/aw-label.directive",
+        "js/aw-panel-body.directive",
+        "js/aw-command-panel-section.directive",
+        "js/aw-list.directive",
+        "js/exist-when.directive",
+        "js/aw-repeat.directive",
+        "js/aw-i18n.directive",
+        "js/visible-when.directive",
+        "js/aw-include.directive"
+    ],
+
+    "data": {
+
+        "name":{
+            "displayName": "{{i18n.Workflow_Name}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "uiValue": "",
+            "renderingHint": "label"
+        },
+        "status":{
+            "displayName": "{{i18n.status}}",
+            "type": "STRING",
+            "isEditable": "false",
+            "uiValue": "",
+            "renderingHint": "label"
+         },
+         "addUsersOnPanelAnchor": "awp0_addUsersOnPanelAnchor",
+         "addTaskParticipantAssignmentOnPanelAnchor": "awp0_addTaskParticipantAssignmentOnPanelAnchor",
+         "isAddButtonVisible": true,
+         "tabsModel":
+        {
+            "isArray": "true",
+            "dbValue":
+            [
+                {
+                    "tabKey": "Awp0PeoplePickerTab",
+                    "name": "{{i18n.Results}}"
+
+                },
+                {
+                    "tabKey": "Awp0SuggestionsTab",
+                    "name": "{{i18n.Suggestions}}"
+                }
+            ]
+        }
+    },
+
+    "dataProviders": {
+
+    },
+
+    "actions": {
+        "populatePanelData": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action" : "populateCommandPanelData",
+                    "condition" : "props.subPanelContext.selectionData"
+                },
+                {
+                    "action" : "populateDialogPanelData",
+                    "condition" : "props.subPanelContext.selected"
+                }
+            ]
+        },
+        "populateCommandPanelData": {
+            "actionType": "JSFunction",
+            "method": "populatePanelData",
+            "inputData": {
+                "taskObject": "{{props.subPanelContext.selectionData.selected[0]}}",
+                "taskInfoObject": "{{props.subPanelContext.taskInfoObject}}",
+                "assignmentState": "{{props.subPanelContext.assignmentState}}",
+                "nampProp": "{{data.name}}",
+                "statusProp": "{{data.status}}"
+            },
+            "outputData": {
+                "name": "nameProp",
+                "status": "statusProp",
+                "selectedOption": "selectedOption"
+            },
+            "deps": "js/Awp0WorkflowAssignmentPanelService"
+        },
+        "populateDialogPanelData": {
+            "actionType": "JSFunction",
+            "method": "populatePanelData",
+            "inputData": {
+                "taskObject": "{{props.subPanelContext.selected[0]}}",
+                "taskInfoObject": "{{props.subPanelContext.taskInfoObject}}",
+                "assignmentState": "{{props.subPanelContext.assignmentState}}",
+                "nampProp": "{{data.name}}",
+                "statusProp": "{{data.status}}"
+            },
+            "outputData": {
+                "name": "nameProp",
+                "status": "statusProp",
+                "selectedOption": "selectedOption"
+            },
+            "deps": "js/Awp0WorkflowAssignmentPanelService"
+        },
+        "updateOrCloseAssignmentPanel": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "showUnsaveEditMessageAction",
+                    "condition": "conditions.isValidSelectionModified"
+                },
+                {
+                    "action": "cacheInitialSelectionCommandPanel",
+                    "condition" : "props.subPanelContext.selectionData"
+                },
+                {
+                    "action": "populateCommandPanelData",
+                    "condition": "conditions.isValidInitialSelectionCommandPanel && data.initialSelection !== props.subPanelContext.taskInfoObject.taskObject.uid"
+                },
+                {
+                    "action": "populateDialogPanelData",
+                    "condition": "conditions.isValidInitialSelectionDialog"
+                },
+                {
+                    "action": "closeCurrentOpenedPanel",
+                    "condition": "conditions.isEmptySelection"
+                },
+                {
+                    "action": "populatePanelData",
+                    "condition": "data.selectedOption ==='cancelOperation' && conditions.isValidSelectionModified"
+                },
+                {
+                    "action": "updateSelectedTaskAssignmentTable",
+                    "condition": "data.selectedOption ==='saveOperation' && conditions.isValidSelectionModified"
+                },
+                {
+                    "action": "populatePanelData",
+                    "condition": "data.selectedOption ==='saveOperation' && conditions.isValidSelectionModified"
+                }
+            ]
+        },
+        "cacheInitialSelectionCommandPanel":{
+            "actionType": "JSFunction",
+            "method": "cacheSelection",
+            "inputData": {
+                "selectedUid": "{{props.subPanelContext.selectionData.selected[0].uid}}"
+            },
+            "outputData": {
+                "initialSelection": ""
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        },
+        "updateSelectedTaskAssignmentTable": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action" : "updateSelectedTaskAssignmentTableForCommandPanel",
+                    "condition" : "props.subPanelContext.selectionData"
+                },
+                {
+                    "action" : "updateSelectedTaskAssignmentTableForDialog",
+                    "condition" : "props.subPanelContext.selected"
+                }
+            ]
+        },
+        "updateSelectedTaskAssignmentTableForCommandPanel": {
+            "actionType": "JSFunction",
+            "method": "updatePropAssignmentContextInfo",
+            "inputData": {
+                "taskInfoObject": "{{props.subPanelContext.taskInfoObject}}",
+                "taskObject": "{{props.subPanelContext.taskInfoObject.taskObject}}",
+                "subPanelContent": "{{props.subPanelContext.assignmentState}}",
+                "newSelectedTaskObject": "{{props.subPanelContext.selectionData.selected[0]}}"
+            },
+            "deps": "js/Awp0WorkflowAssignmentService"
+        },
+        "updateSelectedTaskAssignmentTableForDialog": {
+            "actionType": "JSFunction",
+            "method": "updatePropAssignmentContextInfo",
+            "inputData": {
+                "taskInfoObject": "{{props.subPanelContext.taskInfoObject}}",
+                "taskObject": "{{props.subPanelContext.taskInfoObject.taskObject}}",
+                "subPanelContent": "{{props.subPanelContext.assignmentState}}",
+                "newSelectedTaskObject": "{{props.subPanelContext.selected[0]}}"
+            },
+            "deps": "js/Awp0WorkflowAssignmentService"
+        },
+        "showUnsaveEditMessageAction": {
+            "actionType": "JSFunctionAsync",
+            "method": "showUnsaveEditMessageAction",
+            "inputData": {
+                "taskObject": "{{props.subPanelContext.taskInfoObject.taskObject}}",
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "selectedOption": ""
+            },
+            "deps": "js/Awp0WorkflowAssignmentPanelService"
+        },
+        "closeCurrentOpenedPanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData":
+            {
+                "events":
+                [
+                    {
+                        "name": "complete",
+                        "condition": "!data.isDestroyed()",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+                ]
+            }
+        },
+        "updateTaskAssignmentTable": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "trainAssistant",
+                    "condition": "ctx.preferences && ctx.preferences.AWA_is_feature_installed && ctx.preferences.AWA_is_feature_installed[ 0 ] === 'true' && ctx.preferences.AWA_enable_people_picker_suggestions && ctx.preferences.AWA_enable_people_picker_suggestions[ 0 ] === 'true'"
+
+                },
+                {
+                    "action": "updateTaskAssignmentTable_workflow"
+                }
+            ]
+        },
+
+        "trainAssistant" : {
+            "actionType": "JSFunction",
+            "method": "trainAssistant",
+            "inputData": {
+                "assignmentState": "{{props.subPanelContext.assignmentState}}"
+            },
+            "deps": "js/peoplePickerAssistantUtils"
+        },
+
+        "updateTaskAssignmentTable_workflow": {
+            "actionType": "JSFunction",
+            "method": "updatePropAssignmentContextInfo",
+            "inputData": {
+                "taskInfoObject": "{{props.subPanelContext.taskInfoObject}}",
+                "taskObject": "{{props.subPanelContext.taskInfoObject.taskObject}}",
+                "subPanelContent": "{{props.subPanelContext.assignmentState}}"
+            },
+            "events":
+            {
+                "success":
+                [
+                    {
+                        "name": "complete",
+                        "eventData": {
+                            "source": "toolAndInfoPanel"
+                        }
+                    }
+
+                ]
+            },
+            "deps": "js/Awp0WorkflowAssignmentService"
+        }
+    },
+    "messages": {
+    },
+
+    "onEvent":
+    [
+
+    ],
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "updateOrCloseAssignmentPanel",
+                "observers": [ "props.subPanelContext.selectionData.selected[0].uid", "props.subPanelContext.selected[0].uid" ]
+            }
+        ]
+    },
+
+    "conditions":
+    {
+        "isValidToUpdateAssignmentDoCond": {
+            "expression": "conditions.isTaskNotCompleted && subPanelContext.taskInfoObject.props.assignee.modelObjects.length > 0"
+        },
+        "isValidToUpdateAssignment": {
+            "expression": "conditions.isTaskNotCompleted"
+        },
+        "isTaskNotCompleted": {
+            "expression": "subPanelContext.taskInfoObject.taskObject.props.state.dbValues[0] !== '8' && ( subPanelContext.taskInfoObject.isPrivilegedToAssign == 'true' || props.assignmentState.isRemovePrivileged || props.subPanelContext.taskInfoObject.taskObject.props.awp0AddReviewerByMeBehavior.dbValues[0] === '1' ) && subPanelContext.taskInfoObject.updatePropContext && subPanelContext.taskInfoObject.updatePropContext.propName"
+        },
+        "isOnlyTaskObjectSelected": {
+            "expression": "subPanelContext.taskInfoObject.taskObject.modelType.typeHierarchyArray.indexOf('EPMTask') > -1"
+        },
+        "isInvalidSelection": {
+            "expression": "conditions.isEmptySelection || ( props.subPanelContext.selectionData.selected[0].modelType.typeHierarchyArray.indexOf('EPMTask') <= -1 || props.subPanelContext.selectionData.selected[0].modelType.typeHierarchyArray.indexOf('EPMTaskTemplate') <= -1)"
+        },
+        "isEmptySelection": {
+            "expression": "!props.subPanelContext.selectionData.selected || props.subPanelContext.selectionData.selected.length <=0 || !props.subPanelContext.selectionData.selected[0].modelType || ( props.subPanelContext.selectionData.selected[0].modelType.typeHierarchyArray.indexOf('EPMTask') <= -1 && props.subPanelContext.selectionData.selected[0].modelType.typeHierarchyArray.indexOf('EPMTaskTemplate') <= -1)"
+        },
+        "isValidInitialSelectionCommandPanel": {
+            "expression": "props.subPanelContext.selectionData.selected && props.subPanelContext.selectionData.selected.length > 0 && props.subPanelContext.selectionData.selected[0].modelType && ( props.subPanelContext.selectionData.selected[0].modelType.typeHierarchyArray.indexOf('EPMTask') > -1 || props.subPanelContext.selectionData.selected[0].modelType.typeHierarchyArray.indexOf('EPMTaskTemplate') > -1) && ( !subPanelContext.taskInfoObject.updatePropContext || !subPanelContext.taskInfoObject.updatePropContext.propName)"
+        },
+        "isValidInitialSelectionDialog": {
+            "expression": "props.subPanelContext.selected && props.subPanelContext.selected.length > 0 && props.subPanelContext.selected[0].modelType && ( props.subPanelContext.selected[0].modelType.typeHierarchyArray.indexOf('EPMTask') > -1 || props.subPanelContext.selected[0].modelType.typeHierarchyArray.indexOf('EPMTaskTemplate') > -1)"
+        },
+        "isValidSelectionModified": {
+            "expression": "subPanelContext.taskInfoObject.taskObject && subPanelContext.taskInfoObject.taskObject.props.state.dbValues[0] !== '8' && subPanelContext.taskInfoObject.isPrivilegedToAssign == 'true' && subPanelContext.taskInfoObject.updatePropContext && subPanelContext.taskInfoObject.updatePropContext.propName"
+        },
+        "showSuggestionsTab" :{
+            "expression": "data.selectedTab.tabKey === 'Awp0SuggestionsTab'"
+        },
+        "showPeoplePickerTab": {
+            "expression": "data.selectedTab.tabKey === 'Awp0PeoplePickerTab'"
+        },
+        "arePPSuggestionsEnabled": {
+            "expression": "ctx.preferences && ctx.preferences.AWA_is_feature_installed && ctx.preferences.AWA_is_feature_installed[ 0 ] === 'true' && ctx.preferences.AWA_enable_people_picker_suggestions && ctx.preferences.AWA_enable_people_picker_suggestions[ 0 ] === 'true'"
+        },
+        "isModifyAssignments": {
+            "expression": "subPanelContext.taskInfoObject.props.assignee.isAssigneeInfoPresent >= 1"
+        }, 
+        "isAssigneeInfoNotPresentUpFront": {
+            "expression": "subPanelContext.taskInfoObject.props.assignee.isAssigneeInfoPresent < 1"
+        }
+    },
+
+    "i18n": {
+        "taskAssignments": [ "WorkflowCommandPanelsMessages" ],
+        "modify": [ "WorkflowCommandPanelsMessages" ],
+        "task": [ "WorkflowCommandPanelsMessages" ],
+        "Workflow_Name": [ "WorkflowCommandPanelsMessages" ],
+        "status": [ "WorkflowCommandPanelsMessages" ],
+        "save": [ "InboxMessages"],
+        "discard": [ "InboxMessages"],
+        "panelModificationWarningMsg": [ "WorkflowCommandPanelsMessages"],
+        "Results": ["WorkflowCommandPanelsMessages"],
+        "Suggestions":["WorkflowCommandPanelsMessages"]
+    }
+
+}
+

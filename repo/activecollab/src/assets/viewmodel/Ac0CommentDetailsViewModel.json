@@ -1,0 +1,108 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "cmdMore": "cmdMore",
+        "moreLink": {
+            "displayName": "{{i18n.more}}",
+            "type": "STRING",
+            "isRequired": "false"
+        },
+        "lessLink": {
+            "displayName": "{{i18n.less}}",
+            "type": "STRING",
+            "isRequired": "false"
+        },
+        "expandCollapseComments": {
+            "showMoreCommentText": false,
+            "showLessCommentText": false
+        }
+    },
+
+    "ports": {
+    },
+
+    "actions": {
+        "showMoreCommentText": {
+            "actionType": "JSFunction",
+            "method": "showMoreCommentText",
+            "inputData": {
+                "data": "{{data.expandCollapseComments}}",
+                "commentObject": "{{props.details.commentDetails}}"
+            },
+            "outputData": {
+                "expandCollapseSwitchObj": ""
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+
+        "showLessCommentText": {
+            "actionType": "JSFunction",
+            "method": "showLessCommentText",
+            "inputData": {
+                "data": "{{data.expandCollapseComments}}",
+                "commentObject": "{{props.details.commentDetails}}"
+            },
+            "outputData": {
+                "expandCollapseComments": ""
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        },
+        "updateSharedData": {
+            "actionType": "JSFunction",
+            "method": "updateSharedDataRenderText",
+            "inputData": {
+                "sharedData": "{{props.sharedDataObj.sharedData}}",
+                "commentObject": "{{props.details.commentDetails}}"
+            },
+            "deps": "js/Ac0DiscussionTileService"
+        }
+    },
+    "lifecycleHooks": {
+        "onUpdate": {
+            "action": "updateSharedData",
+            "observers": [ "props.details.commentDetails.uid" ]
+        }
+    },
+    "props": {
+        "details": {
+            "type": "object"
+        },
+        "shared-data-obj": {
+            "type": "object"
+        },
+        "contents": {
+            "type": "object"
+        },
+        "occmgmt-context":{
+            "type": "object"
+        },
+        "show-reply-discussion": {
+            "type": "object"
+        }
+    },
+    "conditions": {
+        "displayRichText": {
+            "expression": "!conditions.isBeingEdited && conditions.isNotAutoMsg"
+        },
+        "isBeingEdited":{
+            "expression": "props.details.commentDetails.beingEdited"
+        },
+        "isNotAutoMsg":{
+            "expression": "((!props.details.commentDetails.props.autoMsgType && !props.details.commentDetails.props.latestCommentautoMsgType) || props.details.commentDetails.props.autoMsgType && !props.details.commentDetails.props.autoMsgType.displayValues[0]) || ( props.details.commentDetails.props.latestCommentautoMsgType && !props.details.commentDetails.props.latestCommentautoMsgType.displayValues[0] )"
+        },
+        "isAutoMsg":{
+            "expression": "( props.details.commentDetails.props.autoMsgType && props.details.commentDetails.props.autoMsgType.displayValues[0]) || ( props.details.commentDetails.props.latestCommentautoMsgType && props.details.commentDetails.props.latestCommentautoMsgType.displayValues[0] )"
+        },
+        "isMoreCommandsAllowed":{
+            "expression": "( props.details.contents.switch.showMoreCommands === true || props.details.contents.switch.showMoreCommentCommands === true )"
+        },
+        "isDiscussionLocation":
+        {
+            "expression":"ctx.sublocation.historyNameToken==='feed' || ctx.sublocation.historyNameToken==='actionableFeed'"
+        }
+    },
+    "i18n": {
+        "more": [ "ActiveCollabDeclarativeMessages" ],
+        "less": [ "ActiveCollabDeclarativeMessages" ]
+    }
+}

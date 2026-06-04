@@ -1,0 +1,738 @@
+{
+    "schemaVersion": "1.0.0",
+    "chartProviders": {
+        "objDataChartProvider": {
+            "chartType": "column",
+            "loadDataAction": "setDashboardChartProvider"
+        },
+        "fileContentChartProvider": {
+            "chartType": "column",
+            "loadDataAction": "setDashboardChartProvider"
+        }
+    },
+    "data": {
+        "lastUpdatedLabel": {
+            "type": "STRING",
+            "dbValue": "{{i18n.objdataIndexerDashboardLastRefreshLabel}}",
+            "uiValue": "{{i18n.objdataIndexerDashboardLastRefreshLabel}}"
+        },
+        "refreshButtonCommand": {
+            "action": "refreshDashboard",
+            "iconName": "cmdRefresh",
+            "tooltip": "{{i18n.refreshDashboardDesc}}"
+        },
+        "objdataBackButtonCommand": {
+            "action": "showObjdataIndexingChart",
+            "iconName": "cmdBack",
+            "tooltip": "{{i18n.back}}"
+        },
+        "filecontentBackButtonCommand": {
+            "action": "showFilecontentIndexingChart",
+            "iconName": "cmdBack",
+            "tooltip": "{{i18n.back}}"
+        },
+        "objdataIndexing": {
+            "type": "object"
+        },
+        "pageSize": 4
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeDashboard",
+        "onUpdate": [
+            {
+                "action": "resetDataProvider",
+                "observers": ["viewModel.data.subscribingProcessListSearchResults"]
+            }
+        ]
+    },
+    "actions": {
+        "initializeDashboard": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getIndexerDashboardDetails"
+                }
+            ]
+        },
+        "refreshDashboard": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "resetIndexingStatusSearchState"
+                },
+                {
+                    "action": "clearPreviousDashboardData"
+                },
+                {
+                    "action": "getIndexerDashboardDetails"
+                }
+            ]
+        },
+        "resetIndexingStatusSearchState":{
+            "actionType": "JSFunction",
+            "method": "resetIndexingStatusSearchState",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.context.searchState}}"
+            },
+            "deps": "js/indexerService"
+        },
+        "doArrangeEvent": {
+            "actionType": "JSFunctionAsync",
+            "method": "arrangeColumns",
+            "inputData": {
+                "declViewModel": "{{data}}",
+                "eventData": "{{data.eventData}}"
+            },
+            "deps": "js/columnArrangeService"
+        },
+        "clearPreviousDashboardData":{
+            "actionType": "JSFunction",
+            "method": "clearPreviousDashboardData",
+            "inputData": {
+                "dataprovider": "{{data.dataProviders.subscribingProcessListProvider}}"
+            },
+            "outputData": {
+                "indexerHealthStatus": "indexerHealthStatus",
+                "chartProvidersData": "indexingStatusSummary",
+                "subscribingProcessList": "subscribingProcessList",
+                "basicIndexingPropVmos": "basicIndexingPropVmos",
+                "detailsTablePropVmos": "detailsTablePropVmos"
+            },
+            "deps": "js/indexerService"
+        },
+        "getIndexerDashboardDetails":{
+            "actionType": "JSFunction",
+            "method": "getIndexerDashboardDetails",
+            "inputData": {
+                "datai18n": "{{data.i18n}}"
+            },
+            "outputData": {
+                "indexerHealthStatus": "indexerHealthStatus",
+                "chartProvidersData": "indexingStatusSummary",
+                "subscribingProcessList": "subscribingProcessList"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "showIndexerAdminDashboard.loadDashboard"
+                    }
+                ]
+            },
+            "deps": "js/indexerService"
+        },
+        "loadDashboard": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "createVMOforIndexerHealthStatus"
+                },
+                {
+                    "action": "getSubscribingProcessList"
+                },
+                {
+                    "action": "setDashboardChartProvider"
+                },
+                {
+                    "action": "getDashboardDetailsRequestTime"
+                }
+            ]
+        },
+        "setDashboardChartProvider": {
+            "actionType": "JSFunctionAsync",
+            "method": "setDashboardChartProvider",
+            "inputData": {
+                "indexingStatusSummary": "{{data.chartProvidersData}}",
+                "searchState": "{{props.subPanelContext.context.searchState}}"
+            },
+            "outputData": {
+                "chartProviders.objDataChartProvider": "objCountChartProvider",
+                "chartProviders.fileContentChartProvider": "fileContentChartProvider"
+            },
+            "deps": "js/indexerService"
+        },
+        "resetDataProvider": {
+            "actionType": "JSFunction",
+            "method": "resetDataProvider",
+            "inputData": {
+                "subscribingProcessListDataProvider": "{{data.dataProviders.subscribingProcessListProvider}}"
+            },
+            "deps": "js/indexerService"
+        },
+        "createVMOforIndexerHealthStatus": {
+            "actionType": "JSFunction",
+            "method": "createVMOforIndexerHealthStatus",
+            "inputData": {
+                "indexerHealthStatus": "{{data.indexerHealthStatus}}",
+                "searchState": "{{props.subPanelContext.context.searchState}}",
+                "datai18n": "{{data.i18n}}"
+            },
+            "outputData": {
+                "basicIndexingPropVmos": "basicIndexingPropVmos",
+                "detailsTablePropVmos": "detailsTablePropVmos"
+            },
+            "deps": "js/indexerService"
+        },
+        "getDashboardDetailsRequestTime":{
+            "actionType": "JSFunction",
+            "method": "getObjdataIndexerDashboardUpdateTime",
+            "inputData": {
+                "datai18n": "{{data.i18n}}",
+                "searchState": "{{props.subPanelContext.context.searchState}}"
+            },
+            "outputData": {
+                "objdataDashboardLastUpdated": "dateandtimestamp",
+                "hasRequestedTime": "hasRequestedTime"
+            },
+            "deps": "js/indexerService"
+        },
+        "setSelectedObjdataIndexingStatusDataModel": {
+            "actionType": "JSFunction",
+            "method": "setSelectedObjdataIndexingStatusDataModel",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.context.searchState}}"
+            },
+            "outputData": {
+                "hasSelectedObjdataIndexingStatus": "hasSelectedObjdataIndexingStatus",
+                "selectedObjdataIndexingStatus": "selectedObjdataIndexingStatus"
+            },
+            "deps": "js/indexerService"
+        },
+        "showObjdataIndexingChart":{
+            "actionType": "JSFunction",
+            "method": "showObjdataIndexingChart",
+            "inputData": {
+            },
+            "outputData": {
+                "hasSelectedObjdataIndexingStatus": ""
+            },
+            "deps": "js/indexerService"
+        },
+        "setSelectedFilecontentIndexingStatusDataModel": {
+            "actionType": "JSFunction",
+            "method": "setSelectedFilecontentIndexingStatusDataModel",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.context.searchState}}"
+            },
+            "outputData": {
+                "hasSelectedFilecontentIndexingStatus": "hasSelectedFilecontentIndexingStatus",
+                "selectedFilecontentIndexingStatus": "selectedFilecontentIndexingStatus"
+            },
+            "deps": "js/indexerService"
+        },
+        "showFilecontentIndexingChart":{
+            "actionType": "JSFunction",
+            "method": "showFilecontentIndexingChart",
+            "inputData": {
+            },
+            "outputData": {
+                "hasSelectedFilecontentIndexingStatus": ""
+            },
+            "deps": "js/indexerService"
+        },
+        "resetIndexingstatusCommandPanelSection": {
+            "actionType": "JSFunction",
+            "method": "resetIndexingstatusCommandPanelSection",
+            "inputData": {
+                "sectionName": "{{parameters.sectionName}}",
+                "hasSelectedFilecontentIndexingStatus": "{{data.hasSelectedFilecontentIndexingStatus}}",
+                "hasSelectedObjdataIndexingStatus": "{{data.hasSelectedObjdataIndexingStatus}}"
+            },
+            "outputData": {
+                "hasSelectedFilecontentIndexingStatus": "hasSelectedFilecontentIndexingStatus",
+                "hasSelectedObjdataIndexingStatus": "hasSelectedObjdataIndexingStatus"
+            },
+            "deps": "js/indexingStatusService"
+        },
+        "getObjectDataIndexingList": {
+            "actionType": "JSFunction",
+            "method": "getSelectedIndexingStatusList",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.context.searchState}}",
+                "selectedIndexingStatus": "ObjectData"
+            },
+            "outputData": {
+                "objdataSearchResults": "objectsList",
+                "totalObjectdataFound": "totalFound",
+                "dataProviders.objectDataIndexingListProvider.columnConfig": "columnConfig",
+                "columnProviders.objectColumnProvider": "columnConfig",
+                "searchInput": "searchInput",
+                "exportOptions": "exportOptions"
+            },
+            "deps": "js/indexingStatusService"
+        },
+        "getFilecontentIndexingList": {
+            "actionType": "JSFunction",
+            "method": "getSelectedIndexingStatusList",
+            "inputData": {
+                "searchState": "{{props.subPanelContext.context.searchState}}",
+                "selectedIndexingStatus": "FileContent"
+            },
+            "outputData": {
+                "filecontentSearchResults": "objectsList",
+                "totalFilecontentFound": "totalFound",
+                "dataProviders.filecontentIndexingListProvider.columnConfig": "columnConfig",
+                "columnProviders.filecontentColumnProvider": "columnConfig",
+                "searchInput": "searchInput",
+                "exportOptions": "exportOptions"
+            },
+            "deps": "js/indexingStatusService"
+        },
+        "getSubscribingProcessList": {
+            "actionType": "JSFunction",
+            "method": "getObjectListVmos",
+            "inputData": {
+                "objects": "{{data.subscribingProcessList.processList}}"
+            },
+            "outputData": {
+                "subscribingProcessListSearchResults": ""
+            },
+            "deps": "js/indexerSubscribingProcessService"
+        },
+        "getFilteredSubscribingProcessList": {
+            "actionType": "JSFunction",
+            "method": "getFilterSubscribingProcessListAndColumnConfig",
+            "inputData": {
+                "columnProvider": "{{columnProviders.subscribingProcessColumnProvider}}",
+                "columnInfo": "{{data.subscribingProcessList.columnInfo}}",
+                "subscribingProcessList": "{{data.subscribingProcessListSearchResults}}",
+                "dataProvider": "{{data.dataProviders.subscribingProcessListProvider}}",
+                "pageSize": "{{data.pageSize}}"
+            },
+            "outputData": {
+                "filteredSubscribingProcessListSearchResults": "filteredSubscribingProcesses",
+                "totalSubscribingProcessFound": "totalFound",
+                "columnProviders.subscribingProcessColumnProvider": "columnProvider"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "showIndexerAdminDashboard.loadColumnsForSubscribingListTable"
+                    }
+                ]
+            },
+            "deps": "js/indexerSubscribingProcessService"
+        },
+        "loadColumnsForObjectListTable": {
+            "actionType": "JSFunction",
+            "method": "loadColumnsForObjectList",
+            "inputData": {
+                "dataProvider": "{{data.dataProviders.subscribingProcessListProvider}}",
+                "columnProvider": "{{columnProviders.subscribingProcessColumnProvider}}"
+            },
+            "deps": "js/indexerSubscribingProcessService"
+        },
+        "displayDetailedInfoForSelectedObjdataIndexingStatus": {
+            "actionType": "JSFunctionAsync",
+            "method": "displayDetailedInfoForSelectedObjdataIndexingStatus",
+            "inputData": {
+                "column": "{{parameters.eventData}}",
+                "searchState": "{{props.subPanelContext.context.searchState}}",
+                "datai18n": "{{data.i18n}}"
+            },
+            "deps": "js/indexerService"
+        },
+        "displayDetailedInfoForSelectedFilecontentIndexingStatus": {
+            "actionType": "JSFunctionAsync",
+            "method": "displayDetailedInfoForSelectedFilecontentIndexingStatus",
+            "inputData": {
+                "column": "{{parameters.eventData}}",
+                "searchState": "{{props.subPanelContext.context.searchState}}",
+                "datai18n": "{{data.i18n}}"
+            },
+            "deps": "js/indexerService"
+        },
+        "saveObjectDataColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "operationType": "",
+                        "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}"
+                    },
+                    "saveColumnConfigData": {
+                        "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}",
+                        "columnConfigId": "{{data.dataProviders.objectDataIndexingListProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.objectDataIndexingListProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Dds0ObjdataSearchProvider",
+                        "searchCriteria": {
+                            "typeOfSearch": "ACCT_TABLE_SEARCH"
+                        },
+                        "searchFilterFieldSortType": "Priority",
+                        "searchFilterMap6": {
+                            "Application": [
+                                {
+                                    "stringValue": "Object-data"
+                                }
+                            ],
+                            "State": [
+                                {
+                                    "stringValue": "{{subPanelContext.context.searchState.selectedObjdataIndexingStatus.label}}"
+                                }
+                            ]
+                        },
+                        "searchSortCriteria": [],
+                        "startIndex": "{{data.dataProviders.objectDataIndexingListProvider.startIndex}}"
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "totalObjectdataFound": "totalFound",
+                "objdataSearchResults": "{{json:searchResultsJSON}}",
+                "dataProviders.objectDataIndexingListProvider.columnConfig": "columnConfig",
+                "tableLoaded": true
+            }
+        },
+        "resetObjectDataColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0" : {
+                    "getOrResetUiConfigsIn": [
+                        {
+                            "scope": "LoginUser",
+                            "scopeName": "",
+                            "clientName": "AWClient",
+                            "resetColumnConfig": true,
+                            "columnConfigQueryInfos": [
+                                {
+                                    "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}",
+                                    "operationType": "",
+                                    "typeNames": [],
+                                    "columnsToExclude": []
+                                }
+                            ],
+                            "businessObjects": [
+                                {}
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "dataProviders.objectDataIndexingListProvider.columnConfig": "columnConfigurations[0].columnConfigurations[0]",
+                "dataProviders.objectDataIndexingListProvider.columnConfig.typesForArrange": []
+            }
+        },
+        "saveObjectDataColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [
+                        {
+                            "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}",
+                            "columnConfigId": "{{data.dataProviders.objectDataIndexingListProvider.columnConfig.columnConfigId}}",
+                            "columns": "{{data.dataProviders.objectDataIndexingListProvider.newColumns}}",
+                            "scope": "LoginUser",
+                            "scopeName": ""
+                        }
+                    ]
+                }
+            },
+            "outputData": {}
+        },
+        "saveFileContentColumnConfigLoadData": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "operationType": "",
+                        "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}"
+                    },
+                    "saveColumnConfigData": {
+                        "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}",
+                        "columnConfigId": "{{data.dataProviders.filecontentIndexingListProvider.columnConfig.columnConfigId}}",
+                        "columns": "{{data.dataProviders.filecontentIndexingListProvider.newColumns}}",
+                        "scope": "LoginUser",
+                        "scopeName": ""
+                    },
+                    "searchInput": {
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "Dds0ObjdataSearchProvider",
+                        "searchCriteria": {
+                            "typeOfSearch": "ACCT_TABLE_SEARCH"
+                        },
+                        "searchFilterFieldSortType": "Priority",
+                        "searchFilterMap6": {
+                            "Application": [
+                                {
+                                    "stringValue": "File-content"
+                                }
+                            ],
+                            "State": [
+                                {
+                                    "stringValue": "{{subPanelContext.context.searchState.selectedFilecontentIndexingStatus.label}}"
+                                }
+                            ]
+                        },
+                        "searchSortCriteria": [],
+                        "startIndex": "{{data.dataProviders.filecontentIndexingListProvider.startIndex}}"
+                    },
+                    "inflateProperties": true
+                }
+            },
+            "outputData": {
+                "totalObjectdataFound": "totalFound",
+                "objdataSearchResults": "{{json:searchResultsJSON}}",
+                "dataProviders.objectDataIndexingListProvider.columnConfig": "columnConfig",
+                "tableLoaded": true
+            }
+        },
+        "resetFileContentColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseGetOrResetUIColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "getOrResetUiConfigsIn": [
+                        {
+                            "scope": "LoginUser",
+                            "scopeName": "",
+                            "clientName": "AWClient",
+                            "resetColumnConfig": true,
+                            "columnConfigQueryInfos": [
+                                {
+                                    "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}",
+                                    "operationType": "",
+                                    "typeNames": [],
+                                    "columnsToExclude": []
+                                }
+                            ],
+                            "businessObjects": [
+                                {}
+                            ]
+                        }
+                    ]
+                }
+            },
+            "outputData": {
+                "dataProviders.filecontentIndexingListProvider.columnConfig": "columnConfigurations[0].columnConfigurations[0]",
+                "dataProviders.filecontentIndexingListProvider.columnConfig.typesForArrange": []
+            }
+        },
+        "saveFileContentColumnConfig": {
+            "actionType": "JSFunctionAsync",
+            "method": "baseSaveUiColumnConfigs",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "columnConfigurations": [
+                        {
+                            "clientScopeURI": "{{ctx.sublocation.clientScopeURI}}",
+                            "columnConfigId": "{{data.dataProviders.filecontentIndexingListProvider.columnConfig.columnConfigId}}",
+                            "columns": "{{data.dataProviders.filecontentIndexingListProvider.newColumns}}",
+                            "scope": "LoginUser",
+                            "scopeName": ""
+                        }
+                    ]
+                }
+            },
+            "outputData": {}
+        }
+    },
+    "grids": {
+        "objectDataIndexingListGrid": {
+            "dataProvider": "objectDataIndexingListProvider",
+            "columnProvider": "objectColumnProvider",
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "enableGridMenu": true,
+                "enableExpandAndPaginationInEdit": true,
+                "enableSorting": false,
+                "isFilteringEnabled": false
+            }
+        },
+        "filecontentIndexingListGrid": {
+            "dataProvider": "filecontentIndexingListProvider",
+            "columnProvider": "filecontentColumnProvider",
+            "enableArrangeMenu": true,
+            "gridOptions": {
+                "enableGridMenu": true,
+                "enableExpandAndPaginationInEdit": true,
+                "enableSorting": false,
+                "isFilteringEnabled": false
+            }
+        },
+        "subscribingProcessListGrid": {
+            "dataProvider": "subscribingProcessListProvider",
+            "columnProvider": "subscribingProcessColumnProvider",
+            "addIconColumn": false,
+            "gridOptions": {
+                "enableGridMenu": false,
+                "enableExpandAndPaginationInEdit": true,
+                "enableSorting": false
+            }
+        }
+    },
+    "dataProviders": {
+        "objectDataIndexingListProvider": {
+            "action": "getObjectDataIndexingList",
+            "response": "{{data.objdataSearchResults}}",
+            "totalFound": "{{data.totalObjectdataFound}}",
+            "selectionModelMode": "multiple",
+            "enableColumnHiding": false,
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "selectionData": "{{subPanelContext.selectionData}}"
+            },
+            "contextMenuCommandsAnchor": "aw_dataDiscoveryTableContextMenu",
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        },
+        "filecontentIndexingListProvider": {
+            "action": "getFilecontentIndexingList",
+            "response": "{{data.filecontentSearchResults}}",
+            "totalFound": "{{data.totalFilecontentFound}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "selectionData": "{{subPanelContext.selectionData}}"
+            },
+            "contextMenuCommandsAnchor": "aw_dataDiscoveryTableContextMenu",
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        },
+        "subscribingProcessListProvider": {
+            "action": "getFilteredSubscribingProcessList",
+            "response": "{{data.filteredSubscribingProcessListSearchResults}}",
+            "totalFound": "{{data.subscribingProcessListSearchResults.length}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}",
+                "selectionData": "{{subPanelContext.selectionData}}"
+            }
+        }
+    },
+    "columnProviders": {
+        "objectColumnProvider": {
+            "saveColumnAndLoadAction": "saveObjectDataColumnConfigLoadData",
+            "saveColumnAction": "saveObjectDataColumnConfig",
+            "resetColumnAction": "resetObjectDataColumnConfig",
+            "columns": [],
+            "frozenColumnIndex" : 1,
+            "sortCriteria": []
+        },
+        "filecontentColumnProvider": {
+            "saveColumnAndLoadAction": "saveFileContentColumnConfigLoadData",
+            "saveColumnAction": "saveFileContentColumnConfig",
+            "resetColumnAction": "resetFileContentColumnConfig",
+            "columns": [],
+            "frozenColumnIndex" : 1,
+            "sortCriteria": []
+        },
+        "subscribingProcessColumnProvider": {
+            "columns": [],
+            "sortCriteria": []
+        }
+    },
+    "messages": {
+    },
+    "functions": {
+    },
+    "conditions": {
+        "isTableShowing": {
+            "expression": "data.hasSelectedFilecontentIndexingStatus === true || data.hasSelectedObjdataIndexingStatus === true"
+        },
+        "subscribingApplicationsExist": {
+            "expression": "data.subscribingProcessListSearchResults !== undefined && data.subscribingProcessListSearchResults.length > 0"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "showIndexerAdminDashboard.loadDashboard",
+            "action": "loadDashboard"
+        },
+        {
+            "eventId": "showIndexerAdminDashboard.refreshDashboard",
+            "action": "initializeDashboard"
+        },
+        {
+            "eventId": "showIndexerAdminDashboard.setSelectedObjdataIndexingStatusDataModel",
+            "action": "setSelectedObjdataIndexingStatusDataModel"
+        },
+        {
+            "eventId": "showIndexerAdminDashboard.setSelectedFilecontentIndexingStatusDataModel",
+            "action": "setSelectedFilecontentIndexingStatusDataModel"
+        },
+        {
+            "eventId": "awCommandPanelSection.collapse",
+            "inputArgs": {
+                "sectionName": "{{eventData.name}}"
+            },
+            "action": "resetIndexingstatusCommandPanelSection",
+            "condition": "conditions.isTableShowing"
+        },
+        {
+            "eventId": "showIndexerAdminDashboard.loadColumnsForSubscribingListTable",
+            "action": "loadColumnsForObjectListTable"
+        },
+        {
+            "eventId": "objDataChartProvider.selected",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "displayDetailedInfoForSelectedObjdataIndexingStatus"
+        },
+        {
+            "eventId": "fileContentChartProvider.selected",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            },
+            "action": "displayDetailedInfoForSelectedFilecontentIndexingStatus"
+        },
+        {
+            "eventId": "columnArrange",
+            "cacheEventData": true,
+            "action": "doArrangeEvent"
+        }
+    ],
+    "i18n": {
+        "objdataIndexerHealthStatusTitle":[ "DataDiscoveryServicesMessages" ],
+        "objectDataIndexingStatusSummary":[ "DataDiscoveryServicesMessages" ],
+        "fileContentIndexingStatusSummary":[ "DataDiscoveryServicesMessages" ],
+        "diagnostic":[ "DataDiscoveryServicesMessages" ],
+        "indexingDetailsTitle":[ "DataDiscoveryServicesMessages" ],
+        "objdataIndexerDashboardLastRefreshLabel":[ "DataDiscoveryServicesMessages" ],
+        "refreshDashboardDesc":[ "DataDiscoveryServicesMessages" ],
+        "back":[ "DataDiscoveryServicesMessages" ],
+        "subcribingProcessColumn1":["DataDiscoveryServicesMessages" ],
+        "subcribingProcessColumn2":["DataDiscoveryServicesMessages" ],
+        "subcribingProcessColumn3":["DataDiscoveryServicesMessages" ],
+        "subscriptionProcessTitle":["DataDiscoveryServicesMessages" ],
+        "noPassCountMessage":["DataDiscoveryServicesMessages" ],
+        "noPendingCountMessage":["DataDiscoveryServicesMessages" ],
+        "noFailedCountMessage":["DataDiscoveryServicesMessages" ],
+        "noPendingFailedCountMessage":["DataDiscoveryServicesMessages" ],
+        "noPassFailedCountMessage":["DataDiscoveryServicesMessages" ],
+        "noPassPendingCountMessage":["DataDiscoveryServicesMessages" ],
+        "firstStatus": ["DataDiscoveryServicesMessages" ],
+        "secondStatus": ["DataDiscoveryServicesMessages" ],
+        "thirdStatus": ["DataDiscoveryServicesMessages" ],
+        "firstIndexing": ["DataDiscoveryServicesMessages" ],
+        "secondIndexing": ["DataDiscoveryServicesMessages" ],
+        "thirdIndexing": ["DataDiscoveryServicesMessages" ],
+        "fourthIndexing": ["DataDiscoveryServicesMessages" ],
+        "timeStampThreasold": ["DataDiscoveryServicesMessages" ],
+        "staleAppToolTip": ["DataDiscoveryServicesMessages" ]
+    }
+
+}

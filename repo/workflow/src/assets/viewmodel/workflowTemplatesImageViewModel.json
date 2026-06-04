@@ -1,0 +1,126 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports": [],
+
+    "actions": {
+        "reveal": {
+            "actionType": "dataProvider",
+            "method": "imageDataProvider"
+        },
+        "search": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "attributesToInflate": [ "object_name", "owning_user", "object_desc", "fnd0Instructions", "state" ],
+                        "maxToLoad": 50,
+                        "maxToReturn": 50,
+                        "providerName": "{{subPanelContext.searchState.provider}}",
+                        "searchCriteria": "{{subPanelContext.searchState.criteria}}",
+                        "searchFilterFieldSortType": "{{subPanelContext.searchState.sortType}}",
+                        "searchFilterMap6": "{{subPanelContext.searchState.activeFilterMap}}",
+                        "searchSortCriteria": "{{ctx.sublocation.sortCriteria}}",
+                        "focusObjUid": "{{ctx.newlyCreatedTemplateObjUid}}",
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.imageDataProvider.startIndex}}"
+                        }
+                    }
+                },
+                "1": {
+                    "types": [ {
+                        "name": "BusinessObject",
+                        "properties": [ {
+                            "name": "awp0CellProperties"
+                        } ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "output": "{{function:processOutput}}"
+            },
+            "events": {
+                "success": [ {
+                    "name": "selectCreatedTemplateObject",
+                    "condition": "ctx.newlyCreatedTemplateObjUid"
+                } ],
+                "failure": [ {
+                    "name": "completedPerformSearch",
+                    "condition": "ctx.newlyCreatedTemplateObjUid"
+                } ]
+            }
+        },
+        "selectTemplateObject": {
+            "actionType": "JSFunction",
+            "method": "setSelection",
+            "inputData": {
+                "selectionModel": "{{data.dataProviders.imageDataProvider.selectionModel}}",
+                "newSelection": "{{ctx.newlyCreatedTemplateObjUid}}"
+            },
+            "deps": "js/selectionModelFactory",
+            "events": {
+                "success": [ {
+                    "name": "completedPerformSearch"
+                } ]
+            }
+        },
+        "unregisterContext": {
+            "actionType": "JSFunction",
+            "method": "unRegisterCtx",
+            "deps": "js/appCtxService",
+            "inputData": {
+                "name": "newlyCreatedTemplateObjUid"
+            }
+        }
+    },
+
+    "dataProviders": {
+        "imageDataProvider": {
+            "action": "search",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple",
+            "inputData": {
+                "selectionModel": "{{subPanelContext.selectionModel}}"
+            },
+            "commandsAnchor": "com.siemens.splm.clientfx.tcui.commands.modelObjectCellListActionCommands"
+        }
+    },
+
+    "functions": {
+        "processOutput": {
+            "functionName": "processOutput",
+            "parameters": [
+                "{{data}}",
+                "{{subPanelContext.searchState}}"
+            ],
+            "deps": "js/awSearchService"
+        }
+    },
+
+    "onEvent": [ {
+            "eventId": "dataProvider.reset",
+            "action": "reveal"
+        },
+        {
+            "eventId": "selectCreatedTemplateObject",
+            "action": "selectTemplateObject"
+        },
+        {
+            "eventId": "completedPerformSearch",
+            "action": "unregisterContext"
+        }
+    ],
+
+    "lifecycleHooks": {
+        "onUpdate": {
+            "action": "reveal",
+            "observers": [ "props.subPanelContext.searchState.criteria.searchString",
+                "props.subPanelContext.searchState.filterString"
+            ]
+        }
+    }
+}

@@ -1,0 +1,157 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "getAllSVRsBasedOnSearchCriteria": {
+            "actionType": "dataProvider",
+            "method": "getAllVariantRulesBasedOnSearchCriteria"
+        },
+        "filterSVRsBasedOnSearchCriteria": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "providerName": "Pca0SavedVariantsProvider",
+                        "searchCriteria": "{{function:getSearchCriteria}}",
+                        "searchSortCriteria": [ {
+                            "fieldName": "lsd",
+                            "sortDirection": "DESC"
+                        } ],
+                        "maxToLoad": 99,
+                        "maxToReturn": 50,
+                        "cursor": {
+                            "startIndex": "{{data.dataProviders.getAllVariantRulesBasedOnSearchCriteria.startIndex}}"
+                        },
+                        "searchFilterMap6": "{{function:getInputSearchFilterMap}}"
+                    }
+                }
+            },
+            "outputData": {
+                "totalFound": "totalFound",
+                "totalLoaded": "totalLoaded",
+                "lastLoadedVariantUid": "{{function:getLastUid}}",
+                "searchResults": "{{json:searchResultsJSON}}",
+                "dataProviders.getAllVariantRulesBasedOnSearchCriteria._enableAccScroll": false,
+                "ServiceData": "ServiceData"
+            },
+            "events": {
+                "success": [ {
+                    "name": "Pca0LoadSVRSearchResultsTab.buildResultsString"
+                } ],
+                "failure": [ {
+                        "name": "Pca0LoadSVRSearchResultsTab.buildResultsString"
+                    },
+                    {
+                        "name": "Pca0FullScreenConfiguration.processPartialError",
+                        "eventData": {
+                            "ServiceData": "{{data.ServiceData}}"
+                        }
+                    }
+                ]
+            }
+        },
+        "buildResultsString": {
+            "actionType": "JSFunction",
+            "method": "buildSearchResults",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "resultsString.dbValue": "result.resultsStringValue",
+                "activeSearchResultPropLabel": "result.activeSearchResultPropLabel",
+                "totalLoadedVariants": "result.totalLoadedVariants",
+                "totalFoundVariants": "result.totalFoundVariants"
+            },
+            "deps": "js/pca0LoadSavedVariantsService"
+        },
+        "clearSearchDataProvider": {
+            "actionType": "JSFunction",
+            "method": "clearSearchDataProvider",
+            "inputData": {
+                "data": "{{data}}"
+            },
+            "outputData": {
+                "dataProviders.getAllVariantRulesBasedOnSearchCriteria": "result.pdGetAllVariantRulesBasedOnSearchCriteria",
+                "variantRules": "result.variantRules"
+            },
+            "deps": "js/pca0LoadSavedVariantsService"
+        }
+    },
+
+    "data": {
+        "resultsString": {
+            "displayName": "",
+            "type": "STRING",
+            "isRequired": "false",
+            "isEditable": "false",
+            "dbValue": "",
+            "dispValue": "",
+            "uiValue": "",
+            "labelPosition": "PROPERTY_LABEL_AT_TOP"
+        },
+        "activeSearchResultPropLabel": {
+            "displayName": "{{i18n.name}}",
+            "type": "STRING",
+            "dbValue": "Name"
+        },
+        "lastLoadedVariantUid": "",
+        "totalLoadedVariants": null,
+        "totalFoundVariants": null
+    },
+    "dataProviders": {
+        "getAllVariantRulesBasedOnSearchCriteria": {
+            "action": "filterSVRsBasedOnSearchCriteria",
+            "selectionModelMode": "multiple",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "_enableAccScroll": false
+        }
+    },
+    "functions": {
+        "getSearchCriteria": {
+            "functionName": "getSearchCriteria",
+            "parameters": [
+                "{{props.subPanelContext}}",
+                "{{data.lastLoadedVariantUid}}",
+                "{{data.dataProviders.getAllVariantRulesBasedOnSearchCriteria.startIndex}}"
+            ],
+            "deps": "js/pca0LoadSavedVariantsService"
+        },
+        "getInputSearchFilterMap": {
+            "functionName": "getInputSearchFilterMap",
+            "parameters": ["{{subPanelContext}}"],
+            "deps": "js/pca0LoadSavedVariantsService"
+        },
+        "getLastUid": {
+            "functionName": "getLastUid",
+            "deps": "js/pca0LoadSavedVariantsService"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "getAllSVRsBasedOnSearchCriteria"
+    },
+    "onEvent": [ {
+            "eventId": "Pca0LoadSVRSearchInputTab.searchResultPanelActivated",
+            "action": "getAllSVRsBasedOnSearchCriteria",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "Pca0LoadSVRSearchResultsTab.buildResultsString",
+            "action": "buildResultsString"
+        },
+        {
+            "eventId": "Pca0LoadSVRSearchResultsTab.clearSearchDataProvider",
+            "action": "clearSearchDataProvider"
+        }
+
+    ],
+    "i18n": {
+        "name": [ "FullScreenConfigurationMessages" ]
+    }
+}

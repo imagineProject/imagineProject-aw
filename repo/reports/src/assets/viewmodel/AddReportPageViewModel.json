@@ -1,0 +1,304 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "getreportdefinitionList": {
+            "actionType": "JSFunctionAsync",
+            "method": "basePerformSearchViewModel",
+            "deps": "js/tcDataManagementService",
+            "inputData": {
+                "0": {
+                    "searchInput": {
+                        "attributesToInflate": [ "rd_name", "rd_type" ],
+                        "maxToLoad": -1,
+                        "maxToReturn": -1,
+                        "providerName": "Rb0ReportsDataProvider",
+                        "searchCriteria": "{{function:getReportDefSearchCriteria}}",
+                        "searchFilterFieldSortType": "{{subPanelContext.provider.context.search.sortType}}",
+                        "startIndex": "{{data.dataProviders.listDataProvider.startIndex}}",
+                        "searchFilterMap6": "",
+                        "searchSortCriteria": ""
+                    },
+                    "columnConfigInput": {
+                        "clientName": "AWClient",
+                        "clientScopeURI": "Awp0ReportBuilder"
+                    }
+                },
+                "1": {
+                    "types": [ {
+                        "name": "ReportDefinition",
+                        "properties": [
+                            {
+                                "name": "rd_source"
+                            },
+                            {
+                                "name": "rd_name"
+                            },
+                            {
+                                "name": "rd_type"
+                            },
+                            {
+                                "name": "rd_description"
+                            },
+                            {
+                                "name": "rd_id"
+                            },
+                            {
+                                "name": "owning_user"
+                            }
+                        ]
+                    } ]
+                }
+            },
+            "outputData": {
+                "ctx.chartProvider": null,
+                "searchResults": "{{function:processSearchResults}}"
+            }
+        },
+        "addReport": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "addSelectedReportToReportList",
+                "condition": "props.subPanelContext.searchState.dashboardActiveView"
+            },{
+                "action": "updateSearchState",
+                "condition": "props.subPanelContext.searchState.dashboardActiveView"
+            },{
+                "action": "addSelectedDashboardReportForTabbed",
+                "condition": "!props.subPanelContext.searchState.dashboardActiveView && props.subPanelContext.searchState.dashboardTabObject"
+            },{
+                "action": "addSelectedReportToDashboard",
+                "condition": "!props.subPanelContext.searchState.dashboardActiveView && !props.subPanelContext.searchState.dashboardTabObject"
+            }, {
+                "action": "closePopup",
+                "condition": "!props.subPanelContext.isSubPanel && !props.subPanelContext.panelPinned"
+            }, {
+                "action": "resetDataProvider",
+                "condition": "!props.subPanelContext.isSubPanel && props.subPanelContext.panelPinned"
+            }]
+        },
+        "resetDataProvider": {
+            "actionType": "dataProvider",
+            "method": "reportsDataProvider"
+        },
+        "addSelectedReportToReportList":{
+            "actionType": "JSFunction",
+            "method": "addSelectedReportToReportList",
+            "inputData": {
+                "selectedReport": "{{data.dataProviders.reportsDataProvider.selectedObjects[0].reportdefinition}}",
+                "selectedItem": "{{data.selectionData.selected[0]}}",
+                "searchState": "{{subPanelContext.searchState}}"
+            },
+            "deps": "js/showMyDashboardService"
+        },
+        "updateSearchState":{
+            "actionType": "JSFunction",
+            "method": "updateAtomicDataValue",
+            "inputData": {
+                "AtomicObj": "{{subPanelContext.searchState}}",
+                "value": {
+                    "dashboardActiveView": null
+                }
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "addSelectedDashboardReportForTabbed": {
+            "actionType": "JSFunction",
+            "method": "addSelectedDashboardReportForTabbed",
+            "inputData": {
+                "selectedReport": "{{data.dataProviders.reportsDataProvider.selectedObjects[0].reportdefinition}}",
+                "dashboardTabObject": "{{props.subPanelContext.searchState.dashboardTabObject}}",
+                "selectedItem": "{{data.selectionData.selected[0]}}",
+                "searchState": "{{subPanelContext.searchState}}"
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "addReportToDashboardFailure"
+                    }
+                ],
+                "success": [
+                    {
+                        "message": "addToDashboardSucessMessage"
+                    }
+                ]
+            },
+            "deps": "js/showMyDashboardService"
+        },
+        "addSelectedReportToDashboard":{
+            "actionType": "JSFunction",
+            "method": "addSelectedReportToDashboard",
+            "deps": "js/showMyDashboardService",
+            "inputData": {
+                "selectedReportDef": "{{data.dataProviders.reportsDataProvider.selectedObjects[0].reportdefinition}}",
+                "preferenceName": "{{props.subPanelContext.dashboardListPreference}}",
+                "SourceUid": "{{data.selectionData.selected[0].uid}}",
+                "state": "{{props.subPanelContext.searchState}}"
+            },
+            "actionMessages":
+            {
+                "success":
+                [{
+                    "message": "addToDashboardSucessMessage"
+                }]
+            }
+        },
+        "closePopup": {
+            "actionType": "JSFunction",
+            "method": "hide",
+            "inputData": {
+                "popupId": "{{props.subPanelContext.popupOptions.popupId}}",
+                "targetEvent": "{{$event}}"
+            },
+            "deps": "js/popupService"
+        },
+        "checkReportAlreadyAdded": {
+            "actionType": "batchJob",
+            "steps": [ {
+                "action": "checkForDashboardConfigCommandForEasilyAdd",
+                "condition": "data.searchState.criteria.searchString.length > 0 && data.selectionData.selected.length>0 && !props.subPanelContext.searchState.dashboardReports"
+            }, {
+                "action": "checkForDashboardConfigCommandForEditOrAddDashboard",
+                "condition": "data.searchState.criteria.searchString.length > 0 && data.selectionData.selected.length>0 && props.subPanelContext.searchState.dashboardReports"
+            }]
+        },
+        "checkForDashboardConfigCommandForEditOrAddDashboard":{
+            "actionType": "JSFunction",
+            "method": "checkForDashboardConfigCommand",
+            "inputData": {
+                "selectedReport": "{{data.dataProviders.reportsDataProvider.selectedObjects[0].reportdefinition}}",
+                "sourceObj": "{{data.selectionData.selected[0]}}",
+                "preferenceName": "{{props.subPanelContext.dashboardListPreference}}",
+                "tabObject": [{
+                    "props": {
+                        "rb0DashboardTemplatesList": {
+                            "dbValues": "{{props.subPanelContext.searchState.dashboardReportsAsKeys}}"
+                        }
+                    }
+                }]
+            },
+            "deps": "js/reportsCommonService"
+        },
+        "checkForDashboardConfigCommandForEasilyAdd":{
+            "actionType": "JSFunction",
+            "method": "checkForDashboardConfigCommand",
+            "inputData": {
+                "selectedReport": "{{data.dataProviders.reportsDataProvider.selectedObjects[0].reportdefinition}}",
+                "sourceObj": "{{data.selectionData.selected[0]}}",
+                "preferenceName": "{{props.subPanelContext.dashboardListPreference}}",
+                "tabObject": ["{{props.subPanelContext.searchState.dashboardTabObject}}"]
+            },
+            "deps": "js/reportsCommonService"
+        }
+    },
+    "data": {
+        "reportsList": {
+            "name": "reportsList",
+            "type": "STRING",
+            "dataProvider": "reportsDataProvider",
+            "isSelectOnly": true,
+            "emptyLOVEntry": false
+        },
+        "searchState": {
+            "initialValues": {
+                "provider": "Awp0FullTextSearchProvider",
+                "autoApplyFilters": true,
+                "label":{
+                    "source": "/i18n/SearchMessages",
+                    "key": "resultsText"
+                }
+            },
+            "meta": {
+                "categories": [ {
+                    "filterValues": [ {
+                        "selected": {
+                            "field": "true",
+                            "type": "BOOLEAN"
+                        }
+                    } ]
+                } ],
+                "searchFilterCategories": [{"internalName":{"field": true,"type": "STRING"}}],
+                "searchFilterMap": ""
+            }
+        },
+        "selectionData": {
+            "initialValues": {},
+            "meta": {}
+        },
+        "reportSelectionData": {
+            "initialValues": {},
+            "meta": {}
+        }
+    },
+    "dataProviders": {
+        "reportsDataProvider": {
+            "action": "getreportdefinitionList",
+            "response": "{{data.searchResults}}",
+            "selectionModelMode": "single",
+            "totalFound": "{{data.searchResults.length}}",
+            "inputData": {
+                "selectionData": "{{fields.reportSelectionData}}"
+            }
+        }
+    },
+    "functions": {
+        "processSearchResults": {
+            "functionName": "processSearchResults",
+            "parameters": [
+                "{{data.reportsList.filterString}}",
+                "{{subPanelContext.searchState}}"
+            ],
+            "deps": "js/showMyDashboardService"
+        },
+        "getReportDefSearchCriteria":{
+            "functionName": "getReportDefSearchCriteria",
+            "parameters": [],
+            "deps": "js/showMyDashboardService"
+        }
+    },
+    "i18n": {
+        "reportTemplates": ["ReportChartMessages"],
+        "addDashboardReportWithPanelTitle": ["ReportChartMessages"],
+        "reportType": ["ReportChartMessages"],
+        "advSummReport": ["ReportChartMessages"],
+        "advItemReport": ["ReportChartMessages"],
+        "advSummReportDesc": ["ReportChartMessages"],
+        "advItemReportDesc": ["ReportChartMessages"],
+        "item": ["ReportChartMessages"],
+        "addDashboardFailureMsg": ["ReportChartMessages"],
+        "addToDashboardSuccessMsg": ["ReportChartMessages"]
+    },
+    "lifecycleHooks": {
+        "onUpdate": [
+            {
+                "action": "checkReportAlreadyAdded",
+                "observers": [ "viewModel.atomicData.selectionData.selected" ]
+            }
+        ],
+        "onUnmount": "updateSearchState"
+    },
+    "conditions": {
+        "sourceItemAdd": {
+            "expression": "dataProviders.reportsDataProvider.selectedObjects.length > 0 && dataProviders.reportsDataProvider.selectedObjects[0].reportType==='1'"
+        },
+        "isAddEnabled": {
+            "expression": "dataProviders.reportsDataProvider.selectedObjects.length > 0 && ( ( dataProviders.reportsDataProvider.selectedObjects[0].reportType === '1' && data.selectionData.selected.length>0 && ctx.showAddToDashboardCommand === true ) || dataProviders.reportsDataProvider.selectedObjects[0].reportType === '0' )"
+        }
+    },
+    "messages": {
+        "addReportToDashboardFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{i18n.addDashboardFailureMsg}}",
+            "messageTextParams": [
+                "{{data.dataProviders.reportsDataProvider.selectedObjects[0].propDisplayValue}}",
+                "{{errorCode}}"
+            ]
+        },
+        "addToDashboardSucessMessage": {
+            "messageType": "INFO",
+            "messageText": "{{i18n.addToDashboardSuccessMsg}}",
+            "messageTextParams": [
+                "{{data.dataProviders.reportsDataProvider.selectedObjects[0].propDisplayValue}}"
+            ]
+        }
+    }
+}

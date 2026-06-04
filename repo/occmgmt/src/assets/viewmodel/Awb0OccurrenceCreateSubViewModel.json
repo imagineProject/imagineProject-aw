@@ -1,0 +1,152 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "xrtState": {
+            "initialValues": {},
+            "meta": {
+                "xrtVMO": {
+                    "field": "true",
+                    "type": "viewModelObject"
+                }
+            }
+        }
+    },
+    "actions": {
+        "getInfoForAddElementRevOccAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2021-06-OccurrenceManagement",
+            "method": "getInfoForAddElement4",
+            "inputData": {
+                "getInfoForElementIn": {
+                    "parentElement": "{{props.subPanelContext.addElementState.parentToLoadAllowedTypes}}",
+                    "fetchAllowedOccRevTypes": true
+                }
+            },
+            "outputData": {
+                "allowedRevOccTypeInfo": "{{function:extractAllowedTypesInfoFromResponse}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "loadCreateXRTEvent"
+                    }
+                ]
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "loadCreateXRT": {
+            "actionType": "JSFunctionAsync",
+            "method": "loadCreateXrt",
+            "inputData": {
+                "type": "CREATE",
+                "activePageTitle": "",
+                "selectedObject": "",
+                "objectType": "{{data.allowedRevOccTypeInfo.preferredType}}"
+            },
+            "outputData": {
+                "xrtData": ""
+            },
+            "deps": "js/addObjectUtils"
+        },
+        "addPropertiesAndSetCreateInputContext": {
+            "actionType": "JSFunction",
+            "method": "buildOccurrenceCreateInputAndUpdateState",
+            "inputData": {
+                "value": "{{data}}",
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "outputData": {},
+            "events": {
+                "success": [
+                    {
+                        "name": "awb0Element.setElementCreateInputComplete",
+                        "excludeLocalDataCtx": true
+                    }
+                ]
+            },
+            "deps": "js/addRevOccService"
+        },
+        "addElementPropertiesComplete": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [ {
+                    "name": "revOcc.setElementCreateInputComplete",
+                    "excludeLocalDataCtx": false
+                    }
+                ]
+            }
+        },
+        "assignInitialValuesToXrtProperties": {
+            "actionType": "JSFunction",
+            "method": "assignInitialValuesToXrtProperties",
+            "inputData": {
+                "createType": "{{data.allowedRevOccTypeInfo.preferredType}}",
+                "editHandler": "{{editHandlers.addSubPanelEditHandler}}"
+            },
+            "deps": "js/aceAddElementService"
+        },
+        "generateNextValuesForPU": {
+            "actionType": "JSFunctionAsync",
+            "method": "autoAssignAllProperties",
+            "inputData": {
+                "data": "{{data}}",
+                "operationType": "CREATE",
+                "createType": "{{data.allowedRevOccTypeInfo.preferredType}}",
+                "editHandler": "{{editHandlers.addSubPanelEditHandler}}"
+            },
+            "outputData": {},
+            "events": {
+                "success": [ {
+                    "name": "addObject.enableAddBtnForPinnedPanel"
+                } ]
+            },
+            "deps": "js/autoAssignService"
+        }
+    },
+    "functions": {
+        "extractAllowedTypesInfoFromResponse": {
+            "functionName": "extractAllowedTypesInfoFromResponse",
+            "parameters": []
+        }
+    },
+    "conditions": {
+        "isPanelPinned": {
+            "expression": "props.subPanelContext.panelPinned"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "loadCreateXRTEvent",
+            "action": "loadCreateXRT"
+        },
+        {
+            "eventId": "awb0Element.addUsageProperties",
+            "action": "addPropertiesAndSetCreateInputContext",
+            "cacheEventData": true
+        },
+        {
+            "eventId": "awb0Element.setElementCreateInputComplete",
+            "action": "addElementPropertiesComplete"
+        },
+        {
+            "eventId": "awb0Element.addRevOccElementProperties",
+            "action": "addPropertiesAndSetCreateInputContext"
+        },
+        {
+            "eventId": "addElement.usageCreated",
+            "action": "generateNextValuesForPU"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "getInfoForAddElementRevOccAction"
+    },
+    "editHandlers": {
+        "addSubPanelEditHandler": {
+            "context": "CREATE_SUB_PANEL_CONTEXT_FOR_USAGE",
+            "dataSource": {
+                "xrtVMO": "{{data.xrtState}}"
+            }
+        }
+    }
+}

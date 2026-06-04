@@ -1,0 +1,88 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "fetchAllProductsBelongingToContextAndLaunchPopup": {
+            "actionType": "dataProvider",
+            "method": "getAllProductsUnderContext"
+        },
+        "getAllProductsUnderContext": {
+            "actionType": "TcSoaService",
+            "serviceName": "Internal-ActiveWorkspaceBom-2022-06-OccurrenceManagement",
+            "method": "getOccurrences4",
+            "inputData": {
+                "inputData": {
+                    "product": {
+                        "uid": "{{props.subPanelContext.occContext.workingContextObj.uid}}",
+                        "type": "{{props.subPanelContext.occContext.workingContextObj.type}}"
+                    },
+                    "config": {
+                        "productContext": {
+                            "uid": "{{props.subPanelContext.occContext.productContextInfo.uid}}",
+                            "type": "{{props.subPanelContext.occContext.productContextInfo.type}}"
+                        }
+                    },
+                    "requestPref": {
+                        "displayMode": [ "List" ],
+                        "startFreshNavigation": [ "false" ]
+                    }
+                }
+            },
+            "outputData": {
+                "allProducts": "{{function:getProducts}}",
+                "totalFound": "parentChildrenInfos[0].childrenInfo.length"
+            },
+            "deps": "js/aceContextConfigurationService"
+        },
+        "focusOnProductSelectedFromPopup": {
+            "actionType": "JSFunction",
+            "method": "focusOnProductSelectedFromPopup",
+            "inputData": {
+                "objectsToSelect": "{{data.dataProviders.getAllProductsUnderContext.selectedObjects[0]}}",
+                "occContext": "{{props.subPanelContext.occContext}}"
+            },
+            "outputData":{
+            },
+            "events": {
+                "success": [ {
+                    "name": "context.closePopup"
+                } ]
+            },
+            "deps": "js/aceContextConfigurationService"
+        },
+        "hide": {
+            "actionType": "JSFunctionAsync",
+            "method": "hide",
+            "deps": "js/popupService"
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "fetchAllProductsBelongingToContextAndLaunchPopup"
+    },
+    "dataProviders": {
+        "getAllProductsUnderContext": {
+            "action": "getAllProductsUnderContext",
+            "totalFound": "{{data.totalFound}}",
+            "response": "{{data.allProducts}}",
+            "selectionModelMode": "single"
+        }
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "getAllProductsUnderContext.selectionChangeEvent",
+            "action": "focusOnProductSelectedFromPopup"
+        },
+        {
+            "eventId": "context.closePopup",
+            "action": "hide",
+            "cacheEventData": true
+        }
+    ],
+    "i18n": {
+        "contextTitle": [ "OccurrenceManagementConstants" ]
+    }
+}

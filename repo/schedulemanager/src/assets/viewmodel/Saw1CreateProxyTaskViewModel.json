@@ -1,0 +1,186 @@
+{
+    "schemaVersion": "1.0.0",
+    "actions": {
+        "addProxyTasks": {
+            "actionType": "TcSoaService",
+            "serviceName": "ProjectManagement-2011-06-ScheduleManagement",
+            "method": "createProxyTasks",
+            "inputData": {
+                "newProxyTasks": "{{function:createProxyTaskContainers}}"
+            },
+            "outputData": {
+                "createdProxyTasks": "{{function:getProxyTasks}}"
+            },
+            "policy": {
+                "types": [
+                    {
+                        "name": "Fnd0ProxyTask",
+                        "properties": [
+                            {
+                                "name": "fnd0WhatIfMode"
+                            },
+                            {
+                                "name": "fnd0WhatIfData"
+                            },
+                            {
+                                "name":"fnd0schedule_tag"
+                            },
+                            {
+                                "name":"fnd0ref"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "cdm.relatedModified",
+                        "eventData": {
+                            "refreshLocationFlag": false,
+                            "isPinnedFlag": "{{conditions.ispinned}}",
+                            "relations": "",
+                            "relatedModified":
+                            [
+                                "{{subPanelContext.selectionData.selected[0]}}"
+                            ],
+                            "createdObjects": "{{data.createdProxyTasks}}"
+                        }
+                    },
+                    {
+                        "condition": "!subPanelContext.panelPinned",
+                        "name": "closeDialog"
+                    },
+                    {
+                        "name": "updateTreeNodesListOnCreate"
+                    }
+
+                ]
+            },
+            "actionMessages":
+             {
+                 "failure":
+                 [
+                     {
+                         "message": "failedToCreateProxyTaskMessage"
+                     }
+                 ]
+             },
+            "deps": "js/Saw1CreateProxyTaskService"
+        },
+        "initializeSearchState": {
+            "actionType": "JSFunction",
+            "method": "initializeSearchState",
+            "inputData": {
+                "searchContentType": "ProxyTaskScheduleTasks",
+                "searchString": "",
+                "dataProviderName" :"Saw1TaskSearchProvider",
+                "masterSchedule": "{{function:getMasterSchedule}}"
+            },
+            "outputData": {
+                "searchState": ""
+            },
+            "deps": "js/Saw1CreateProxyTaskService"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "onEvent": [
+    {
+        "eventId": "closeDialog",
+        "action": "closePanelDialog"
+    }
+],
+    "data": {
+        "triggerCreate": {
+            "dbValue": false,
+            "type": "BOOLEAN"
+        },
+        "addPanelState": {
+            "initialValues": {
+                "sourceObjects": "",
+                "selectedTab": ""
+            },
+            "meta": {
+                "sourceObjects": {
+                    "field": "true",
+                    "type": "OBJECTARRAY"
+                },
+                "selectedTab": {
+                    "field": "true",
+                    "type": "OBJECT"
+                }
+            }
+        },
+        "searchState": {
+            "initialValues": {
+                "hideFilters": false
+            },
+            "meta": {
+            }
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initializeSearchState"
+    },
+    "functions": {
+        "getMasterSchedule": {
+            "functionName": "getScheduleUid",
+            "parameters": [
+                "{{ctx.selected}}"
+            ]
+        },
+        "createProxyTaskContainers": {
+            "functionName": "createNewProxyTaskContainersFromTab",
+            "parameters": [
+                "{{data}}",
+                "{{ctx}}"
+            ]
+        },
+        "getProxyTasks": {
+            "functionName": "getCreatedProxyTasks",
+            "parameters": [
+            ]
+        }
+    },
+    "conditions": {
+        "isValidToShowInSearch": {
+            "expression":"data.addPanelState.selectedTab.view ==='SearchTabPageSub' && data.addPanelState.sourceObjects.length > 0"
+        },
+        "isValidToShowInPalette": {
+            "expression":"data.addPanelState.selectedTab.view==='PaletteTabPageSub' && data.addPanelState.sourceObjects.length > 0"
+        },
+        "ispinned": {
+            "expression": "subPanelContext.panelPinned"
+        }
+    },
+    "messages":
+    {
+        "failedToCreateProxyTaskMessage":
+        {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n": {
+        "addProxyTaskCommandTitle": [
+            "ScheduleManagerMessages"
+        ],
+        "paletteTabTitle": [
+            "awAddDirectiveMessages"
+        ],
+        "searchText": [
+            "UIMessages"
+        ],
+        "add": [
+            "ScheduleManagerMessages"
+        ]
+    }
+}

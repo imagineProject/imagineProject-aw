@@ -1,0 +1,270 @@
+{
+    "schemaVersion": "1.0.0",
+    "imports":
+    [
+        "js/aw-command-panel.directive",
+        "js/aw-command-sub-panel.directive",
+        "js/aw-panel-footer.directive",
+        "js/aw-widget.directive",
+        "js/aw-button.directive",
+        "js/aw-i18n.directive",
+        "js/visible-when.directive",
+        "js/enable-when.directive"
+    ],
+
+    "actions":
+    {
+        "initPanel": {
+            "actionType": "JSFunction",
+            "method": "populatePanelData",
+            "inputData": {
+                "selectedObjects": "{{props.subPanelContext.selectionData.value.selected}}",
+                "addUserPanelState": "{{data.addUserPanelState}}",
+                "criteria" : {
+                    "providerContentType": "User,GroupMember,ResourcePool",
+                    "searchString": "*",
+                    "selectedObject": "{{props.subPanelContext.selectionData.value.selected[0].uid}}",
+                    "searchSubGroup": "true"
+                },
+                "subPanelContext": "{{props.subPanelContext}}"
+            },
+            "outputData": {
+                "addUserPanelState": "userPanelState",
+                "isDataInit": "isDataInit"
+            },
+            "deps": "js/Awp0ReassignTask"
+        },
+        "reassign": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "getSelectedReviewers"
+                },
+                {
+                    "action": "reassignInternal"
+                }
+            ]
+        },
+        "getSelectedReviewers": {
+            "actionType": "JSFunctionAsync",
+            "method": "getValidObjectsToAdd",
+            "inputData": {
+                "propName": "{{addUserPanelState.criteria}}",
+                "selectedUsers": "{{addUserPanelState.selectedUsers}}",
+                "baseActiveFiltersStructure": "{{addUserPanelState.baseActiveFiltersStructure}}"
+            },
+            "outputData": {
+                "reviewers": ""
+            },
+            "deps": "js/Awp0WorkflowAssignmentUtils"
+        },
+        "reassignInternal": {
+            "actionType": "TcSoaService",
+            "serviceName": "Workflow-2014-06-Workflow",
+            "method": "performAction3",
+            "inputData": {
+                 "input":"{{function:getInputData}}"
+             },
+            "deps": "js/Awp0ReassignTask",
+            "events": {
+                "success":
+                [
+                    {
+                        "name": "primaryWorkarea.reset",
+                        "condition": "subPanelContext.openedObject === undefined"
+                    },
+                    {
+                        "name": "complete",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog"
+                    },
+                    {
+                        "name": "cdm.relatedModified",
+                        "condition": "subPanelContext.openedObject !== undefined",
+                        "eventData": {
+                            "refreshLocationFlag": true,
+                            "relatedModified": [
+                                "{{props.subPanelContext.openedObject}}"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "reassignEPMTask.completed"
+                    }
+                ]
+            },
+            "actionMessages": {
+                "failure": [
+                    {
+                        "message": "reassignTaskFailure"
+                    }
+                ]
+            }
+        },
+        "closePanel": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events":
+                [
+                    {
+                        "name": "complete",
+                        "condition": "!data.isDestroyed()",
+                        "eventData":
+                        {
+                            "source": "toolAndInfoPanel"
+                        }
+                    },
+                    {
+                        "name": "closeDialog",
+                        "condition": "!data.isDestroyed()"
+                    }
+                ]
+            }
+        },
+        "updateUserSelection": {
+            "actionType": "JSFunction",
+            "method": "updateUserSelection",
+            "inputData":
+            {
+                "data": "{{data.eventData.selectedObjects}}"
+            },
+            "outputData": {
+                "selectedObjects": ""
+            },
+            "deps": "js/Awp0ReassignTask"
+        },
+        "closePanelOnSelectionChange": {
+            "actionType": "batchJob",
+            "steps": [
+                {
+                    "action": "cacheInitialSelection",
+                    "condition": "!data.initialSelectionUids"
+                },
+                {
+                    "action": "closePanel",
+                    "condition": "data.initialSelectionUids[0] !== props.subPanelContext.selectionData.selected[0].uid || data.initialSelectionCount !== props.subPanelContext.selectionData.selected.length"
+                }
+            ]
+        },
+        "cacheInitialSelection":{
+            "actionType": "JSFunction",
+            "method": "cacheMultiSelection",
+            "inputData": {
+                "selectedUid": "{{props.subPanelContext.selectionData.selected}}"
+            },
+            "outputData": {
+                "initialSelectionUids": "selectedObjectUids",
+                "initialSelectionCount": "selectionCount"
+            },
+            "deps": "js/Awp0WorkflowUtils"
+        },
+        "closePanelDialog": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "INFO_PANEL_CONTEXT",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+
+    },
+
+    "data": {
+        "comments": {
+            "displayName": "{{i18n.comments}}",
+            "type": "STRING",
+            "isRequired": "false",
+            "numberOfLines": 3,
+            "maxLength": 4000,
+            "dbValue": "",
+            "uiValue": ""
+        },
+        "addUserPanelState": {
+            "initialValues": {
+                "provider": "Awp0PeoplePickerProvider",
+                "selectionModelMode": "single",
+                "criteria": {
+                    "providerContentType": "User,GroupMember,ResourcePool",
+                    "searchString": "*",
+                    "selectedObject": "",
+                    "searchSubGroup": "true"
+                },
+                "preferenceCriteria": [
+                    "WRKFLW_user_panel_content_display",
+                    "WRKFLW_allow_resourcepool_assignments",
+                    "WRKFLW_show_user_assignment_options"
+                ],
+                "selectedUsers": "",
+                "isAddButtonNeeded": false
+            },
+            "meta": {
+                "selectedUsers": {
+                    "field": "true",
+                    "type": "OBJECTARRAY"
+                }
+            }
+        }
+    },
+    "lifecycleHooks": {
+        "onMount": "initPanel",
+        "onUpdate": {
+            "action": "closePanelOnSelectionChange",
+            "observers": [ "props.subPanelContext.selectionData.selected" ]
+        }
+    },
+    "functions": {
+        "getInputData": {
+            "functionName": "getInputData",
+            "parameters":
+            [
+                "{{props.subPanelContext.selectionData.value.selected}}",
+                "{{data.reviewers}}",
+                "{{data.comments.dbValue}}",
+                "{{props.subPanelContext}}"
+            ]
+        }
+    },
+
+    "conditions": {
+        "isValidToAdd": {
+            "expression": "addUserPanelState.selectedUsers && addUserPanelState.selectedUsers.length > 0"
+        },
+        "showReplacePanel": {
+            "expression": "( (subPanelContext.selectionData && subPanelContext.selectionData.selected[0].type === 'Awp0XRTObjectSetRow') || ( subPanelContext.selected && subPanelContext.selected[0].modelType.typeHierarchyArray.indexOf('Awp0XRTObjectSetRow') > -1 ) )"
+        },
+        "showReassignPanel": {
+            "expression": "!(conditions.showReplacePanel)"
+        }
+    },
+    "onEvent":
+    [
+        {
+            "eventId": "Workflow.closeOpenedPanel",
+            "action": "closePanel"
+        },
+        {
+            "eventId": "closeDialog",
+            "action": "closePanelDialog"
+        }
+    ],
+    "messages": {
+        "reassignTaskFailure": {
+            "messageType": "ERROR",
+            "messageText": "{{errorCode}}"
+        }
+    },
+    "i18n": {
+        "reassignTaskCommandTitle": [ "InboxMessages" ],
+        "reassign": [ "InboxMessages" ],
+        "comments": [ "InboxMessages" ],
+        "replaceTaskCommandTitle": [ "InboxMessages" ],
+        "replace": ["InboxMessages"]
+    }
+}

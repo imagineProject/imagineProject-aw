@@ -1,0 +1,320 @@
+{
+    "schemaVersion": "1.0.0",
+    "lifecycleHooks": {
+        "onMount": "getEffectivitiesAction"
+    },
+    "data": {
+        "effectivityCommandPanelSectionAnchor": "apsEffectivityCommandPanelSectionAnchor"
+    },
+    "dataProviders": {
+        "getEffectivities": {
+            "action": "searchEffectivities",
+            "response": "{{data.effectivities}}",
+            "selectionModelMode": "multiple",
+            "commandsAnchor": "aps_effectivity_cell_commands"
+        }
+    },
+    "functions": {
+        "getEffectivityList": {
+            "functionName": "getEffectivityList",
+            "parameters": [
+                "{{props.subPanelContext.apsExpEffState}}"
+            ]
+        },
+        "getTargetObjects": {
+            "functionName": "getTargetObjects",
+            "parameters": [
+                "{{}}"
+            ]
+        },
+        "getExpressionTableForRemoveEffectivity": {
+            "functionName": "getExpressionTableForRemoveEffectivity",
+            "parameters": [
+                "{{data.dataProviders.getEffectivities.viewModelCollection.loadedVMObjects}}"
+            ]
+        },
+        "effectivityConditions": {
+            "functionName": "getEffectivityConditions",
+            "parameters": [
+                "{{}}"
+            ]
+        }
+    },
+    "actions": {
+        "getEffectivitiesAction": {
+            "actionType": "dataProvider",
+            "method": "getEffectivities"
+        },
+        "processPartialErrors": {
+            "actionType": "JSFunction",
+            "method": "processPartialErrors",
+            "inputData": {
+                "eventData": "{{parameters.eventData.ServiceData}}"
+            },
+            "deps": "js/apsEffectivityAuthoringService"
+        },
+        "searchEffectivities": {
+            "actionType": "TcSoaService",
+            "serviceName": "ConfigFilterCriteria-2017-05-EffectivityManagement",
+            "method": "getEffectivitySubsetTables",
+            "inputData": {
+                "productName": "",
+                "productNamespace": "",
+                "effectivityConditions": "{{function:effectivityConditions}}"
+            },
+            "outputData": {
+                "effectivities": "{{function:getEffectivityList}}"
+            },
+            "deps": "js/apsEffectivityAuthoringService"
+        },
+        "navigateToEditPanelAction": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "inputData": {
+                "path": "",
+                "value": {
+                    "activeView": "ApsEditEffectivity"
+                },
+                "target": "{{props.subPanelContext.apsExpEffState}}"
+            },
+            "deps": "js/occmgmtUtils"
+        },
+        "populateEditEffectivity": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "inputData": {
+                "path": "",
+                "value": {
+                    "activeView": "ApsEditEffectivity",
+                    "editEffectivity": "{{parameters.editEffectivity}}"
+                },
+                "target": "{{props.subPanelContext.apsExpEffState}}"
+            },
+            "deps": "js/occmgmtUtils"
+        },
+        "apsShowConfirmationMsgForRemoveEffectivityAction": {
+            "actionType": "Event",
+            "method": "Event",
+            "inputData": {
+                "events": [
+                    {
+                        "name": "apsRemoveEffectivityConfirmSingleDeletion",
+                        "condition": "data.dataProviders.getEffectivities.selectedObjects.length === 1"
+                    },
+                    {
+                        "name": "apsRemoveEffectivityConfirmMultipleDeletion",
+                        "condition": "data.dataProviders.getEffectivities.selectedObjects.length > 1"
+                    }
+                ]
+            }
+        },
+        "apsRemoveEffectivityAction": {
+            "actionType": "TcSoaService",
+            "serviceName": "ConfigFilterCriteria-2017-05-EffectivityManagement",
+            "method": "setEffectivityConditionSubsets",
+            "inputData": {
+                "productName": "",
+                "productNamespace": "",
+                "actionCode": 1,
+                "effectivityConditions": [
+                    {
+                        "targetObjects": "{{function:getTargetObjects}}",
+                        "expression": {
+                            "effectivityTable": "{{function:getExpressionTableForRemoveEffectivity}}"
+                        }
+                    }
+                ]
+            },
+            "outputData": {
+                "response": ""
+            },
+            "events": {
+                "success": [ {
+                        "name": "pca0VariabilityExplorerHeader.updateEffectivityOnCfgObject",
+                        "condition": "conditions.isConfiguratorApplication"
+                    },
+                    {
+                        "name": "apsEffectivity.UpdatePartialContextEvent",
+                        "condition": "conditions.isNonConfiguratorApplication"
+                    },
+                    {
+                        "name": "apsEffectivity.closePanel"
+                    }
+                ],
+                "failure": [ {
+                    "name": "apsEffectivity.processPartialErrors",
+                    "eventData": {
+                        "ServiceData": "{{data.response}}"
+                    }
+                },
+                {
+                    "name": "complete",
+                    "eventData": {
+                        "source": "toolAndInfoPanel"
+                    }
+                },
+                {
+                    "name": "cdm.relatedModified",
+                    "eventData": {
+                        "relatedModified": [
+                            "{{ctx.xrtSummaryContextObject}}"
+                        ],
+                        "refreshLocationFlag": true
+                    }
+                } ]
+            },
+            "deps": "js/apsEffectivityAuthoringService"
+        },
+        "updatePartialContextforApsEffectivity": {
+            "actionType": "JSFunction",
+            "method": "updateValueOnCtxOrState",
+            "inputData": {
+                "path": null,
+                "value": {
+                    "configContext": {
+                        "startFreshNavigation": true
+                    }
+                },
+                "target": "{{subPanelContext.occContext}}"
+            },
+            "events": {
+                "success": [
+                    {
+                        "name": "primaryWorkarea.reset"
+                    }
+                ]
+            },
+            "deps": "js/occmgmtUtils"
+        },
+        "closePanel": {
+            "actionType": "JSFunction",
+            "method": "closeDialog",
+            "inputData": {
+                "editContext": "",
+                "popupId": "{{subPanelContext.popupOptions.popupId}}"
+            },
+            "deps": "js/dialogService"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "navigateToEditPanel",
+            "inputArgs": {
+                "editEffectivity": "{{eventData}}"
+            },
+            "action": "populateEditEffectivity"
+        },
+        {
+            "eventId": "appCtx.register",
+            "criteria": {
+                "name": "mselected"
+            },
+            "action": "getEffectivitiesAction"
+        },
+        {
+            "eventId": "gwt.SubLocationContentSelectionChangeEvent",
+            "action": "getEffectivitiesAction"
+        },
+        {
+            "eventId": "apsRemoveEffectivityEvent",
+            "action": "apsShowConfirmationMsgForRemoveEffectivityAction"
+        },
+        {
+            "eventId": "apsRemoveEffectivityConfirmSingleDeletion",
+            "message": "confirmSingleEffectivityDeletionMessage"
+        },
+        {
+            "eventId": "apsRemoveEffectivityConfirmMultipleDeletion",
+            "message": "confirmMultipleEffectivityDeletionMessage"
+        },
+        {
+            "eventId": "apsEffectivity.UpdatePartialContextEvent",
+            "action": "updatePartialContextforApsEffectivity"
+        },
+        {
+            "eventId": "apsEffectivity.processPartialErrors",
+            "action": "processPartialErrors",
+            "inputArgs": {
+                "eventData": "{{eventData}}"
+            }
+        },
+        {
+            "eventId": "apsEffectivity.closePanel",
+            "action": "closePanel"
+        }
+    ],
+    "conditions": {
+        "isConfiguratorApplication": {
+            "expression": "ctx.sublocation.clientScopeURI === 'Pca0ContextFeatures'|| ctx.sublocation.clientScopeURI === 'Pca0DictionaryFeatures'|| ctx.sublocation.clientScopeURI === 'Pca0VariabilityExplorerProducts'|| ctx.sublocation.clientScopeURI === 'Pca0Constraints'|| ctx.sublocation.clientScopeURI === 'Pca0VariabilityExplorerModules'"
+            },
+        "isNonConfiguratorApplication": {
+            "expression": "!conditions.isConfiguratorApplication"
+        }
+    },
+    "messages": {
+        "confirmSingleEffectivityDeletionMessage": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.deleteSingleEffectivityConfirmMsg}}",
+            "messageTextParams": [
+                "{{data.dataProviders.getEffectivities.selectedObjects[0].effDisplayString}}"
+            ],
+            "navigationOptions": [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}"
+                },
+                {
+                    "option": "Delete",
+                    "text": "{{i18n.delete}}",
+                    "action": "apsRemoveEffectivityAction"
+                }
+            ]
+        },
+        "confirmMultipleEffectivityDeletionMessage": {
+            "messageType": "WARNING",
+            "messageText": "{{i18n.deleteMultipleEffectivityConfirmMsg}}",
+            "messageTextParams": [
+                "{{data.dataProviders.getEffectivities.selectedObjects.length}}"
+            ],
+            "navigationOptions": [
+                {
+                    "option": "Cancel",
+                    "text": "{{i18n.cancel}}"
+                },
+                {
+                    "option": "Delete",
+                    "text": "{{i18n.delete}}",
+                    "action": "apsRemoveEffectivityAction"
+                }
+            ]
+        }
+    },
+    "i18n": {
+        "effectivities": [
+            "ApsEffectivityMessages"
+        ],
+        "cancel": [
+            "ApsEffectivityMessages"
+        ],
+        "delete": [
+            "ApsEffectivityMessages"
+        ],
+        "deleteSingleEffectivityConfirmMsg": [
+            "ApsEffectivityMessages"
+        ],
+        "deleteMultipleEffectivityConfirmMsg": [
+            "ApsEffectivityMessages"
+        ],
+        "edit": [
+            "ApsEffectivityMessages"
+        ],
+        "save": [
+            "ApsEffectivityMessages"
+        ]
+    },
+    "props": {
+        "sub-panel-context": {
+            "type": "object"
+        }
+    }
+}
