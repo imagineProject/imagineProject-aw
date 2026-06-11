@@ -1,0 +1,107 @@
+{
+    "schemaVersion": "1.0.0",
+    "data": {
+        "showTemplates": {
+            "displayName": "일정 템플릿 보기",
+            "type": "BOOLEAN",
+            "isEditable": "true",
+            "dbValue": false
+        }
+    },
+    "actions": {
+        "initCtx": {
+            "actionType": "JSFunction",
+            "method": "initCtx",
+            "deps": "js/EGTechTemplateListService"
+        },
+        "toggleCtx": {
+            "actionType": "JSFunction",
+            "method": "toggleCtx",
+            "deps": "js/EGTechTemplateListService",
+            "inputData": { "data": "{{data}}" }
+        },
+        "loadTemplates": {
+            "actionType": "TcSoaService",
+            "serviceName": "Query-2014-11-Finder",
+            "method": "performSearch",
+            "inputData": {
+                "searchInput": {
+                    "maxToLoad": 50,
+                    "maxToReturn": 50,
+                    "providerName": "Saw1ScheduleSearchProvider",
+                    "searchCriteria": {
+                        "searchContentType": "ScheduleTemplates",
+                        "searchString": "*"
+                    },
+                    "startIndex": "{{data.dataProviders.templateListProvider.startIndex}}",
+                    "searchFilterFieldSortType": "Alphabetical"
+                }
+            },
+            "outputData": {
+                "searchResults": "searchResults",
+                "totalFound": "totalFound"
+            }
+        },
+        "refreshProvider": {
+            "actionType": "dataProvider",
+            "method": "templateListProvider"
+        },
+        "onTemplateSelect": {
+            "actionType": "JSFunctionAsync",
+            "method": "onTemplateSelect",
+            "deps": "js/EGTechTemplateListService",
+            "inputData": {
+                "selectedObjects": "{{data.dataProviders.templateListProvider.selectedObjects}}"
+            }
+        }
+    },
+    "dataProviders": {
+        "templateListProvider": {
+            "action": "loadTemplates",
+            "response": "{{data.searchResults}}",
+            "totalFound": "{{data.totalFound}}",
+            "selectionModelMode": "multiple"
+        }
+    },
+    "columnProviders": {
+        "templateColumns": {
+            "columns": [
+                { "name": "item_id",       "displayName": "일정 ID", "width": 100 },
+                { "name": "object_name",   "displayName": "이름",    "width": 180 },
+                { "name": "object_type",   "displayName": "유형",    "width": 80  },
+                { "name": "object_desc",   "displayName": "설명",    "width": 150 },
+                { "name": "published",     "displayName": "게시",    "width": 60  }
+            ]
+        }
+    },
+    "grids": {
+        "templateGrid": {
+            "dataProvider": "templateListProvider",
+            "columnProvider": "templateColumns"
+        }
+    },
+    "conditions": {
+        "showTemplates": {
+            "expression": "ctx.egtechShowTemplates === true"
+        }
+    },
+    "onEvent": [
+        {
+            "eventId": "templateListProvider.selectionChangeEvent",
+            "action": "onTemplateSelect"
+        }
+    ],
+    "lifecycleHooks": {
+        "onMount": "initCtx",
+        "onUpdate": [
+            {
+                "action": "toggleCtx",
+                "observers": [ "viewModel.data.showTemplates.dbValue" ]
+            },
+            {
+                "action": "refreshProvider",
+                "observers": [ "viewModel.data.showTemplates.dbValue" ]
+            }
+        ]
+    }
+}
